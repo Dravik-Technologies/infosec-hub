@@ -1,0 +1,102 @@
+[
+  {
+    "term": "AFSIM",
+    "definition": "Advanced Framework for Simulation, Integration, and Modeling. A government-developed simulation environment used for modeling complex military systems and engagement scenarios."
+  },
+  {
+    "term": "AIME",
+    "definition": "Architected Integration for Mission-Engineering Enablement. An internally focused capital software effort at MTSI that CIM-ARC leverages for secure data fabrics and APIs."
+  },
+  {
+    "term": "CIM-ARC",
+    "definition": "Classified Integration for Mission Engineering Alignment, Readiness, and Collaboration. The multi-year MTSI program delivering a classified mission engineering and integration architecture environment."
+  },
+  {
+    "term": "Data Catalog",
+    "definition": "An organized inventory of data assets within an organization, including metadata, ownership, lineage, and classification. Enables discoverability and governance across the enterprise."
+  },
+  {
+    "term": "Data Domain",
+    "definition": "A logical grouping of related data assets owned by a specific business or mission area. CIM-ARC spans 14 defined data domains across the program."
+  },
+  {
+    "term": "Data Fabric",
+    "definition": "An architecture and set of data services that provide consistent capabilities across a choice of endpoints spanning on-premises and cloud environments. Enables unified, policy-governed data access without physically moving data."
+  },
+  {
+    "term": "Data Lineage",
+    "definition": "The life cycle of data — including its origins, movements, characteristics, and quality — tracked to ensure auditability and trust throughout the mission data pipeline."
+  },
+  {
+    "term": "Data Mesh",
+    "definition": "A decentralized sociotechnical approach to sharing, accessing, and managing analytical data in complex, large-scale environments. Treats data as a product owned by domain teams."
+  },
+  {
+    "term": "Data Product",
+    "definition": "A curated, governed, and trustworthy dataset or data service delivered by a domain team to internal or external consumers. CIM-ARC targets delivery of 200+ data products."
+  },
+  {
+    "term": "DevSecOps",
+    "definition": "Development, Security, and Operations. A methodology that integrates security practices into the software development and operations lifecycle, ensuring security is built in rather than bolted on."
+  },
+  {
+    "term": "Digital Thread",
+    "definition": "The communication framework that connects data flows across the lifecycle of a system — from design through operation — enabling traceability and informed decision-making at every stage."
+  },
+  {
+    "term": "Digital Twin",
+    "definition": "A virtual representation of a physical system, updated with live data, that enables simulation, analysis, and prediction of system behavior across its lifecycle."
+  },
+  {
+    "term": "DoD",
+    "definition": "Department of Defense. The U.S. federal department responsible for national security. CIM-ARC operates at the DoD Secret classification level."
+  },
+  {
+    "term": "IC",
+    "definition": "Intelligence Community. The network of U.S. government agencies involved in intelligence activities. CIM-ARC integrates IC data alongside DoD data for multi-domain awareness."
+  },
+  {
+    "term": "Kubernetes",
+    "definition": "An open-source platform for automating deployment, scaling, and management of containerized applications."
+  },
+  {
+    "term": "LAVA",
+    "definition": "MTSI's internal classified computing environment. CIM-ARC is initially hosted on LAVA before planned migration to Microsoft Azure Secret Cloud as capabilities expand."
+  },
+  {
+    "term": "MBSE",
+    "definition": "Model-Based Systems Engineering. A systems engineering methodology centered on creating and exploiting domain models as the primary means of information exchange. CIM-ARC integrates MBSE artifacts via Cameo Systems Modeler."
+  },
+  {
+    "term": "Metadata",
+    "definition": "Data that describes other data — including structure, content, quality, ownership, and lineage. Rich metadata is essential to the CIM-ARC data fabric for discoverability and governance."
+  },
+  {
+    "term": "MS&A",
+    "definition": "Modeling, Simulation, and Analysis. The use of computational models to analyze system behavior and support decision-making. High-fidelity MS&A is a core CIM-ARC capability pillar."
+  },
+  {
+    "term": "MVP",
+    "definition": "Minimum Viable Product. Incremental delivery milestones within CIM-ARC that demonstrate working capability. Five MVPs are planned across the program: MVP-1 through MVP-5."
+  },
+  {
+    "term": "neo4j",
+    "definition": "A graph database platform used within CIM-ARC to model and query complex relationships between data entities, systems, and mission elements."
+  },
+  {
+    "term": "OpenMetadata",
+    "definition": "An open-source metadata management platform used in CIM-ARC to catalog, govern, and surface data assets across the enterprise."
+  },
+  {
+    "term": "OpenSearch",
+    "definition": "An open-source search and analytics engine used within CIM-ARC for indexing and querying large volumes of mission and operational data."
+  },
+  {
+    "term": "PMR",
+    "definition": "Program Management Review. A periodic review of program health covering schedule, cost, performance, and risk. The Digital PMR provides a real-time view of these indicators."
+  },
+  {
+    "term": "Zero Trust",
+    "definition": "A security model that requires strict identity verification for every user and device attempting to access resources, regardless of network location. A foundational principle of the CIM-ARC security architecture."
+  }
+]

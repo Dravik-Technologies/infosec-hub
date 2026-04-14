@@ -1,0 +1,110 @@
+services:
+
+  # ── Shared Database ─────────────────────────────────────────────────────────
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ── MTSI Hub — SSO portal (port 3010) ───────────────────────────────────────
+  hub:
+    build:
+      context: ./hub
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3010:3010"
+    environment:
+      PORT: 3010
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/scorva
+      SESSION_SECRET: ${HUB_SESSION_SECRET:-hub-change-me-in-production}
+      SSO_TOKEN_TTL: 60
+      SCORVA_HOST: scorva
+      SCORVA_PORT: 3000
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  # ── SCORVA — Cyber Command Center (port 3000) ────────────────────────────────
+  scorva:
+    build:
+      context: ./scorva-v1
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/scorva
+      SESSION_SECRET: ${SCORVA_SESSION_SECRET:-scorva-change-me-in-production}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  # ── CRATER API — eMASS RMF backend (port 3001, internal) ────────────────────
+  crater-api:
+    build:
+      context: ./emass-app/server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      NODE_ENV: production
+      MONGODB_URI: mongodb://mongodb:27017/crater
+      JWT_SECRET: ${JWT_SECRET:-crater-dev-secret-change-in-production}
+      JWT_EXPIRES_IN: 7d
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  # ── CRATER UI — eMASS RMF frontend via nginx (port 3003) ───────────────────
+  crater-ui:
+    build:
+      context: ./emass-app
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    depends_on:
+      - crater-api
+
+  # ── MASH — MTSI Advanced Sentinel Hub (port 8080) ───────────────────────────
+  mash:
+    build:
+      context: ./security-dashboard
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      NODE_ENV: production
+
+  # ── Data Fabric — CIM-ARC platform (port 8081) ──────────────────────────────
+  data-fabric:
+    build:
+      context: ./data-fabric
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      PORT: 8081
+      NODE_ENV: production
+
+volumes:
+  mongo_data:
+    driver: local

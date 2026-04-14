@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monthly Reports | Data Fabric</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <header id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="photos/logo.png" alt="CIMARC" id="logo-img" />
+      </div>
+
+      <nav class="nav-links" id="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="monthly-reports.html" class="active">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </nav>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <div class="section-tag">REPORTING</div>
+      <h1>Monthly Reports</h1>
+      <div class="section-rule"></div>
+      <p>Detailed operational metrics, integration progress, risks, and milestone tracking for each reporting period.</p>
+    </div>
+  </section>
+
+  <!-- MONTHLY REPORTS CONTENT -->
+  <section class="section" id="monthly-reports">
+    <div class="section-container">
+
+      <div class="reports-list" id="reports-list">
+        <p style="color:rgba(255,255,255,0.4);">Loading...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-logo">
+        <img src="photos/logo.png" alt="CIMARC" class="footer-logo-img" />
+        <span>CIMARC</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </div>
+      <div class="footer-badge">UNCLASSIFIED // MTSI PROPRIETARY</div>
+    </div>
+  </footer>
+
+  <script src="scripts.js"></script>
+  <script>
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    fetch('data/monthly-reports.json')
+      .then(function(r) { return r.json(); })
+      .then(function(reports) {
+        var list = document.getElementById('reports-list');
+        list.innerHTML = reports.map(function(rep) {
+          var risksHtml = rep.risks.map(function(r) {
+            var parts = r.split(':');
+            if (parts.length > 1) {
+              return '<li><strong>' + esc(parts[0]) + ':</strong>' + esc(parts.slice(1).join(':')) + '</li>';
+            }
+            return '<li>' + esc(r) + '</li>';
+          }).join('');
+          return '<div class="report-item report-item-expanded">' +
+            '<div class="report-date">' + esc(rep.monthLabel) + '</div>' +
+            '<div class="report-info">' +
+              '<h3>' + esc(rep.title) + '</h3>' +
+              '<p>Reporting period: ' + esc(rep.period) + '</p>' +
+              '<div class="report-detail">' +
+                '<h4>Executive Summary</h4>' +
+                '<p>' + esc(rep.executiveSummary) + '</p>' +
+                '<h4>Accomplishments</h4>' +
+                '<ul class="trio-list">' +
+                  rep.accomplishments.map(function(a) { return '<li>' + esc(a) + '</li>'; }).join('') +
+                '</ul>' +
+                '<h4>Upcoming Activities</h4>' +
+                '<ul class="trio-list">' +
+                  rep.upcomingActivities.map(function(a) { return '<li>' + esc(a) + '</li>'; }).join('') +
+                '</ul>' +
+                '<h4>Risks &amp; Issues</h4>' +
+                '<ul class="trio-list">' + risksHtml + '</ul>' +
+              '</div>' +
+            '</div>' +
+            '<a href="#" class="btn-outline">DOWNLOAD</a>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function() {
+        document.getElementById('reports-list').innerHTML = '<p style="color:#e05c5c;">Failed to load reports.</p>';
+      });
+  </script>
+</body>
+</html>

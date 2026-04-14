@@ -1,0 +1,13 @@
+{
+  "name": "mash-security-dashboard",
+  "version": "2.2.0",
+  "description": "MTSI Advanced Sentinel Hub — DoD Security Compliance Dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}

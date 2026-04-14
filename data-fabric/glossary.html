@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Glossary | Data Fabric</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <header id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="photos/logo.png" alt="CIMARC" id="logo-img" />
+      </div>
+
+      <nav class="nav-links" id="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html" class="active">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </nav>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <div class="section-tag">REFERENCE</div>
+      <h1>Glossary</h1>
+      <div class="section-rule"></div>
+      <p>Key terms, acronyms, and definitions used across the CIM-ARC program and data fabric architecture.</p>
+    </div>
+  </section>
+
+  <!-- GLOSSARY CONTENT -->
+  <section class="section section-dark" id="glossary">
+    <div class="section-container">
+
+      <div class="glossary-grid" id="glossary-grid">
+        <p style="color:rgba(255,255,255,0.4);">Loading...</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-logo">
+        <img src="photos/logo.png" alt="CIMARC" class="footer-logo-img" />
+        <span>CIMARC</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </div>
+      <div class="footer-badge">UNCLASSIFIED // MTSI PROPRIETARY</div>
+    </div>
+  </footer>
+
+  <script src="scripts.js"></script>
+  <script>
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    fetch('data/glossary.json')
+      .then(function(r) { return r.json(); })
+      .then(function(terms) {
+        var grid = document.getElementById('glossary-grid');
+        grid.innerHTML = terms.map(function(t) {
+          return '<div class="glossary-item"><h4>' + esc(t.term) + '</h4><p>' + esc(t.definition) + '</p></div>';
+        }).join('');
+      })
+      .catch(function() {
+        document.getElementById('glossary-grid').innerHTML = '<p style="color:#e05c5c;">Failed to load glossary.</p>';
+      });
+  </script>
+</body>
+</html>

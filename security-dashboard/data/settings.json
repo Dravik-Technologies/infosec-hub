@@ -1,0 +1,64 @@
+{
+  "app": {
+    "name": "MTSI Advanced Sentinel Hub",
+    "abbr": "MASH",
+    "version": "2.1.0",
+    "organization": "MTSI",
+    "classification": "SECRET//NOFORN",
+    "env": "PRODUCTION",
+    "contract": "W9133L-24-D-0047",
+    "program": "EarthGuard Security Operations"
+  },
+  "user": {
+    "name": "VET-Kilika",
+    "title": "Director of Security",
+    "location": "Lincolnia, VA",
+    "clearance": "TS/SCI",
+    "avatar": "👨‍🚀",
+    "email": "v.kilika@mtsi-inc.com",
+    "phone": "(703) 555-0100"
+  },
+  "keyPersonnel": [
+    { "name": "J. Martinez",   "title": "SSM — Lincolnia HQ",       "siteId": "lincolnia-hq",       "phone": "(703) 555-0142", "clearance": "TS/SCI"      },
+    { "name": "A. Reeves",     "title": "SSM — Texas Field Office",  "siteId": "texas-field",        "phone": "(210) 555-0387", "clearance": "SECRET"      },
+    { "name": "S. Kim",        "title": "SSM — California Lab",      "siteId": "california-lab",     "phone": "(310) 555-0219", "clearance": "TS/SCI"      },
+    { "name": "T. Brooks",     "title": "SSM — Maryland Warehouse",  "siteId": "maryland-warehouse", "phone": "(443) 555-0064", "clearance": "SECRET"      },
+    { "name": "R. Okafor",     "title": "SSM — Colorado Springs",    "siteId": "colorado-springs",   "phone": "(719) 555-0331", "clearance": "TS/SCI"      },
+    { "name": "M. Tanaka",     "title": "SSM — Seattle Annex",       "siteId": "seattle-annex",      "phone": "(206) 555-0578", "clearance": "SECRET//REL" },
+    { "name": "P. Washington", "title": "SSM — DC Metro Office",     "siteId": "dc-metro",           "phone": "(703) 555-0911", "clearance": "TS/SCI//SAP" }
+  ],
+  "dssContacts": [
+    { "name": "R. Calloway",  "title": "DSS Industrial Security Representative", "region": "National Capital Region", "phone": "(571) 555-0201" },
+    { "name": "M. Okonkwo",   "title": "DSS Industrial Security Representative", "region": "South Central",          "phone": "(210) 555-0499" },
+    { "name": "P. Nakamura",  "title": "DSS Industrial Security Representative", "region": "Western",                "phone": "(310) 555-0822" },
+    { "name": "C. Huang",     "title": "DSS Industrial Security Representative", "region": "Mid-Atlantic",           "phone": "(301) 555-0355" },
+    { "name": "T. Erikson",   "title": "DSS Industrial Security Representative", "region": "Northwest",              "phone": "(206) 555-0693" }
+  ],
+  "reportTemplates": [
+    { "id": "rpt-exec",      "name": "Executive Dashboard Summary",    "format": ["pdf","pptx"], "lastGenerated": "2026-04-01", "schedule": "monthly" },
+    { "id": "rpt-comp",      "name": "Compliance Status Report",       "format": ["pdf"],        "lastGenerated": "2026-03-28", "schedule": "monthly" },
+    { "id": "rpt-risk",      "name": "Risk Register Export",           "format": ["pdf","xlsx"], "lastGenerated": "2026-04-07", "schedule": "weekly"  },
+    { "id": "rpt-budget",    "name": "Budget & Spend Report",          "format": ["pdf","xlsx"], "lastGenerated": "2026-04-01", "schedule": "monthly" },
+    { "id": "rpt-milestone", "name": "Program Milestone Report",       "format": ["pdf","pptx"], "lastGenerated": "2026-03-31", "schedule": "monthly" },
+    { "id": "rpt-site",      "name": "Per-Site Compliance Package",    "format": ["pdf"],        "lastGenerated": "2026-03-30", "schedule": "on-demand" }
+  ],
+  "notifications": {
+    "emailEnabled": true,
+    "teamsEnabled": true,
+    "alertThresholds": {
+      "complianceDrop": 5,
+      "riskDueDaysWarning": 14,
+      "riskDueDaysCritical": 3,
+      "budgetBurnWarning": 85,
+      "findingOverdueDays": 7
+    }
+  },
+  "ui": {
+    "refreshInterval": 30000,
+    "particlesEnabled": true,
+    "animationsEnabled": true,
+    "toastDuration": 3500,
+    "defaultSection": "dashboard",
+    "theme": "dark-space"
+  }
+}

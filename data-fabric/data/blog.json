@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "date": "18 MAR 2026",
+    "category": "DATA STRATEGY",
+    "title": "Accelerating Data Integration Across the Enterprise",
+    "excerpt": "How the Data Fabric program is reducing time-to-insight from weeks to hours through automated pipelines.",
+    "body": [
+      "One of the foundational challenges in mission engineering has always been the fragmentation of data across dozens of systems — each with its own schema, access control, and update cadence. CIM-ARC addresses this directly through a federated data fabric that virtualizes access without requiring data migration.",
+      "In the first quarter of program execution, the team has established automated ingestion pipelines connecting three priority data sources. These pipelines run on Argo Workflows, a Kubernetes-native workflow engine that enables parallel, auditable data processing at scale. Each pipeline includes automated data quality checks powered by Pydantic schema validation before data reaches the catalog.",
+      "Early results show a reduction in manual data-wrangling effort from an estimated 3–4 days per analyst request to under 2 hours. As the catalog grows and more data products are published, this number is expected to improve further. The next phase will add Apache Spark-based transformation pipelines for large-scale analytical workloads."
+    ]
+  },
+  {
+    "id": 2,
+    "date": "05 MAR 2026",
+    "category": "GOVERNANCE",
+    "title": "Standing Up a Data Stewardship Council",
+    "excerpt": "A look at our new governance model and how it ensures data quality at scale across the program.",
+    "body": [
+      "Data quality cannot be enforced purely through technical controls — it requires organizational alignment. The CIM-ARC Data Stewardship Council was formally established in March 2026 to provide that human layer of governance across the program's 14 data domains.",
+      "The council meets bi-weekly and is composed of one domain steward from each major data area, a technical representative from the Data Architect team, and a program management liaison. Council responsibilities include approving data product definitions, adjudicating data quality disputes, and setting metadata standards for the OpenMetadata catalog.",
+      "In its first session, the council ratified data classification standards and ownership guidelines that will govern all new data products published to the fabric. These standards directly inform the access control policies enforced by the Zero Trust security layer. The governance framework will be reviewed quarterly and updated as the program scales through subsequent phases."
+    ]
+  },
+  {
+    "id": 3,
+    "date": "20 FEB 2026",
+    "category": "ANALYTICS",
+    "title": "From Raw Data to Decision Advantage",
+    "excerpt": "Showcasing three new dashboards that give leaders real-time operational awareness.",
+    "body": [
+      "The first operational dashboards of the CIM-ARC program went live in February 2026, providing program leadership with near-real-time visibility into infrastructure health, data pipeline status, and integration progress. These initial dashboards represent a proof of concept for the commander-ready visualizations that will be the hallmark of later program phases.",
+      "Dashboard 1 — <strong>Infrastructure Health</strong> — provides a live view of LAVA compute and network utilization, storage capacity, and system availability. Alerts are surfaced within 60 seconds of threshold breach.",
+      "Dashboard 2 — <strong>Pipeline Status</strong> — shows the state of all active data ingestion pipelines: records processed, error rates, and last-successful-run timestamps for each data source.",
+      "Dashboard 3 — <strong>Program Metrics</strong> — provides a high-level view of schedule adherence, open risks, and milestone burn-down across all active Phase 0 tasks.",
+      "All three dashboards are built on the program's core visualization stack and will serve as templates for the mission-focused analytical views planned for Phase 2 and Phase 3 delivery."
+    ]
+  }
+]

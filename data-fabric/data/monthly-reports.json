@@ -1,0 +1,68 @@
+[
+  {
+    "id": "mar-2026",
+    "monthLabel": "MAR 2026",
+    "title": "Data Fabric Monthly Status Report",
+    "period": "March 1 – March 31, 2026",
+    "executiveSummary": "Phase 0 activities are proceeding on schedule. Infrastructure upgrades on LAVA are 80% complete. MVP-1 delivery is targeted for March 21, 2026. Team onboarding is complete with all planned staff in place.",
+    "accomplishments": [
+      "Completed LAVA server rack installation and initial configuration",
+      "Finalized program governance documentation and stakeholder RACI",
+      "Initiated data source inventory across 6 priority systems",
+      "Completed architecture baseline review with client"
+    ],
+    "upcomingActivities": [
+      "MVP-1 demonstration and review (Mar 21)",
+      "Phase 1 kickoff planning",
+      "Data fabric vendor evaluation completion"
+    ],
+    "risks": [
+      "Risk: Network switch procurement lead time may delay Phase 1 start — mitigation plan in place",
+      "Issue: None open"
+    ]
+  },
+  {
+    "id": "feb-2026",
+    "monthLabel": "FEB 2026",
+    "title": "Data Fabric Monthly Status Report",
+    "period": "February 1 – February 28, 2026",
+    "executiveSummary": "Program kickoff completed successfully. All Phase 0 tasks initiated. Team building and tool procurement activities on track. Infrastructure upgrade planning finalized.",
+    "accomplishments": [
+      "Conducted program kickoff with full stakeholder attendance",
+      "Established secure development environment on LAVA",
+      "Completed initial threat model and security architecture review",
+      "Procured and received core compute hardware"
+    ],
+    "upcomingActivities": [
+      "LAVA rack installation and configuration (Mar)",
+      "Data source inventory workshops",
+      "Architecture baseline documentation"
+    ],
+    "risks": [
+      "Risk: Classified facility access scheduling for new team members — being actively managed",
+      "Issue: None open"
+    ]
+  },
+  {
+    "id": "jan-2026",
+    "monthLabel": "JAN 2026",
+    "title": "Data Fabric Monthly Status Report",
+    "period": "January 1 – January 31, 2026",
+    "executiveSummary": "Program officially commenced January 2026. Initial planning activities underway. Program Management Office established. Contract vehicle and funding confirmed.",
+    "accomplishments": [
+      "Program office stood up; PMO tools and processes established",
+      "Initial work breakdown structure (WBS) and schedule drafted",
+      "Key personnel identified and hiring actions initiated",
+      "Kickoff meeting scheduled and invitations distributed"
+    ],
+    "upcomingActivities": [
+      "Program kickoff meeting (Feb)",
+      "Hardware procurement initiation",
+      "LAVA facility access coordination"
+    ],
+    "risks": [
+      "Risk: Key personnel clearance processing timelines — tracking closely",
+      "Issue: None open"
+    ]
+  }
+]

@@ -1,0 +1,104 @@
+{
+  "fiscalYear": "FY26",
+  "total": 4570000,
+  "spent": 1730000,
+  "categories": [
+    { "id": "personnel",    "name": "Personnel & Clearances",      "budgeted": 1200000, "spent": 680000  },
+    { "id": "physical",     "name": "Physical Security Upgrades",  "budgeted": 900000,  "spent": 420000  },
+    { "id": "tempest",      "name": "TEMPEST Mitigation",          "budgeted": 700000,  "spent": 310000  },
+    { "id": "training",     "name": "Training & Certification",    "budgeted": 450000,  "spent": 185000  },
+    { "id": "audits",       "name": "Compliance Audits",           "budgeted": 300000,  "spent": 135000  },
+    { "id": "contingency",  "name": "Contingency Reserve",         "budgeted": 1020000, "spent": 0       }
+  ],
+  "bySite": [
+    { "siteId": "lincolnia-hq",       "name": "Lincolnia HQ",       "budgeted": 1000000, "spent": 420000 },
+    { "siteId": "texas-field",        "name": "Texas Field Office",  "budgeted": 700000,  "spent": 280000 },
+    { "siteId": "california-lab",     "name": "California Lab",      "budgeted": 550000,  "spent": 210000 },
+    { "siteId": "maryland-warehouse", "name": "Maryland Warehouse",  "budgeted": 420000,  "spent": 145000 },
+    { "siteId": "colorado-springs",   "name": "Colorado Springs",    "budgeted": 500000,  "spent": 195000 },
+    { "siteId": "seattle-annex",      "name": "Seattle Annex",       "budgeted": 400000,  "spent": 170000 },
+    { "siteId": "dc-metro",           "name": "DC Metro Office",     "budgeted": 700000,  "spent": 310000 }
+  ],
+  "quarterly": {
+    "Q1": { "planned": 800000,  "actual": 720000  },
+    "Q2": { "planned": 1100000, "actual": 1010000 },
+    "Q3": { "planned": 1400000, "actual": 0       },
+    "Q4": { "planned": 1270000, "actual": 0       }
+  },
+  "monthlySpend": [
+    { "month": "Oct 25", "planned": 250000, "actual": 238000 },
+    { "month": "Nov 25", "planned": 270000, "actual": 261000 },
+    { "month": "Dec 25", "planned": 280000, "actual": 221000 },
+    { "month": "Jan 26", "planned": 320000, "actual": 304000 },
+    { "month": "Feb 26", "planned": 340000, "actual": 322000 },
+    { "month": "Mar 26", "planned": 360000, "actual": 384000 },
+    { "month": "Apr 26", "planned": 400000, "actual": 310000 },
+    { "month": "May 26", "planned": 420000, "actual": 0 },
+    { "month": "Jun 26", "planned": 430000, "actual": 0 },
+    { "month": "Jul 26", "planned": 450000, "actual": 0 },
+    { "month": "Aug 26", "planned": 480000, "actual": 0 },
+    { "month": "Sep 26", "planned": 370000, "actual": 0 }
+  ],
+  "amendments": [
+    {
+      "id": "amd-001",
+      "date": "2026-01-15",
+      "description": "FY26 Congressional add — TEMPEST infrastructure upgrade",
+      "amount": 150000,
+      "category": "tempest",
+      "approvedBy": "VET-Kilika",
+      "status": "approved"
+    },
+    {
+      "id": "amd-002",
+      "date": "2026-03-03",
+      "description": "Contingency transfer for TX Field emergency eLog procurement",
+      "amount": 45000,
+      "category": "physical",
+      "approvedBy": "VET-Kilika",
+      "status": "approved"
+    },
+    {
+      "id": "amd-003",
+      "date": "2026-04-06",
+      "description": "Contingency transfer — Lincolnia HQ TEMPEST shielding emergency vendor",
+      "amount": 90000,
+      "category": "tempest",
+      "approvedBy": "VET-Kilika",
+      "status": "approved"
+    },
+    {
+      "id": "amd-004",
+      "date": "2026-04-09",
+      "description": "TX Field SCIF expansion — pending CFO authorization",
+      "amount": 230000,
+      "category": "physical",
+      "approvedBy": "Pending",
+      "status": "pending"
+    }
+  ],
+  "recentTransactions": [
+    { "id": "txn-001", "date": "2026-04-08", "vendor": "SecurShield Corp.",       "description": "TEMPEST RF shielding materials — Lincolnia HQ Server Room B", "amount": 52400, "category": "tempest",  "siteId": "lincolnia-hq",       "po": "PO-2026-1142" },
+    { "id": "txn-002", "date": "2026-04-07", "vendor": "ClearLog Systems Inc.",   "description": "eLog visitor management system license & hardware — TX Field",  "amount": 18700, "category": "physical",  "siteId": "texas-field",        "po": "PO-2026-1138" },
+    { "id": "txn-003", "date": "2026-04-05", "vendor": "AMSEC LLC",               "description": "SCIF door lock replacement & installation — Seattle Annex",      "amount": 12300, "category": "physical",  "siteId": "seattle-annex",      "po": "PO-2026-1129" },
+    { "id": "txn-004", "date": "2026-04-01", "vendor": "DSS Training Portal",     "description": "Annual CBT license renewal — all sites (214 users)",             "amount": 32100, "category": "training",  "siteId": "all",                "po": "PO-2026-1115" },
+    { "id": "txn-005", "date": "2026-03-28", "vendor": "Booz Allen Hamilton",     "description": "DAAPM compliance gap analysis — Q2 consulting retainer",        "amount": 67500, "category": "audits",    "siteId": "texas-field",        "po": "PO-2026-1099" },
+    { "id": "txn-006", "date": "2026-03-20", "vendor": "Leidos Government Svc.",  "description": "ICD 705 accreditation support — Lincolnia HQ Zone 5 & 6",       "amount": 41200, "category": "audits",    "siteId": "lincolnia-hq",       "po": "PO-2026-1087" },
+    { "id": "txn-007", "date": "2026-03-15", "vendor": "G4S Secure Solutions",    "description": "Physical security guard services — Q2 retainer, all sites",      "amount": 95000, "category": "physical",  "siteId": "all",                "po": "PO-2026-1074" },
+    { "id": "txn-008", "date": "2026-03-10", "vendor": "ManTech TSCM Services",   "description": "TSCM sweep — DC Metro Office zones 1–8",                        "amount": 24800, "category": "tempest",   "siteId": "dc-metro",           "po": "PO-2026-1068" },
+    { "id": "txn-009", "date": "2026-03-01", "vendor": "Perspecta Inc.",          "description": "DISS/JPAS clearance system support license FY26",                "amount": 18900, "category": "personnel", "siteId": "all",                "po": "PO-2026-1052" },
+    { "id": "txn-010", "date": "2026-02-20", "vendor": "AT&T Government",         "description": "STU-III secure comm line upgrade — Colorado Springs",           "amount": 29400, "category": "physical",  "siteId": "colorado-springs",   "po": "PO-2026-1041" }
+  ],
+  "fy25Comparison": {
+    "total": 4200000,
+    "spent": 4018000,
+    "categories": [
+      { "id": "personnel",   "budgeted": 1100000, "spent": 1062000 },
+      { "id": "physical",    "budgeted": 820000,  "spent": 798000  },
+      { "id": "tempest",     "budgeted": 580000,  "spent": 614000  },
+      { "id": "training",    "budgeted": 400000,  "spent": 371000  },
+      { "id": "audits",      "budgeted": 260000,  "spent": 248000  },
+      { "id": "contingency", "budgeted": 1040000, "spent": 925000  }
+    ]
+  }
+}

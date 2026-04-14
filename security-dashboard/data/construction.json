@@ -1,0 +1,146 @@
+[
+  {
+    "id": "cs-001",
+    "title": "New Secure Space — Phase 1",
+    "subtitle": "SCIF New Build · Authorization & Kickoff",
+    "type": "new-scif",
+    "site": "Texas Field Office",
+    "siteId": "texas-field",
+    "location": "Austin, TX",
+    "status": "pending-auth",
+    "statusLabel": "Pending Authorization",
+    "flag": "amber",
+    "priority": "high",
+    "budget": {
+      "total": 230000,
+      "spent": 0,
+      "remaining": 230000,
+      "cfoAuth": "pending",
+      "cfoAuthNote": "CFO authorization required before contract award ($230K)",
+      "breakdown": [
+        { "label": "Design & Architecture",  "amount": 28000,  "status": "complete"    },
+        { "label": "Construction Contract",  "amount": 142000, "status": "pending"     },
+        { "label": "Technical Controls",     "amount": 38000,  "status": "upcoming"    },
+        { "label": "Accreditation Support",  "amount": 12000,  "status": "upcoming"    },
+        { "label": "Contingency (4%)",       "amount": 10000,  "status": "reserved"    }
+      ]
+    },
+    "phases": [
+      { "name": "Planning",      "status": "complete",     "targetDate": "2026-03-15", "completedDate": "2026-03-15", "note": "Site survey and requirements finalized." },
+      { "name": "Authorization", "status": "in-progress",  "targetDate": "2026-05-05", "completedDate": null,         "note": "CFO sign-off pending. Contractors pre-qualified." },
+      { "name": "Construction",  "status": "upcoming",     "targetDate": "2026-07-15", "completedDate": null,         "note": "Estimated 10-week build window." },
+      { "name": "Tech Controls", "status": "upcoming",     "targetDate": "2026-09-10", "completedDate": null,         "note": "IDS, CCTV, and emanations mitigation." },
+      { "name": "Accreditation", "status": "upcoming",     "targetDate": "2026-10-20", "completedDate": null,         "note": "DCSA inspection and formal accreditation." }
+    ],
+    "idealTimeline": "4–6 months",
+    "kickoffDate": "2026-05-05",
+    "projectedCompletion": "2026-10-20",
+    "scifType": "SCIF",
+    "squareFootage": 2400,
+    "contractor": "Pre-qualified (3 vendors)",
+    "aE": "Jacobs Engineering",
+    "ssm": "TBD — post-accreditation",
+    "classification": "TS/SCI",
+    "blockers": [
+      "CFO authorization pending — contract cannot be awarded until approved",
+      "Lease amendment required for dedicated SCIF access corridor"
+    ],
+    "notes": "Design complete. A&E drawings approved. Contractors pre-qualified pending CFO auth.",
+    "createdAt": "2026-01-10"
+  },
+  {
+    "id": "cs-002",
+    "title": "New Secure Space — Phase 2",
+    "subtitle": "SCIF New Build · Design Approval",
+    "type": "new-scif",
+    "site": "California Lab",
+    "siteId": "california-lab",
+    "location": "San Diego, CA",
+    "status": "design",
+    "statusLabel": "Design Phase",
+    "flag": null,
+    "priority": "medium",
+    "budget": {
+      "total": 480000,
+      "spent": 34000,
+      "remaining": 446000,
+      "cfoAuth": "approved",
+      "cfoAuthNote": "CFO authorized 2026-02-18",
+      "breakdown": [
+        { "label": "Design & Architecture",  "amount": 52000,  "status": "in-progress" },
+        { "label": "Construction Contract",  "amount": 298000, "status": "upcoming"    },
+        { "label": "Technical Controls",     "amount": 88000,  "status": "upcoming"    },
+        { "label": "Accreditation Support",  "amount": 22000,  "status": "upcoming"    },
+        { "label": "Contingency (4%)",       "amount": 20000,  "status": "reserved"    }
+      ]
+    },
+    "phases": [
+      { "name": "Planning",      "status": "complete",     "targetDate": "2026-02-01", "completedDate": "2026-02-01", "note": "Requirements and site assessment complete." },
+      { "name": "Design",        "status": "in-progress",  "targetDate": "2026-05-28", "completedDate": null,         "note": "A&E drawings 70% complete. Emanations specs under review." },
+      { "name": "Construction",  "status": "upcoming",     "targetDate": "2026-09-01", "completedDate": null,         "note": "Estimated 14-week build window." },
+      { "name": "Tech Controls", "status": "upcoming",     "targetDate": "2026-11-15", "completedDate": null,         "note": "Full TEMPEST mitigation suite + IDS." },
+      { "name": "Accreditation", "status": "upcoming",     "targetDate": "2026-12-20", "completedDate": null,         "note": "Joint DCSA/IC inspection required." }
+    ],
+    "idealTimeline": "6–8 months",
+    "kickoffDate": "2026-06-01",
+    "projectedCompletion": "2026-12-20",
+    "scifType": "SCIF + SAPF",
+    "squareFootage": 4100,
+    "contractor": "TBD — RFP Q3 2026",
+    "aE": "AECOM Federal",
+    "ssm": "TBD",
+    "classification": "TS/SCI + SAP",
+    "blockers": [
+      "Emanations specifications require TEMPEST engineer final sign-off before design locks"
+    ],
+    "notes": "Larger footprint than originally scoped. SAPF co-location increases complexity and cost.",
+    "createdAt": "2026-01-22"
+  },
+  {
+    "id": "cs-003",
+    "title": "Secure Space Expansion",
+    "subtitle": "SCIF Renovation · Technical Upgrade",
+    "type": "renovation",
+    "site": "Maryland Warehouse",
+    "siteId": "maryland-warehouse",
+    "location": "Bethesda, MD",
+    "status": "planning",
+    "statusLabel": "Planning",
+    "flag": null,
+    "priority": "low",
+    "budget": {
+      "total": 145000,
+      "spent": 6200,
+      "remaining": 138800,
+      "cfoAuth": "approved",
+      "cfoAuthNote": "CFO authorized 2026-03-01",
+      "breakdown": [
+        { "label": "Assessment & Planning",  "amount": 14000,  "status": "in-progress" },
+        { "label": "Construction Contract",  "amount": 88000,  "status": "upcoming"    },
+        { "label": "Lighting Mitigation",    "amount": 22000,  "status": "upcoming"    },
+        { "label": "Accreditation Support",  "amount": 12000,  "status": "upcoming"    },
+        { "label": "Contingency (6%)",       "amount": 9000,   "status": "reserved"    }
+      ]
+    },
+    "phases": [
+      { "name": "Planning",      "status": "in-progress",  "targetDate": "2026-06-15", "completedDate": null,         "note": "Legacy lighting survey and mitigation plan in progress." },
+      { "name": "Construction",  "status": "upcoming",     "targetDate": "2026-08-01", "completedDate": null,         "note": "Structural modifications + new access control." },
+      { "name": "Tech Controls", "status": "upcoming",     "targetDate": "2026-09-15", "completedDate": null,         "note": "IDS upgrade and perimeter reinforcement." },
+      { "name": "Accreditation", "status": "upcoming",     "targetDate": "2026-10-10", "completedDate": null,         "note": "Re-accreditation of expanded footprint." }
+    ],
+    "idealTimeline": "4–5 months",
+    "kickoffDate": "2026-06-15",
+    "projectedCompletion": "2026-10-10",
+    "scifType": "SCIF Renovation",
+    "squareFootage": 1800,
+    "contractor": "TBD",
+    "aE": "Internal PM",
+    "ssm": "M. Patterson",
+    "classification": "SECRET",
+    "blockers": [
+      "Legacy fluorescent lighting mitigation must complete before construction begins — vendor sourcing in progress"
+    ],
+    "notes": "Renovation of existing cleared space. Primary driver is legacy lighting non-compliance with ICD 705 standards.",
+    "createdAt": "2026-02-14"
+  }
+]

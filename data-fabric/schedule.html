@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Schedule | Data Fabric</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <header id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="photos/logo.png" alt="CIMARC" id="logo-img" />
+      </div>
+
+      <nav class="nav-links" id="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="schedule.html" class="active">Schedule</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </nav>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <div class="section-tag">TIMELINE</div>
+      <h1>Schedule</h1>
+      <div class="section-rule"></div>
+      <p>CIM-ARC is organized into four main phases (0–3) plus a follow-on sustainment phase, spanning 27 tasks across five phases with key milestones throughout the timeline.</p>
+    </div>
+  </section>
+
+  <!-- SCHEDULE CONTENT -->
+  <section class="section" id="schedule">
+    <div class="section-container">
+
+      <!-- Timeline bar -->
+      <h3 class="sub-heading">Program Timeline</h3>
+      <div class="timeline-bar-wrap" id="timeline-bar">
+        <p style="color:rgba(255,255,255,0.4);">Loading...</p>
+      </div>
+
+      <!-- Phase framework cards -->
+      <h3 class="sub-heading">Phase Framework</h3>
+      <div class="phase-grid" id="phase-grid">
+        <p style="color:rgba(255,255,255,0.4);">Loading...</p>
+      </div>
+
+      <!-- Key Milestones -->
+      <div class="milestones-block">
+        <h3 class="sub-heading milestones-heading">Key Project Milestones</h3>
+        <div class="milestones-grid" id="milestones-grid">
+          <p style="color:rgba(255,255,255,0.4);">Loading...</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-logo">
+        <img src="photos/logo.png" alt="CIMARC" class="footer-logo-img" />
+        <span>CIMARC</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </div>
+      <div class="footer-badge">UNCLASSIFIED // MTSI PROPRIETARY</div>
+    </div>
+  </footer>
+
+  <script src="scripts.js"></script>
+  <script>
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    var circledNums = ['','&#9312;','&#9313;','&#9314;','&#9315;','&#9316;','&#9317;'];
+    var phaseTrackClasses = { p0:'tp-p0', p1:'tp-p1', p2:'tp-p2', p3:'tp-p3', fo:'tp-fo' };
+
+    fetch('data/schedule.json')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+
+        // Timeline bar
+        var labels = data.timeline.labels;
+        var tl = document.getElementById('timeline-bar');
+        tl.innerHTML =
+          '<div class="timeline-label-row">' +
+            labels.map(function(l) { return '<span>' + esc(l) + '</span>'; }).join('') +
+          '</div>' +
+          '<div class="timeline-track">' +
+            data.phases.map(function(p) {
+              return '<div class="timeline-phase ' + phaseTrackClasses[p.id] + '">' + esc(p.label) + (p.isFollowOn ? ' 2.0' : '') + '</div>';
+            }).join('') +
+          '</div>' +
+          '<div class="timeline-dot-row">' +
+            labels.map(function(l) {
+              return '<span class="tdot"><span class="tdot-circle"></span><span class="tdot-label">' + esc(l) + '</span></span>';
+            }).join('') +
+          '</div>';
+
+        // Phase cards
+        var pg = document.getElementById('phase-grid');
+        pg.innerHTML = data.phases.map(function(p) {
+          return '<div class="phase-card' + (p.isFollowOn ? ' phase-card-fo' : '') + '">' +
+            '<div class="phase-badge ' + p.badgeClass + '">' + esc(p.label) + '</div>' +
+            '<h4>' + esc(p.title) + '</h4>' +
+            '<div class="phase-dates">' + esc(p.dates) + '</div>' +
+            '<div class="phase-tasks">' + p.taskCount + ' tasks</div>' +
+            '<ul class="trio-list" style="margin-top:1rem;">' +
+              p.tasks.map(function(t) { return '<li>' + esc(t) + '</li>'; }).join('') +
+            '</ul>' +
+          '</div>';
+        }).join('');
+
+        // Milestones
+        var mg = document.getElementById('milestones-grid');
+        mg.innerHTML = data.milestones.map(function(m) {
+          return '<div class="milestone-item">' +
+            '<div class="milestone-num">' + (circledNums[m.number] || m.number) + '</div>' +
+            '<div class="milestone-info">' +
+              '<div class="milestone-name">' + esc(m.name) + '</div>' +
+              '<div class="milestone-date">' + esc(m.date) + '</div>' +
+              '<p class="milestone-detail">' + esc(m.detail) + '</p>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function() {
+        document.getElementById('phase-grid').innerHTML = '<p style="color:#e05c5c;">Failed to load schedule.</p>';
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,443 @@
+{
+  "kpis": {
+    "statusCards": [
+      {
+        "label": "SCHEDULE",
+        "statusClass": "on-track",
+        "statusText": "ON TRACK",
+        "description": "Current milestone delivery is within planned dates. Next gate review: APR 2026."
+      },
+      {
+        "label": "COST",
+        "statusClass": "on-track",
+        "statusText": "ON TRACK",
+        "description": "Execution within allocated budget. No variances exceeding threshold."
+      },
+      {
+        "label": "PERFORMANCE",
+        "statusClass": "caution",
+        "statusText": "WATCH",
+        "description": "Two integration points under review. Risk mitigation plans in place."
+      },
+      {
+        "label": "RISK",
+        "statusClass": "on-track",
+        "statusText": "LOW",
+        "description": "No critical risks currently open. Three medium risks actively managed."
+      }
+    ],
+    "budgetPerformance": [
+      "Budget at Completion (BAC): Within contract ceiling",
+      "Actual Cost (AC): Tracking within 2% of planned spend",
+      "Cost Variance (CV): Favorable — no overruns identified",
+      "Cost Performance Index (CPI): 1.02 — slightly under budget"
+    ],
+    "schedulePerformance": [
+      "Schedule Variance (SV): Neutral — on schedule",
+      "Schedule Performance Index (SPI): 1.00",
+      "Milestones Met: MVP-1 on track for Mar 21, 2026",
+      "Next Review Gate: April 2026 Phase 1 kickoff"
+    ],
+    "technicalPerformance": [
+      "Tasks Complete: 4 of 7 Phase 0 tasks closed",
+      "Open Action Items: 6 tracked, 2 past due (in review)",
+      "Data Sources Connected: 3 of 6 priority sources",
+      "System Uptime: 99.4% on LAVA infrastructure"
+    ]
+  },
+  "executiveSummary": {
+    "paragraphs": [
+      "The CIM-ARC Data Fabric program continues to make steady progress through Phase 0. The team successfully delivered the MVP-1 demonstration on March 21, 2026, showcasing the core data ingestion pipeline, LAVA infrastructure integration, and the initial set of connected data sources. Stakeholder feedback was positive, with priority guidance received for Phase 1 scope prioritization.",
+      "Cost and schedule performance indices remain favorable (CPI: 1.02, SPI: 1.00). Three medium-level risks are being actively managed, with no critical risks open. The primary watch item is schema variability across source systems, which the engineering team is addressing through a Pydantic-based validation layer.",
+      "Phase 1 planning is underway. The program is on track for a formal Phase 1 kickoff in April 2026, contingent on network switch procurement and LAVA security accreditation package submission."
+    ],
+    "statusCards": [
+      {
+        "label": "CURRENT PHASE",
+        "statusClass": "on-track",
+        "statusText": "PHASE 0",
+        "description": "Foundation & MVP-1 delivery. Closing remaining Phase 0 action items."
+      },
+      {
+        "label": "NEXT MILESTONE",
+        "statusClass": "caution",
+        "statusText": "APR 2026",
+        "description": "Phase 1 kickoff gate review and resource onboarding for expanded data integration."
+      },
+      {
+        "label": "OVERALL STATUS",
+        "statusClass": "on-track",
+        "statusText": "GREEN",
+        "description": "Program health is green. No issues requiring escalation at this time."
+      }
+    ]
+  },
+  "resourceAllocation": {
+    "resources": [
+      {
+        "name": "Steve Kang",
+        "role": "Project Manager — Systems Engineer Sr. Principal",
+        "allocationPct": 100,
+        "description": "program oversight & stakeholder management",
+        "active": true
+      },
+      {
+        "name": "Jamie Turner",
+        "role": "PM Support — Project Analyst Principal",
+        "allocationPct": 100,
+        "description": "scheduling, reporting & coordination",
+        "active": true
+      },
+      {
+        "name": "Nick Hertzberg",
+        "role": "ISSM — Cybersecurity Engineer Principal",
+        "allocationPct": 10,
+        "description": "ISSM authority & accreditation oversight",
+        "active": true
+      },
+      {
+        "name": "Chris Cooper",
+        "role": "LAVA Cyber Team — Systems Administrator Principal",
+        "allocationPct": 25,
+        "description": "LAVA infrastructure administration",
+        "active": true
+      },
+      {
+        "name": "Justin Felver",
+        "role": "DevSecOps Team — Software Developer",
+        "allocationPct": 50,
+        "description": "pipeline development & automation",
+        "active": true
+      },
+      {
+        "name": "Chris Macabugao",
+        "role": "ISSM (Incoming, EOY 2026) — ISSM Principal",
+        "allocationPct": 0,
+        "description": "transitioning to ISSM role from Nick Hertzberg, end of 2026",
+        "active": false
+      },
+      {
+        "name": "Alexander Matthews",
+        "role": "Ecosystem Architect — Cloud Systems Architect",
+        "allocationPct": 0,
+        "description": "TBD — pending allocation",
+        "active": false
+      },
+      {
+        "name": "Pinkesh Patel",
+        "role": "LAVA Cyber Team — Cloud Architect Senior",
+        "allocationPct": 0,
+        "description": "TBD — pending allocation",
+        "active": false
+      },
+      {
+        "name": "Syedali Shah",
+        "role": "LAVA Cyber Team — ISSO Senior",
+        "allocationPct": 0,
+        "description": "TBD — pending allocation",
+        "active": false
+      },
+      {
+        "name": "Carter Stanton",
+        "role": "DevSecOps Team — Software Developer Senior",
+        "allocationPct": 0,
+        "description": "TBD — pending allocation",
+        "active": false
+      },
+      {
+        "name": "Elad Dermer",
+        "role": "Digital Engineering Team — MBSE Engineer",
+        "allocationPct": 0,
+        "description": "TBD — pending allocation",
+        "active": false
+      },
+      {
+        "name": "Brandon Frisco",
+        "role": "Data Architect Team — Data Engineer Principal",
+        "allocationPct": 0,
+        "description": "TBD — pending allocation",
+        "active": false
+      },
+      {
+        "name": "TBD — Network Engineer Senior",
+        "role": "LAVA Cyber Team",
+        "allocationPct": 0,
+        "description": "TBD — position unfilled",
+        "active": false
+      },
+      {
+        "name": "TBD — DevSecOps Engineer Senior",
+        "role": "DevSecOps Team",
+        "allocationPct": 0,
+        "description": "TBD — position unfilled",
+        "active": false
+      }
+    ],
+    "notes": "Nick Hertzberg currently serves as ISSM at 10% allocation. Chris Macabugao is onboarding and will assume the ISSM role from Nick at the end of 2026. Remaining team members have allocations pending Phase 1 scope confirmation and contract modification approval."
+  },
+  "spendPlan": {
+    "items": [
+      {
+        "workPackage": "Labor — Engineering",
+        "planned": 120,
+        "actual": 118,
+        "variance": 2,
+        "pctSpent": 98,
+        "trendBadge": "badge-green",
+        "trendText": "On Track"
+      },
+      {
+        "workPackage": "Labor — Management",
+        "planned": 40,
+        "actual": 39,
+        "variance": 1,
+        "pctSpent": 97,
+        "trendBadge": "badge-green",
+        "trendText": "On Track"
+      },
+      {
+        "workPackage": "Infrastructure — LAVA",
+        "planned": 55,
+        "actual": 54,
+        "variance": 1,
+        "pctSpent": 98,
+        "trendBadge": "badge-green",
+        "trendText": "On Track"
+      },
+      {
+        "workPackage": "Hardware — Network Switches",
+        "planned": 18,
+        "actual": 16,
+        "variance": 2,
+        "pctSpent": 89,
+        "trendBadge": "badge-gold",
+        "trendText": "Watch"
+      },
+      {
+        "workPackage": "Software Licenses",
+        "planned": 12,
+        "actual": 12,
+        "variance": 0,
+        "pctSpent": 100,
+        "trendBadge": "badge-green",
+        "trendText": "On Track"
+      },
+      {
+        "workPackage": "Travel & Other Direct",
+        "planned": 8,
+        "actual": 6,
+        "variance": 2,
+        "pctSpent": 75,
+        "trendBadge": "badge-green",
+        "trendText": "On Track"
+      }
+    ],
+    "total": {
+      "planned": 253,
+      "actual": 245,
+      "variance": 8,
+      "pctSpent": 97,
+      "trendBadge": "badge-green",
+      "trendText": "Favorable"
+    },
+    "note": "Values are notional and reflect Phase 0 period of performance. Updated as of March 2026."
+  },
+  "technicalAccomplishments": [
+    {
+      "title": "MVP-1 Delivered (Mar 21, 2026)",
+      "description": "End-to-end data ingestion pipeline demonstrated live to stakeholders, including real-time query and visualization on LAVA infrastructure."
+    },
+    {
+      "title": "LAVA Infrastructure Integration",
+      "description": "Data Fabric environment successfully deployed on LAVA. System uptime maintained at 99.4% over Phase 0 period of performance."
+    },
+    {
+      "title": "3 of 6 Priority Data Sources Connected",
+      "description": "Connectors built and validated for three priority data sources. Schema normalization and transformation logic operational."
+    },
+    {
+      "title": "Pydantic Schema Validation Layer (Design Complete)",
+      "description": "Architecture finalized for absorbing schema variability across heterogeneous data sources in Phase 1."
+    },
+    {
+      "title": "Security Architecture Reviewed",
+      "description": "Initial security architecture documented; LAVA accreditation package in preparation for submission by Apr 4, 2026."
+    },
+    {
+      "title": "Data Catalog Prototype",
+      "description": "Initial metadata catalog structure defined, enabling discoverability of ingested datasets across connected sources."
+    }
+  ],
+  "dependencies": [
+    {
+      "dependency": "Network Switch Procurement",
+      "type": "Hardware",
+      "owner": "Logistics / Vendor",
+      "requiredBy": "Phase 1 Kickoff — Apr 2026",
+      "badgeClass": "badge-gold",
+      "statusText": "In Progress"
+    },
+    {
+      "dependency": "LAVA Security Accreditation (ATO)",
+      "type": "Compliance",
+      "owner": "Chris Macabugao / ISSO",
+      "requiredBy": "Apr 4, 2026",
+      "badgeClass": "badge-gold",
+      "statusText": "In Progress"
+    },
+    {
+      "dependency": "Classified Facility Access — 2 Personnel",
+      "type": "Access / Personnel",
+      "owner": "Security Officer",
+      "requiredBy": "Phase 1 operations",
+      "badgeClass": "badge-gold",
+      "statusText": "Watch"
+    },
+    {
+      "dependency": "Data Source API Documentation (Sources 4–6)",
+      "type": "Data / External",
+      "owner": "Source System Owners",
+      "requiredBy": "Mar 28, 2026",
+      "badgeClass": "badge-gold",
+      "statusText": "In Progress"
+    },
+    {
+      "dependency": "Contract Mod — Phase 1 Labor Ceiling",
+      "type": "Contractual",
+      "owner": "Contracting Officer",
+      "requiredBy": "Prior to Phase 1 Kickoff",
+      "badgeClass": "badge-gold",
+      "statusText": "In Progress"
+    },
+    {
+      "dependency": "Phase 1 Personnel Onboarding (2 Hires)",
+      "type": "Personnel",
+      "owner": "HR / Program Lead",
+      "requiredBy": "Apr–May 2026",
+      "badgeClass": "badge-gray",
+      "statusText": "Planned"
+    }
+  ],
+  "issues": {
+    "risks": [
+      {
+        "severity": "MED",
+        "title": "Network Switch Procurement Lead Time",
+        "likelihood": "Medium",
+        "impact": "Schedule — Phase 1 start delay of up to 2 weeks",
+        "mitigation": "Alternative vendor sourced; order placed with expedited shipping. Monitoring weekly.",
+        "statusClass": "caution",
+        "statusText": "WATCH"
+      },
+      {
+        "severity": "MED",
+        "title": "Classified Facility Access Scheduling",
+        "likelihood": "Low",
+        "impact": "Resource availability for two team members pending clearance",
+        "mitigation": "Interim unclassified work assignments identified. Clearance actions actively tracked.",
+        "statusClass": "caution",
+        "statusText": "WATCH"
+      },
+      {
+        "severity": "MED",
+        "title": "Data Source Schema Variability",
+        "likelihood": "Medium",
+        "impact": "Additional engineering effort for normalization in Phase 1",
+        "mitigation": "Pydantic-based schema validation layer being designed to absorb variability. Engineering reserve identified.",
+        "statusClass": "caution",
+        "statusText": "WATCH"
+      }
+    ],
+    "actionItems": [
+      {
+        "id": "AI-001",
+        "title": "Finalize data source connector specifications for Phase 1",
+        "owner": "Brandon Frisco",
+        "due": "Mar 28, 2026",
+        "statusText": "In Progress",
+        "badgeClass": "on-track",
+        "badgeText": "OPEN"
+      },
+      {
+        "id": "AI-002",
+        "title": "Complete LAVA security accreditation package submission",
+        "owner": "Chris Macabugao",
+        "due": "Apr 4, 2026",
+        "statusText": "In Progress",
+        "badgeClass": "on-track",
+        "badgeText": "OPEN"
+      },
+      {
+        "id": "AI-003",
+        "title": "MVP-1 demonstration script and stakeholder invitations",
+        "owner": "Jamie Turner",
+        "due": "Mar 19, 2026",
+        "statusText": "Complete",
+        "badgeClass": "on-track",
+        "badgeText": "DONE"
+      },
+      {
+        "id": "AI-004",
+        "title": "Submit contract modification for Phase 1 labor ceiling increase",
+        "owner": "Chris Macabugao",
+        "due": "Apr 1, 2026",
+        "statusText": "In Progress",
+        "badgeClass": "on-track",
+        "badgeText": "OPEN"
+      },
+      {
+        "id": "AI-005",
+        "title": "Initiate Phase 1 hiring actions for ML and DevSecOps roles",
+        "owner": "Jamie Turner",
+        "due": "Apr 10, 2026",
+        "statusText": "Not Started",
+        "badgeClass": "caution",
+        "badgeText": "PENDING"
+      }
+    ]
+  },
+  "planForward": [
+    {
+      "date": "Mar 28, 2026",
+      "title": "Phase 0 Close-Out — Action Item Resolution",
+      "description": "All open Phase 0 action items targeted for closure. Connector specifications finalized. Phase 0 lessons learned documented and briefed to leadership.",
+      "upcoming": false
+    },
+    {
+      "date": "Apr 4, 2026",
+      "title": "LAVA Security Accreditation Package Submission",
+      "description": "Complete and submit the LAVA ATO package to the ISSO. This is a critical dependency for Phase 1 operational use of the secure enclave environment.",
+      "upcoming": false
+    },
+    {
+      "date": "Apr 2026",
+      "title": "Phase 1 Gate Review & Kickoff",
+      "description": "Formal review of Phase 1 readiness: contract mod, personnel onboarding, infrastructure availability, and data source roadmap. Contingent on network switch delivery and accreditation actions.",
+      "upcoming": false
+    },
+    {
+      "date": "Apr–May 2026",
+      "title": "Phase 1 Personnel Onboarding",
+      "description": "ML/Analytics Engineer and DevSecOps Engineer onboarded. Orientation, access provisioning, and integration into active workstreams.",
+      "upcoming": true
+    },
+    {
+      "date": "May 2026",
+      "title": "Data Sources 4–6 Integration",
+      "description": "Expand pipeline to remaining three priority data sources. Pydantic validation layer deployed. Full data catalog operational across all six sources.",
+      "upcoming": true
+    },
+    {
+      "date": "Jun 2026",
+      "title": "Analytics Layer & Dashboard MVP",
+      "description": "First analytical dashboards surfacing cross-domain insights delivered to end users. Initial ML model pipeline stood up for anomaly detection use case.",
+      "upcoming": true
+    },
+    {
+      "date": "Q3 2026",
+      "title": "Phase 1 Review & Phase 2 Planning",
+      "description": "Phase 1 performance review against KPIs. Scope definition and resource planning for Phase 2 expansion to additional data domains and stakeholder communities.",
+      "upcoming": true
+    }
+  ]
+}

@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS variable palettes ─────────────────────────────────────────────────── */
+/* Values are space-separated R G B channels for Tailwind opacity modifier support */
+
+:root {
+  /* Light mode — DoD official: clean white + deep navy + gold */
+  --scorva-bg:           238 244 252;   /* #eef4fc — very light blue-gray */
+  --scorva-surface:      255 255 255;   /* #ffffff */
+  --scorva-card:         255 255 255;   /* #ffffff */
+  --scorva-border:       198 218 238;   /* #c6daee */
+  --scorva-hover:        224 237 252;   /* #e0edfc */
+  --scorva-accent:       10  63  107;   /* #0a3f6b — deep DoD navy */
+  --scorva-accent-light: 13  98  160;   /* #0d62a0 */
+  --scorva-accent-dark:  6   42  75;    /* #062a4b */
+  --scorva-cyan:         0   119 170;   /* #0077aa */
+  --scorva-gold:         185 120 8;     /* #b97808 */
+  --scorva-text:         10  22  45;    /* #0a162d — near-black navy */
+  --scorva-muted:        82  110 148;   /* #526e94 */
+}
+
+.dark {
+  /* Dark mode — Cybersecurity terminal: deep navy + cyber teal + DoD gold */
+  --scorva-bg:           6   11  25;    /* #060b19 */
+  --scorva-surface:      10  20  42;    /* #0a1428 */
+  --scorva-card:         14  26  54;    /* #0e1a36 */
+  --scorva-border:       26  46  88;    /* #1a2e58 */
+  --scorva-hover:        22  38  70;    /* #162646 */
+  --scorva-accent:       0   212 170;   /* #00d4aa — cyber teal */
+  --scorva-accent-light: 40  230 196;   /* #28e6c4 */
+  --scorva-accent-dark:  0   168 134;   /* #00a886 */
+  --scorva-cyan:         0   196 230;   /* #00c4e6 */
+  --scorva-gold:         245 168 32;    /* #f5a820 — DoD gold */
+  --scorva-text:         218 232 248;   /* #dae8f8 */
+  --scorva-muted:        72  100 140;   /* #48648c */
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-scorva-bg text-scorva-text;
+    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-scorva-surface; }
+  ::-webkit-scrollbar-thumb { @apply bg-scorva-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-scorva-muted; }
+}
+
+/* ── Component classes ─────────────────────────────────────────────────────── */
+@layer components {
+  .input-base {
+    @apply w-full bg-scorva-bg border border-scorva-border rounded-lg px-3 py-2 text-sm text-scorva-text placeholder-scorva-muted focus:outline-none focus:ring-1 focus:ring-scorva-accent focus:border-scorva-accent transition-colors;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-scorva-accent hover:bg-scorva-accent-dark text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* In light mode btn-primary text needs to stay white over dark navy bg */
+  .dark .btn-primary {
+    @apply text-scorva-bg;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-scorva-card border border-scorva-border hover:bg-scorva-hover text-scorva-text text-sm font-medium transition-colors;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors;
+  }
+
+  .card {
+    @apply bg-scorva-card border border-scorva-border rounded-xl;
+  }
+
+  /* Classification banner stripe */
+  .classify-banner {
+    @apply flex items-center justify-center gap-3 py-1 text-xs font-mono font-semibold tracking-widest uppercase select-none;
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(var(--scorva-accent) / 0.15) 0px,
+      rgb(var(--scorva-accent) / 0.15) 2px,
+      transparent 2px,
+      transparent 12px
+    );
+  }
+
+  /* Cyber grid background */
+  .cyber-grid {
+    background-image:
+      linear-gradient(rgb(var(--scorva-accent) / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--scorva-accent) / 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* Severity badge variants */
+  .sev-critical { @apply bg-red-500/15 text-red-400 border border-red-500/30; }
+  .sev-high     { @apply bg-orange-500/15 text-orange-400 border border-orange-500/30; }
+  .sev-medium   { @apply bg-yellow-500/15 text-yellow-400 border border-yellow-500/30; }
+  .sev-low      { @apply bg-blue-500/15 text-blue-400 border border-blue-500/30; }
+  .sev-none     { @apply bg-scorva-muted/15 text-scorva-muted border border-scorva-muted/30; }
+}

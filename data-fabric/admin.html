@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin | CIM-ARC</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #d4af37;
+      --dark: #0a0f1e;
+      --card: rgba(255,255,255,0.04);
+      --border: rgba(255,255,255,0.09);
+      --text: rgba(255,255,255,0.82);
+      --muted: rgba(255,255,255,0.4);
+      --green: #4ade80;
+      --red: #e05c5c;
+      --input-bg: rgba(255,255,255,0.06);
+    }
+
+    body {
+      background: var(--dark);
+      color: #fff;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-size: 0.9rem;
+      min-height: 100vh;
+    }
+
+    /* ── Login ─────────────────────────────────────────── */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: radial-gradient(ellipse at 50% 40%, rgba(212,175,55,0.07) 0%, transparent 70%);
+    }
+
+    .login-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 2.5rem 2.5rem 2rem;
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .login-card h2 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.3rem;
+    }
+
+    .login-card .login-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+    }
+
+    .login-card label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.4rem;
+    }
+
+    .login-card input {
+      display: block;
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: #fff;
+      font-size: 0.9rem;
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .login-card input:focus { border-color: var(--gold); }
+
+    .btn-primary {
+      display: block;
+      width: 100%;
+      background: var(--gold);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 7px;
+      padding: 0.75rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #login-error {
+      min-height: 1.4rem;
+      font-size: 0.8rem;
+      color: var(--red);
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+
+    /* ── Admin panel ───────────────────────────────────── */
+    #admin-panel { display: none; min-height: 100vh; }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.75rem;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .admin-header h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
+    .admin-header h1 span {
+      color: var(--gold);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 6px;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .btn-ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+    /* ── Tabs ─────────────────────────────────────────── */
+    .tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 1.75rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0.9rem 1.2rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .tab-btn:hover { color: rgba(255,255,255,0.7); }
+    .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+    /* ── Tab Content ─────────────────────────────────── */
+    #tab-content {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 2rem 1.75rem 4rem;
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── Section headings ─────────────────────────────── */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-head h2 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    /* ── Cards ────────────────────────────────────────── */
+    .admin-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.85rem 1.1rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+
+    .card-header:hover { background: rgba(255,255,255,0.03); }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .card-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 0.15rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .btn-icon {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 5px;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-icon:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+    .btn-icon.danger:hover { color: var(--red); border-color: var(--red); }
+    .btn-icon.gold { color: var(--gold); border-color: var(--gold); }
+
+    .card-body {
+      display: none;
+      padding: 1.1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .card-body.open { display: block; }
+
+    /* ── Form fields ─────────────────────────────────── */
+    .field-group {
+      margin-bottom: 1rem;
+    }
+
+    .field-group label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.35rem;
+    }
+
+    .field-group input,
+    .field-group textarea,
+    .field-group select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: #fff;
+      font-size: 0.88rem;
+      padding: 0.6rem 0.85rem;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .field-group input:focus,
+    .field-group textarea:focus,
+    .field-group select:focus { border-color: var(--gold); }
+
+    .field-group textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 600px) { .field-row { grid-template-columns: 1fr; } }
+
+    .field-row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    @media (max-width: 700px) { .field-row-3 { grid-template-columns: 1fr; } }
+
+    /* ── Save bar ─────────────────────────────────────── */
+    .save-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-save {
+      background: var(--gold);
+      color: #000;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border: none;
+      border-radius: 6px;
+      padding: 0.55rem 1.3rem;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-save:hover { opacity: 0.85; }
+    .btn-save:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .save-msg {
+      font-size: 0.8rem;
+      min-height: 1.2rem;
+    }
+
+    .save-msg.ok { color: var(--green); }
+    .save-msg.err { color: var(--red); }
+
+    /* ── Add-new form ─────────────────────────────────── */
+    .add-form {
+      background: rgba(212,175,55,0.04);
+      border: 1px dashed rgba(212,175,55,0.3);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      display: none;
+    }
+
+    .add-form.open { display: block; }
+    .add-form h3 { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+
+    /* ── Sub-section ──────────────────────────────────── */
+    .sub-section {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .sub-section h3 {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.9rem;
+    }
+
+    /* ── Hint text ─────────────────────────────────────── */
+    .hint {
+      font-size: 0.73rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
+    }
+
+    /* ── Loading / toast ──────────────────────────────── */
+    .loading-msg {
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 2rem 0;
+    }
+
+    .chip {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: rgba(74,222,128,0.12);
+      color: var(--green);
+    }
+
+    .chip.inactive {
+      background: rgba(255,255,255,0.07);
+      color: var(--muted);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1rem;
+    }
+
+    .toggle-row label {
+      font-size: 0.78rem;
+      color: var(--text);
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      width: 1rem;
+      height: 1rem;
+      accent-color: var(--gold);
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── LOGIN ──────────────────────────────────────────────────── -->
+  <div id="login-screen">
+    <div class="login-card">
+      <h2>CIM-ARC</h2>
+      <div class="login-sub">Content Administration</div>
+      <label for="un">Username</label>
+      <input type="text" id="un" autocomplete="username" />
+      <label for="pw">Password</label>
+      <input type="password" id="pw" autocomplete="current-password" />
+      <button class="btn-primary" id="login-btn">Sign In</button>
+      <div id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- ── ADMIN PANEL ─────────────────────────────────────────────── -->
+  <div id="admin-panel">
+
+    <header class="admin-header">
+      <h1>CIM-ARC <span>Admin</span></h1>
+      <button class="btn-ghost" id="logout-btn">Logout</button>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="blog">Blog</button>
+      <button class="tab-btn" data-tab="glossary">Glossary</button>
+      <button class="tab-btn" data-tab="schedule">Schedule</button>
+      <button class="tab-btn" data-tab="monthly-reports">Monthly Reports</button>
+      <button class="tab-btn" data-tab="digital-pmr">Digital PMR</button>
+    </div>
+
+    <div id="tab-content">
+      <div class="tab-pane active" id="tab-blog">
+        <p class="loading-msg">Loading...</p>
+      </div>
+      <div class="tab-pane" id="tab-glossary">
+        <p class="loading-msg">Loading...</p>
+      </div>
+      <div class="tab-pane" id="tab-schedule">
+        <p class="loading-msg">Loading...</p>
+      </div>
+      <div class="tab-pane" id="tab-monthly-reports">
+        <p class="loading-msg">Loading...</p>
+      </div>
+      <div class="tab-pane" id="tab-digital-pmr">
+        <p class="loading-msg">Loading...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

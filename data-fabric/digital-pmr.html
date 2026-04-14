@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital PMR | Data Fabric</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    /* PMR Page Layout */
+    .pmr-layout {
+      display: flex;
+      align-items: flex-start;
+      gap: 0;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+    }
+
+    /* Sidebar Navigation */
+    .pmr-sidenav {
+      position: sticky;
+      top: 80px;
+      width: 260px;
+      min-width: 220px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 1.5rem 1.2rem;
+      margin-right: 2rem;
+      flex-shrink: 0;
+    }
+
+    .pmr-sidenav h4 {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin: 0 0 1rem 0;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .pmr-sidenav a {
+      display: block;
+      color: rgba(255,255,255,0.65);
+      font-size: 0.82rem;
+      text-decoration: underline;
+      padding: 0.35rem 0;
+      transition: color 0.2s;
+      line-height: 1.4;
+    }
+
+    .pmr-sidenav a:hover,
+    .pmr-sidenav a.active {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    /* PMR Main Content */
+    .pmr-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pmr-section {
+      margin-bottom: 3.5rem;
+      scroll-margin-top: 100px;
+    }
+
+    /* Spend Plan Table */
+    .spend-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 1rem;
+    }
+
+    .spend-table th {
+      background: rgba(255,255,255,0.07);
+      color: var(--gold);
+      text-align: left;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .spend-table td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.82);
+      vertical-align: middle;
+    }
+
+    .spend-table tr:last-child td { border-bottom: none; }
+
+    .spend-table tr:hover td {
+      background: rgba(255,255,255,0.03);
+    }
+
+    .spend-table .total-row td {
+      font-weight: 700;
+      color: #fff;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.04);
+    }
+
+    .spend-bar-wrap {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      height: 8px;
+      min-width: 80px;
+      overflow: hidden;
+    }
+
+    .spend-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--gold);
+    }
+
+    .spend-bar.over { background: #e05c5c; }
+
+    /* Resource allocation */
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .resource-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 10px;
+      padding: 1.1rem 1.2rem;
+    }
+
+    .resource-name {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+      margin-bottom: 0.2rem;
+    }
+
+    .resource-role {
+      font-size: 0.78rem;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.75rem;
+    }
+
+    .resource-alloc-bar {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      height: 6px;
+      margin-bottom: 0.3rem;
+      overflow: hidden;
+    }
+
+    .resource-alloc-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: var(--gold);
+    }
+
+    .resource-pct {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* Accomplishments */
+    .accomp-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0 0;
+    }
+
+    .accomp-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.7rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.82);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .accomp-list li:last-child { border-bottom: none; }
+
+    .accomp-check {
+      color: #4ade80;
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    /* Dependencies */
+    .dep-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+      margin-top: 1rem;
+    }
+
+    .dep-table th {
+      background: rgba(255,255,255,0.07);
+      color: var(--gold);
+      text-align: left;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+
+    .dep-table td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      color: rgba(255,255,255,0.82);
+      vertical-align: middle;
+    }
+
+    .dep-table tr:last-child td { border-bottom: none; }
+    .dep-table tr:hover td { background: rgba(255,255,255,0.03); }
+
+    /* Plan Forward Timeline */
+    .plan-timeline {
+      position: relative;
+      margin-top: 1.5rem;
+      padding-left: 2rem;
+    }
+
+    .plan-timeline::before {
+      content: '';
+      position: absolute;
+      left: 0.45rem;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(255,255,255,0.12);
+    }
+
+    .plan-item {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .plan-item::before {
+      content: '';
+      position: absolute;
+      left: -1.65rem;
+      top: 0.35rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--gold);
+      border: 2px solid #0a0f1e;
+    }
+
+    .plan-item.upcoming::before {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .plan-date {
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.2rem;
+    }
+
+    .plan-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.25rem;
+    }
+
+    .plan-desc {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.5;
+    }
+
+    /* Status badge inline */
+    .badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+      vertical-align: middle;
+    }
+
+    .badge-green { background: rgba(74,222,128,0.15); color: #4ade80; }
+    .badge-gold  { background: rgba(212,175,55,0.15);  color: var(--gold); }
+    .badge-red   { background: rgba(224,92,92,0.15);   color: #e05c5c; }
+    .badge-gray  { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.6); }
+
+    @media (max-width: 900px) {
+      .pmr-layout { flex-direction: column; padding: 1rem; }
+      .pmr-sidenav { position: static; width: 100%; min-width: unset; margin-right: 0; margin-bottom: 1.5rem; }
+      .resource-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .resource-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="photos/logo.png" alt="CIMARC" id="logo-img" />
+      </div>
+
+      <nav class="nav-links" id="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html" class="active">Digital PMR</a>
+      </nav>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <div class="section-tag">PROGRAM MANAGEMENT</div>
+      <h1>Digital PMR</h1>
+      <div class="section-rule"></div>
+      <p>Program Management Review — a real-time view of cost, performance, resources, and risk health across CIM-ARC.</p>
+    </div>
+  </section>
+
+  <!-- DIGITAL PMR CONTENT -->
+  <section class="section section-dark" id="digital-pmr">
+    <div class="pmr-layout">
+
+      <!-- SIDEBAR NAV -->
+      <aside class="pmr-sidenav" id="pmr-sidenav">
+        <h4>Report Navigation</h4>
+        <a href="#kpis">Project Key Performance Indicators (KPIs)</a>
+        <a href="#executive-summary">Executive Summary</a>
+        <a href="#resource-allocation">Resource Allocation Status</a>
+        <a href="#spend-plan">Spend Plan Tracker</a>
+        <a href="#technical-accomplishments">Technical Accomplishments</a>
+        <a href="#dependencies">Project Dependencies</a>
+        <a href="#issues">Issues and Resolutions</a>
+        <a href="#plan-forward">The Plan Forward</a>
+      </aside>
+
+      <!-- MAIN CONTENT -->
+      <main class="pmr-main" id="pmr-main">
+        <p style="color:rgba(255,255,255,0.4); padding:2rem 0;">Loading...</p>
+      </main>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-logo">
+        <img src="photos/logo.png" alt="CIMARC" class="footer-logo-img" />
+        <span>CIMARC</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </div>
+      <div class="footer-badge">UNCLASSIFIED // MTSI PROPRIETARY</div>
+    </div>
+  </footer>
+
+  <script src="scripts.js"></script>
+  <script>
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function statusCards(cards, style) {
+      return '<div class="pmr-grid"' + (style ? ' style="' + style + '"' : '') + '>' +
+        cards.map(function(c) {
+          return '<div class="pmr-card">' +
+            '<div class="pmr-label">' + esc(c.label) + '</div>' +
+            '<div class="pmr-status ' + esc(c.statusClass) + '">' + esc(c.statusText) + '</div>' +
+            '<p>' + esc(c.description) + '</p>' +
+          '</div>';
+        }).join('') +
+      '</div>';
+    }
+    function listItems(arr) {
+      return arr.map(function(item) {
+        var colon = item.indexOf(':');
+        if (colon !== -1) {
+          return '<li><strong>' + esc(item.slice(0, colon)) + ':</strong> ' + esc(item.slice(colon + 1).trim()) + '</li>';
+        }
+        return '<li>' + esc(item) + '</li>';
+      }).join('');
+    }
+
+    fetch('data/digital-pmr.json')
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var kpis = d.kpis;
+        var exec = d.executiveSummary;
+        var res = d.resourceAllocation;
+        var spend = d.spendPlan;
+        var acc = d.technicalAccomplishments;
+        var deps = d.dependencies;
+        var issues = d.issues;
+        var plan = d.planForward;
+
+        var html = '';
+
+        // 1. KPIs
+        html += '<div class="pmr-section" id="kpis">' +
+          '<h3 class="sub-heading">Project Key Performance Indicators (KPIs)</h3>' +
+          statusCards(kpis.statusCards) +
+          '<div class="trio-grid" style="margin-top:1.5rem;">' +
+            '<div class="trio-card"><div class="trio-header"><span class="trio-icon">&#128200;</span><h3>Budget Performance</h3></div>' +
+            '<ul class="trio-list">' + listItems(kpis.budgetPerformance) + '</ul></div>' +
+            '<div class="trio-card trio-card-gold"><div class="trio-header"><span class="trio-icon">&#9201;</span><h3>Schedule Performance</h3></div>' +
+            '<ul class="trio-list">' + listItems(kpis.schedulePerformance) + '</ul></div>' +
+            '<div class="trio-card"><div class="trio-header"><span class="trio-icon">&#128203;</span><h3>Technical Performance</h3></div>' +
+            '<ul class="trio-list">' + listItems(kpis.technicalPerformance) + '</ul></div>' +
+          '</div>' +
+        '</div>';
+
+        // 2. Executive Summary
+        html += '<div class="pmr-section" id="executive-summary">' +
+          '<h3 class="sub-heading">Executive Summary</h3>' +
+          '<div class="trio-card" style="margin-bottom:1rem;">' +
+            exec.paragraphs.map(function(p, i) {
+              var m = i < exec.paragraphs.length - 1 ? '0 0 0.75rem 0' : '0';
+              return '<p style="color:rgba(255,255,255,0.82);line-height:1.7;margin:' + m + ';">' + esc(p) + '</p>';
+            }).join('') +
+          '</div>' +
+          statusCards(exec.statusCards, 'grid-template-columns:repeat(3,1fr);') +
+        '</div>';
+
+        // 3. Resource Allocation
+        var activeRes = res.resources.filter(function(r) { return r.active; });
+        html += '<div class="pmr-section" id="resource-allocation">' +
+          '<h3 class="sub-heading">Resource Allocation Status</h3>' +
+          '<div class="resource-grid">' +
+            activeRes.map(function(r) {
+              return '<div class="resource-card">' +
+                '<div class="resource-name">' + esc(r.name) + '</div>' +
+                '<div class="resource-role">' + esc(r.role) + '</div>' +
+                '<div class="resource-alloc-bar"><div class="resource-alloc-fill" style="width:' + r.allocationPct + '%;"></div></div>' +
+                '<div class="resource-pct">' + r.allocationPct + '% allocated &mdash; ' + esc(r.description) + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+          '<div class="report-item" style="margin-top:1.5rem;background:rgba(255,255,255,0.03);">' +
+            '<div class="report-info"><h3 style="font-size:0.9rem;margin-bottom:0.3rem;">Resource Notes</h3>' +
+            '<p>' + esc(res.notes) + '</p></div>' +
+          '</div>' +
+        '</div>';
+
+        // 4. Spend Plan
+        html += '<div class="pmr-section" id="spend-plan">' +
+          '<h3 class="sub-heading">Spend Plan Tracker</h3>' +
+          '<table class="spend-table"><thead><tr>' +
+            '<th>Work Package</th><th>Planned ($K)</th><th>Actual ($K)</th><th>Variance ($K)</th><th>% Spent</th><th>Trend</th>' +
+          '</tr></thead><tbody>' +
+            spend.items.map(function(item) {
+              var varColor = item.variance > 0 ? '#4ade80' : (item.variance < 0 ? '#e05c5c' : '');
+              var varStr = item.variance > 0 ? '+' + item.variance : String(item.variance);
+              return '<tr>' +
+                '<td>' + esc(item.workPackage) + '</td>' +
+                '<td>' + item.planned + '</td>' +
+                '<td>' + item.actual + '</td>' +
+                '<td' + (varColor ? ' style="color:' + varColor + ';"' : '') + '>' + esc(varStr) + '</td>' +
+                '<td><div class="spend-bar-wrap"><div class="spend-bar' + (item.pctSpent > 100 ? ' over' : '') + '" style="width:' + item.pctSpent + '%;"></div></div></td>' +
+                '<td><span class="badge ' + esc(item.trendBadge) + '">' + esc(item.trendText) + '</span></td>' +
+              '</tr>';
+            }).join('') +
+            (function() {
+              var t = spend.total;
+              var varColor = t.variance > 0 ? '#4ade80' : (t.variance < 0 ? '#e05c5c' : '');
+              var varStr = t.variance > 0 ? '+' + t.variance : String(t.variance);
+              return '<tr class="total-row">' +
+                '<td><strong>Total Program</strong></td>' +
+                '<td><strong>' + t.planned + '</strong></td>' +
+                '<td><strong>' + t.actual + '</strong></td>' +
+                '<td' + (varColor ? ' style="color:' + varColor + ';"' : '') + '><strong>' + esc(varStr) + '</strong></td>' +
+                '<td><div class="spend-bar-wrap"><div class="spend-bar" style="width:' + t.pctSpent + '%;"></div></div></td>' +
+                '<td><span class="badge ' + esc(t.trendBadge) + '">' + esc(t.trendText) + '</span></td>' +
+              '</tr>';
+            })() +
+          '</tbody></table>' +
+          '<p style="font-size:0.8rem;color:rgba(255,255,255,0.4);margin-top:0.75rem;">' + esc(spend.note) + '</p>' +
+        '</div>';
+
+        // 5. Technical Accomplishments
+        html += '<div class="pmr-section" id="technical-accomplishments">' +
+          '<h3 class="sub-heading">Technical Accomplishments</h3>' +
+          '<ul class="accomp-list">' +
+            acc.map(function(a) {
+              return '<li><span class="accomp-check">&#10003;</span>' +
+                '<span><strong>' + esc(a.title) + '</strong> &mdash; ' + esc(a.description) + '</span></li>';
+            }).join('') +
+          '</ul>' +
+        '</div>';
+
+        // 6. Dependencies
+        html += '<div class="pmr-section" id="dependencies">' +
+          '<h3 class="sub-heading">Project Dependencies</h3>' +
+          '<table class="dep-table"><thead><tr>' +
+            '<th>Dependency</th><th>Type</th><th>Owner / Source</th><th>Required By</th><th>Status</th>' +
+          '</tr></thead><tbody>' +
+            deps.map(function(dep) {
+              return '<tr>' +
+                '<td>' + esc(dep.dependency) + '</td>' +
+                '<td>' + esc(dep.type) + '</td>' +
+                '<td>' + esc(dep.owner) + '</td>' +
+                '<td>' + esc(dep.requiredBy) + '</td>' +
+                '<td><span class="badge ' + esc(dep.badgeClass) + '">' + esc(dep.statusText) + '</span></td>' +
+              '</tr>';
+            }).join('') +
+          '</tbody></table>' +
+        '</div>';
+
+        // 7. Issues
+        html += '<div class="pmr-section" id="issues">' +
+          '<h3 class="sub-heading">Issues and Resolutions</h3>' +
+          '<p style="font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin-bottom:0.75rem;">Active Risk Register</p>' +
+          '<div class="reports-list">' +
+            issues.risks.map(function(risk) {
+              return '<div class="report-item">' +
+                '<div class="report-date" style="background:var(--gold);color:#000;">' + esc(risk.severity) + '</div>' +
+                '<div class="report-info">' +
+                  '<h3>' + esc(risk.title) + '</h3>' +
+                  '<p><strong>Likelihood:</strong> ' + esc(risk.likelihood) + ' &nbsp;|&nbsp; <strong>Impact:</strong> ' + esc(risk.impact) + '</p>' +
+                  '<p><strong>Mitigation:</strong> ' + esc(risk.mitigation) + '</p>' +
+                '</div>' +
+                '<div class="pmr-status ' + esc(risk.statusClass) + '" style="align-self:center;white-space:nowrap;">' + esc(risk.statusText) + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+          '<p style="font-size:0.78rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--gold);margin:1.5rem 0 0.75rem 0;">Open Action Items</p>' +
+          '<div class="reports-list">' +
+            issues.actionItems.map(function(ai) {
+              return '<div class="report-item">' +
+                '<div class="report-date">' + esc(ai.id) + '</div>' +
+                '<div class="report-info">' +
+                  '<h3>' + esc(ai.title) + '</h3>' +
+                  '<p><strong>Owner:</strong> ' + esc(ai.owner) + ' &nbsp;|&nbsp; <strong>Due:</strong> ' + esc(ai.due) + ' &nbsp;|&nbsp; <strong>Status:</strong> ' + esc(ai.statusText) + '</p>' +
+                '</div>' +
+                '<div class="pmr-status ' + esc(ai.badgeClass) + '" style="align-self:center;">' + esc(ai.badgeText) + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+
+        // 8. Plan Forward
+        html += '<div class="pmr-section" id="plan-forward">' +
+          '<h3 class="sub-heading">The Plan Forward</h3>' +
+          '<div class="plan-timeline">' +
+            plan.map(function(item) {
+              return '<div class="plan-item' + (item.upcoming ? ' upcoming' : '') + '">' +
+                '<div class="plan-date">' + esc(item.date) + '</div>' +
+                '<div class="plan-title">' + esc(item.title) + '</div>' +
+                '<div class="plan-desc">' + esc(item.description) + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+
+        document.getElementById('pmr-main').innerHTML = html;
+
+        // Re-attach sidebar scroll highlight
+        var sections = document.querySelectorAll('.pmr-section');
+        var links = document.querySelectorAll('.pmr-sidenav a');
+        function onScroll() {
+          var current = '';
+          sections.forEach(function(sec) {
+            if (sec.getBoundingClientRect().top <= 120) current = sec.id;
+          });
+          links.forEach(function(a) {
+            a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+          });
+        }
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+      })
+      .catch(function() {
+        document.getElementById('pmr-main').innerHTML = '<p style="color:#e05c5c;padding:2rem 0;">Failed to load PMR data.</p>';
+      });
+  </script>
+</body>
+</html>

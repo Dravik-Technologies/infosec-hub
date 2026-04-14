@@ -1,0 +1,103 @@
+import { NavLink, Link, useNavigate } from 'react-router-dom';
+import { Shield, ChevronLeft, Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { useAuth }  from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
+
+/**
+ * AppHeader — per-app top nav bar.
+ * Props:
+ *   appName   string        — e.g. "Authorization & Compliance"
+ *   appIcon   LucideIcon    — icon component for the app
+ *   tabs      Array<{ label, to, icon?, end? }>  — tab definitions
+ */
+export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { dark, toggle } = useTheme();
+
+  return (
+    <header className="flex items-center h-14 px-4 bg-scorva-surface border-b border-scorva-border shrink-0 gap-3 min-w-0">
+
+      {/* Brand / back to portal */}
+      <Link
+        to="/portal"
+        className="flex items-center gap-1.5 shrink-0 group"
+        title="Back to Portal"
+      >
+        <Shield size={16} className="text-scorva-accent" />
+        <span className="text-xs font-mono font-bold text-scorva-accent tracking-widest">SCORVA</span>
+        <ChevronLeft size={13} className="text-scorva-muted group-hover:text-scorva-text transition-colors" />
+      </Link>
+
+      <div className="h-4 w-px bg-scorva-border shrink-0" />
+
+      {/* App name */}
+      <div className="flex items-center gap-2 shrink-0">
+        {AppIcon && <AppIcon size={15} className="text-scorva-accent" />}
+        <span className="text-sm font-semibold text-scorva-text">{appName}</span>
+      </div>
+
+      {/* Tabs */}
+      {tabs.length > 0 && (
+        <>
+          <div className="h-4 w-px bg-scorva-border shrink-0" />
+          <nav className="flex items-center gap-1 overflow-x-auto flex-1 min-w-0">
+            {tabs.map(tab => (
+              <NavLink
+                key={tab.to}
+                to={tab.to}
+                end={tab.end ?? false}
+                className={({ isActive }) =>
+                  `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors shrink-0 ${
+                    isActive
+                      ? 'bg-scorva-accent/10 text-scorva-accent border border-scorva-accent/25 font-medium'
+                      : 'text-scorva-muted hover:text-scorva-text hover:bg-scorva-hover'
+                  }`
+                }
+              >
+                {tab.icon && <tab.icon size={14} />}
+                {tab.label}
+              </NavLink>
+            ))}
+          </nav>
+        </>
+      )}
+
+      {/* Right actions */}
+      <div className="ml-auto flex items-center gap-1 shrink-0">
+        <button
+          onClick={toggle}
+          className="p-1.5 rounded-md text-scorva-muted hover:text-scorva-text hover:bg-scorva-hover transition-colors"
+          title={dark ? 'Light mode' : 'Dark mode'}
+        >
+          {dark ? <Sun size={15} /> : <Moon size={15} />}
+        </button>
+
+        <button
+          onClick={() => navigate('/admin/notifications')}
+          className="p-1.5 rounded-md text-scorva-muted hover:text-scorva-text hover:bg-scorva-hover transition-colors"
+          title="Notifications"
+        >
+          <Bell size={15} />
+        </button>
+
+        <div className="flex items-center gap-2 pl-2 ml-1 border-l border-scorva-border">
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-scorva-accent text-white dark:text-scorva-bg text-xs font-semibold shrink-0">
+            {user?.initials}
+          </div>
+          <div className="hidden sm:flex flex-col leading-none">
+            <span className="text-xs font-medium text-scorva-text">{user?.name}</span>
+            <span className="text-[10px] text-scorva-muted">{user?.role}</span>
+          </div>
+          <button
+            onClick={logout}
+            className="p-1.5 rounded-md text-scorva-muted hover:text-red-500 hover:bg-scorva-hover transition-colors"
+            title="Sign out"
+          >
+            <LogOut size={15} />
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}

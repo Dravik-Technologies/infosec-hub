@@ -1,0 +1,90 @@
+[
+  {
+    "id": "ml-001",
+    "type": "inspection",
+    "title": "Facility Security Inspection",
+    "detail": "DCSA Comprehensive Review",
+    "site": "Lincolnia HQ",
+    "siteId": "lincolnia-hq",
+    "dueDate": "2026-04-27",
+    "status": "at-risk",
+    "flag": "amber",
+    "prepPct": 68,
+    "notes": "Shielding remediation in Server Room B must complete before inspection proceeds."
+  },
+  {
+    "id": "ml-002",
+    "type": "self-inspection",
+    "title": "Annual Self-Inspection Cycle",
+    "detail": "All Facilities — FY26",
+    "site": "All Sites",
+    "siteId": null,
+    "dueDate": "2026-05-20",
+    "status": "in-progress",
+    "flag": null,
+    "prepPct": 71,
+    "notes": "5 of 7 facilities have initiated. Maryland Warehouse and Seattle Annex pending."
+  },
+  {
+    "id": "ml-003",
+    "type": "construction",
+    "title": "New Secure Space — Phase 1",
+    "detail": "SCIF Expansion · Authorization & Kickoff",
+    "site": "Texas Field Office",
+    "siteId": "texas-field",
+    "dueDate": "2026-05-05",
+    "status": "pending-auth",
+    "flag": "amber",
+    "budget": 230000,
+    "phases": [
+      { "name": "Planning",       "status": "complete"    },
+      { "name": "Authorization",  "status": "in-progress" },
+      { "name": "Construction",   "status": "upcoming"    },
+      { "name": "Tech Controls",  "status": "upcoming"    },
+      { "name": "Accreditation",  "status": "upcoming"    }
+    ],
+    "idealTimeline": "4–6 months",
+    "notes": "CFO authorization pending ($230K). Design complete. Contractors pre-qualified."
+  },
+  {
+    "id": "ml-004",
+    "type": "construction",
+    "title": "New Secure Space — Phase 2",
+    "detail": "SCIF Build · Design Approval",
+    "site": "California Lab",
+    "siteId": "california-lab",
+    "dueDate": "2026-05-28",
+    "status": "design",
+    "flag": null,
+    "budget": 480000,
+    "phases": [
+      { "name": "Planning",       "status": "complete"    },
+      { "name": "Design",         "status": "in-progress" },
+      { "name": "Construction",   "status": "upcoming"    },
+      { "name": "Tech Controls",  "status": "upcoming"    },
+      { "name": "Accreditation",  "status": "upcoming"    }
+    ],
+    "idealTimeline": "6–8 months",
+    "notes": "A&E drawings 70% complete. Emanations specifications under review."
+  },
+  {
+    "id": "ml-005",
+    "type": "construction",
+    "title": "Secure Space Expansion",
+    "detail": "SCIF Renovation · Technical Upgrade",
+    "site": "Maryland Warehouse",
+    "siteId": "maryland-warehouse",
+    "dueDate": "2026-10-10",
+    "status": "planning",
+    "flag": null,
+    "budget": 145000,
+    "phases": [
+      { "name": "Planning",       "status": "in-progress" },
+      { "name": "Construction",   "status": "upcoming"    },
+      { "name": "Tech Controls",  "status": "upcoming"    },
+      { "name": "Accreditation",  "status": "upcoming"    }
+    ],
+    "idealTimeline": "4–5 months",
+    "notes": "Legacy lighting mitigation required before construction begins."
+  }
+]

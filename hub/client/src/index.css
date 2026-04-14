@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS variable palettes (identical to scorva-v1) ─────────────────────── */
+:root {
+  --scorva-bg:           238 244 252;
+  --scorva-surface:      255 255 255;
+  --scorva-card:         255 255 255;
+  --scorva-border:       198 218 238;
+  --scorva-hover:        224 237 252;
+  --scorva-accent:       10  63  107;
+  --scorva-accent-light: 13  98  160;
+  --scorva-accent-dark:  6   42  75;
+  --scorva-cyan:         0   119 170;
+  --scorva-gold:         185 120 8;
+  --scorva-text:         10  22  45;
+  --scorva-muted:        82  110 148;
+}
+
+.dark {
+  --scorva-bg:           6   11  25;
+  --scorva-surface:      10  20  42;
+  --scorva-card:         14  26  54;
+  --scorva-border:       26  46  88;
+  --scorva-hover:        22  38  70;
+  --scorva-accent:       0   212 170;
+  --scorva-accent-light: 40  230 196;
+  --scorva-accent-dark:  0   168 134;
+  --scorva-cyan:         0   196 230;
+  --scorva-gold:         245 168 32;
+  --scorva-text:         218 232 248;
+  --scorva-muted:        72  100 140;
+}
+
+@layer base {
+  html, body, #root { height: 100%; }
+
+  body {
+    @apply bg-scorva-bg text-scorva-text;
+    font-family: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-scorva-surface; }
+  ::-webkit-scrollbar-thumb { @apply bg-scorva-border rounded-full; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-scorva-muted; }
+}
+
+@layer components {
+  .input-base {
+    @apply w-full bg-scorva-bg border border-scorva-border rounded-lg px-3 py-2 text-sm text-scorva-text placeholder-scorva-muted focus:outline-none focus:ring-1 focus:ring-scorva-accent focus:border-scorva-accent transition-colors;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-scorva-accent hover:bg-scorva-accent-dark text-white text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .dark .btn-primary {
+    @apply text-scorva-bg;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-scorva-card border border-scorva-border hover:bg-scorva-hover text-scorva-text text-sm font-medium transition-colors;
+  }
+
+  .card {
+    @apply bg-scorva-card border border-scorva-border rounded-xl;
+  }
+
+  .classify-banner {
+    @apply flex items-center justify-center gap-3 py-1 text-xs font-mono font-semibold tracking-widest uppercase select-none;
+    background: repeating-linear-gradient(
+      90deg,
+      rgb(var(--scorva-accent) / 0.15) 0px,
+      rgb(var(--scorva-accent) / 0.15) 2px,
+      transparent 2px,
+      transparent 12px
+    );
+  }
+
+  .cyber-grid {
+    background-image:
+      linear-gradient(rgb(var(--scorva-accent) / 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--scorva-accent) / 0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+}

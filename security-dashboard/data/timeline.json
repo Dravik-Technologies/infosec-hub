@@ -1,0 +1,233 @@
+{
+  "startDate": "2026-01-01",
+  "endDate": "2026-09-30",
+  "totalDays": 272,
+  "todayOffset": 99,
+  "milestones": [
+    {
+      "id": "ms-001",
+      "title": "NISPOM Ch. 2 Annual Review",
+      "site": "All Sites",
+      "standard": "NISPOM",
+      "status": "complete",
+      "startDay": 7,
+      "endDay": 20,
+      "completedDate": "2026-01-18",
+      "notes": "All 7 sites reviewed. 0 findings. Lincolnia HQ and DC Metro received commendations from DSS for documentation quality."
+    },
+    {
+      "id": "ms-002",
+      "title": "DC Metro DAAPM Audit",
+      "site": "DC Metro Office",
+      "standard": "DAAPM",
+      "status": "complete",
+      "startDay": 14,
+      "endDay": 28,
+      "completedDate": "2026-01-27",
+      "notes": "Full DAAPM audit completed by Booz Allen Hamilton. 0 open findings. 97% compliance score."
+    },
+    {
+      "id": "ms-003",
+      "title": "Colorado Springs TEMPEST Re-Survey",
+      "site": "Colorado Springs",
+      "standard": "TEMPEST",
+      "status": "complete",
+      "startDay": 21,
+      "endDay": 35,
+      "completedDate": "2026-02-04",
+      "notes": "All 5 SCIF zones re-surveyed. Zone 3 minor finding corrected same day."
+    },
+    {
+      "id": "ms-004",
+      "title": "CA Lab DAAPM Audit",
+      "site": "California Lab",
+      "standard": "DAAPM",
+      "status": "complete",
+      "startDay": 31,
+      "endDay": 42,
+      "completedDate": "2026-02-11",
+      "notes": "1 minor cable separation finding identified and closed same day. Commendation issued to SSM S. Kim."
+    },
+    {
+      "id": "ms-005",
+      "title": "Seattle Annex ICD 705 Review",
+      "site": "Seattle Annex",
+      "standard": "ICD 705",
+      "status": "complete",
+      "startDay": 45,
+      "endDay": 58,
+      "completedDate": "2026-02-27",
+      "notes": "2 zones reviewed. All technical specs within tolerance. Door hardware noted as approaching end-of-life."
+    },
+    {
+      "id": "ms-006",
+      "title": "ICD 705 Zone Mapping — Lincolnia HQ",
+      "site": "Lincolnia HQ",
+      "standard": "ICD 705",
+      "status": "complete",
+      "startDay": 59,
+      "endDay": 84,
+      "completedDate": "2026-03-25",
+      "notes": "All 6 zones certified. Zones 5 and 6 newly accredited. Full ICD 705 technical compliance achieved."
+    },
+    {
+      "id": "ms-007",
+      "title": "NISPOM Self-Inspection — Colorado Springs",
+      "site": "Colorado Springs",
+      "standard": "NISPOM",
+      "status": "complete",
+      "startDay": 66,
+      "endDay": 79,
+      "completedDate": "2026-03-20",
+      "notes": "Annual self-inspection completed. 1 minor finding (access roster lag) identified. Corrective action completed same week."
+    },
+    {
+      "id": "ms-008",
+      "title": "DC Metro TSCM Sweep",
+      "site": "DC Metro Office",
+      "standard": "TEMPEST",
+      "status": "complete",
+      "startDay": 76,
+      "endDay": 77,
+      "completedDate": "2026-03-18",
+      "notes": "8-zone TSCM sweep by ManTech. Unauthorized Bluetooth device found in Conference Room 4B. Device traced — no hostile capability confirmed. Re-sweep Apr 2 — clean."
+    },
+    {
+      "id": "ms-009",
+      "title": "TEMPEST Recertification — Lincolnia HQ",
+      "site": "Lincolnia HQ",
+      "standard": "TEMPEST",
+      "status": "at-risk",
+      "startDay": 90,
+      "endDay": 103,
+      "dueDate": "2026-04-14",
+      "notes": "Server Room B shielding gap blocking completion. Emergency vendor on site. Shielding installation begins Apr 11.",
+      "progress": 71
+    },
+    {
+      "id": "ms-010",
+      "title": "TX Field eLog Deployment",
+      "site": "Texas Field Office",
+      "standard": "DAAPM",
+      "status": "in-progress",
+      "startDay": 91,
+      "endDay": 112,
+      "dueDate": "2026-04-22",
+      "notes": "Hardware delivered. IT configuration in progress. Training scheduled Apr 22 with A. Reeves leading.",
+      "progress": 55
+    },
+    {
+      "id": "ms-011",
+      "title": "ICD 705 Reaccreditation — Lincolnia HQ",
+      "site": "Lincolnia HQ",
+      "standard": "ICD 705",
+      "status": "in-progress",
+      "startDay": 94,
+      "endDay": 118,
+      "dueDate": "2026-04-28",
+      "notes": "Checklist 85% complete. Sections 4 and 5 pending TEMPEST recert sign-off. Leidos support team engaged.",
+      "progress": 85
+    },
+    {
+      "id": "ms-012",
+      "title": "MD Warehouse Q2 Compliance Audit",
+      "site": "Maryland Warehouse",
+      "standard": "DAAPM",
+      "status": "in-progress",
+      "startDay": 97,
+      "endDay": 139,
+      "dueDate": "2026-05-19",
+      "notes": "Audit initiated Apr 8. Documentation phase underway. 2 training gaps must be closed before physical inspection phase.",
+      "progress": 30
+    },
+    {
+      "id": "ms-013",
+      "title": "Seattle Annex Door Hardware Replacement",
+      "site": "Seattle Annex",
+      "standard": "ICD 705",
+      "status": "in-progress",
+      "startDay": 92,
+      "endDay": 107,
+      "dueDate": "2026-04-18",
+      "notes": "Replacement EM lock hardware ordered. Certified locksmith installation scheduled Apr 15.",
+      "progress": 40
+    },
+    {
+      "id": "ms-014",
+      "title": "TX Field SCIF Expansion — Phase 1",
+      "site": "Texas Field Office",
+      "standard": "ICD 705",
+      "status": "upcoming",
+      "startDay": 120,
+      "endDay": 180,
+      "dueDate": "2026-06-29",
+      "notes": "Design complete. $230K budget authorization pending CFO sign-off. Construction contractor pre-qualified."
+    },
+    {
+      "id": "ms-015",
+      "title": "Colorado Springs Accreditation Renewal",
+      "site": "Colorado Springs",
+      "standard": "ICD 705",
+      "status": "upcoming",
+      "startDay": 150,
+      "endDay": 210,
+      "dueDate": "2026-07-29",
+      "notes": "Accreditation expires Oct 31. Renewal package preparation begins in July."
+    },
+    {
+      "id": "ms-016",
+      "title": "MD Warehouse Accreditation Renewal",
+      "site": "Maryland Warehouse",
+      "standard": "ICD 705",
+      "status": "upcoming",
+      "startDay": 155,
+      "endDay": 200,
+      "dueDate": "2026-07-19",
+      "notes": "Accreditation expires Jul 31. TEMPEST EMI mitigation (legacy lighting) must be resolved prior to renewal inspection."
+    },
+    {
+      "id": "ms-017",
+      "title": "NISPOM Chapter 8 Review — All Sites",
+      "site": "All Sites",
+      "standard": "NISPOM",
+      "status": "upcoming",
+      "startDay": 181,
+      "endDay": 226,
+      "dueDate": "2026-08-14",
+      "notes": "Annual review of automated information systems compliance. Encompasses all 7 sites — ISSM coordination required."
+    },
+    {
+      "id": "ms-018",
+      "title": "Annual Personnel Security Training",
+      "site": "All Sites",
+      "standard": "NISPOM",
+      "status": "upcoming",
+      "startDay": 212,
+      "endDay": 252,
+      "dueDate": "2026-09-09",
+      "notes": "Mandatory annual security awareness training for all 214 cleared personnel. Hybrid delivery: CBT + in-person for SAP-cleared staff."
+    },
+    {
+      "id": "ms-019",
+      "title": "DC Metro SAP Facility Expansion — SCIF 7 & 8",
+      "site": "DC Metro Office",
+      "standard": "ICD 705",
+      "status": "upcoming",
+      "startDay": 200,
+      "endDay": 265,
+      "dueDate": "2026-09-22",
+      "notes": "SCIF 7 and 8 construction authorized. ICD 705 accreditation application to be filed 60 days before completion."
+    },
+    {
+      "id": "ms-020",
+      "title": "FY27 Budget Submission to OUSD(I&S)",
+      "site": "HQ — All Sites",
+      "standard": "Admin",
+      "status": "upcoming",
+      "startDay": 267,
+      "endDay": 272,
+      "dueDate": "2026-09-30",
+      "notes": "Annual Program Objective Memorandum (POM) submission. Includes FY27 capital requests for TX Field expansion and MD Warehouse TEMPEST upgrades."
+    }
+  ]
+}

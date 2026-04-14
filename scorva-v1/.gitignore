@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Environment — NEVER commit secrets
+.env
+
+# iisnode logs
+iisnode/
+
+# Deployment artifacts
+deploy.zip
+
+# Local dev artifacts
+sessions/
+
+# Local MongoDB data directory
+mongodb-data/
+
+# React build output
+client/dist/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/settings.json

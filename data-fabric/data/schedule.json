@@ -1,0 +1,117 @@
+{
+  "timeline": {
+    "labels": ["Jan 2026", "Apr 2026", "Jul 2026", "Oct 2026", "Mar 2027"]
+  },
+  "phases": [
+    {
+      "id": "p0",
+      "badgeClass": "p0-badge",
+      "label": "Phase 0",
+      "title": "Initiation & Secret Infrastructure Upgrade",
+      "dates": "Jan – Mar 2026",
+      "taskCount": 7,
+      "tasks": [
+        "Program kickoff and governance setup",
+        "LAVA infrastructure assessment and upgrade",
+        "Security accreditation preparation",
+        "Team onboarding and tooling standup",
+        "Initial data source inventory",
+        "Architecture baseline documentation",
+        "Stakeholder alignment workshops"
+      ]
+    },
+    {
+      "id": "p1",
+      "badgeClass": "p1-badge",
+      "label": "Phase 1",
+      "title": "Data Fabric & Metadata",
+      "dates": "Apr – Jun 2026",
+      "taskCount": 6,
+      "tasks": [
+        "Data fabric architecture deployment",
+        "OpenMetadata catalog standup",
+        "Initial data source connectors",
+        "Governance policy framework",
+        "Data lineage tracking implementation",
+        "MVP-2 delivery and review"
+      ]
+    },
+    {
+      "id": "p2",
+      "badgeClass": "p2-badge",
+      "label": "Phase 2",
+      "title": "High Fidelity MS&A & AI/ML",
+      "dates": "Jul – Sep 2026",
+      "taskCount": 6,
+      "tasks": [
+        "AFSIM integration and pipeline setup",
+        "AI/ML model environment deployment",
+        "Simulation data ingestion workflows",
+        "Analytical dashboard prototypes",
+        "Model validation and verification",
+        "MVP-3 delivery and review"
+      ]
+    },
+    {
+      "id": "p3",
+      "badgeClass": "p3-badge",
+      "label": "Phase 3",
+      "title": "Digital Twin Repo & Visualization",
+      "dates": "Oct – Dec 2026",
+      "taskCount": 6,
+      "tasks": [
+        "Digital twin repository architecture",
+        "MBSE artifact integration",
+        "Live telemetry data feeds",
+        "Commander-ready dashboards",
+        "Cross-domain visualization layer",
+        "MVP-4 delivery and review"
+      ]
+    },
+    {
+      "id": "fo",
+      "badgeClass": "fo-badge",
+      "label": "Follow-On",
+      "title": "Training & CIM ARC 2.0",
+      "dates": "Q1 2027",
+      "taskCount": 2,
+      "isFollowOn": true,
+      "tasks": [
+        "End-user training and documentation",
+        "CIM-ARC 2.0 planning and Azure migration prep"
+      ]
+    }
+  ],
+  "milestones": [
+    {
+      "number": 1,
+      "name": "MVP-1",
+      "date": "Mar 21, 2026",
+      "detail": "Infrastructure baseline operational; initial data connectivity demonstrated."
+    },
+    {
+      "number": 2,
+      "name": "MVP-2",
+      "date": "Jun 13, 2026",
+      "detail": "Data fabric and metadata catalog live; first governed data products published."
+    },
+    {
+      "number": 3,
+      "name": "MVP-3",
+      "date": "Sep 19, 2026",
+      "detail": "MS&A pipelines operational; AI/ML model environment validated."
+    },
+    {
+      "number": 4,
+      "name": "MVP-4",
+      "date": "Nov 14, 2026",
+      "detail": "Digital twin repository live; commander dashboards delivered."
+    },
+    {
+      "number": 5,
+      "name": "MVP-5",
+      "date": "Feb 6, 2027",
+      "detail": "Full system acceptance; training complete; CIM-ARC 2.0 planning underway."
+    }
+  ]
+}

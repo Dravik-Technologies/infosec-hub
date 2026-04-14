@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog | Data Fabric</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <header id="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <img src="photos/logo.png" alt="CIMARC" id="logo-img" />
+      </div>
+
+      <nav class="nav-links" id="nav-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="schedule.html">Schedule</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html" class="active">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </nav>
+
+      <button class="hamburger" id="hamburger" aria-label="Toggle navigation">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero">
+    <div class="page-hero-content">
+      <div class="section-tag">UPDATES</div>
+      <h1>Blog</h1>
+      <div class="section-rule"></div>
+      <p>Technical insights, program updates, and deep dives from the CIM-ARC team.</p>
+    </div>
+  </section>
+
+  <!-- BLOG CONTENT -->
+  <section class="section" id="blog">
+    <div class="section-container">
+      <div class="blog-grid" id="blog-grid">
+        <p style="color:rgba(255,255,255,0.4);">Loading...</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-logo">
+        <img src="photos/logo.png" alt="CIMARC" class="footer-logo-img" />
+        <span>CIMARC</span>
+      </div>
+      <div class="footer-links">
+        <a href="index.html#home">Home</a>
+        <a href="team.html">Team</a>
+        <a href="index.html#data-fabric">Data Fabric</a>
+        <a href="monthly-reports.html">Monthly Reports</a>
+        <a href="glossary.html">Glossary</a>
+        <a href="blog.html">Blog</a>
+        <a href="digital-pmr.html">Digital PMR</a>
+      </div>
+      <div class="footer-badge">UNCLASSIFIED // MTSI PROPRIETARY</div>
+    </div>
+  </footer>
+
+  <script src="scripts.js"></script>
+  <script>
+    fetch('data/blog.json')
+      .then(function(r) { return r.json(); })
+      .then(function(posts) {
+        var grid = document.getElementById('blog-grid');
+        grid.innerHTML = posts.map(function(post) {
+          return '<div class="blog-card blog-card-full">' +
+            '<div class="blog-meta">' + post.date + ' &nbsp;|&nbsp; ' + post.category + '</div>' +
+            '<h3>' + post.title + '</h3>' +
+            '<p class="blog-excerpt">' + post.excerpt + '</p>' +
+            '<div class="blog-body">' +
+              post.body.map(function(p) { return '<p>' + p + '</p>'; }).join('') +
+            '</div>' +
+          '</div>';
+        }).join('');
+      })
+      .catch(function() {
+        document.getElementById('blog-grid').innerHTML = '<p style="color:#e05c5c;">Failed to load blog posts.</p>';
+      });
+  </script>
+</body>
+</html>
