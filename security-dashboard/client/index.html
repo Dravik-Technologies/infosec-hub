@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MASH · MTSI Advanced Sentinel Hub</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Theme init: runs before React to prevent flash -->
+<script>
+(function(){
+  if(localStorage.getItem('mash-theme')==='light')
+    document.documentElement.setAttribute('data-theme','light');
+})();
+</script>
+</head>
+<body>
+
+<!-- Notification drawer -->
+<div id="notif-drw">
+  <div class="flex items-center justify-between px-5 py-4" style="border-bottom:1px solid rgba(201,168,76,.12)">
+    <div class="font-head text-sm font-semibold flex items-center gap-x-2" style="color:var(--gold)">
+      <i class="fa-solid fa-bell"></i> ALERTS
+      <span class="badge b-r ml-1" id="notif-count">0</span>
+    </div>
+    <button id="notif-close" class="text-white/30 hover:text-white transition-colors text-lg"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <div class="flex-1 overflow-y-auto p-4 space-y-3" id="notif-list"></div>
+  <div class="p-4" style="border-top:1px solid rgba(201,168,76,.1)">
+    <button id="notif-mark-read" class="text-xs font-bold uppercase tracking-widest transition-colors" style="color:var(--gold);letter-spacing:.08em">Mark All Read</button>
+  </div>
+</div>
+<div id="notif-overlay" class="hidden fixed inset-0 z-[590]"></div>
+
+<!-- Modal -->
+<div id="modal-back">
+  <div id="modal-box">
+    <div class="flex items-center justify-between px-6 py-5" style="border-bottom:1px solid rgba(201,168,76,.12)">
+      <h3 id="modal-title" class="font-head text-lg font-semibold" style="color:var(--gold-lt)"></h3>
+      <button id="modal-close" class="text-white/30 hover:text-white transition-colors text-xl"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div id="modal-body" class="px-6 py-5"></div>
+    <div id="modal-footer" class="px-6 pb-5 flex gap-x-3 justify-end"></div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div id="toasts"></div>
+
+<!-- React root -->
+<div id="root" class="relative z-10"></div>
+
+<script type="module" src="/src/main.jsx"></script>
+</body>
+</html>

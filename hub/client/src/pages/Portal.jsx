@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -15,7 +15,8 @@ const APPS = [
     name:    'SCORVA',
     tagline: 'Cyber Command Center',
     desc:    'NIST SP 800-53 Rev 5 compliance management — ATO tracking, continuous monitoring, POAM, asset inventory, and access governance.',
-    url:     'http://localhost:3000',
+    url:     'http://localhost:3001',
+    ssoPath: '/auth/sso',
     color:   'teal',
     icon:    'ShieldCheck',
     team:    'Cybersecurity',
@@ -29,6 +30,7 @@ const APPS = [
     tagline: 'eMASS RMF Toolkit',
     desc:    'eMASS-aligned RMF package builder with SCTM, POAM management, vulnerability tracking, system diagrams, and compliance reporting.',
     url:     'http://localhost:3003',
+    ssoPath: '/sso.html',
     color:   'indigo',
     icon:    'FileText',
     team:    'GRC',
@@ -42,6 +44,7 @@ const APPS = [
     tagline: 'MTSI Advanced Sentinel Hub',
     desc:    'DoD security compliance dashboard with live threat intelligence feeds, audit log analysis, and posture monitoring.',
     url:     'http://localhost:8080',
+    ssoPath: '/auth/sso',
     color:   'gold',
     icon:    'BarChart3',
     team:    'Security Operations',
@@ -55,6 +58,7 @@ const APPS = [
     tagline: 'CIM-ARC Data Platform',
     desc:    'CIM-ARC team portal featuring project reports, schedules, photo gallery, digital PMR, and team directory.',
     url:     'http://localhost:8081',
+    ssoPath: '/sso',
     color:   'cyan',
     icon:    'Database',
     team:    'Data Engineering',
@@ -100,11 +104,22 @@ const COLOR_MAP = {
 export default function Portal() {
   const { user, logout, launchApp } = useAuth();
   const { dark, toggle } = useTheme();
-  const [search,  setSearch]  = useState('');
-  const [team,    setTeam]    = useState('All');
+  const [search,    setSearch]    = useState('');
+  const [team,      setTeam]      = useState('All');
   const [launching, setLaunching] = useState(null);
+  const [apps,      setApps]      = useState(APPS);
 
-  const visible = APPS.filter(app => {
+  // Keep app list in sync with the server so ssoPath changes take effect
+  // without a client rebuild.
+  useEffect(() => {
+    const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
+    fetch(`${BASE}/api/apps`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (Array.isArray(data) && data.length) setApps(data); })
+      .catch(() => { /* keep local APPS on network failure */ });
+  }, []);
+
+  const visible = apps.filter(app => {
     const matchTeam   = team === 'All' || app.team === team;
     const q           = search.toLowerCase();
     const matchSearch = !q
@@ -118,7 +133,7 @@ export default function Portal() {
   async function handleLaunch(app) {
     setLaunching(app.id);
     try {
-      const url = await launchApp(app.url);
+      const url = await launchApp(app.url, app.ssoPath ?? null);
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch {
       // SSO token failed — open without token (app may redirect to its own login)

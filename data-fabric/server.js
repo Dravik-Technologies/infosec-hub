@@ -4,7 +4,7 @@ const path = require('path');
 const crypto = require('crypto');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 8081;
 const DATA_DIR = path.join(__dirname, 'data');
 const CONFIG_FILE = path.join(__dirname, 'admin-config.json');
 
@@ -110,6 +110,33 @@ app.post('/api/data/:file', requireAuth, (req, res) => {
     res.json({ ok: true });
   } catch {
     res.status(500).json({ error: 'Failed to write file' });
+  }
+});
+
+// ── SSO — accept a hub one-time token, create a local session ────────────────
+app.get('/sso', async (req, res) => {
+  const { hub_token } = req.query;
+  if (!hub_token) return res.redirect('/');
+  try {
+    const hubUrl = process.env.HUB_URL || 'http://localhost:3010';
+    const r = await fetch(`${hubUrl}/api/sso/verify?token=${encodeURIComponent(String(hub_token))}`);
+    const body = await r.json();
+    if (!r.ok || !body.valid) return res.redirect('/');
+    const token = crypto.randomBytes(32).toString('hex');
+    sessions.add(token);
+    // Return a small HTML page that stores the token and navigates home
+    res.send(`<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Signing in…</title></head>
+<body>
+<script>
+sessionStorage.setItem('cimarc_admin_token', ${JSON.stringify(token)});
+window.location.href = '/';
+</script>
+</body>
+</html>`);
+  } catch {
+    res.redirect('/');
   }
 });
 

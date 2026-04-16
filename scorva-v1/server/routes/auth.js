@@ -65,6 +65,34 @@ router.post('/login', async (req, res) => {
   }
 });
 
+/* GET /auth/sso?hub_token=<token> — hub SSO handoff */
+router.get('/sso', async (req, res) => {
+  const { hub_token } = req.query;
+  if (!hub_token) return res.redirect('/');
+  try {
+    const hubUrl = process.env.HUB_URL || 'http://localhost:3010';
+    const r = await fetch(`${hubUrl}/api/sso/verify?token=${encodeURIComponent(String(hub_token))}`);
+    const body = await r.json();
+    if (!r.ok || !body.valid) return res.redirect('/');
+    req.session.user = {
+      id:       body.user.id,
+      name:     body.user.name,
+      username: body.user.username,
+      email:    body.user.email,
+      role:     body.user.role,
+      site:     body.user.site,
+      initials: body.user.initials,
+    };
+    req.session.save(err => {
+      if (err) console.error('[SCORVA SSO] session save error:', err.message);
+      res.redirect('/');
+    });
+  } catch (err) {
+    console.error('[SCORVA SSO]', err.message);
+    res.redirect('/');
+  }
+});
+
 /* POST /auth/logout */
 router.post('/logout', (req, res) => {
   const username = req.session.user?.username;

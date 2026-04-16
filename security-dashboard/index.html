@@ -593,13 +593,28 @@ MASH.initTilt = function() {
 'use strict';
 const { useState, useEffect, useRef, useCallback } = React;
 
+/* ── Auth token store ── */
+const AUTH = {
+  getToken : ()  => localStorage.getItem('mash-token'),
+  setToken : t   => localStorage.setItem('mash-token', t),
+  getUser  : ()  => { try { return JSON.parse(localStorage.getItem('mash-user')); } catch { return null; } },
+  setUser  : u   => localStorage.setItem('mash-user', JSON.stringify(u)),
+  clearAll : ()  => { localStorage.removeItem('mash-token'); localStorage.removeItem('mash-user'); },
+  hdrs     : ()  => {
+    const t = localStorage.getItem('mash-token');
+    const base = {'Content-Type':'application/json'};
+    return t ? {...base, 'Authorization':`Bearer ${t}`} : base;
+  },
+};
+
 /* ── API ── */
+function _on401() { AUTH.clearAll(); window.location.reload(); }
 const API = {
-  async get(c)        { try{const r=await fetch(`/api/${c}`);return r.json();}catch{return null;} },
-  async put(c,d)      { const r=await fetch(`/api/${c}`,      {method:'PUT',   headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});return r.json(); },
-  async post(c,d)     { const r=await fetch(`/api/${c}`,      {method:'POST',  headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});return r.json(); },
-  async patch(c,id,d) { const r=await fetch(`/api/${c}/${id}`,{method:'PATCH', headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});return r.json(); },
-  async del(c,id)     { const r=await fetch(`/api/${c}/${id}`,{method:'DELETE'});return r.json(); },
+  async get(c)        { try{const r=await fetch(`/api/${c}`,{headers:AUTH.hdrs()});if(r.status===401){_on401();return null;}return r.json();}catch{return null;} },
+  async put(c,d)      { const r=await fetch(`/api/${c}`,      {method:'PUT',   headers:AUTH.hdrs(),body:JSON.stringify(d)});if(r.status===401)_on401();return r.json(); },
+  async post(c,d)     { const r=await fetch(`/api/${c}`,      {method:'POST',  headers:AUTH.hdrs(),body:JSON.stringify(d)});if(r.status===401)_on401();return r.json(); },
+  async patch(c,id,d) { const r=await fetch(`/api/${c}/${id}`,{method:'PATCH', headers:AUTH.hdrs(),body:JSON.stringify(d)});if(r.status===401)_on401();return r.json(); },
+  async del(c,id)     { const r=await fetch(`/api/${c}/${id}`,{method:'DELETE',headers:AUTH.hdrs()});if(r.status===401)_on401();return r.json(); },
 };
 
 /* ── Helpers ── */
@@ -652,11 +667,115 @@ function PhaseBar({phases}) {
 }
 
 /* ═══════════════════════════════════════════════════════════
+   LOGIN PAGE
+══════════════════════════════════════════════════════════════ */
+function LoginPage({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState('');
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    setLoading(true); setError('');
+    try {
+      const r = await fetch('/api/auth/login', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ username, password }),
+      });
+      const d = await r.json();
+      if (!r.ok) { setError(d.error || 'Authentication failed'); return; }
+      AUTH.setToken(d.token);
+      AUTH.setUser(d.user);
+      onLogin(d.user);
+    } catch {
+      setError('Connection failed — is the server running?');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-sm">
+
+        {/* Branding */}
+        <div className="text-center mb-10">
+          <div className="font-head font-bold glow-gold mb-2" style={{fontSize:'3rem',color:'var(--gold)',letterSpacing:'.2em'}}>MASH</div>
+          <div className="uppercase tracking-widest mb-1" style={{color:'rgba(143,163,192,.45)',fontSize:'.65rem',letterSpacing:'.15em'}}>MTSI Advanced Sentinel Hub</div>
+          <div className="uppercase tracking-widest" style={{color:'rgba(201,168,76,.35)',fontSize:'.58rem',letterSpacing:'.12em'}}>Authorized Personnel Only</div>
+        </div>
+
+        {/* Login card */}
+        <div className="card card-gold p-8">
+          <div className="sec-heading mb-6 text-center">Secure Sign-In</div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="inp-lbl">Username</label>
+              <input className="inp" type="text" value={username}
+                onChange={e=>setUsername(e.target.value)}
+                required autoFocus autoComplete="username" placeholder="v.kilika"/>
+            </div>
+            <div>
+              <label className="inp-lbl">Password</label>
+              <input className="inp" type="password" value={password}
+                onChange={e=>setPassword(e.target.value)}
+                required autoComplete="current-password" placeholder="••••••••••"/>
+            </div>
+
+            {error && (
+              <div className="text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-2"
+                style={{background:'rgba(239,68,68,.1)',border:'1px solid rgba(239,68,68,.25)',color:'#FCA5A5'}}>
+                <i className="fa-solid fa-circle-xmark shrink-0"/>{error}
+              </div>
+            )}
+
+            <button type="submit" className="btn-gold w-full justify-center h-11" disabled={loading}>
+              {loading
+                ? <><i className="fa-solid fa-spinner fa-spin mr-2"/>Authenticating…</>
+                : <><i className="fa-solid fa-shield-halved mr-2"/>Sign In</>}
+            </button>
+          </form>
+
+          <div className="mt-5 text-center" style={{fontSize:'.6rem',color:'rgba(143,163,192,.25)'}}>
+            All access is monitored and logged per NISPOM requirements.
+          </div>
+        </div>
+
+        {/* SSO / direct login note */}
+        <div className="mt-5 card p-4">
+          <div className="sec-heading mb-3" style={{fontSize:'.55rem'}}>Sign-In Options</div>
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg"
+              style={{background:'rgba(16,185,129,.05)',border:'1px solid rgba(16,185,129,.15)'}}>
+              <i className="fa-solid fa-arrow-right-to-bracket mt-0.5 text-emerald-400" style={{fontSize:'.7rem'}}/>
+              <div>
+                <div className="text-xs font-semibold text-emerald-400">From the Hub (recommended)</div>
+                <div style={{fontSize:'.62rem',color:'rgba(143,163,192,.5)',marginTop:'2px'}}>Log in to the MTSI Hub on port 3010 and click <strong style={{color:'rgba(201,168,76,.6)'}}>Launch</strong> on the MASH card for one-click SSO.</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 px-3 py-2.5 rounded-lg"
+              style={{background:'rgba(201,168,76,.04)',border:'1px solid rgba(201,168,76,.1)'}}>
+              <i className="fa-solid fa-keyboard mt-0.5" style={{fontSize:'.7rem',color:'var(--gold)'}}/>
+              <div>
+                <div className="text-xs font-semibold" style={{color:'var(--gold)'}}>Direct login</div>
+                <div style={{fontSize:'.62rem',color:'rgba(143,163,192,.5)',marginTop:'2px'}}>Use your Hub credentials. Dev: <span className="font-mono" style={{color:'rgba(201,168,76,.7)'}}>admin / admin</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════
    HEADER
 ══════════════════════════════════════════════════════════════ */
-function Header({section, onNav, data}) {
+function Header({section, onNav, data, currentUser, onLogout}) {
   const clock     = useClock();
-  const user      = data.settings?.user || {};
+  const user      = currentUser || data.settings?.user || {};
   const sites     = data.sites || [];
   const stds      = data.compliance?.standards || [];
   const avg       = sites.length ? Math.round(sites.reduce((a,s)=>a+s.compliance,0)/sites.length) : 0;
@@ -761,7 +880,12 @@ function Header({section, onNav, data}) {
           </button>
           <GoldLine/>
           <div className="text-right leading-none hidden lg:block">
-            <div className="text-sm font-semibold" style={{color:'var(--off-white)'}}>{user.name||'VET-Kilika'}</div>
+            <div className="flex items-center gap-x-2 justify-end">
+              <div className="text-sm font-semibold" style={{color:'var(--off-white)'}}>{user.name||'VET-Kilika'}</div>
+              {user.role === 'global_fso'
+                ? <span className="badge b-gold" style={{fontSize:'.52rem'}}>Global FSO</span>
+                : <span className="badge b-b"    style={{fontSize:'.52rem'}}>Site Manager</span>}
+            </div>
             <div className="text-[9px] mt-0.5 uppercase tracking-wider" style={{color:'rgba(201,168,76,.55)'}}>{user.title||'Director of Security'}</div>
           </div>
           <button onClick={()=>MASH.toast('Generating executive briefing PDF…','info')} className="btn-gold hidden sm:flex">
@@ -770,6 +894,11 @@ function Header({section, onNav, data}) {
           <button onClick={MASH.toggleNotif} className="relative w-8 h-8 flex items-center justify-center transition-colors shrink-0" style={{color:'rgba(143,163,192,.5)'}}>
             <i className="fa-solid fa-bell text-sm"/>
             <span id="bell-badge" className="absolute top-0.5 right-0 w-4 h-4 bg-red-500 text-[9px] font-bold rounded-full flex items-center justify-center text-white">3</span>
+          </button>
+          <button onClick={onLogout} title="Sign out"
+            className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors shrink-0"
+            style={{background:'rgba(239,68,68,.08)',border:'1px solid rgba(239,68,68,.18)',color:'#FCA5A5'}}>
+            <i className="fa-solid fa-right-from-bracket text-xs"/>
           </button>
         </div>
 
@@ -2022,13 +2151,42 @@ function ConstructionSection({data}) {
    APP ROOT
 ══════════════════════════════════════════════════════════════ */
 function App() {
+  const [currentUser, setCurrentUser] = useState(() => {
+    // Priority 1: already have a stored session
+    const stored = AUTH.getUser();
+    if (stored) return stored;
+    // Priority 2: arriving via hub SSO redirect (?mash_token=<jwt>)
+    const params    = new URLSearchParams(window.location.search);
+    const ssoToken  = params.get('mash_token');
+    const ssoError  = params.get('sso_error');
+    if (ssoToken) {
+      try {
+        // Decode JWT payload — base64url → base64 (fix alphabet + add padding)
+        const b64 = ssoToken.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+        const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+        const payload = JSON.parse(atob(padded));
+        AUTH.setToken(ssoToken);
+        AUTH.setUser(payload);
+        setTimeout(() => window.history.replaceState({}, '', '/'), 0);
+        return payload;
+      } catch { /* malformed token — fall through to login */ }
+    }
+    if (ssoError) {
+      setTimeout(() => { MASH.toast(`SSO error: ${decodeURIComponent(ssoError)}`,'error'); window.history.replaceState({}, '', '/'); }, 500);
+    }
+    return null;
+  });
   const [section, setSection] = useState('dashboard');
   const [data, setData]       = useState({sites:[],risks:[],budget:{},timeline:{},compliance:{},activity:[],settings:{},milestones:[],construction:[]});
   const [loaded, setLoaded]   = useState(false);
   const [tick, setTick]       = useState(0);
   const refresh = useCallback(()=>setTick(t=>t+1),[]);
 
+  function handleLogin(user)  { setCurrentUser(user); }
+  function handleLogout()     { AUTH.clearAll(); setCurrentUser(null); setLoaded(false); setData({sites:[],risks:[],budget:{},timeline:{},compliance:{},activity:[],settings:{},milestones:[],construction:[]}); }
+
   useEffect(()=>{
+    if (!currentUser) return;
     (async()=>{
       const [sites,risks,budget,timeline,compliance,activity,settings,milestones,construction]=await Promise.all([
         API.get('sites'),API.get('risks'),API.get('budget'),API.get('timeline'),
@@ -2041,7 +2199,7 @@ function App() {
       });
       setLoaded(true);
     })();
-  },[]);
+  },[currentUser]);
 
   useEffect(()=>{
     MASH.openSiteModal = (id) => {
@@ -2093,6 +2251,8 @@ function App() {
     if(bb) bb.textContent=urgent.length;
   },[loaded,tick]);
 
+  if (!currentUser) return <LoginPage onLogin={handleLogin}/>;
+
   if(!loaded) return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center">
@@ -2114,7 +2274,7 @@ function App() {
 
   return (
     <>
-      <Header section={section} onNav={setSection} data={data}/>
+      <Header section={section} onNav={setSection} data={data} currentUser={currentUser} onLogout={handleLogout}/>
       <main className="max-w-screen-2xl mx-auto px-6 py-8 relative z-10">
         {sections[section]}
       </main>

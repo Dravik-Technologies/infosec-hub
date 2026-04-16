@@ -1,0 +1,8 @@
+{
+  "__comment": "Maps hub usernames (lowercase) to MASH roles. Add an entry here for any hub user who should have site_manager scope. Everyone else defaults to global_fso.",
+  "admin": {
+    "role": "global_fso",
+    "siteId": null,
+    "displayTitle": "Director of Security"
+  }
+}

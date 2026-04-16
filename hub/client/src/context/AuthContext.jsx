@@ -32,16 +32,27 @@ export function AuthProvider({ children }) {
 
   /**
    * Generate a one-time SSO token and build the launch URL for an external app.
-   * @param {string} appUrl - base URL of the target app
-   * @returns {Promise<string>} full launch URL with hub_token param
+   * @param {string} appUrl   - base URL of the target app
+   * @param {string|null} ssoPath - server-side SSO path (e.g. '/auth/sso'),
+   *   empty string for client-side SSO, or null if the app needs no auth.
+   * @returns {Promise<string>} full launch URL
    */
-  async function launchApp(appUrl) {
+  async function launchApp(appUrl, ssoPath) {
+    if (ssoPath === null || ssoPath === undefined) {
+      // App needs no authentication — open directly
+      return appUrl;
+    }
     const { data } = await axios.post(
       `${BASE}/api/sso/token`,
       {},
       { withCredentials: true }
     );
-    return `${appUrl}?hub_token=${data.token}`;
+    if (ssoPath === '') {
+      // Client-side SSO: React app detects hub_token in URL params
+      return `${appUrl}?hub_token=${data.token}`;
+    }
+    // Server-side SSO: dedicated endpoint sets session/token then redirects
+    return `${appUrl}${ssoPath}?hub_token=${data.token}`;
   }
 
   return (

@@ -23,7 +23,11 @@ export default function Login() {
       await login(form.username, form.password);
       navigate('/portal', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid credentials');
+      if (!err.response) {
+        setError('Cannot reach the hub server — make sure it is running on port 3010.');
+      } else {
+        setError(err.response.data?.error || 'Invalid credentials');
+      }
     } finally {
       setLoading(false);
     }

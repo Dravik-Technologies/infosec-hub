@@ -1,0 +1,74 @@
+[
+  {
+    "id": "u-1",
+    "username": "v.kilika",
+    "passwordHash": "$2b$10$i/Jfvn1aeoEzZjPZyty81.RZidhQNgvHp7V9Ceb/QtZzMAQMxFRJy",
+    "role": "global_fso",
+    "name": "VET-Kilika",
+    "title": "Director of Security",
+    "siteId": null
+  },
+  {
+    "id": "u-2",
+    "username": "j.martinez",
+    "passwordHash": "$2b$10$IqBPBhSmN5LrmcqqR8JLK.wUe5SNaoHb57o7l3tg7GM6ZjoyRgmGq",
+    "role": "site_manager",
+    "name": "J. Martinez",
+    "title": "SSM — Lincolnia HQ",
+    "siteId": "lincolnia-hq"
+  },
+  {
+    "id": "u-3",
+    "username": "a.reeves",
+    "passwordHash": "$2b$10$Z.eUmX90pqZF9AxPn.q1O.Kmp40lGBe7CKMi6GG3T6gCtvSaXeN96",
+    "role": "site_manager",
+    "name": "A. Reeves",
+    "title": "SSM — Texas Field Office",
+    "siteId": "texas-field"
+  },
+  {
+    "id": "u-4",
+    "username": "s.kim",
+    "passwordHash": "$2b$10$p5kqEjYkjMQg9t24L.AjteZeyUmv5Ww5Hkiocr.CDSfr/6zKSkOPq",
+    "role": "site_manager",
+    "name": "S. Kim",
+    "title": "SSM — California Lab",
+    "siteId": "california-lab"
+  },
+  {
+    "id": "u-5",
+    "username": "t.brooks",
+    "passwordHash": "$2b$10$yTyD50QqeGlsO72JA4FkleRrCd4mWGzVh6qrWLFzPpz6NlVrkB5Xq",
+    "role": "site_manager",
+    "name": "T. Brooks",
+    "title": "SSM — Maryland Warehouse",
+    "siteId": "maryland-warehouse"
+  },
+  {
+    "id": "u-6",
+    "username": "r.okafor",
+    "passwordHash": "$2b$10$oaEX5Ko82/KsWAURaxkX9O5iqtTxh.n/y00s5ic4mlCfF3wH9FSWi",
+    "role": "site_manager",
+    "name": "R. Okafor",
+    "title": "SSM — Colorado Springs",
+    "siteId": "colorado-springs"
+  },
+  {
+    "id": "u-7",
+    "username": "m.tanaka",
+    "passwordHash": "$2b$10$LoXel18cmsbJrjHCrkfQBuYqz1mj9wNlz0suBSOJiy6qGTlR64xam",
+    "role": "site_manager",
+    "name": "M. Tanaka",
+    "title": "SSM — Seattle Annex",
+    "siteId": "seattle-annex"
+  },
+  {
+    "id": "u-8",
+    "username": "p.washington",
+    "passwordHash": "$2b$10$jFwB2j8nSvs7fwHxVogtDO5M2xymBKnxFUbQyVaBx.th3hYHKUzb6",
+    "role": "site_manager",
+    "name": "P. Washington",
+    "title": "SSM — DC Metro Office",
+    "siteId": "dc-metro"
+  }
+]
