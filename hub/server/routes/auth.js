@@ -21,7 +21,7 @@ function dbReady() {
  */
 function proxyLoginToScorva(username, password) {
   const SCORVA_HOST = process.env.SCORVA_HOST || '127.0.0.1';
-  const SCORVA_PORT = parseInt(process.env.SCORVA_PORT || '3000', 10);
+  const SCORVA_PORT = parseInt(process.env.SCORVA_PORT || '3001', 10);
   const body        = JSON.stringify({ username, password });
 
   return new Promise((resolve, reject) => {

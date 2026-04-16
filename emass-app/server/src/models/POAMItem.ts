@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 
 export interface IPOAMItem extends Document<string> {
-  userId: Types.ObjectId
+  userId: string
   systemId: string
   poamId: string
   weakness: string
@@ -46,7 +46,7 @@ const milestoneSchema = new Schema(
 const poamItemSchema = new Schema<IPOAMItem>(
   {
     _id: { type: String },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: String, required: true },
     systemId: { type: String, required: true, index: true },
     poamId: { type: String, required: true },
     weakness: String,

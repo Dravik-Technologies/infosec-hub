@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 
 export interface ISCTMEntry extends Document {
-  userId: Types.ObjectId
+  userId: string
   systemId: string
   controlId: string
   status: string
@@ -21,7 +21,7 @@ export interface ISCTMEntry extends Document {
 
 const sctmEntrySchema = new Schema<ISCTMEntry>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: String, required: true },
     systemId: { type: String, required: true, index: true },
     controlId: { type: String, required: true },
     status: { type: String, default: 'Not Implemented' },

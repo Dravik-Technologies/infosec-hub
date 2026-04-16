@@ -122,9 +122,11 @@ export default function WizardPage() {
   }
 
   const [isCreating, setIsCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
 
   async function handleCreate() {
     setIsCreating(true)
+    setCreateError(null)
     try {
       const baseline = computeBaseline(
         confidentiality as ImpactLevel,
@@ -162,8 +164,9 @@ export default function WizardPage() {
       await addSystem(system)
       await initializeSystem(id, baseline)
       navigate(`/systems/${id}/sctm`)
-    } catch {
+    } catch (err: any) {
       setIsCreating(false)
+      setCreateError(err.message ?? 'Failed to create system. Please check that the server is running and try again.')
     }
   }
 
@@ -443,6 +446,11 @@ export default function WizardPage() {
         </Card>
 
         {/* Navigation */}
+        {createError && (
+          <p className="mt-4 text-red-400 text-sm bg-red-400/10 rounded-lg p-3 border border-red-400/20">
+            {createError}
+          </p>
+        )}
         <div className="flex items-center justify-between mt-5">
           <Button
             variant="ghost"

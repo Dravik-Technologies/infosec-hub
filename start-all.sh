@@ -28,7 +28,8 @@ fi
 label "[1/7] Starting MongoDB on port 27017..."
 "$MONGOD" --dbpath "$MONGO_DATA" --port 27017 --logpath "$MONGO_LOG" --logappend &
 MONGO_PID=$!
-sleep 2
+echo "  Waiting 6 seconds for MongoDB to initialize..."
+sleep 6
 
 # ── 2. Hub (port 3010) ──────────────────────────────────────
 label "[2/7] Starting Hub on port 3010..."

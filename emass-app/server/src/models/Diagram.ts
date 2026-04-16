@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 
 export type DiagramType =
   | 'Authorization Boundary'
@@ -9,7 +9,7 @@ export type DiagramType =
   | 'Other'
 
 export interface IDiagram extends Document<string> {
-  userId: Types.ObjectId
+  userId: string
   systemId: string
   name: string
   diagramType: DiagramType
@@ -23,7 +23,7 @@ export interface IDiagram extends Document<string> {
 const diagramSchema = new Schema<IDiagram>(
   {
     _id: { type: String },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    userId: { type: String, required: true },
     systemId: { type: String, required: true, index: true },
     name: { type: String, required: true },
     diagramType: { type: String, required: true },

@@ -1,7 +1,7 @@
-import { Schema, model, Document, Types } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 
 export interface IInfoSystem extends Document<string> {
-  userId: Types.ObjectId
+  userId: string
   name: string
   abbreviation: string
   systemType: string
@@ -28,7 +28,7 @@ export interface IInfoSystem extends Document<string> {
 const infoSystemSchema = new Schema<IInfoSystem>(
   {
     _id: { type: String },
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    userId: { type: String, required: true, index: true },
     name: { type: String, required: true },
     abbreviation: String,
     systemType: String,
