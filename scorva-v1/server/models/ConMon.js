@@ -13,6 +13,7 @@ const schema = new Schema({
   due_date:               String,
   status:                 { type: String, default: 'Pending' },   // 'Pending' | 'Completed'
   completed_date:         String,
+  site:                   String,
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 schema.set('toJSON', { transform: (_d, r) => { r.id = r._id; delete r._id; delete r.__v; return r; } });

@@ -11,6 +11,7 @@ const schema = new Schema({
   ao:            String,
   controls:      { type: Number, default: 0 },
   open_findings: { type: Number, default: 0 },
+  site:          String,
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 schema.set('toJSON', { transform: (_d, r) => { r.id = r._id; delete r._id; delete r.__v; return r; } });

@@ -1,7 +1,11 @@
+import { useEffect, useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Shield, ChevronLeft, Bell, Sun, Moon, LogOut } from 'lucide-react';
+import { Shield, ChevronLeft, Bell, Sun, Moon, LogOut, Building2 } from 'lucide-react';
+import axios from 'axios';
 import { useAuth }  from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+
+const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
 /**
  * AppHeader — per-app top nav bar.
@@ -12,8 +16,18 @@ import { useTheme } from '../../context/ThemeContext';
  */
 export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, selectedSite, selectSite } = useAuth();
   const { dark, toggle } = useTheme();
+
+  const isAdmin = user?.role === 'Corporate Admin';
+  const [sites, setSites] = useState([]);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    axios.get(`${BASE}/api/sites`, { withCredentials: true })
+      .then(r => setSites(r.data))
+      .catch(() => {});
+  }, [isAdmin]);
 
   return (
     <header className="flex items-center h-14 px-4 bg-scorva-surface border-b border-scorva-border shrink-0 gap-3 min-w-0">
@@ -65,6 +79,25 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
 
       {/* Right actions */}
       <div className="ml-auto flex items-center gap-1 shrink-0">
+
+        {/* Corporate Admin site selector */}
+        {isAdmin && (
+          <div className="flex items-center gap-1.5 mr-1 pr-2 border-r border-scorva-border">
+            <Building2 size={13} className="text-scorva-muted shrink-0" />
+            <select
+              value={selectedSite || ''}
+              onChange={e => selectSite(e.target.value || null)}
+              className="text-xs bg-transparent text-scorva-text border border-scorva-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-scorva-accent cursor-pointer"
+              title="Filter data by site, or view all sites"
+            >
+              <option value="">All Sites</option>
+              {sites.map(s => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <button
           onClick={toggle}
           className="p-1.5 rounded-md text-scorva-muted hover:text-scorva-text hover:bg-scorva-hover transition-colors"
@@ -87,7 +120,14 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
           </div>
           <div className="hidden sm:flex flex-col leading-none">
             <span className="text-xs font-medium text-scorva-text">{user?.name}</span>
-            <span className="text-[10px] text-scorva-muted">{user?.role}</span>
+            <span className="text-[10px] text-scorva-muted">
+              {user?.role}
+              {isAdmin && selectedSite && (
+                <span className="ml-1 text-scorva-accent">
+                  · {sites.find(s => s.id === selectedSite)?.label || selectedSite}
+                </span>
+              )}
+            </span>
           </div>
           <button
             onClick={logout}

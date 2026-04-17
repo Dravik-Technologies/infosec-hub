@@ -1,12 +1,26 @@
-import { Menu, LogOut, Bell, Sun, Moon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Menu, LogOut, Bell, Sun, Moon, Building2 } from 'lucide-react';
 import { useAuth }  from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
 
 export default function Header({ onMenuClick }) {
-  const { user, logout } = useAuth();
+  const { user, logout, selectedSite, selectSite } = useAuth();
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
+
+  const [sites, setSites] = useState([]);
+  const isAdmin = user?.role === 'Corporate Admin';
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    axios.get(`${BASE}/api/sites`, { withCredentials: true })
+      .then(r => setSites(r.data))
+      .catch(() => {});
+  }, [isAdmin]);
 
   return (
     <header className="flex items-center justify-between h-14 px-4 bg-scorva-surface border-b border-scorva-border shrink-0">
@@ -20,6 +34,24 @@ export default function Header({ onMenuClick }) {
       <div className="flex-1" />
 
       <div className="flex items-center gap-1">
+        {/* Corporate Admin site selector */}
+        {isAdmin && (
+          <div className="flex items-center gap-1.5 mr-2 pr-2 border-r border-scorva-border">
+            <Building2 size={14} className="text-scorva-muted shrink-0" />
+            <select
+              value={selectedSite || ''}
+              onChange={e => selectSite(e.target.value || null)}
+              className="text-xs bg-transparent text-scorva-text border border-scorva-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-scorva-accent cursor-pointer"
+              title="View data for a specific site, or all sites"
+            >
+              <option value="">All Sites</option>
+              {sites.map(s => (
+                <option key={s.id} value={s.id}>{s.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Dark / Light toggle */}
         <button
           onClick={toggle}
@@ -45,7 +77,14 @@ export default function Header({ onMenuClick }) {
           {user && (
             <div className="hidden sm:flex flex-col leading-none">
               <span className="text-xs font-medium text-scorva-text">{user.name}</span>
-              <span className="text-xs text-scorva-muted">{user.role}</span>
+              <span className="text-xs text-scorva-muted">
+                {user.role}
+                {isAdmin && selectedSite && (
+                  <span className="ml-1 text-scorva-accent">
+                    · {sites.find(s => s.id === selectedSite)?.label || selectedSite}
+                  </span>
+                )}
+              </span>
             </div>
           )}
           <button

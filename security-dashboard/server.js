@@ -17,6 +17,10 @@ const mongoose = require('./server/db');
 // Pre-register typed Mongoose models
 require('./server/models/Employee');
 require('./server/models/Document');
+require('./server/models/Site');
+require('./server/models/InspectionItem');
+require('./server/models/Contract');
+require('./server/models/Transaction');
 
 const PORT       = process.env.PORT || 8080;
 const DATA_DIR   = path.join(__dirname, 'data');
@@ -53,8 +57,12 @@ function getModel(name) {
     // Use pre-registered typed models for employees / documents
     try {
         return (_models[name] = mongoose.model(
-            name === 'employees' ? 'Employee' :
-            name === 'documents' ? 'MashDocument' :
+            name === 'employees'   ? 'Employee'       :
+            name === 'documents'   ? 'MashDocument'   :
+            name === 'sites'       ? 'Site'           :
+            name === 'inspections' ? 'InspectionItem' :
+            name === 'contracts'     ? 'Contract'     :
+            name === 'transactions'  ? 'Transaction'  :
             name
         ));
     } catch { /* fall through — create a flexible model */ }
@@ -263,13 +271,11 @@ function mapHubUser(hubUser) {
 const app = express();
 app.use(express.json());
 
-// Serve Vite build if available, otherwise legacy index.html
+// The new MASH app is CDN-based (no build step) — always serve from the root
+// directory where index.html lives. client/dist is the old Vite build and is
+// no longer used; keeping the variable only for the SPA fallback below.
 const clientDist = path.join(__dirname, 'client', 'dist');
-if (fs.existsSync(clientDist)) {
-    app.use(express.static(clientDist));
-} else {
-    app.use(express.static(__dirname));
-}
+app.use(express.static(__dirname));
 
 // ── RBAC: filter GET response based on role ────────────────────────────────────
 const SITE_NAMES = {
@@ -375,8 +381,785 @@ app.get('/auth/sso', async (req, res) => {
     }
 });
 
+// ── Public executive briefing page (no auth required) ─────────────────────────
+app.get(['/briefing', '/briefing.html'], (_req, res) => {
+    res.sendFile(path.join(__dirname, 'briefing.html'));
+});
+
+// ── Public read-only briefing summary (no auth required) ──────────────────────
+app.get('/public/briefing', async (req, res) => {
+    try {
+        let sites, risks, budget;
+        if (dbOk()) {
+            [sites, risks, budget] = await Promise.all([
+                dbGet('sites'), dbGet('risks'), dbGet('budget'),
+            ]);
+        } else {
+            sites  = readJson('sites')  ?? [];
+            risks  = readJson('risks')  ?? [];
+            budget = readJson('budget') ?? {};
+        }
+        res.json({ sites, risks, budget, generatedAt: new Date().toISOString() });
+    } catch (err) {
+        console.error('[MASH /public/briefing]', err.message);
+        res.status(500).json({ error: 'Unable to load briefing data' });
+    }
+});
+
 // ── Protect all /api/* routes ──────────────────────────────────────────────────
 app.use('/api', requireAuth);
+
+// ── Typed Site routes ─────────────────────────────────────────────────────────
+// Registered BEFORE the generic /api/:collection handlers.
+// Express matches routes in registration order — a literal path segment like
+// "sites" would otherwise lose to the :collection wildcard if placed after it.
+
+// POST /api/sites — Create a new facility (Mongoose validates required fields)
+app.post('/api/sites', async (req, res) => {
+    const { siteId, name } = req.body || {};
+    if (!siteId) return res.status(400).json({ error: 'siteId is required' });
+    if (!name)   return res.status(400).json({ error: 'name is required' });
+    try {
+        let doc;
+        if (dbOk()) {
+            const _id = req.body.id || uid();
+            doc = await getModel('sites').create({ ...req.body, _id });
+            doc = doc.toJSON();
+        } else {
+            const item     = { ...req.body, id: req.body.id || uid() };
+            const existing = readJson('sites') || [];
+            existing.push(item);
+            writeJson('sites', existing);
+            doc = item;
+        }
+        res.status(201).json({ ok: true, data: doc });
+    } catch (err) {
+        console.error('[MASH POST /api/sites]', err.message);
+        const status = err.name === 'ValidationError' ? 400 : 500;
+        res.status(status).json({ error: err.message });
+    }
+});
+
+// PUT /api/sites/:id — Replace a single facility document by ID.
+// Distinct from PUT /api/:collection (which replaces the whole array).
+// runValidators: true re-runs the schema rules on every update.
+app.put('/api/sites/:id', async (req, res) => {
+    const { id } = req.params;
+    if (!req.body.name) return res.status(400).json({ error: 'name is required' });
+
+    // Strip any status value that isn't a valid enum member (e.g. legacy 'green',
+    // 'yellow', 'red' from old seed data). Removing it from the $set payload means
+    // Mongoose leaves the existing stored value unchanged rather than rejecting the
+    // entire update with a ValidationError.
+    const VALID_STATUSES = new Set(['Active', 'Construction', 'Renovation', 'Decommissioned']);
+    const body = { ...req.body };
+    if (body.status !== undefined && !VALID_STATUSES.has(body.status)) {
+        delete body.status;
+    }
+
+    try {
+        let doc;
+        if (dbOk()) {
+            doc = await getModel('sites').findByIdAndUpdate(
+                id,
+                { $set: body },
+                { new: true, runValidators: true }
+            );
+            if (!doc) return res.status(404).json({ error: 'Site not found' });
+            doc = doc.toJSON();
+        } else {
+            const list = readJson('sites') || [];
+            const idx  = list.findIndex(s => s.id === id || s._id === id);
+            if (idx === -1) return res.status(404).json({ error: 'Site not found' });
+            list[idx] = { ...list[idx], ...body, id };
+            writeJson('sites', list);
+            doc = list[idx];
+        }
+        res.json({ ok: true, data: doc });
+    } catch (err) {
+        console.error('[MASH PUT /api/sites/:id]', err.message);
+        const status = err.name === 'ValidationError' ? 400 : 500;
+        res.status(status).json({ error: err.message });
+    }
+});
+
+// ── Typed Inspection routes ───────────────────────────────────────────────────
+// Registered BEFORE the generic handlers.
+// CRITICAL ordering: /action-items MUST come before /:siteId — otherwise
+// Express would treat the literal string "action-items" as a :siteId value.
+
+// POST /api/inspections/import — Bulk-create checklist items for one site
+app.post('/api/inspections/import', async (req, res) => {
+    const { siteId, items } = req.body || {};
+    if (!siteId)                            return res.status(400).json({ error: 'siteId is required' });
+    if (!Array.isArray(items) || !items.length) return res.status(400).json({ error: 'items must be a non-empty array' });
+    try {
+        const saved = [];
+        if (dbOk()) {
+            const M = getModel('inspections');
+            for (const item of items) {
+                const doc = await M.create({ ...item, siteId, _id: uid() });
+                saved.push(doc.toJSON());
+            }
+        } else {
+            const existing = readJson('inspections') || [];
+            for (const item of items) {
+                const entry = { ...item, siteId, id: uid() };
+                existing.push(entry);
+                saved.push(entry);
+            }
+            writeJson('inspections', existing);
+        }
+        res.status(201).json({ ok: true, count: saved.length, data: saved });
+    } catch (err) {
+        console.error('[MASH POST /api/inspections/import]', err.message);
+        const status = err.name === 'ValidationError' ? 400 : 500;
+        res.status(status).json({ error: err.message });
+    }
+});
+
+// GET /api/inspections/action-items — Fail + Pending items across ALL sites
+app.get('/api/inspections/action-items', async (req, res) => {
+    try {
+        let docs;
+        if (dbOk()) {
+            docs = await getModel('inspections')
+                .find({ status: { $in: ['Fail', 'Pending'] } })
+                .lean();
+            docs = docs.map(({ _id, __v, ...r }) => ({ ...r, id: _id }));
+        } else {
+            const all = readJson('inspections') || [];
+            docs = all.filter(i => i.status === 'Fail' || i.status === 'Pending');
+        }
+        res.json(docs);
+    } catch (err) {
+        console.error('[MASH GET /api/inspections/action-items]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// PUT /api/inspections/:id — Update status + notes on a single checklist item
+app.put('/api/inspections/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status, notes } = req.body || {};
+    try {
+        let doc;
+        if (dbOk()) {
+            doc = await getModel('inspections').findByIdAndUpdate(
+                id,
+                { $set: { status, notes } },
+                { new: true, runValidators: true }
+            );
+            if (!doc) return res.status(404).json({ error: 'Inspection item not found' });
+            doc = doc.toJSON();
+        } else {
+            const all = readJson('inspections') || [];
+            const idx = all.findIndex(i => i.id === id || i._id === id);
+            if (idx === -1) return res.status(404).json({ error: 'Inspection item not found' });
+            all[idx] = { ...all[idx], status, notes };
+            writeJson('inspections', all);
+            doc = all[idx];
+        }
+        res.json({ ok: true, data: doc });
+    } catch (err) {
+        console.error('[MASH PUT /api/inspections/:id]', err.message);
+        const httpStatus = err.name === 'ValidationError' ? 400 : 500;
+        res.status(httpStatus).json({ error: err.message });
+    }
+});
+
+// GET /api/inspections/:siteId — All checklist items for a specific site
+app.get('/api/inspections/:siteId', async (req, res) => {
+    const { siteId } = req.params;
+    try {
+        let docs;
+        if (dbOk()) {
+            docs = await getModel('inspections').find({ siteId }).lean();
+            docs = docs.map(({ _id, __v, ...r }) => ({ ...r, id: _id }));
+        } else {
+            const all = readJson('inspections') || [];
+            docs = all.filter(i => i.siteId === siteId);
+        }
+        res.json(docs);
+    } catch (err) {
+        console.error(`[MASH GET /api/inspections/${siteId}]`, err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Typed Contract routes ─────────────────────────────────────────────────────
+// Registered before the generic /api/:collection wildcard.
+
+// POST /api/contracts — Provision a new vendor contract
+app.post('/api/contracts', async (req, res) => {
+    const { contractId } = req.body || {};
+    if (!contractId) return res.status(400).json({ error: 'contractId is required' });
+    try {
+        let doc;
+        if (dbOk()) {
+            const _id = req.body.id || uid();
+            doc = await getModel('contracts').create({ ...req.body, _id });
+            doc = doc.toJSON();
+        } else {
+            const item     = { ...req.body, id: req.body.id || uid() };
+            const existing = readJson('contracts') || [];
+            existing.push(item);
+            writeJson('contracts', existing);
+            doc = item;
+        }
+        res.status(201).json({ ok: true, data: doc });
+    } catch (err) {
+        console.error('[MASH POST /api/contracts]', err.message);
+        const status = err.name === 'ValidationError' ? 400 : 500;
+        res.status(status).json({ error: err.message });
+    }
+});
+
+// PUT /api/contracts/:id — Edit a contract or log an expense against it.
+//
+// Audit trail: if amountSpent is present in the body, this is an expense-log
+// operation. We read the existing amountSpent first, compute the delta, then
+// insert an immutable Transaction record alongside the contract update.
+app.put('/api/contracts/:id', async (req, res) => {
+    const { id }       = req.params;
+    const isExpense    = req.body.amountSpent !== undefined;
+    const txnShortId   = () => 'TXN-' + Math.random().toString(36).slice(2, 7).toUpperCase();
+
+    try {
+        let doc;
+        if (dbOk()) {
+            // Read old value so we can compute the expense delta
+            let expenseDelta = 0;
+            if (isExpense) {
+                const existing = await getModel('contracts').findById(id).lean();
+                if (existing) {
+                    expenseDelta = (req.body.amountSpent || 0) - (existing.amountSpent || 0);
+                }
+            }
+
+            doc = await getModel('contracts').findByIdAndUpdate(
+                id,
+                { $set: req.body },
+                { new: true, runValidators: true }
+            );
+            if (!doc) return res.status(404).json({ error: 'Contract not found' });
+            doc = doc.toJSON();
+
+            // Write audit record — fire-and-forget (don't fail the PUT if this errors)
+            if (isExpense && expenseDelta > 0) {
+                getModel('transactions').create({
+                    _id:           uid(),
+                    transactionId: txnShortId(),
+                    contractId:    doc.contractId || '',
+                    siteId:        doc.siteId     || '',
+                    amount:        expenseDelta,
+                    type:          'Expense',
+                    date:          new Date(),
+                }).catch(e => console.error('[MASH TXN create]', e.message));
+            }
+        } else {
+            const list = readJson('contracts') || [];
+            const idx  = list.findIndex(c => c.id === id || c._id === id);
+            if (idx === -1) return res.status(404).json({ error: 'Contract not found' });
+
+            if (isExpense) {
+                const expenseDelta = (req.body.amountSpent || 0) - (list[idx].amountSpent || 0);
+                if (expenseDelta > 0) {
+                    const txns = readJson('transactions') || [];
+                    txns.unshift({
+                        id:            uid(),
+                        transactionId: txnShortId(),
+                        contractId:    list[idx].contractId || '',
+                        siteId:        list[idx].siteId     || '',
+                        amount:        expenseDelta,
+                        type:          'Expense',
+                        date:          new Date().toISOString(),
+                    });
+                    writeJson('transactions', txns);
+                }
+            }
+
+            list[idx] = { ...list[idx], ...req.body, id };
+            writeJson('contracts', list);
+            doc = list[idx];
+        }
+        res.json({ ok: true, data: doc });
+    } catch (err) {
+        console.error('[MASH PUT /api/contracts/:id]', err.message);
+        const status = err.name === 'ValidationError' ? 400 : 500;
+        res.status(status).json({ error: err.message });
+    }
+});
+
+// ── Budget / site-utilization aggregation ────────────────────────────────────
+// GET /api/budget/site-utilization
+//
+// Groups all Contract documents by siteId, sums totalValue (allocated) and
+// amountSpent (spent), then $lookup-joins the sites collection to resolve each
+// siteId to a human-readable facility name.
+//
+// Pipeline (two stages + $lookup):
+//   Stage 1 — $group by siteId → sum allocated + spent
+//   Stage 2 — $lookup against 'sites' on localField: siteId / foreignField: siteId
+//   Stage 3 — $project to shape the output (siteId, siteName, allocated, spent, percentage)
+//
+// JSON fallback replicates the same logic in plain JS using a Map.
+//
+// Registered before GET /api/:collection to avoid the wildcard eating the path.
+app.get('/api/budget/site-utilization', async (req, res) => {
+    try {
+        let docs;
+        if (dbOk()) {
+            docs = await getModel('contracts').aggregate([
+                {
+                    $group: {
+                        _id:       '$siteId',
+                        allocated: { $sum: '$totalValue' },
+                        spent:     { $sum: '$amountSpent' },
+                    },
+                },
+                {
+                    // JOIN: resolve each siteId to its Site document for the facility name
+                    $lookup: {
+                        from:         'sites',
+                        localField:   '_id',      // the grouped contract siteId
+                        foreignField: 'siteId',   // the siteId field on Site documents
+                        as:           'siteData',
+                    },
+                },
+                {
+                    $project: {
+                        _id:        0,
+                        siteId:     '$_id',
+                        siteName:   {
+                            $ifNull: [{ $arrayElemAt: ['$siteData.name', 0] }, '$_id'],
+                        },
+                        allocated:  1,
+                        spent:      1,
+                        percentage: {
+                            $cond: [
+                                { $gt: ['$allocated', 0] },
+                                {
+                                    $round: [
+                                        { $multiply: [{ $divide: ['$spent', '$allocated'] }, 100] },
+                                        0,
+                                    ],
+                                },
+                                0,
+                            ],
+                        },
+                    },
+                },
+                { $sort: { percentage: -1 } },
+            ]);
+        } else {
+            // JSON fallback — replicate the aggregation with plain JS
+            const contracts = readJson('contracts') || [];
+            const sites     = readJson('sites')     || [];
+            const siteMap   = new Map(
+                sites.map(s => [s.siteId || s.id || s._id, s.name || s.siteId || '—'])
+            );
+            const grouped   = new Map();
+            for (const c of contracts) {
+                const sid = c.siteId || null;
+                if (!sid) continue;
+                if (!grouped.has(sid)) grouped.set(sid, { allocated: 0, spent: 0 });
+                const g  = grouped.get(sid);
+                g.allocated += c.totalValue  || 0;
+                g.spent     += c.amountSpent || 0;
+            }
+            docs = [...grouped.entries()]
+                .map(([siteId, { allocated, spent }]) => ({
+                    siteId,
+                    siteName:   siteMap.get(siteId) || siteId,
+                    allocated,
+                    spent,
+                    percentage: allocated > 0 ? Math.round((spent / allocated) * 100) : 0,
+                }))
+                .sort((a, b) => b.percentage - a.percentage);
+        }
+        res.json(docs);
+    } catch (err) {
+        console.error('[MASH GET /api/budget/site-utilization]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// GET /api/budget/transactions — Latest 50 audit records, newest first
+app.get('/api/budget/transactions', async (req, res) => {
+    try {
+        let docs;
+        if (dbOk()) {
+            const raw = await getModel('transactions')
+                .find()
+                .sort({ date: -1 })
+                .limit(50)
+                .lean();
+            docs = raw.map(({ _id, __v, ...r }) => ({ ...r, id: _id }));
+        } else {
+            const all = readJson('transactions') || [];
+            docs = [...all]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 50);
+        }
+        res.json(docs);
+    } catch (err) {
+        console.error('[MASH GET /api/budget/transactions]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Compliance matrix aggregation ────────────────────────────────────────────
+// GET /api/compliance/matrix
+//
+// Aggregates InspectionItem documents into a per-control summary.
+// Each row answers: "of the sites that HAVE this control, how many passed?"
+//
+// MongoDB pipeline (two-stage):
+//   Stage 1 — group by (controlId, siteId) so each site contributes one row
+//             per control regardless of how many checklist entries it has.
+//   Stage 2 — group by controlId to count totalApplicableSites and
+//             compliantSites (those with status === 'Pass').
+//
+// JSON fallback reproduces the same logic in plain JS using a Map.
+//
+// Registered before GET /api/:collection so the literal path segment
+// "compliance" is never mistaken for a :collection wildcard parameter.
+app.get('/api/compliance/matrix', async (req, res) => {
+    try {
+        let docs;
+        if (dbOk()) {
+            const M = getModel('inspections');
+            const rows = await M.aggregate([
+                // Stage 1 — one row per (controlId, siteId) pair
+                {
+                    $group: {
+                        _id:         { controlId: '$controlId', siteId: '$siteId' },
+                        status:      { $first: '$status' },
+                        description: { $first: '$description' },
+                    },
+                },
+                // Stage 2 — roll up to controlId, count sites and passing sites
+                {
+                    $group: {
+                        _id:                  '$_id.controlId',
+                        description:          { $first: '$description' },
+                        totalApplicableSites: { $sum: 1 },
+                        compliantSites:       {
+                            $sum: { $cond: [{ $eq: ['$status', 'Pass'] }, 1, 0] },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        _id:                  0,
+                        controlId:            '$_id',
+                        description:          1,
+                        totalApplicableSites: 1,
+                        compliantSites:       1,
+                    },
+                },
+                { $sort: { controlId: 1 } },
+            ]);
+            docs = rows;
+        } else {
+            // JSON fallback — same logic in plain JS
+            const all = readJson('inspections') || [];
+            // Map: controlId → { siteIds: Set, passSiteIds: Set, description }
+            const map = new Map();
+            for (const item of all) {
+                const cid = item.controlId || 'UNKNOWN';
+                if (!map.has(cid)) {
+                    map.set(cid, { description: item.description || '', siteIds: new Set(), passSiteIds: new Set() });
+                }
+                const entry = map.get(cid);
+                if (item.siteId) entry.siteIds.add(item.siteId);
+                if (item.status === 'Pass' && item.siteId) entry.passSiteIds.add(item.siteId);
+            }
+            docs = [...map.entries()]
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([controlId, v]) => ({
+                    controlId,
+                    description:          v.description,
+                    totalApplicableSites: v.siteIds.size,
+                    compliantSites:       v.passSiteIds.size,
+                }));
+        }
+        res.json(docs);
+    } catch (err) {
+        console.error('[MASH GET /api/compliance/matrix]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Executive Summary aggregation ────────────────────────────────────────────
+// GET /api/executive-summary
+//
+// Fires six simultaneous MongoDB aggregations via Promise.all and returns a
+// single JSON object with the three KPI buckets the ExecutiveBriefing needs:
+//
+//   financials  — Contract totals (allocated / spent / count)
+//   exposures   — InspectionItem counts by status + top-5 failing controls
+//   sites       — Site totals, per-site fail counts, top-5 contracts by value
+//
+// JSON fallback replicates the same logic in plain JS using reduce + Map.
+//
+// Registered before the generic handlers so "executive-summary" is never
+// mistaken for a :collection wildcard value.
+app.get('/api/executive-summary', async (req, res) => {
+    try {
+        if (dbOk()) {
+            const [
+                finRows,        // Contract $group → allocated, spent, count
+                statusRows,     // InspectionItem $group by status
+                siteStatRows,   // Site $group by status
+                topControls,    // top-5 failing controlIds
+                topContracts,   // top-5 contracts by totalValue
+                failBySite,     // failing count per siteId
+                txnRows,        // monthly transaction totals for burn history
+            ] = await Promise.all([
+
+                // 1 — Contract totals
+                getModel('contracts').aggregate([{
+                    $group: {
+                        _id:       null,
+                        allocated: { $sum: '$totalValue'  },
+                        spent:     { $sum: '$amountSpent' },
+                        count:     { $sum: 1              },
+                    },
+                }]),
+
+                // 2 — Inspection items grouped by status
+                getModel('inspections').aggregate([{
+                    $group: { _id: '$status', count: { $sum: 1 } },
+                }]),
+
+                // 3 — Sites grouped by status
+                getModel('sites').aggregate([{
+                    $group: { _id: '$status', count: { $sum: 1 } },
+                }]),
+
+                // 4 — Top-5 most common failing controls
+                getModel('inspections').aggregate([
+                    { $match: { status: 'Fail' } },
+                    {
+                        $group: {
+                            _id:         '$controlId',
+                            description: { $first: '$description' },
+                            failCount:   { $sum: 1 },
+                        },
+                    },
+                    { $sort: { failCount: -1 } },
+                    { $limit: 5 },
+                    { $project: { _id: 0, controlId: '$_id', description: 1, failCount: 1 } },
+                ]),
+
+                // 5 — Top-5 contracts by totalValue
+                getModel('contracts').find().sort({ totalValue: -1 }).limit(5).lean(),
+
+                // 6 — Per-site failing inspection counts
+                getModel('inspections').aggregate([
+                    { $match: { status: 'Fail' } },
+                    { $group: { _id: '$siteId', failCount: { $sum: 1 } } },
+                ]),
+
+                // 7 — Monthly transaction totals (for burn history sparkline)
+                getModel('transactions').aggregate([
+                    {
+                        $group: {
+                            _id:   { year: { $year: '$date' }, month: { $month: '$date' } },
+                            spent: { $sum: '$amount' },
+                        },
+                    },
+                    { $sort: { '_id.year': 1, '_id.month': 1 } },
+                ]),
+            ]);
+
+            // Parse financial row
+            const fin       = finRows[0] || { allocated: 0, spent: 0, count: 0 };
+
+            // Parse inspection status counts
+            let failCount = 0, pendingCount = 0;
+            for (const row of statusRows) {
+                if (row._id === 'Fail')    failCount    = row.count;
+                if (row._id === 'Pending') pendingCount = row.count;
+            }
+
+            // Per-site failing map  { siteId → failCount }
+            const perSiteFailing = {};
+            for (const row of failBySite) { perSiteFailing[row._id] = row.failCount; }
+
+            // Site status breakdown + readiness count
+            const bySiteStatus = {};
+            for (const row of siteStatRows) { bySiteStatus[row._id || 'Unknown'] = row.count; }
+            const totalSiteCount = Object.values(bySiteStatus).reduce((s, n) => s + n, 0);
+            const readySites     = totalSiteCount - Object.keys(perSiteFailing).length;
+
+            // Build 6-month burn history
+            const MONTH_NAMES  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const plannedPerMo = fin.allocated ? Math.round(fin.allocated / 12) : 0;
+            const now          = new Date();
+            const burnHistory  = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+                const y = d.getFullYear(), m = d.getMonth() + 1;
+                const row = txnRows.find(r => r._id.year === y && r._id.month === m);
+                burnHistory.push({ month: MONTH_NAMES[m - 1], spent: row ? row.spent : 0, planned: plannedPerMo });
+            }
+
+            res.json({
+                financials: {
+                    allocated:     fin.allocated,
+                    spent:         fin.spent,
+                    contractCount: fin.count,
+                    burnHistory,
+                },
+                exposures: {
+                    total:       failCount + pendingCount,
+                    failing:     failCount,
+                    pending:     pendingCount,
+                    topControls,
+                },
+                sites: {
+                    total:         totalSiteCount,
+                    readySites:    Math.max(0, readySites),
+                    bySiteStatus,
+                    perSiteFailing,
+                    topContracts:  topContracts.map(({ _id, __v, ...r }) => ({ ...r, id: _id })),
+                },
+            });
+
+        } else {
+            // ── JSON fallback ─────────────────────────────────────────────────
+            const contracts    = readJson('contracts')    || [];
+            const inspections  = readJson('inspections')  || [];
+            const sites        = readJson('sites')        || [];
+            const transactions = readJson('transactions') || [];
+
+            const allocated = contracts.reduce((s, c) => s + (c.totalValue  || 0), 0);
+            const spent     = contracts.reduce((s, c) => s + (c.amountSpent || 0), 0);
+
+            const failItems    = inspections.filter(i => i.status === 'Fail');
+            const pendingItems = inspections.filter(i => i.status === 'Pending');
+
+            // Top-5 failing controls
+            const ctrlMap = new Map();
+            for (const item of failItems) {
+                const cid = item.controlId || 'UNKNOWN';
+                if (!ctrlMap.has(cid))
+                    ctrlMap.set(cid, { controlId: cid, description: item.description || '', failCount: 0 });
+                ctrlMap.get(cid).failCount++;
+            }
+            const topControls = [...ctrlMap.values()]
+                .sort((a, b) => b.failCount - a.failCount)
+                .slice(0, 5);
+
+            // Per-site failing map
+            const perSiteFailing = {};
+            for (const item of failItems) {
+                if (item.siteId) perSiteFailing[item.siteId] = (perSiteFailing[item.siteId] || 0) + 1;
+            }
+            const readySites = sites.filter(s => !perSiteFailing[s.siteId || s.id]).length;
+
+            // Site status breakdown
+            const bySiteStatus = {};
+            for (const s of sites) {
+                const st = s.status || 'Unknown';
+                bySiteStatus[st] = (bySiteStatus[st] || 0) + 1;
+            }
+
+            const topContracts = [...contracts]
+                .sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0))
+                .slice(0, 5);
+
+            // 6-month burn history from transactions JSON
+            const MONTH_NAMES_FB  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            const plannedPerMoFB  = allocated ? Math.round(allocated / 12) : 0;
+            const nowFB           = new Date();
+            const burnHistory     = [];
+            for (let i = 5; i >= 0; i--) {
+                const d = new Date(nowFB.getFullYear(), nowFB.getMonth() - i, 1);
+                const y = d.getFullYear(), m = d.getMonth();  // 0-based
+                const mo = transactions
+                    .filter(t => { const td = new Date(t.date); return td.getFullYear() === y && td.getMonth() === m; })
+                    .reduce((s, t) => s + (t.amount || 0), 0);
+                burnHistory.push({ month: MONTH_NAMES_FB[m], spent: mo, planned: plannedPerMoFB });
+            }
+
+            res.json({
+                financials: { allocated, spent, contractCount: contracts.length, burnHistory },
+                exposures:  { total: failItems.length + pendingItems.length, failing: failItems.length, pending: pendingItems.length, topControls },
+                sites:      { total: sites.length, readySites, bySiteStatus, perSiteFailing, topContracts },
+            });
+        }
+    } catch (err) {
+        console.error('[MASH GET /api/executive-summary]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Typed Timeline milestone routes ──────────────────────────────────────────
+// Milestones live inside the `timeline` singleton document under a `milestones`
+// array.  The generic PATCH /api/:collection/:id already handles in-place edits
+// (dbPatch searches singleton arrays by item.id).  We only need typed routes for
+// CREATE and DELETE since neither maps cleanly to the generic handlers.
+//
+// Both paths have three segments after /api/ so they never collide with the
+// two-segment generic /api/:collection or three-segment /api/:collection/:id.
+
+// POST /api/timeline/milestones — push a new milestone into the singleton array
+app.post('/api/timeline/milestones', async (req, res) => {
+    try {
+        const milestone = { ...req.body, id: req.body.id || uid() };
+        if (dbOk()) {
+            const M   = getModel('timeline');
+            const doc = await M.findById('singleton');
+            if (!doc) return res.status(404).json({ error: 'Timeline not initialised' });
+            if (!Array.isArray(doc.milestones)) doc.milestones = [];
+            doc.milestones.push(milestone);
+            doc.markModified('milestones');
+            await doc.save();
+        } else {
+            const tl = readJson('timeline') || {};
+            const ms = Array.isArray(tl.milestones) ? tl.milestones : [];
+            ms.push(milestone);
+            writeJson('timeline', { ...tl, milestones: ms });
+        }
+        res.status(201).json({ ok: true, data: milestone });
+    } catch (err) {
+        console.error('[MASH POST /api/timeline/milestones]', err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// DELETE /api/timeline/milestones/:id — remove one milestone by id
+app.delete('/api/timeline/milestones/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        if (dbOk()) {
+            const M   = getModel('timeline');
+            const doc = await M.findById('singleton');
+            if (!doc) return res.status(404).json({ error: 'Timeline not initialised' });
+            const before = (doc.milestones || []).length;
+            doc.milestones = (doc.milestones || []).filter(m => m.id !== id);
+            if (doc.milestones.length === before)
+                return res.status(404).json({ error: 'Milestone not found' });
+            doc.markModified('milestones');
+            await doc.save();
+        } else {
+            const tl = readJson('timeline') || {};
+            const ms = Array.isArray(tl.milestones) ? tl.milestones : [];
+            const filtered = ms.filter(m => m.id !== id);
+            if (filtered.length === ms.length)
+                return res.status(404).json({ error: 'Milestone not found' });
+            writeJson('timeline', { ...tl, milestones: filtered });
+        }
+        res.json({ ok: true });
+    } catch (err) {
+        console.error(`[MASH DELETE /api/timeline/milestones/${id}]`, err.message);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 // ── Generic CRUD ───────────────────────────────────────────────────────────────
 
@@ -484,11 +1267,7 @@ app.delete('/api/:collection/:id', async (req, res) => {
 
 // ── SPA fallback ───────────────────────────────────────────────────────────────
 app.get('*', (_req, res) => {
-    if (fs.existsSync(clientDist)) {
-        res.sendFile(path.join(clientDist, 'index.html'));
-    } else {
-        res.sendFile(path.join(__dirname, 'index.html'));
-    }
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 // ── Start ──────────────────────────────────────────────────────────────────────

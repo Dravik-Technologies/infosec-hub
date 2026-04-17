@@ -93,6 +93,21 @@ router.get('/sso', async (req, res) => {
   }
 });
 
+/* POST /auth/select-site — Corporate Admin only; { siteId: 'SITE-001' | null } */
+router.post('/select-site', (req, res) => {
+  if (!req.session?.user) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  if (req.session.user.role !== 'Corporate Admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  req.session.selectedSite = req.body.siteId || null;
+  req.session.save(err => {
+    if (err) return res.status(500).json({ error: 'Session save failed' });
+    res.json({ selectedSite: req.session.selectedSite });
+  });
+});
+
 /* POST /auth/logout */
 router.post('/logout', (req, res) => {
   const username = req.session.user?.username;

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTSI — Executive Briefing</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #0b1120;
+      --surface:  #0f1724;
+      --border:   #1e2d45;
+      --text:     #c9d8f0;
+      --muted:    rgba(143,163,192,.55);
+      --green:    #10B981;
+      --amber:    #F59E0B;
+      --red:      #EF4444;
+      --blue:     #3B82F6;
+      --accent:   #38bdf8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Space Grotesk', system-ui, sans-serif;
+      background-color: var(--bg);
+      background-image:
+        linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px);
+      background-size: 32px 32px;
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .mono { font-family: 'JetBrains Mono', monospace; }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .risk-row {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      transition: background .15s;
+    }
+    .risk-row:last-child { border-bottom: none; }
+    .risk-row:hover { background: rgba(255,255,255,.025); }
+
+    .badge-critical {
+      font-size: .6rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .2rem .55rem;
+      border-radius: 4px;
+      background: rgba(239,68,68,.12);
+      color: #f87171;
+      border: 1px solid rgba(239,68,68,.25);
+    }
+    .badge-high {
+      font-size: .6rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: .2rem .55rem;
+      border-radius: 4px;
+      background: rgba(245,158,11,.1);
+      color: #fbbf24;
+      border: 1px solid rgba(245,158,11,.22);
+    }
+
+    .pulse { animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+    @media print {
+      body { background: white; color: #111; }
+      .no-print { display: none !important; }
+      .kpi-card { border: 1px solid #ddd; background: #fafafa; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+  'use strict';
+  const { useState, useEffect, useCallback } = React;
+
+  const REFRESH_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+  function useBriefingData() {
+    const [data,      setData]      = useState(null);
+    const [loading,   setLoading]   = useState(true);
+    const [error,     setError]     = useState(null);
+    const [fetchedAt, setFetchedAt] = useState(null);
+
+    const load = useCallback(async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const r = await fetch('/public/briefing');
+        if (!r.ok) throw new Error(`Server returned ${r.status}`);
+        const d = await r.json();
+        setData(d);
+        setFetchedAt(new Date());
+      } catch (e) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
+    }, []);
+
+    useEffect(() => {
+      load();
+      const t = setInterval(load, REFRESH_INTERVAL);
+      return () => clearInterval(t);
+    }, [load]);
+
+    return { data, loading, error, fetchedAt, reload: load };
+  }
+
+  function ThreatBadge({ count }) {
+    const level = count > 3 ? 'ELEVATED' : count > 0 ? 'GUARDED' : 'NOMINAL';
+    const color = count > 3 ? 'var(--red)' : count > 0 ? 'var(--amber)' : 'var(--green)';
+    return (
+      <div className="flex items-center gap-2.5 px-4 py-2 rounded" style={{
+        background: `${color}0d`,
+        border: `1px solid ${color}33`,
+      }}>
+        <span className="w-2 h-2 rounded-full pulse" style={{ background: color }} />
+        <span className="mono text-[10px] font-medium tracking-[.18em] uppercase" style={{ color }}>
+          {level}
+        </span>
+      </div>
+    );
+  }
+
+  function KpiCard({ accent, label, icon, value, unit, sub, subRight }) {
+    return (
+      <div className="kpi-card">
+        <div style={{ '--tw-pseudo-bg': accent }} />
+        <style>{`.kpi-card:nth-of-type(${label})`}</style>
+        <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: accent }} />
+        <div className="flex items-start justify-between mb-6">
+          <span className="mono text-[10px] font-semibold tracking-[.15em] uppercase"
+                style={{ color: 'var(--muted)' }}>{label}</span>
+          <i className={`fa-solid ${icon} text-sm`} style={{ color: accent }} />
+        </div>
+        <div className="font-light leading-none mb-6" style={{ fontSize: '3.2rem', color: accent, fontFamily: 'Space Grotesk' }}>
+          {value}<span style={{ fontSize: '1.4rem', color: 'rgba(143,163,192,.35)', marginLeft: '2px' }}>{unit}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>{sub}</span>
+          {subRight && <span className="mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>{subRight}</span>}
+        </div>
+      </div>
+    );
+  }
+
+  function Briefing({ data }) {
+    const sites  = data.sites  || [];
+    const risks  = data.risks  || [];
+    const budget = data.budget || {};
+
+    const avgPosture     = sites.length
+      ? Math.round(sites.reduce((a, s) => a + (s.compliance || 0), 0) / sites.length)
+      : 0;
+    const compliantSites = sites.filter(s => (s.compliance || 0) >= 95).length;
+
+    const budgetTotal = budget.total || 0;
+    const budgetSpent = budget.spent || 0;
+    const budgetPct   = budgetTotal ? Math.round((budgetSpent / budgetTotal) * 100) : 0;
+
+    const criticalRisks = risks.filter(
+      r => r.status !== 'resolved' && (r.severity === 'critical' || r.severity === 'high')
+    );
+
+    const postureColor = avgPosture >= 90 ? 'var(--green)' : 'var(--amber)';
+    const riskColor    = criticalRisks.length > 3 ? 'var(--red)' : criticalRisks.length > 0 ? 'var(--amber)' : 'var(--green)';
+
+    return (
+      <>
+        {/* KPI row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+          <div className="kpi-card">
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: postureColor }} />
+            <div className="flex items-start justify-between mb-6">
+              <span className="mono text-[10px] font-semibold tracking-[.15em] uppercase" style={{ color: 'var(--muted)' }}>
+                Network Compliance
+              </span>
+              <i className="fa-solid fa-shield-check text-sm" style={{ color: postureColor }} />
+            </div>
+            <div className="font-light leading-none mb-6" style={{ fontSize: '3.2rem', color: postureColor }}>
+              {avgPosture}<span style={{ fontSize: '1.4rem', color: 'rgba(143,163,192,.3)', marginLeft: '2px' }}>%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+                {compliantSites} of {sites.length} sites secured
+              </span>
+              <span className="mono text-[10px] uppercase tracking-widest" style={{ color: postureColor }}>
+                {avgPosture >= 90 ? 'Optimal' : 'Action Req'}
+              </span>
+            </div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: 'var(--blue)' }} />
+            <div className="flex items-start justify-between mb-6">
+              <span className="mono text-[10px] font-semibold tracking-[.15em] uppercase" style={{ color: 'var(--muted)' }}>
+                Capital Burn Rate
+              </span>
+              <i className="fa-solid fa-chart-line text-sm" style={{ color: 'var(--blue)' }} />
+            </div>
+            <div className="font-light leading-none mb-6" style={{ fontSize: '3.2rem', color: 'var(--blue)' }}>
+              {budgetPct}<span style={{ fontSize: '1.4rem', color: 'rgba(143,163,192,.3)', marginLeft: '2px' }}>%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+                ${(budgetSpent / 1e6).toFixed(2)}M / ${(budgetTotal / 1e6).toFixed(2)}M YTD
+              </span>
+              <span className="mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>FY26</span>
+            </div>
+          </div>
+
+          <div className="kpi-card">
+            <div className="absolute top-0 left-0 right-0 h-0.5" style={{ background: riskColor }} />
+            <div className="flex items-start justify-between mb-6">
+              <span className="mono text-[10px] font-semibold tracking-[.15em] uppercase" style={{ color: 'var(--muted)' }}>
+                Critical Exposures
+              </span>
+              <i className="fa-solid fa-triangle-exclamation text-sm" style={{ color: riskColor }} />
+            </div>
+            <div className="font-light leading-none mb-6" style={{ fontSize: '3.2rem', color: riskColor }}>
+              {criticalRisks.length}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+                Active high/critical items
+              </span>
+              <span className="mono text-[10px] uppercase tracking-widest" style={{ color: riskColor }}>
+                {criticalRisks.length === 0 ? 'All Clear' : 'Review'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Risk ledger */}
+        {criticalRisks.length > 0 ? (
+          <div className="rounded-xl overflow-hidden" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <div className="px-6 py-4 flex items-center justify-between"
+                 style={{ borderBottom: '1px solid var(--border)', background: 'rgba(239,68,68,.04)' }}>
+              <div className="flex items-center gap-3">
+                <i className="fa-solid fa-circle-exclamation text-red-400 text-sm" />
+                <span className="mono text-[10px] font-semibold tracking-[.15em] uppercase text-red-400">
+                  Executive Attention Required
+                </span>
+              </div>
+              <span className="mono text-[10px] tracking-widest uppercase" style={{ color: 'var(--muted)' }}>
+                {criticalRisks.length} item{criticalRisks.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            <div>
+              {criticalRisks.map(risk => (
+                <div key={risk.id} className="risk-row">
+                  <div className="flex items-start gap-4 min-w-0">
+                    <span className={risk.severity === 'critical' ? 'badge-critical' : 'badge-high'}>
+                      {risk.severity}
+                    </span>
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm text-white leading-snug">{risk.title}</div>
+                      <div className="mono text-[10px] mt-1 uppercase tracking-widest" style={{ color: 'var(--muted)' }}>
+                        {risk.site || risk.siteId || 'All Sites'}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="mono text-xs font-medium" style={{ color: 'var(--muted)' }}>
+                      {risk.financialImpact ? `$${Number(risk.financialImpact).toLocaleString()}` : 'Impact TBD'}
+                    </div>
+                    <div className="mono text-[10px] mt-0.5 uppercase tracking-widest" style={{ color: 'rgba(143,163,192,.35)' }}>
+                      potential exposure
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+            <i className="fa-solid fa-shield-check text-2xl mb-3 block" style={{ color: 'var(--green)' }} />
+            <div className="mono text-[10px] uppercase tracking-[.18em]" style={{ color: 'var(--muted)' }}>
+              No active critical or high risk items — all systems nominal
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  function App() {
+    const { data, loading, error, fetchedAt, reload } = useBriefingData();
+
+    const criticalCount = data
+      ? (data.risks || []).filter(r => r.status !== 'resolved' && (r.severity === 'critical' || r.severity === 'high')).length
+      : 0;
+
+    return (
+      <div className="min-h-screen flex flex-col">
+
+        {/* Header */}
+        <header style={{ background: 'rgba(15,23,36,.92)', borderBottom: '1px solid var(--border)', backdropFilter: 'blur(8px)' }}>
+          <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center"
+                     style={{ background: 'rgba(56,189,248,.12)', border: '1px solid rgba(56,189,248,.25)' }}>
+                  <i className="fa-solid fa-shield-halved text-xs" style={{ color: 'var(--accent)' }} />
+                </div>
+                <div>
+                  <div className="font-bold tracking-wide text-sm text-white">MTSI</div>
+                  <div className="mono text-[9px] uppercase tracking-[.15em]" style={{ color: 'var(--muted)' }}>
+                    Advanced Sentinel Hub
+                  </div>
+                </div>
+              </div>
+              <div style={{ width: 1, height: 24, background: 'var(--border)' }} />
+              <div className="mono text-[10px] font-semibold uppercase tracking-[.18em] text-white/70">
+                Executive Briefing
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 no-print">
+              {data && <ThreatBadge count={criticalCount} />}
+              <button
+                onClick={reload}
+                disabled={loading}
+                className="flex items-center gap-2 px-3 py-1.5 rounded text-[10px] mono uppercase tracking-widest transition-colors"
+                style={{ background: 'rgba(255,255,255,.04)', border: '1px solid var(--border)', color: 'var(--muted)' }}
+              >
+                <i className={`fa-solid fa-rotate-right text-[10px] ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-2 px-3 py-1.5 rounded text-[10px] mono uppercase tracking-widest transition-colors"
+                style={{ background: 'rgba(56,189,248,.08)', border: '1px solid rgba(56,189,248,.2)', color: 'var(--accent)' }}
+              >
+                <i className="fa-solid fa-download text-[10px]" />
+                Export
+              </button>
+            </div>
+          </div>
+        </header>
+
+        {/* Body */}
+        <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-10">
+
+          {/* Page title */}
+          <div className="mb-8">
+            <div className="mono text-[10px] uppercase tracking-[.2em] mb-2" style={{ color: 'var(--muted)' }}>
+              Top-Level Briefing
+            </div>
+            <h1 className="font-light text-3xl tracking-tight text-white">
+              Strategic Program Health
+            </h1>
+          </div>
+
+          {loading && !data && (
+            <div className="flex flex-col items-center justify-center py-24 gap-4">
+              <i className="fa-solid fa-rotate-right text-2xl animate-spin" style={{ color: 'var(--accent)' }} />
+              <span className="mono text-[10px] uppercase tracking-[.18em]" style={{ color: 'var(--muted)' }}>
+                Loading secure program data…
+              </span>
+            </div>
+          )}
+
+          {error && !data && (
+            <div className="rounded-xl p-8 text-center" style={{ background: 'var(--surface)', border: '1px solid rgba(239,68,68,.25)' }}>
+              <i className="fa-solid fa-triangle-exclamation text-red-400 text-2xl mb-3 block" />
+              <div className="font-medium text-white mb-1">Unable to load briefing data</div>
+              <div className="mono text-[10px] uppercase tracking-widest mb-4" style={{ color: 'var(--muted)' }}>{error}</div>
+              <button onClick={reload} className="mono text-[10px] uppercase tracking-widest px-4 py-2 rounded"
+                      style={{ background: 'rgba(239,68,68,.1)', border: '1px solid rgba(239,68,68,.2)', color: '#f87171' }}>
+                Retry
+              </button>
+            </div>
+          )}
+
+          {data && <Briefing data={data} />}
+        </main>
+
+        {/* Footer */}
+        <footer className="no-print" style={{ borderTop: '1px solid var(--border)' }}>
+          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+            <span className="mono text-[9px] uppercase tracking-[.15em]" style={{ color: 'rgba(143,163,192,.3)' }}>
+              MTSI Security Program · Read-only · Automatically refreshes every 5 minutes
+            </span>
+            {fetchedAt && (
+              <span className="mono text-[9px] uppercase tracking-[.12em]" style={{ color: 'rgba(143,163,192,.3)' }}>
+                Last updated {fetchedAt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
+        </footer>
+
+      </div>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

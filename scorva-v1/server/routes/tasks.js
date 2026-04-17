@@ -10,7 +10,8 @@ const router   = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await Task.find({}).sort({ _id: -1 }));
+    const filter = req.siteFilter ? { site: req.siteFilter } : {};
+    res.json(await Task.find(filter).sort({ _id: -1 }));
   } catch (err) { next(err); }
 });
 
@@ -27,7 +28,10 @@ router.get('/mine', async (req, res, next) => {
     const assigneeVals = [username];
     if (displayName && displayName !== username) assigneeVals.push(displayName);
 
-    const tasks = await Task.find({ assignee: { $in: assigneeVals } }).sort({ _id: -1 });
+    const filter = { assignee: { $in: assigneeVals } };
+    if (req.siteFilter) filter.site = req.siteFilter;
+
+    const tasks = await Task.find(filter).sort({ _id: -1 });
     res.json(tasks);
   } catch (err) { next(err); }
 });
@@ -36,13 +40,15 @@ router.get('/:id', async (req, res, next) => {
   try {
     const doc = await Task.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
   } catch (err) { next(err); }
 });
 
 router.post('/', async (req, res, next) => {
-  const { title, site, type, status, priority, assignee, due_date, control,
+  const { title, type, status, priority, assignee, due_date, control,
           linked_controls, activity_id, notes } = req.body;
+  const site = req.siteFilter ?? (req.body.site || null);
   try {
     const last    = await Task.findOne().sort({ _id: -1 }).select('_id');
     const lastNum = last ? parseInt(last._id.replace('TF-', '')) || 0 : 0;
@@ -72,8 +78,12 @@ router.patch('/:id', async (req, res, next) => {
   }
   if (!Object.keys(updates).length) return res.status(400).json({ error: 'No fields to update' });
   try {
-    const doc = await Task.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
+    const doc = await Task.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (req.siteFilter) updates.site = req.siteFilter;
+
+    const updated = await Task.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
 
     /* cascade: task completed → update linked ConMon + Controls */
     if (updates.status === 'Completed') {
@@ -105,15 +115,17 @@ router.patch('/:id', async (req, res, next) => {
     }
 
     await audit(req.session.user.username, 'TASK_UPDATE', req.params.id,
-      `Updated: ${Object.keys(updates).join(', ')}`, doc.site);
-    res.json(doc);
+      `Updated: ${Object.keys(updates).join(', ')}`, updated.site);
+    res.json(updated);
   } catch (err) { next(err); }
 });
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const doc = await Task.findByIdAndDelete(req.params.id);
+    const doc = await Task.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    await Task.findByIdAndDelete(req.params.id);
     await audit(req.session.user.username, 'TASK_DELETE', req.params.id, 'Deleted', doc.site);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }

@@ -15,7 +15,10 @@ function adminOnly(req, res, next) {
 
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await User.find().sort({ _id: 1 }));
+    // Corporate Admin sees all users (or only the selected site's users);
+    // site-scoped users only see users at their own site.
+    const filter = req.siteFilter ? { site: req.siteFilter } : {};
+    res.json(await User.find(filter).sort({ _id: 1 }));
   } catch (err) { next(err); }
 });
 
@@ -23,6 +26,7 @@ router.get('/:id', async (req, res, next) => {
   try {
     const doc = await User.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
   } catch (err) { next(err); }
 });
@@ -31,8 +35,8 @@ router.post('/', adminOnly, async (req, res, next) => {
   const { name, title, username, email, password, role, site, status, training_compliant, training_due, dod_8140 } = req.body;
   if (!password) return res.status(400).json({ error: 'password is required' });
   try {
-    const last = await User.findOne().sort({ _id: -1 }).select('_id');
-    const lastNum = last ? parseInt(last._id.replace('USR-', '')) : 0;
+    const last = await User.findOne({ _id: /^USR-\d+$/ }).sort({ _id: -1 }).select('_id');
+    const lastNum = last ? (parseInt(last._id.replace('USR-', '')) || 0) : 0;
     const id = 'USR-' + String(lastNum + 1).padStart(3, '0');
     const hash = await bcrypt.hash(password, 12);
 

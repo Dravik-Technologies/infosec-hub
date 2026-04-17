@@ -10,6 +10,7 @@ const cors        = require('cors');
 const session     = require('express-session');
 const MongoStore  = require('connect-mongo');
 const requireAuth = require('./middleware/requireAuth');
+const siteScope   = require('./middleware/siteScope');
 
 // API routers
 const authRouter          = require('./routes/auth');
@@ -84,24 +85,28 @@ if (isDev) {
 }
 
 /* ── Protected API routes ── */
-app.use('/api/conmon',        requireAuth, conmonRouter);
+// Site-scoped: siteScope middleware enforces per-site data isolation
+app.use('/api/conmon',        requireAuth, siteScope, conmonRouter);
+app.use('/api/tasks',         requireAuth, siteScope, tasksRouter);
+app.use('/api/poam',          requireAuth, siteScope, poamRouter);
+app.use('/api/ato',           requireAuth, siteScope, atoRouter);
+app.use('/api/agreements',    requireAuth, siteScope, agreementsRouter);
+app.use('/api/trackers',      requireAuth, siteScope, trackersRouter);
+app.use('/api/users',         requireAuth, siteScope, usersRouter);
+// Shared / not site-scoped
 app.use('/api/controls',      requireAuth, controlsRouter);
-app.use('/api/tasks',         requireAuth, tasksRouter);
-app.use('/api/poam',          requireAuth, poamRouter);
-app.use('/api/ato',           requireAuth, atoRouter);
 app.use('/api/workstations',  requireAuth, workstationsRouter);
 app.use('/api/yubikeys',      requireAuth, yubikeysRouter);
-app.use('/api/users',         requireAuth, usersRouter);
-app.use('/api/agreements',    requireAuth, agreementsRouter);
 app.use('/api/licenses',      requireAuth, licensesRouter);
 app.use('/api/audit',         requireAuth, auditRouter);
-app.use('/api/trackers',      requireAuth, trackersRouter);
 app.use('/api/notifications', requireAuth, notificationsRouter);
 app.use('/api/sites',         requireAuth, sitesRouter);
 app.use('/api/threats',       requireAuth, threatsRouter);
 
-/* ── /api/me ── */
-app.get('/api/me', requireAuth, (req, res) => res.json(req.session.user));
+/* ── /api/me — include selectedSite for Corporate Admin ── */
+app.get('/api/me', requireAuth, (req, res) =>
+  res.json({ ...req.session.user, selectedSite: req.session.selectedSite || null })
+);
 
 /* ── Serve React build in production ── */
 const clientDist = path.join(__dirname, '..', 'client', 'dist');

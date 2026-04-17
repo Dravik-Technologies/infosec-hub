@@ -6,7 +6,8 @@ const router  = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await Tracker.find().sort({ created_at: 1 }));
+    const filter = req.siteFilter ? { site: req.siteFilter } : {};
+    res.json(await Tracker.find(filter).sort({ created_at: 1 }));
   } catch (err) { next(err); }
 });
 
@@ -14,18 +15,20 @@ router.get('/:id', async (req, res, next) => {
   try {
     const doc = await Tracker.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
   } catch (err) { next(err); }
 });
 
 router.post('/', async (req, res, next) => {
-  const { name, description, columns, rows: dataRows, subtrackers, site } = req.body;
+  const { name, description, columns, rows: dataRows, subtrackers } = req.body;
+  const site = req.siteFilter ?? (req.body.site || null);
   try {
     const doc = await Tracker.create({
       name, description: description || null,
       columns: columns || [], rows: dataRows || [],
       subtrackers: subtrackers || [],
-      site: site || null, created_by: req.session.user.username,
+      site, created_by: req.session.user.username,
     });
     res.status(201).json(doc);
   } catch (err) { next(err); }
@@ -39,16 +42,21 @@ router.patch('/:id', async (req, res, next) => {
   }
   if (!Object.keys(updates).length) return res.status(400).json({ error: 'No fields to update' });
   try {
-    const doc = await Tracker.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
+    const doc = await Tracker.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    res.json(doc);
+    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (req.siteFilter) updates.site = req.siteFilter;
+    const updated = await Tracker.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
+    res.json(updated);
   } catch (err) { next(err); }
 });
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const doc = await Tracker.findByIdAndDelete(req.params.id);
+    const doc = await Tracker.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    await Tracker.findByIdAndDelete(req.params.id);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });
