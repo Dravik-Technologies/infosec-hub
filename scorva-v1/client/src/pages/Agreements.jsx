@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import Badge         from '../components/ui/Badge';
@@ -194,7 +195,9 @@ function DocDetailModal({ doc, onEdit, onClose }) {
 ════════════════════════════════════════════════════════ */
 export default function AgreementsPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['agreements'], queryFn: api.agreements.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const { data = [], isLoading } = useQuery({ queryKey: ['agreements', siteScopeKey], queryFn: api.agreements.list });
 
   const [modal,   setModal]   = useState(null);
   const [detail,  setDetail]  = useState(null);
@@ -203,9 +206,10 @@ export default function AgreementsPage() {
   const [delId,   setDelId]   = useState(null);
   const [activeTab, setActiveTab] = useState('All');
 
-  const create = useMutation({ mutationFn: api.agreements.create, onSuccess: () => { qc.invalidateQueries(['agreements']); setModal(null); } });
-  const update = useMutation({ mutationFn: ({ id, d }) => api.agreements.update(id, d), onSuccess: () => { qc.invalidateQueries(['agreements']); setModal(null); } });
-  const remove = useMutation({ mutationFn: api.agreements.remove, onSuccess: () => { qc.invalidateQueries(['agreements']); setDelId(null); } });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['agreements'] });
+  const create = useMutation({ mutationFn: api.agreements.create, onSuccess: () => { invalidate(); setModal(null); } });
+  const update = useMutation({ mutationFn: ({ id, d }) => api.agreements.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
+  const remove = useMutation({ mutationFn: api.agreements.remove, onSuccess: () => { invalidate(); setDelId(null); } });
 
   function openCreate() { setForm(EMPTY); setModal('create'); }
   function openEdit(row) {

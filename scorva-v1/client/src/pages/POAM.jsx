@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import Badge         from '../components/ui/Badge';
@@ -61,13 +62,18 @@ function POAMForm({ value, onChange }) {
 
 export default function POAMPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['poam'], queryFn: api.poam.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const { data = [], isLoading, isError, error } = useQuery({ queryKey: ['poam', siteScopeKey], queryFn: api.poam.list });
   const [modal, setModal]     = useState(null);
   const [form, setForm]       = useState(EMPTY);
   const [editing, setEditing] = useState(null);
   const [delId, setDelId]     = useState(null);
 
-  const invalidate = () => { qc.invalidateQueries(['poam']); qc.invalidateQueries({ queryKey: ['tasks'] }); };
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['poam'] });
+    qc.invalidateQueries({ queryKey: ['tasks'] });
+  };
   const create   = useMutation({ mutationFn: api.poam.create,                           onSuccess: () => { invalidate(); setModal(null); } });
   const update   = useMutation({ mutationFn: ({ id, d }) => api.poam.update(id, d),     onSuccess: () => { invalidate(); setModal(null); } });
   const remove   = useMutation({ mutationFn: api.poam.remove,                           onSuccess: () => { invalidate(); setDelId(null); } });
@@ -100,6 +106,9 @@ export default function POAMPage() {
   ];
 
   if (isLoading) return <LoadingSpinner />;
+  if (isError) {
+    return <div className="text-sm text-red-400">Failed to load POAM data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
+  }
 
   const open     = data.filter(r => r.status === 'Open').length;
   const inProg   = data.filter(r => r.status === 'In Progress').length;

@@ -7,6 +7,7 @@ const schema = new Schema({
   hostname:       { type: String, required: true },
   type:           { type: String, default: 'Workstation' },
   username:       String,
+  siteID:         { type: String, required: true, index: true },
   site:           String,
   os:             String,
   ip:             String,
@@ -17,8 +18,26 @@ const schema = new Schema({
   key_expiry:     String,
   last_seen:      String,
   notes:          String,
-}, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
+}, {
+  collection: 'Devices',
+  timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
+});
 
-schema.set('toJSON', { transform: (_d, r) => { r.id = r._id; delete r._id; delete r.__v; return r; } });
+schema.index({ siteID: 1, _id: 1 }, { name: 'site_doc_lookup' });
+
+schema.pre('validate', function syncSiteID(next) {
+  if (!this.siteID && this.site) this.siteID = this.site;
+  if (!this.site && this.siteID) this.site = this.siteID;
+  next();
+});
+
+schema.set('toJSON', { transform: (_d, r) => {
+  r.id = r._id;
+  if (!r.siteID && r.site) r.siteID = r.site;
+  if (!r.site && r.siteID) r.site = r.siteID;
+  delete r._id;
+  delete r.__v;
+  return r;
+} });
 
 module.exports = model('Workstation', schema);

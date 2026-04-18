@@ -19,7 +19,7 @@ async function createLinkedTask(poamId, title, site, responsible_party, schedule
     const lastTNum = lastTask ? parseInt(lastTask._id.replace('TF-', '')) || 0 : 0;
     const taskId   = 'TF-' + String(lastTNum + 1).padStart(4, '0');
     await Task.create({
-      _id: taskId, title, site,
+      _id: taskId, title, site, siteID: site,
       type: 'Finding', status: 'Open',
       priority: severity === 'Critical' ? 'Critical' : severity === 'High' ? 'High' : 'Medium',
       assignee: responsible_party || null,
@@ -36,8 +36,7 @@ async function createLinkedTask(poamId, title, site, responsible_party, schedule
 
 router.get('/', async (req, res, next) => {
   try {
-    const filter = req.siteFilter ? { site: req.siteFilter } : {};
-    res.json(await POAM.find(filter).sort({ _id: 1 }));
+    res.json(await POAM.find(req.applyTenantFilter({})).sort({ _id: 1 }));
   } catch (err) { next(err); }
 });
 
@@ -45,16 +44,62 @@ router.get('/:id', async (req, res, next) => {
   try {
     const doc = await POAM.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
+  } catch (err) { next(err); }
+});
+
+router.post('/bulk', async (req, res, next) => {
+  const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
+  const siteID = req.resolveTenantSiteID(req.body);
+  if (!rows.length) return res.status(400).json({ error: 'rows must be a non-empty array' });
+
+  let inserted = 0;
+  let updated = 0;
+  let skipped = 0;
+
+  try {
+    for (const row of rows) {
+      const key = String(row._id || row.id || '').trim();
+      const title = String(row.title || '').trim();
+      if (!key || !title) { skipped++; continue; }
+
+      const payload = {
+        _id: key,
+        title,
+        control_id: row.control_id || null,
+        weakness: row.weakness || '',
+        severity: row.severity || '',
+        status: row.status || 'Open',
+        siteID,
+        site: siteID,
+        source_type: row.source_type || '',
+        source_id: row.source_id || '',
+        responsible_party: row.responsible_party || '',
+        point_of_contact: row.point_of_contact || '',
+        resources: row.resources || '',
+        scheduled_completion: row.scheduled_completion || null,
+        milestones: Array.isArray(row.milestones) ? row.milestones : [],
+        identified_date: row.identified_date || null,
+        ato_id: row.ato_id || null,
+        poam_type: row.poam_type || '',
+        comments: row.comments || '',
+        completed_date: row.completed_date || null,
+        closed_date: row.closed_date || null,
+      };
+      const existing = await POAM.exists(req.applyTenantFilter({ _id: key }));
+      await POAM.updateOne(req.applyTenantFilter({ _id: key }), { $set: payload }, { upsert: true });
+      if (existing) updated++;
+      else inserted++;
+    }
+    res.json({ inserted, updated, skipped });
   } catch (err) { next(err); }
 });
 
 /* ── Backfill missing tasks for existing POAMs ── */
 router.post('/backfill-tasks', async (req, res, next) => {
   try {
-    const filter = req.siteFilter ? { site: req.siteFilter } : {};
-    const poams = await POAM.find(filter);
+    const poams = await POAM.find(req.applyTenantFilter({}));
     let created = 0, skipped = 0;
     for (const p of poams) {
       const exists = await Task.exists({ source: 'poam', source_id: p._id });
@@ -71,7 +116,7 @@ router.post('/', async (req, res, next) => {
   const { title, control_id, weakness, severity, status, source_type, source_id,
           responsible_party, point_of_contact, resources, scheduled_completion, milestones,
           identified_date, ato_id, poam_type, comments } = req.body;
-  const site = req.siteFilter ?? (req.body.site || null);
+  const site = req.resolveTenantSiteID(req.body);
   try {
     const last = await POAM.findOne().sort({ _id: -1 }).select('_id');
     const lastNum = last ? parseInt(last._id.replace('POA-', '')) : 0;
@@ -79,7 +124,7 @@ router.post('/', async (req, res, next) => {
 
     const doc = await POAM.create({
       _id: id, title, control_id: control_id || null, weakness, severity,
-      status: status || 'Open', site, source_type, source_id, responsible_party,
+      status: status || 'Open', site, siteID: site, source_type, source_id, responsible_party,
       point_of_contact, resources, scheduled_completion: scheduled_completion || null,
       milestones: milestones || [], identified_date: identified_date || null,
       ato_id: ato_id || null, poam_type, comments,
@@ -94,7 +139,7 @@ router.post('/', async (req, res, next) => {
 });
 
 router.patch('/:id', async (req, res, next) => {
-  const allowed = ['title','control_id','weakness','severity','status','site','responsible_party',
+  const allowed = ['title','control_id','weakness','severity','status','site','siteID','responsible_party',
                    'point_of_contact','resources','scheduled_completion','milestones',
                    'ato_id','poam_type','comments','completed_date','closed_date'];
   const updates = {};
@@ -105,8 +150,12 @@ router.patch('/:id', async (req, res, next) => {
   try {
     const doc = await POAM.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
-    if (req.siteFilter) updates.site = req.siteFilter;
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
+    const effectiveSiteID = req.resolveTenantSiteID(updates);
+    if (effectiveSiteID) {
+      updates.site = effectiveSiteID;
+      updates.siteID = effectiveSiteID;
+    }
 
     const updated = await POAM.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
 
@@ -130,7 +179,7 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const doc = await POAM.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     await POAM.findByIdAndDelete(req.params.id);
     await Task.deleteOne({ source: 'poam', source_id: req.params.id });
     await audit(req.session.user.username, 'POAM_DELETE', req.params.id, 'Deleted', doc.site);

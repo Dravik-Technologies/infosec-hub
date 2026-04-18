@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import Badge         from '../components/ui/Badge';
@@ -53,15 +54,25 @@ function LicForm({ value, onChange }) {
 
 export default function LicensesPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['licenses'], queryFn: api.licenses.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const { data = [], isLoading } = useQuery({ queryKey: ['licenses', siteScopeKey], queryFn: api.licenses.list });
   const [modal, setModal]     = useState(null);
   const [form, setForm]       = useState(EMPTY);
   const [editing, setEditing] = useState(null);
   const [delId, setDelId]     = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
-  const create = useMutation({ mutationFn: api.licenses.create, onSuccess: () => { qc.invalidateQueries(['licenses']); setModal(null); } });
-  const update = useMutation({ mutationFn: ({ id, d }) => api.licenses.update(id, d), onSuccess: () => { qc.invalidateQueries(['licenses']); setModal(null); } });
-  const remove = useMutation({ mutationFn: api.licenses.remove, onSuccess: () => { qc.invalidateQueries(['licenses']); setDelId(null); } });
+  useEffect(() => { setSelectedIds([]); }, [siteScopeKey]);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['licenses'] });
+  const create = useMutation({ mutationFn: api.licenses.create, onSuccess: () => { invalidate(); setModal(null); } });
+  const update = useMutation({ mutationFn: ({ id, d }) => api.licenses.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
+  const remove = useMutation({ mutationFn: api.licenses.remove, onSuccess: () => { invalidate(); setDelId(null); } });
+  const removeMany = useMutation({
+    mutationFn: api.licenses.bulkDelete,
+    onSuccess: () => { invalidate(); setSelectedIds([]); },
+  });
 
   function openCreate() { setForm(EMPTY); setModal('create'); }
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
@@ -71,7 +82,26 @@ export default function LicensesPage() {
     else update.mutate({ id: editing, d: form });
   }
 
+  const shownIds = useMemo(() => data.map(r => r.id), [data]);
+  const allShownSelected = shownIds.length > 0 && shownIds.every(id => selectedIds.includes(id));
+
   const cols = [
+    {
+      key: '_select',
+      label: <input type="checkbox" checked={allShownSelected} onChange={() => {
+        setSelectedIds(prev => allShownSelected ? [] : [...new Set([...prev, ...shownIds])]);
+      }} onClick={e => e.stopPropagation()} aria-label="Select all licenses" />,
+      width: 32,
+      render: (_, row) => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(row.id)}
+          onChange={() => setSelectedIds(prev => prev.includes(row.id) ? prev.filter(id => id !== row.id) : [...prev, row.id])}
+          onClick={e => e.stopPropagation()}
+          aria-label={`Select ${row.product}`}
+        />
+      ),
+    },
     { key: 'id',      label: 'ID',      width: 90, render: v => <span className="font-mono text-xs text-scorva-muted">{v}</span> },
     { key: 'product', label: 'Product' },
     { key: 'vendor',  label: 'Vendor' },
@@ -99,7 +129,14 @@ export default function LicensesPage() {
   return (
     <div>
       <PageHeader title="Licenses" description="Software license management"
-        action={<button className="btn-primary" onClick={openCreate}><Plus size={15} />Add License</button>}
+        action={<div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <button className="btn-secondary flex items-center gap-1.5 text-red-300 border-red-500/40" onClick={() => removeMany.mutate(selectedIds)} disabled={removeMany.isPending}>
+              <Trash2 size={14} /> Delete Selected ({selectedIds.length})
+            </button>
+          )}
+          <button className="btn-primary" onClick={openCreate}><Plus size={15} />Add License</button>
+        </div>}
       />
       <StatusDashboard>
         <div className="flex flex-wrap gap-6 items-start">

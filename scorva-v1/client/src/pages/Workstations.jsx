@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader     from '../components/ui/PageHeader';
 import Table          from '../components/ui/Table';
 import Badge          from '../components/ui/Badge';
@@ -106,8 +107,10 @@ function WSForm({ value, onChange, systems }) {
 ════════════════════════════════════════════════════════ */
 export default function WorkstationsPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading }         = useQuery({ queryKey: ['workstations'],  queryFn: api.workstations.list });
-  const { data: atoData = [] }           = useQuery({ queryKey: ['ato'],           queryFn: api.ato.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const { data = [], isLoading }         = useQuery({ queryKey: ['workstations', siteScopeKey],  queryFn: api.workstations.list });
+  const { data: atoData = [] }           = useQuery({ queryKey: ['ato', siteScopeKey],           queryFn: api.ato.list });
 
   const systems = useMemo(() => atoData.map(r => r.system).filter(Boolean).sort(), [atoData]);
 
@@ -118,10 +121,20 @@ export default function WorkstationsPage() {
   const [search,   setSearch]   = useState('');
   const [ftType,   setFtType]   = useState('');
   const [ftStatus, setFtStatus] = useState('');
+  const [selectedIds, setSelectedIds] = useState([]);
 
-  const create = useMutation({ mutationFn: api.workstations.create,                       onSuccess: () => { qc.invalidateQueries(['workstations']); setModal(null); } });
-  const update = useMutation({ mutationFn: ({ id, d }) => api.workstations.update(id, d), onSuccess: () => { qc.invalidateQueries(['workstations']); setModal(null); } });
-  const remove = useMutation({ mutationFn: api.workstations.remove,                       onSuccess: () => { qc.invalidateQueries(['workstations']); setDelId(null); } });
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [siteScopeKey]);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['workstations'] });
+  const create = useMutation({ mutationFn: api.workstations.create,                       onSuccess: () => { invalidate(); setModal(null); } });
+  const update = useMutation({ mutationFn: ({ id, d }) => api.workstations.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
+  const remove = useMutation({ mutationFn: api.workstations.remove,                       onSuccess: () => { invalidate(); setDelId(null); } });
+  const removeMany = useMutation({
+    mutationFn: api.workstations.bulkDelete,
+    onSuccess: () => { invalidate(); setSelectedIds([]); },
+  });
 
   function openCreate() { setForm(EMPTY); setModal('create'); }
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
@@ -140,6 +153,8 @@ export default function WorkstationsPage() {
       (!ftStatus || r.status === ftStatus)
     );
   }, [data, search, ftType, ftStatus]);
+  const shownIds = useMemo(() => shown.map(r => r.id), [shown]);
+  const allShownSelected = shownIds.length > 0 && shownIds.every(id => selectedIds.includes(id));
 
   /* ── Dashboard counts ── */
   const available    = data.filter(r => r.status === 'Available').length;
@@ -148,6 +163,24 @@ export default function WorkstationsPage() {
   const lost         = data.filter(r => r.status === 'Lost').length;
 
   const cols = [
+    {
+      key: '_select',
+      label: <input type="checkbox" checked={allShownSelected} onChange={() => {
+        setSelectedIds(prev => allShownSelected
+          ? prev.filter(id => !shownIds.includes(id))
+          : [...new Set([...prev, ...shownIds])]);
+      }} onClick={e => e.stopPropagation()} aria-label="Select all devices" />,
+      width: 32,
+      render: (_, row) => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(row.id)}
+          onChange={() => setSelectedIds(prev => prev.includes(row.id) ? prev.filter(id => id !== row.id) : [...prev, row.id])}
+          onClick={e => e.stopPropagation()}
+          aria-label={`Select ${row.hostname}`}
+        />
+      ),
+    },
     { key: 'hostname', label: 'Hostname / Tag', render: (v, row) => (
       <div>
         <div className="font-mono text-xs text-scorva-text">{v}</div>
@@ -178,7 +211,14 @@ export default function WorkstationsPage() {
   return (
     <div>
       <PageHeader title="Devices" description="Endpoint inventory & compliance"
-        action={<button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} /> Add Device</button>}
+        action={<div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <button className="btn-secondary flex items-center gap-1.5 text-red-300 border-red-500/40" onClick={() => removeMany.mutate(selectedIds)} disabled={removeMany.isPending}>
+              <Trash2 size={14} /> Delete Selected ({selectedIds.length})
+            </button>
+          )}
+          <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} /> Add Device</button>
+        </div>}
       />
 
       <StatusDashboard>

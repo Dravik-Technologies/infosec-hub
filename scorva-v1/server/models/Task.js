@@ -4,6 +4,7 @@ const { Schema, model } = require('mongoose');
 const schema = new Schema({
   _id:        String,
   title:      { type: String, required: true },
+  siteID:     { type: String, index: true },
   site:       String,
   type:       { type: String, default: 'Task' },
   status:     { type: String, default: 'Open' },
@@ -21,6 +22,19 @@ const schema = new Schema({
   created_by:      { type: String, default: null },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
-schema.set('toJSON', { transform: (_d, r) => { r.id = r._id; delete r._id; delete r.__v; return r; } });
+schema.pre('validate', function syncSiteID(next) {
+  if (!this.siteID && this.site) this.siteID = this.site;
+  if (!this.site && this.siteID) this.site = this.siteID;
+  next();
+});
+
+schema.set('toJSON', { transform: (_d, r) => {
+  r.id = r._id;
+  if (!r.siteID && r.site) r.siteID = r.site;
+  if (!r.site && r.siteID) r.site = r.siteID;
+  delete r._id;
+  delete r.__v;
+  return r;
+} });
 
 module.exports = model('Task', schema);

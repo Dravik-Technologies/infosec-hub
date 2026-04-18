@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import Badge         from '../components/ui/Badge';
@@ -198,8 +199,10 @@ function ControlDetail({ control, activities }) {
 ════════════════════════════════════════════════════════ */
 export default function ControlsPage() {
   const qc = useQueryClient();
-  const { data = [],           isLoading }  = useQuery({ queryKey: ['controls'], queryFn: api.controls.list });
-  const { data: activities = [] }            = useQuery({ queryKey: ['conmon'],   queryFn: api.conmon.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const { data = [],           isLoading, isError, error }  = useQuery({ queryKey: ['controls', siteScopeKey], queryFn: api.controls.list });
+  const { data: activities = [] }            = useQuery({ queryKey: ['conmon', siteScopeKey],   queryFn: api.conmon.list });
 
   const [modal,        setModal]       = useState(null);   // 'create' | 'edit' | 'view'
   const [form,         setForm]        = useState(EMPTY);
@@ -261,6 +264,9 @@ export default function ControlsPage() {
   ];
 
   if (isLoading) return <LoadingSpinner />;
+  if (isError) {
+    return <div className="text-sm text-red-400">Failed to load Controls data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
+  }
 
   const implemented = data.filter(r => r.status === 'Implemented').length;
   const partial     = data.filter(r => r.status === 'Partially Implemented').length;

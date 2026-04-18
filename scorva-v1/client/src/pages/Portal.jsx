@@ -154,9 +154,10 @@ const APP_COLOR_MAP = {
 
 export default function Portal() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, selectedSite } = useAuth();
   const { dark, toggle } = useTheme();
   const [clock, setClock] = useState(utcClock());
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
 
   /* ── System Audit Log state ── */
   const [systemLogs, setSystemLogs] = useState([]);
@@ -172,11 +173,11 @@ export default function Portal() {
   }, []);
 
   /* ── Data queries ── */
-  const { data: atos     = [] } = useQuery({ queryKey: ['ato'],      queryFn: api.ato.list,      refetchInterval: 60_000 });
-  const { data: controls = [] } = useQuery({ queryKey: ['controls'], queryFn: api.controls.list, refetchInterval: 60_000 });
-  const { data: poams    = [] } = useQuery({ queryKey: ['poam'],     queryFn: api.poam.list,     refetchInterval: 60_000 });
-  const { data: tasks    = [] } = useQuery({ queryKey: ['tasks'],    queryFn: api.tasks.list,    refetchInterval: 60_000 });
-  const { data: notifs   = [] } = useQuery({ queryKey: ['notifications'], queryFn: api.notifications.list, refetchInterval: 60_000 });
+  const { data: atos     = [] } = useQuery({ queryKey: ['ato', siteScopeKey],      queryFn: api.ato.list,      refetchInterval: 60_000 });
+  const { data: controls = [] } = useQuery({ queryKey: ['controls', siteScopeKey], queryFn: api.controls.list, refetchInterval: 60_000 });
+  const { data: poams    = [] } = useQuery({ queryKey: ['poam', siteScopeKey],     queryFn: api.poam.list,     refetchInterval: 60_000 });
+  const { data: tasks    = [] } = useQuery({ queryKey: ['tasks', siteScopeKey],    queryFn: api.tasks.list,    refetchInterval: 60_000 });
+  const { data: notifs   = [] } = useQuery({ queryKey: ['notifications', siteScopeKey], queryFn: api.notifications.list, refetchInterval: 60_000 });
 
   const {
     data: threats = [],

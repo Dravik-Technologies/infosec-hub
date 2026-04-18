@@ -11,12 +11,16 @@ router.get('/', async (req, res, next) => {
   const filter = {};
   if (req.query.username) filter.username = req.query.username;
   if (req.query.action)   filter.action   = req.query.action;
-  if (req.query.site)     filter.site     = req.query.site;
+  if (req.query.siteID || req.query.site) {
+    const siteID = req.query.siteID || req.query.site;
+    filter.$or = [{ siteID }, { site: siteID }];
+  }
+  const tenantFilter = req.applyTenantFilter(filter);
 
   try {
     const [rows, total] = await Promise.all([
-      AuditLog.find(filter).sort({ timestamp: -1 }).skip(offset).limit(limit),
-      AuditLog.countDocuments(filter),
+      AuditLog.find(tenantFilter).sort({ timestamp: -1 }).skip(offset).limit(limit),
+      AuditLog.countDocuments(tenantFilter),
     ]);
     res.json({ total, rows });
   } catch (err) { next(err); }

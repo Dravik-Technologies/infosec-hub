@@ -7,9 +7,70 @@ const Task     = require('../models/Task');
 const audit    = require('../middleware/audit');
 const router   = express.Router();
 
+function strictTenantFilter(req, base = {}) {
+  if (!Array.isArray(req.tenantSiteIDs) || !req.tenantSiteIDs.length) {
+    return { ...base, siteID: '__NO_SITE__' };
+  }
+  return {
+    ...base,
+    siteID: { $in: req.tenantSiteIDs },
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await Control.find());
+    res.json(await Control.find(strictTenantFilter(req)));
+  } catch (err) { next(err); }
+});
+
+router.post('/bulk-delete', async (req, res, next) => {
+  const ids = Array.isArray(req.body?.ids)
+    ? [...new Set(req.body.ids.map(String).map(v => v.trim()).filter(Boolean))]
+    : [];
+
+  if (!ids.length) {
+    return res.status(400).json({ error: 'ids must be a non-empty array' });
+  }
+
+  const hasTenantScope = Array.isArray(req.tenantSiteIDs) && req.tenantSiteIDs.length > 0;
+  const isCorporateAdmin = req.user?.role === 'Corporate Admin';
+  if (!hasTenantScope && !isCorporateAdmin) {
+    return res.status(400).json({ error: 'A site context is required for bulk delete' });
+  }
+
+  const siteFilter = hasTenantScope
+    ? { siteID: { $in: req.tenantSiteIDs } }
+    : { siteID: { $exists: true, $ne: null } };
+
+  try {
+    const allowedDocs = await ConMon.find({
+      _id: { $in: ids },
+      ...siteFilter,
+    }).select('_id controlID siteID');
+
+    const allowedIds = allowedDocs.map(d => String(d._id));
+    if (!allowedIds.length) {
+      return res.json({ requested: ids.length, deletedCount: 0, ignored: ids.length });
+    }
+
+    const result = await ConMon.deleteMany({
+      _id: { $in: allowedIds },
+      ...siteFilter,
+    });
+
+    await audit(
+      req.user?.username || 'system',
+      'CONMON_BULK_DELETE',
+      'bulk',
+      `Deleted ${result.deletedCount || 0} ConMon controls in bulk`,
+      req.tenantSiteID || req.user?.siteID || null
+    );
+
+    res.json({
+      requested: ids.length,
+      deletedCount: result.deletedCount || 0,
+      ignored: ids.length - (result.deletedCount || 0),
+    });
   } catch (err) { next(err); }
 });
 
@@ -17,6 +78,7 @@ router.get('/:id', async (req, res, next) => {
   try {
     const doc = await Control.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
   } catch (err) { next(err); }
 });
@@ -24,6 +86,7 @@ router.get('/:id', async (req, res, next) => {
 /* ── Bulk import ── must be before /:id routes ── */
 router.post('/bulk', async (req, res, next) => {
   const { controls, overwrite = false } = req.body;
+  const siteID = req.resolveTenantSiteID(req.body);
   if (!Array.isArray(controls) || !controls.length) {
     return res.status(400).json({ error: 'controls must be a non-empty array' });
   }
@@ -42,6 +105,8 @@ router.post('/bulk', async (req, res, next) => {
     conmon_status:           c.conmon_status || 'Open',
     conmon_group:            c.conmon_group  || null,
     conmon_frequency:        c.conmon_frequency || null,
+    siteID,
+    site: siteID,
   })).filter(d => d._id && d.title);
 
   if (!docs.length) {
@@ -54,7 +119,7 @@ router.post('/bulk', async (req, res, next) => {
   try {
     if (overwrite) {
       const ops = docs.map(d => ({
-        updateOne: { filter: { _id: d._id }, update: { $set: d }, upsert: true },
+        updateOne: { filter: req.applyTenantFilter({ _id: d._id }), update: { $set: d }, upsert: true },
       }));
       const r = await Control.bulkWrite(ops, { ordered: false });
       overwritten = (r.upsertedCount || 0) + (r.modifiedCount || 0);
@@ -74,8 +139,11 @@ router.post('/bulk', async (req, res, next) => {
   } catch (err) { return next(err); }
 
   await audit(
-    req.session.user.username, 'CONTROLS_BULK_IMPORT', 'bulk',
-    `Bulk import: ${overwrite ? overwritten : inserted} added, ${skipped} skipped`
+    req.session.user.username,
+    'CONTROLS_BULK_IMPORT',
+    'bulk',
+    `Bulk import: ${overwrite ? overwritten : inserted} added, ${skipped} skipped`,
+    siteID || req.tenantSiteID || null
   );
 
   res.json({ inserted: overwrite ? 0 : inserted, overwritten: overwrite ? overwritten : 0, skipped, errors: errors.slice(0, 20) });
@@ -85,6 +153,7 @@ router.post('/', async (req, res, next) => {
   const { id, title, family, status, baseline, last_review, findings, notes,
           description, implementation_guidance,
           conmon_status, conmon_group, conmon_frequency } = req.body;
+  const siteID = req.resolveTenantSiteID(req.body);
   try {
     const doc = await Control.create({
       _id: id, title, family,
@@ -96,8 +165,10 @@ router.post('/', async (req, res, next) => {
       conmon_status: conmon_status || 'Open',
       conmon_group:  conmon_group  || null,
       conmon_frequency: conmon_frequency || null,
+      siteID,
+      site: siteID,
     });
-    await audit(req.session.user.username, 'CONTROL_ADD', id, `Added: ${title}`);
+    await audit(req.session.user.username, 'CONTROL_ADD', id, `Added: ${title}`, siteID);
     res.status(201).json(doc);
   } catch (err) { next(err); }
 });
@@ -112,6 +183,18 @@ router.patch('/:id', async (req, res, next) => {
   }
   if (!Object.keys(updates).length) return res.status(400).json({ error: 'No fields to update' });
   try {
+    const existing = await Control.findById(req.params.id);
+    if (!existing) return res.status(404).json({ error: 'Not found' });
+    if (!req.assertTenantDocument(existing)) return res.status(403).json({ error: 'Forbidden' });
+    if (req.tenantSiteID) {
+      updates.siteID = req.tenantSiteID;
+      updates.site = req.tenantSiteID;
+    } else if (updates.siteID && !updates.site) {
+      updates.site = updates.siteID;
+    } else if (updates.site && !updates.siteID) {
+      updates.siteID = updates.site;
+    }
+
     const doc = await Control.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
     if (!doc) return res.status(404).json({ error: 'Not found' });
 
@@ -131,16 +214,18 @@ router.patch('/:id', async (req, res, next) => {
       }
     }
 
-    await audit(req.session.user.username, 'CONTROL_UPDATE', req.params.id, `Updated: ${Object.keys(updates).join(', ')}`);
+    await audit(req.session.user.username, 'CONTROL_UPDATE', req.params.id, `Updated: ${Object.keys(updates).join(', ')}`, doc.siteID || doc.site || null);
     res.json(doc);
   } catch (err) { next(err); }
 });
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const doc = await Control.findByIdAndDelete(req.params.id);
+    const doc = await Control.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    await audit(req.session.user.username, 'CONTROL_DELETE', req.params.id, 'Deleted');
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
+    await Control.findByIdAndDelete(req.params.id);
+    await audit(req.session.user.username, 'CONTROL_DELETE', req.params.id, 'Deleted', doc.siteID || doc.site || null);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

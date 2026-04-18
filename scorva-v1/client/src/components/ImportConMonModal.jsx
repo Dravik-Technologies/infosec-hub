@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { X, Upload, CheckCircle, AlertTriangle, FileSpreadsheet } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { api } from '../api';
 
 /* ── Excel parser ──
@@ -8,10 +8,29 @@ import { api } from '../api';
    Control ID | Control Title | Family | DAAG/JSIG Frequency |
    Baseline Applicability | ConMon Group | Notes/Dependencies
 */
-function parseExcelBuffer(buf) {
-  const wb    = XLSX.read(buf, { type: 'array' });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows  = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', blankrows: false });
+function normalizeCell(value) {
+  if (value == null) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (typeof value === 'object') {
+    if (typeof value.text === 'string') return value.text.trim();
+    if (value.result != null) return String(value.result).trim();
+    if (Array.isArray(value.richText)) return value.richText.map(part => part.text || '').join('').trim();
+  }
+  return String(value).trim();
+}
+
+async function parseExcelBuffer(buf) {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buf);
+  const sheet = workbook.worksheets[0];
+  if (!sheet) throw new Error('Spreadsheet is empty.');
+
+  const rows = [];
+  sheet.eachRow({ includeEmpty: false }, (row) => {
+    const vals = row.values.slice(1).map(normalizeCell);
+    if (vals.some(v => String(v || '').trim())) rows.push(vals);
+  });
   if (rows.length < 2) throw new Error('Spreadsheet must have a header row and at least one data row.');
 
   const headers = rows[0].map(h => String(h).trim().toLowerCase());
@@ -63,9 +82,9 @@ export default function ImportConMonModal({ onClose, onImported }) {
     if (!f) return;
     setFile(f); setParsed(null); setResult(null);
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = async e => {
       try {
-        const controls = parseExcelBuffer(e.target.result);
+        const controls = await parseExcelBuffer(e.target.result);
         setParsed({ controls, error: null });
       } catch (err) {
         setParsed({ controls: [], error: err.message });
@@ -75,10 +94,17 @@ export default function ImportConMonModal({ onClose, onImported }) {
   }
 
   async function doImport() {
-    if (!parsed?.controls?.length) return;
+    if (!parsed?.controls?.length || !file) return;
     setImporting(true);
     try {
-      const r = await api.conmon.bulk({ controls: parsed.controls, overwrite });
+      let r;
+      try {
+        r = await api.conmon.importExcel({ file });
+      } catch (err) {
+        // Fallback path when server upload dependencies are unavailable.
+        if (err.response?.status !== 503) throw err;
+        r = await api.conmon.bulk({ controls: parsed.controls, overwrite });
+      }
       setResult({ ...r, success: true });
       onImported();
     } catch (err) {
@@ -204,9 +230,10 @@ export default function ImportConMonModal({ onClose, onImported }) {
                     <CheckCircle size={13} /> Import complete
                   </p>
                   <div className="flex flex-wrap gap-4 text-[11px] font-mono">
-                    <span className="text-emerald-400"><strong>{result.added}</strong> controls added</span>
-                    {result.skipped > 0 && (
-                      <span className="text-scorva-muted"><strong>{result.skipped}</strong> skipped (already exist)</span>
+                    <span className="text-emerald-400"><strong>{result.inserted ?? result.added ?? 0}</strong> inserted</span>
+                    <span className="text-blue-400"><strong>{result.updated ?? 0}</strong> updated</span>
+                    {(result.skipped ?? 0) > 0 && (
+                      <span className="text-scorva-muted"><strong>{result.skipped}</strong> skipped</span>
                     )}
                   </div>
                 </div>

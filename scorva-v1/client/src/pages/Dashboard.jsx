@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import {
   ShieldCheck, Activity, AlertTriangle, CheckSquare,
   BookOpen, Users, Monitor, Key, ArrowRight, Shield,
@@ -80,19 +81,21 @@ const COLOR_MAP = {
 /* ── Dashboard ───────────────────────────────────────────────────────────── */
 export default function Dashboard() {
   const navigate = useNavigate();
+  const { user, selectedSite } = useAuth();
   const [clock, setClock] = useState(utcClock());
+  const siteScopeKey = selectedSite || user?.siteID || 'all-sites';
 
   useEffect(() => {
     const t = setInterval(() => setClock(utcClock()), 1000);
     return () => clearInterval(t);
   }, []);
 
-  const { data: atos     = [] } = useQuery({ queryKey: ['ato'],      queryFn: api.ato.list,      refetchInterval: 60_000 });
-  const { data: controls = [] } = useQuery({ queryKey: ['controls'], queryFn: api.controls.list, refetchInterval: 60_000 });
-  const { data: poams    = [] } = useQuery({ queryKey: ['poam'],     queryFn: api.poam.list,     refetchInterval: 60_000 });
-  const { data: tasks    = [] } = useQuery({ queryKey: ['tasks'],    queryFn: api.tasks.list,    refetchInterval: 60_000 });
-  const { data: notifs   = [] } = useQuery({ queryKey: ['notifications'], queryFn: api.notifications.list, refetchInterval: 60_000 });
-  const { data: auditResp }     = useQuery({ queryKey: ['audit'],    queryFn: () => api.audit.list({ limit: 6 }), refetchInterval: 30_000 });
+  const { data: atos     = [] } = useQuery({ queryKey: ['ato', siteScopeKey],      queryFn: api.ato.list,      refetchInterval: 60_000 });
+  const { data: controls = [] } = useQuery({ queryKey: ['controls', siteScopeKey], queryFn: api.controls.list, refetchInterval: 60_000 });
+  const { data: poams    = [] } = useQuery({ queryKey: ['poam', siteScopeKey],     queryFn: api.poam.list,     refetchInterval: 60_000 });
+  const { data: tasks    = [] } = useQuery({ queryKey: ['tasks', siteScopeKey],    queryFn: api.tasks.list,    refetchInterval: 60_000 });
+  const { data: notifs   = [] } = useQuery({ queryKey: ['notifications', siteScopeKey], queryFn: api.notifications.list, refetchInterval: 60_000 });
+  const { data: auditResp }     = useQuery({ queryKey: ['audit', siteScopeKey],    queryFn: () => api.audit.list({ limit: 6 }), refetchInterval: 30_000 });
   const auditLog = auditResp?.rows ?? [];
 
   const {

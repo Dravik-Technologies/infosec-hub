@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader     from '../components/ui/PageHeader';
 import Table          from '../components/ui/Table';
 import Badge          from '../components/ui/Badge';
@@ -198,7 +199,9 @@ function ControlDetail({ item, onComplete }) {
 ════════════════════════════════════════════════════════ */
 export default function ConMonPage() {
   const qc = useQueryClient();
-  const { data: items = [], isLoading } = useQuery({ queryKey: ['conmon'], queryFn: api.conmon.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'all-sites';
+  const { data: items = [], isLoading } = useQuery({ queryKey: ['conmon', siteScopeKey], queryFn: api.conmon.list });
 
   const [tab,        setTab]        = useState('Pending');
   const [modal,      setModal]      = useState(null);   // 'create' | 'edit' | 'view'
@@ -207,8 +210,18 @@ export default function ConMonPage() {
   const [selected,   setSelected]   = useState(null);
   const [delId,      setDelId]      = useState(null);
   const [importOpen, setImportOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkDeleteError, setBulkDeleteError] = useState('');
 
-  const invalidate = () => qc.invalidateQueries(['conmon']);
+  useEffect(() => {
+    setSelectedIds([]);
+    setBulkDeleteError('');
+  }, [siteScopeKey]);
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['conmon'] });
+    qc.invalidateQueries({ queryKey: ['controls'] });
+  };
 
   const create = useMutation({
     mutationFn: api.conmon.create,
@@ -228,6 +241,17 @@ export default function ConMonPage() {
   const remove = useMutation({
     mutationFn: api.conmon.remove,
     onSuccess: () => { invalidate(); setDelId(null); setModal(null); },
+  });
+  const removeMany = useMutation({
+    mutationFn: api.controls.bulkDelete,
+    onSuccess: () => {
+      invalidate();
+      setSelectedIds([]);
+      setBulkDeleteError('');
+    },
+    onError: err => {
+      setBulkDeleteError(err?.response?.data?.error || err.message || 'Bulk delete failed.');
+    },
   });
 
   function openCreate() { setForm(EMPTY_FORM); setModal('create'); }
@@ -274,8 +298,45 @@ export default function ConMonPage() {
     ? sorted
     : sorted.filter(i => (tab === 'Pending' ? i.status !== 'Completed' : i.status === 'Completed'));
 
+  const filteredIds = useMemo(() => filtered.map(row => row.id), [filtered]);
+  const allFilteredSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
+
+  function toggleSelectOne(id) {
+    setBulkDeleteError('');
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  }
+  function toggleSelectAll() {
+    setBulkDeleteError('');
+    setSelectedIds(prev => {
+      if (allFilteredSelected) return prev.filter(id => !filteredIds.includes(id));
+      return [...new Set([...prev, ...filteredIds])];
+    });
+  }
+
   /* ── shared columns ── */
   const sharedCols = [
+    {
+      key: '_select',
+      label: (
+        <input
+          type="checkbox"
+          checked={allFilteredSelected}
+          onChange={toggleSelectAll}
+          onClick={e => e.stopPropagation()}
+          aria-label="Select all controls"
+        />
+      ),
+      width: 32,
+      render: (_, row) => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(row.id)}
+          onChange={() => toggleSelectOne(row.id)}
+          onClick={e => e.stopPropagation()}
+          aria-label={`Select ${row.control_id}`}
+        />
+      ),
+    },
     {
       key: 'control_id', label: 'Control ID', width: 100,
       render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span>,
@@ -363,6 +424,15 @@ export default function ConMonPage() {
         description={`${items.length} controls · ${pctDone}% complete`}
         action={
           <div className="flex gap-2">
+            {selectedIds.length > 0 && (
+              <button
+                className="btn-secondary flex items-center gap-1.5 text-red-300 border-red-500/40"
+                onClick={() => removeMany.mutate(selectedIds)}
+                disabled={removeMany.isPending}
+              >
+                <Trash2 size={14} /> Delete Selected ({selectedIds.length})
+              </button>
+            )}
             <button className="btn-secondary flex items-center gap-1.5" onClick={() => setImportOpen(true)}>
               <Upload size={14} /> Import Excel
             </button>
@@ -372,6 +442,9 @@ export default function ConMonPage() {
           </div>
         }
       />
+      {bulkDeleteError && (
+        <p className="mb-3 text-xs text-red-400">{bulkDeleteError}</p>
+      )}
 
       {/* ── Stats ── */}
       <StatusDashboard>
@@ -470,7 +543,7 @@ export default function ConMonPage() {
       {importOpen && (
         <ImportConMonModal
           onClose={() => setImportOpen(false)}
-          onImported={() => qc.invalidateQueries(['conmon'])}
+          onImported={() => qc.invalidateQueries({ queryKey: ['conmon'] })}
         />
       )}
     </div>

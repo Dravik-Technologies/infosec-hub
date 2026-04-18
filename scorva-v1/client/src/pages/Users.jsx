@@ -24,8 +24,9 @@ const BASELINES = [
 ];
 
 const EMPTY = {
+  id: '',
   name: '', title: '', username: '', email: '', password: '',
-  role: 'Viewer', site: '', status: 'Active',
+  role: 'Viewer', site: '', siteIDs: [], status: 'Active',
   training_compliant: false, training_due: '',
   dod_8140: { baseline: '', cert_name: '', cert_expiry: '', status: 'Pending' },
 };
@@ -35,9 +36,30 @@ function UserForm({ value, onChange, isNew, sites }) {
   const f   = (k, v)      => onChange({ ...value, [k]: v });
   const f8  = (k, v)      => onChange({ ...value, dod_8140: { ...value.dod_8140, [k]: v } });
   const is8140 = ADMIN_ROLES.includes(value.role);
+  const supportsMultiSite = value.role !== 'Corporate Admin';
+
+  function handleSitesChange(e) {
+    const selected = Array.from(e.target.selectedOptions).map(opt => opt.value);
+    onChange({
+      ...value,
+      siteIDs: selected,
+      siteID: selected[0] || '',
+      site: selected[0] || '',
+    });
+  }
 
   return (
     <div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-xs text-scorva-muted mb-1">ID *</label>
+        <input
+          className="input-base font-mono"
+          value={value.id || ''}
+          onChange={e => f('id', e.target.value)}
+          required={isNew}
+          placeholder="e.g. USR-001"
+        />
+      </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">FULL NAME *</label>
         <input className="input-base" value={value.name} onChange={e => f('name', e.target.value)} required />
@@ -47,11 +69,25 @@ function UserForm({ value, onChange, isNew, sites }) {
         <input className="input-base" placeholder="e.g. Cyber Security Analyst" value={value.title || ''} onChange={e => f('title', e.target.value)} />
       </div>
       <div>
-        <label className="block text-xs text-scorva-muted mb-1">SITE</label>
-        <select className="input-base" value={value.site || ''} onChange={e => f('site', e.target.value)}>
-          <option value="">— None —</option>
-          {sites.map(s => <option key={s.id} value={s.label}>{s.label}</option>)}
-        </select>
+        <label className="block text-xs text-scorva-muted mb-1">{supportsMultiSite ? 'SITES' : 'SITE'}</label>
+        {supportsMultiSite ? (
+          <>
+            <select
+              multiple
+              className="input-base min-h-[102px]"
+              value={Array.isArray(value.siteIDs) ? value.siteIDs : (value.site ? [value.site] : [])}
+              onChange={handleSitesChange}
+            >
+              {sites.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+            </select>
+            <p className="text-[10px] text-scorva-muted mt-1">Hold Ctrl/Cmd to select multiple sites.</p>
+          </>
+        ) : (
+          <select className="input-base" value={value.site || ''} onChange={e => f('site', e.target.value)}>
+            <option value="">— None —</option>
+            {sites.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+          </select>
+        )}
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">USERNAME *</label>
@@ -156,7 +192,7 @@ function UserDetailModal({ user, onEdit, onClose }) {
           <Row label="Title"    value={user.title} />
           <Row label="Username" value={user.username}  mono />
           <Row label="Email"    value={user.email} />
-          <Row label="Site"     value={user.site} />
+          <Row label="Sites"    value={Array.isArray(user.siteIDs) && user.siteIDs.length ? user.siteIDs.join(', ') : user.site} />
         </div>
 
         {/* Access */}
@@ -235,23 +271,46 @@ export default function UsersPage() {
   const [form,     setForm]     = useState(EMPTY);
   const [editing,  setEditing]  = useState(null);
   const [delId,    setDelId]    = useState(null);
+  const [formError, setFormError] = useState('');
 
   const isAdmin = me?.role === 'Corporate Admin';
 
-  const create = useMutation({ mutationFn: api.users.create, onSuccess: () => { qc.invalidateQueries(['users']); setModal(null); } });
-  const update = useMutation({ mutationFn: ({ id, d }) => api.users.update(id, d), onSuccess: () => { qc.invalidateQueries(['users']); setModal(null); } });
+  const create = useMutation({
+    mutationFn: api.users.create,
+    onSuccess: () => { qc.invalidateQueries(['users']); setModal(null); setFormError(''); },
+    onError: (err) => setFormError(err?.response?.data?.error || 'Save failed. Please check the fields and try again.'),
+  });
+  const update = useMutation({
+    mutationFn: ({ id, d }) => api.users.update(id, d),
+    onSuccess: () => { qc.invalidateQueries(['users']); setModal(null); setFormError(''); },
+    onError: (err) => setFormError(err?.response?.data?.error || 'Save failed. Please check the fields and try again.'),
+  });
   const remove = useMutation({ mutationFn: api.users.remove, onSuccess: () => { qc.invalidateQueries(['users']); setDelId(null); } });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
+  function openCreate() { setForm(EMPTY); setFormError(''); setModal('create'); }
   function openEdit(row) {
     setDetail(null);
-    setForm({ ...row, password: '', dod_8140: row.dod_8140 || { baseline: '', cert_name: '', cert_expiry: '', status: 'Pending' } });
+    setForm({
+      ...row,
+      id: row.id || row._id || '',
+      siteIDs: Array.isArray(row.siteIDs) && row.siteIDs.length ? row.siteIDs : (row.site ? [row.site] : []),
+      password: '',
+      dod_8140: row.dod_8140 || { baseline: '', cert_name: '', cert_expiry: '', status: 'Pending' },
+    });
     setEditing(row.id);
+    setFormError('');
     setModal('edit');
   }
   function handleSubmit(e) {
     e.preventDefault();
     const d = { ...form };
+    if (!d.id) d.id = editing || '';
+    if (modal === 'edit' && !d.id) {
+      setFormError('User ID is missing for this record. Re-open the user and try again.');
+      return;
+    }
+    if (!Array.isArray(d.siteIDs)) d.siteIDs = d.site ? [d.site] : [];
+    d.site = d.siteIDs[0] || d.site || '';
     if (!d.password) delete d.password;
     if (modal === 'create') create.mutate(d);
     else update.mutate({ id: editing, d });
@@ -263,7 +322,7 @@ export default function UsersPage() {
     { key: 'id',       label: 'ID',           width: 90,  render: v => <span className="font-mono text-xs text-scorva-muted">{v}</span> },
     { key: 'name',     label: 'Name',          render: v => <span className="text-xs font-medium text-scorva-text">{v}</span> },
     { key: 'title',    label: 'Title',          render: v => <span className="text-xs text-scorva-muted">{v || '—'}</span> },
-    { key: 'site',     label: 'Site',           render: v => <span className="text-xs">{v || '—'}</span> },
+    { key: 'siteIDs',  label: 'Sites',          render: (v, row) => <span className="text-xs">{Array.isArray(v) && v.length ? v.join(', ') : (row.site || '—')}</span> },
     { key: 'username', label: 'Username',       render: v => <span className="font-mono text-xs">{v}</span> },
     { key: 'email',    label: 'Email',          render: v => <span className="text-xs">{v}</span> },
     { key: 'role',     label: 'Role',           render: v => <Badge label={v} /> },
@@ -366,6 +425,11 @@ export default function UsersPage() {
         <Modal title={modal === 'create' ? 'Add User' : 'Edit User'} onClose={() => setModal(null)}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <UserForm value={form} onChange={setForm} isNew={modal === 'create'} sites={sites} />
+            {formError && (
+              <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">
+                {formError}
+              </p>
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
               <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending}>Save</button>

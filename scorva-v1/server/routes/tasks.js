@@ -10,8 +10,7 @@ const router   = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    const filter = req.siteFilter ? { site: req.siteFilter } : {};
-    res.json(await Task.find(filter).sort({ _id: -1 }));
+    res.json(await Task.find(req.applyTenantFilter({})).sort({ _id: -1 }));
   } catch (err) { next(err); }
 });
 
@@ -29,9 +28,9 @@ router.get('/mine', async (req, res, next) => {
     if (displayName && displayName !== username) assigneeVals.push(displayName);
 
     const filter = { assignee: { $in: assigneeVals } };
-    if (req.siteFilter) filter.site = req.siteFilter;
+    const siteConstrainedFilter = req.applyTenantFilter(filter);
 
-    const tasks = await Task.find(filter).sort({ _id: -1 });
+    const tasks = await Task.find(siteConstrainedFilter).sort({ _id: -1 });
     res.json(tasks);
   } catch (err) { next(err); }
 });
@@ -40,7 +39,7 @@ router.get('/:id', async (req, res, next) => {
   try {
     const doc = await Task.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
   } catch (err) { next(err); }
 });
@@ -48,14 +47,14 @@ router.get('/:id', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   const { title, type, status, priority, assignee, due_date, control,
           linked_controls, activity_id, notes } = req.body;
-  const site = req.siteFilter ?? (req.body.site || null);
+  const site = req.resolveTenantSiteID(req.body);
   try {
     const last    = await Task.findOne().sort({ _id: -1 }).select('_id');
     const lastNum = last ? parseInt(last._id.replace('TF-', '')) || 0 : 0;
     const id      = 'TF-' + String(lastNum + 1).padStart(4, '0');
 
     const doc = await Task.create({
-      _id: id, title, site,
+      _id: id, title, site, siteID: site,
       type: type || 'Task', status: status || 'Open', priority,
       assignee, due_date: due_date || null, control, notes: notes || null,
       linked_controls: linked_controls || [],
@@ -70,7 +69,7 @@ router.post('/', async (req, res, next) => {
 });
 
 router.patch('/:id', async (req, res, next) => {
-  const allowed = ['title','site','type','status','priority','assignee','due_date',
+  const allowed = ['title','site','siteID','type','status','priority','assignee','due_date',
                    'control','linked_controls','activity_id','evidence','notes'];
   const updates = {};
   for (const key of allowed) {
@@ -80,8 +79,12 @@ router.patch('/:id', async (req, res, next) => {
   try {
     const doc = await Task.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
-    if (req.siteFilter) updates.site = req.siteFilter;
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
+    const siteID = req.resolveTenantSiteID(updates);
+    if (siteID) {
+      updates.site = siteID;
+      updates.siteID = siteID;
+    }
 
     const updated = await Task.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
 
@@ -124,9 +127,9 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const doc = await Task.findById(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.site !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     await Task.findByIdAndDelete(req.params.id);
-    await audit(req.session.user.username, 'TASK_DELETE', req.params.id, 'Deleted', doc.site);
+    await audit(req.session.user.username, 'TASK_DELETE', req.params.id, 'Deleted', doc.siteID || doc.site || null);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

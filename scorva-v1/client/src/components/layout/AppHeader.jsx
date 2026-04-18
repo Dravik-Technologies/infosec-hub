@@ -6,6 +6,7 @@ import { useAuth }  from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
+const TOKEN_KEY = 'scorva_token';
 
 /**
  * AppHeader — per-app top nav bar.
@@ -24,7 +25,11 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
 
   useEffect(() => {
     if (!isAdmin) return;
-    axios.get(`${BASE}/api/sites`, { withCredentials: true })
+    const token = localStorage.getItem(TOKEN_KEY);
+    axios.get(`${BASE}/api/sites`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      withCredentials: true,
+    })
       .then(r => setSites(r.data))
       .catch(() => {});
   }, [isAdmin]);

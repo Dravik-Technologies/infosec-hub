@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import Badge         from '../components/ui/Badge';
@@ -58,15 +59,18 @@ function ATOForm({ value, onChange }) {
 
 export default function ATOPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['ato'], queryFn: api.ato.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const { data = [], isLoading, isError, error } = useQuery({ queryKey: ['ato', siteScopeKey], queryFn: api.ato.list });
   const [modal, setModal]   = useState(null); // null | 'create' | 'edit'
   const [form, setForm]     = useState(EMPTY);
   const [editing, setEditing] = useState(null);
   const [delId, setDelId]   = useState(null);
 
-  const create = useMutation({ mutationFn: api.ato.create, onSuccess: () => { qc.invalidateQueries(['ato']); setModal(null); } });
-  const update = useMutation({ mutationFn: ({ id, d }) => api.ato.update(id, d), onSuccess: () => { qc.invalidateQueries(['ato']); setModal(null); } });
-  const remove = useMutation({ mutationFn: api.ato.remove, onSuccess: () => { qc.invalidateQueries(['ato']); setDelId(null); } });
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['ato'] });
+  const create = useMutation({ mutationFn: api.ato.create, onSuccess: () => { invalidate(); setModal(null); } });
+  const update = useMutation({ mutationFn: ({ id, d }) => api.ato.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
+  const remove = useMutation({ mutationFn: api.ato.remove, onSuccess: () => { invalidate(); setDelId(null); } });
 
   function openCreate() { setForm(EMPTY); setModal('create'); }
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
@@ -94,6 +98,9 @@ export default function ATOPage() {
   ];
 
   if (isLoading) return <LoadingSpinner />;
+  if (isError) {
+    return <div className="text-sm text-red-400">Failed to load ATO data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
+  }
 
   const authorized = data.filter(r => r.status === 'Authorized').length;
   const pending    = data.filter(r => r.status === 'Pending Authorization').length;

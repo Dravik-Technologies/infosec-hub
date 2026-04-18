@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import Badge         from '../components/ui/Badge';
@@ -45,15 +46,25 @@ function YKForm({ value, onChange }) {
 
 export default function YubiKeysPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['yubikeys'], queryFn: api.yubikeys.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const { data = [], isLoading } = useQuery({ queryKey: ['yubikeys', siteScopeKey], queryFn: api.yubikeys.list });
   const [modal, setModal]     = useState(null);
   const [form, setForm]       = useState(EMPTY);
   const [editing, setEditing] = useState(null);
   const [delId, setDelId]     = useState(null);
+  const [selectedIds, setSelectedIds] = useState([]);
 
-  const create = useMutation({ mutationFn: api.yubikeys.create, onSuccess: () => { qc.invalidateQueries(['yubikeys']); setModal(null); } });
-  const update = useMutation({ mutationFn: ({ id, d }) => api.yubikeys.update(id, d), onSuccess: () => { qc.invalidateQueries(['yubikeys']); setModal(null); } });
-  const remove = useMutation({ mutationFn: api.yubikeys.remove, onSuccess: () => { qc.invalidateQueries(['yubikeys']); setDelId(null); } });
+  useEffect(() => { setSelectedIds([]); }, [siteScopeKey]);
+
+  const invalidate = () => qc.invalidateQueries({ queryKey: ['yubikeys'] });
+  const create = useMutation({ mutationFn: api.yubikeys.create, onSuccess: () => { invalidate(); setModal(null); } });
+  const update = useMutation({ mutationFn: ({ id, d }) => api.yubikeys.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
+  const remove = useMutation({ mutationFn: api.yubikeys.remove, onSuccess: () => { invalidate(); setDelId(null); } });
+  const removeMany = useMutation({
+    mutationFn: api.yubikeys.bulkDelete,
+    onSuccess: () => { invalidate(); setSelectedIds([]); },
+  });
 
   function openCreate() { setForm(EMPTY); setModal('create'); }
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
@@ -63,7 +74,26 @@ export default function YubiKeysPage() {
     else update.mutate({ id: editing, d: form });
   }
 
+  const shownIds = useMemo(() => data.map(r => r.id), [data]);
+  const allShownSelected = shownIds.length > 0 && shownIds.every(id => selectedIds.includes(id));
+
   const cols = [
+    {
+      key: '_select',
+      label: <input type="checkbox" checked={allShownSelected} onChange={() => {
+        setSelectedIds(prev => allShownSelected ? [] : [...new Set([...prev, ...shownIds])]);
+      }} onClick={e => e.stopPropagation()} aria-label="Select all yubi keys" />,
+      width: 32,
+      render: (_, row) => (
+        <input
+          type="checkbox"
+          checked={selectedIds.includes(row.id)}
+          onChange={() => setSelectedIds(prev => prev.includes(row.id) ? prev.filter(id => id !== row.id) : [...prev, row.id])}
+          onClick={e => e.stopPropagation()}
+          aria-label={`Select ${row.serial}`}
+        />
+      ),
+    },
     { key: 'id',       label: 'ID',     width: 90, render: v => <span className="font-mono text-xs text-scorva-muted">{v}</span> },
     { key: 'serial',   label: 'Serial', render: v => <span className="font-mono text-xs">{v}</span> },
     { key: 'model',    label: 'Model' },
@@ -90,7 +120,14 @@ export default function YubiKeysPage() {
   return (
     <div>
       <PageHeader title="YubiKeys" description="Hardware token management"
-        action={<button className="btn-primary" onClick={openCreate}><Plus size={15} />Add YubiKey</button>}
+        action={<div className="flex gap-2">
+          {selectedIds.length > 0 && (
+            <button className="btn-secondary flex items-center gap-1.5 text-red-300 border-red-500/40" onClick={() => removeMany.mutate(selectedIds)} disabled={removeMany.isPending}>
+              <Trash2 size={14} /> Delete Selected ({selectedIds.length})
+            </button>
+          )}
+          <button className="btn-primary" onClick={openCreate}><Plus size={15} />Add YubiKey</button>
+        </div>}
       />
       <StatusDashboard>
         <div className="flex flex-wrap gap-6 items-start">

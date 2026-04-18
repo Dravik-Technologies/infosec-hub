@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
+const TOKEN_KEY = 'scorva_token';
 
 export default function Header({ onMenuClick }) {
   const { user, logout, selectedSite, selectSite } = useAuth();
@@ -17,7 +18,11 @@ export default function Header({ onMenuClick }) {
 
   useEffect(() => {
     if (!isAdmin) return;
-    axios.get(`${BASE}/api/sites`, { withCredentials: true })
+    const token = localStorage.getItem(TOKEN_KEY);
+    axios.get(`${BASE}/api/sites`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      withCredentials: true,
+    })
       .then(r => setSites(r.data))
       .catch(() => {});
   }, [isAdmin]);

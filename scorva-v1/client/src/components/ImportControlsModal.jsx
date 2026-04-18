@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { X, Upload, CheckCircle, AlertTriangle, Star } from 'lucide-react';
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { api } from '../api';
 
 /* ══════════════════════════════════════════════════════
@@ -112,10 +112,29 @@ const FAMILY_MAP = {
   SR: 'Supply Chain Risk Management',
 };
 
-function parseExcel(buffer) {
-  const wb = XLSX.read(buffer, { type: 'array' });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+function normalizeCell(value) {
+  if (value == null) return '';
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+  if (value instanceof Date) return value.toISOString().slice(0, 10);
+  if (typeof value === 'object') {
+    if (typeof value.text === 'string') return value.text.trim();
+    if (value.result != null) return String(value.result).trim();
+    if (Array.isArray(value.richText)) return value.richText.map(part => part.text || '').join('').trim();
+  }
+  return String(value).trim();
+}
+
+async function parseExcel(buffer) {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+  const sheet = workbook.worksheets[0];
+  if (!sheet) throw new Error('Spreadsheet is empty.');
+
+  const rows = [];
+  sheet.eachRow({ includeEmpty: false }, (row) => {
+    const vals = row.values.slice(1).map(normalizeCell);
+    if (vals.some(v => String(v || '').trim())) rows.push(vals);
+  });
 
   if (rows.length < 2) throw new Error('Spreadsheet must have a header row and at least one data row.');
 
@@ -326,9 +345,9 @@ export default function ImportControlsModal({ onClose, onImported, currentCount 
     setParsed(null);
     setResult(null);
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = async e => {
       try {
-        const controls = tab.parse(e.target.result);
+        const controls = await Promise.resolve(tab.parse(e.target.result));
         setParsed({ controls, error: null });
       } catch (err) {
         setParsed({ controls: [], error: err.message });
