@@ -15,7 +15,7 @@ const APPS = [
     name:    'SCORVA',
     tagline: 'Cyber Command Center',
     desc:    'NIST SP 800-53 Rev 5 compliance management — ATO tracking, continuous monitoring, POAM, asset inventory, and access governance.',
-    url:     'http://localhost:3001',
+    url:     'http://localhost:3000',
     ssoPath: '/auth/sso',
     color:   'teal',
     icon:    'ShieldCheck',

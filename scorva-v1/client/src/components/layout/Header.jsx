@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
+const BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const TOKEN_KEY = 'scorva_token';
 
 export default function Header({ onMenuClick }) {

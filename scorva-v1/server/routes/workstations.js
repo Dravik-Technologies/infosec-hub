@@ -1,50 +1,51 @@
 'use strict';
 
-const express     = require('express');
-const Workstation = require('../models/Workstation');
-const audit       = require('../middleware/audit');
-const router      = express.Router();
+const express = require('express');
+const { db }  = require('../../../packages/db/src/index');
+const audit   = require('../middleware/audit');
+const router  = express.Router();
 
-const ALLOWED = [
-  'asset_tag','hostname','type','username','site','siteID','os','ip',
-  'location','classification','status','system','key_expiry',
-  'last_seen','notes',
-];
+const FIELD_MAP = {
+  asset_tag: 'assetTag', hostname: 'hostname', type: 'type', username: 'username',
+  os: 'os', ip: 'ip', location: 'location', classification: 'classification',
+  status: 'status', system: 'system', key_expiry: 'keyExpiry', last_seen: 'lastSeen', notes: 'notes',
+};
+
+function mapFields(src) {
+  const out = {};
+  for (const [k, pk] of Object.entries(FIELD_MAP)) {
+    if (k in src) out[pk] = src[k];
+  }
+  return out;
+}
 
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await Workstation.find(req.applyTenantFilter({})).sort({ _id: 1 }));
+    res.json(await db.workstation.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } }));
   } catch (err) { next(err); }
 });
 
 router.post('/bulk', async (req, res, next) => {
-  const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
-  const siteID = req.resolveTenantSiteID(req.body);
+  const rows  = Array.isArray(req.body?.rows) ? req.body.rows : [];
+  const siteId = req.resolveTenantSiteId(req.body);
   if (!rows.length) return res.status(400).json({ error: 'rows must be a non-empty array' });
 
-  let inserted = 0;
-  let updated = 0;
-  let skipped = 0;
-
+  let inserted = 0, updated = 0, skipped = 0;
   try {
     for (const row of rows) {
       const key = String(row._id || row.id || row.asset_tag || row.hostname || '').trim();
       if (!key) { skipped++; continue; }
-
-      const payload = { siteID, site: siteID };
-      for (const k of ALLOWED) {
-        if (k in row) payload[k] = row[k];
-      }
-      if (!payload.hostname) payload.hostname = key;
-
-      const existing = await Workstation.exists(req.applyTenantFilter({ _id: key }));
-      await Workstation.updateOne(
-        req.applyTenantFilter({ _id: key }),
-        { $set: { _id: key, ...payload } },
-        { upsert: true }
-      );
-      if (existing) updated++;
-      else inserted++;
+      const fields = { ...mapFields(row), siteId };
+      if (!fields.hostname) fields.hostname = key;
+      const existing = await db.workstation.findFirst({
+        where: { id: key, ...req.applyTenantFilter({}) }, select: { id: true },
+      });
+      await db.workstation.upsert({
+        where: { id: key },
+        update: fields,
+        create: { id: key, ...fields },
+      });
+      if (existing) updated++; else inserted++;
     }
     res.json({ inserted, updated, skipped });
   } catch (err) { next(err); }
@@ -52,65 +53,56 @@ router.post('/bulk', async (req, res, next) => {
 
 router.post('/bulk-delete', async (req, res, next) => {
   const ids = Array.isArray(req.body?.ids)
-    ? [...new Set(req.body.ids.map(String).map(v => v.trim()).filter(Boolean))]
-    : [];
+    ? [...new Set(req.body.ids.map(String).map(v => v.trim()).filter(Boolean))] : [];
   if (!ids.length) return res.status(400).json({ error: 'ids must be a non-empty array' });
   try {
-    const result = await Workstation.deleteMany(req.applyTenantFilter({ _id: { $in: ids } }));
-    await audit(req.session.user.username, 'WS_BULK_DELETE', 'bulk', `Deleted ${result.deletedCount || 0} devices`, req.tenantSiteID);
-    res.json({ requested: ids.length, deletedCount: result.deletedCount || 0 });
+    const result = await db.workstation.deleteMany({
+      where: { id: { in: ids }, ...req.applyTenantFilter({}) },
+    });
+    await audit(req.session.user.username, 'WS_BULK_DELETE', 'bulk',
+      `Deleted ${result.count} devices`, req.tenantSiteId);
+    res.json({ requested: ids.length, deletedCount: result.count });
   } catch (err) { next(err); }
 });
 
 router.post('/', async (req, res, next) => {
   try {
-    const last    = await Workstation.findOne().sort({ _id: -1 }).select('_id');
-    const lastNum = last ? parseInt(last._id.replace('WS-', '')) : 0;
+    const last    = await db.workstation.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
+    const lastNum = last ? parseInt(last.id.replace('WS-', '')) || 0 : 0;
     const id      = 'WS-' + String(lastNum + 1).padStart(4, '0');
 
-    const fields = {};
-    for (const key of ALLOWED) {
-      if (key in req.body) fields[key] = req.body[key];
-    }
-    const siteID = req.resolveTenantSiteID(fields);
-    fields.siteID = siteID;
-    fields.site = siteID;
+    const fields = mapFields(req.body);
+    fields.siteId = req.resolveTenantSiteId(req.body);
 
-    const doc = await Workstation.create({ _id: id, ...fields });
-    await audit(req.session.user.username, 'WS_ADD', id, `Added: ${fields.hostname}`, siteID);
+    const doc = await db.workstation.create({ data: { id, ...fields } });
+    await audit(req.session.user.username, 'WS_ADD', id, `Added: ${fields.hostname}`, fields.siteId);
     res.status(201).json(doc);
   } catch (err) { next(err); }
 });
 
 router.patch('/:id', async (req, res, next) => {
-  const updates = {};
-  for (const key of ALLOWED) {
-    if (key in req.body) updates[key] = req.body[key];
-  }
-  if (!Object.keys(updates).length) return res.status(400).json({ error: 'No fields to update' });
+  const data = mapFields(req.body);
+  if (!Object.keys(data).length) return res.status(400).json({ error: 'No fields to update' });
   try {
-    const existing = await Workstation.findById(req.params.id);
+    const existing = await db.workstation.findUnique({ where: { id: req.params.id } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(existing)) return res.status(403).json({ error: 'Forbidden' });
-    const siteID = req.resolveTenantSiteID(updates);
-    if (siteID) {
-      updates.siteID = siteID;
-      updates.site = siteID;
-    }
-    const doc = await Workstation.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
-    if (!doc) return res.status(404).json({ error: 'Not found' });
-    await audit(req.session.user.username, 'WS_UPDATE', req.params.id, `Updated: ${Object.keys(updates).join(', ')}`, doc.siteID || doc.site || null);
+    const siteId = req.resolveTenantSiteId(req.body);
+    if (siteId) data.siteId = siteId;
+    const doc = await db.workstation.update({ where: { id: req.params.id }, data });
+    await audit(req.session.user.username, 'WS_UPDATE', req.params.id,
+      `Updated: ${Object.keys(data).join(', ')}`, doc.siteId);
     res.json(doc);
   } catch (err) { next(err); }
 });
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const doc = await Workstation.findById(req.params.id);
+    const doc = await db.workstation.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    await Workstation.findByIdAndDelete(req.params.id);
-    await audit(req.session.user.username, 'WS_DELETE', req.params.id, 'Deleted', doc.siteID || doc.site || null);
+    await db.workstation.delete({ where: { id: req.params.id } });
+    await audit(req.session.user.username, 'WS_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

@@ -1,33 +1,31 @@
 'use strict';
 
 const express = require('express');
-const POAM    = require('../models/POAM');
-const Task    = require('../models/Task');
+const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
 const POAM_STATUS_TO_TASK = {
-  'Open':        'Open',
-  'In Progress': 'In Progress',
-  'Completed':   'Completed',
-  'Closed':      'Completed',
+  'Open': 'Open', 'In Progress': 'In Progress',
+  'Completed': 'Completed', 'Closed': 'Completed',
 };
 
-async function createLinkedTask(poamId, title, site, responsible_party, scheduled_completion, severity, username) {
+async function createLinkedTask(poamId, title, siteId, responsibleParty, scheduledCompletion, severity, username) {
   try {
-    const lastTask = await Task.findOne().sort({ _id: -1 }).select('_id');
-    const lastTNum = lastTask ? parseInt(lastTask._id.replace('TF-', '')) || 0 : 0;
-    const taskId   = 'TF-' + String(lastTNum + 1).padStart(4, '0');
-    await Task.create({
-      _id: taskId, title, site, siteID: site,
-      type: 'Finding', status: 'Open',
-      priority: severity === 'Critical' ? 'Critical' : severity === 'High' ? 'High' : 'Medium',
-      assignee: responsible_party || null,
-      due_date: scheduled_completion || null,
-      notes: null,
-      created: new Date().toISOString().split('T')[0],
-      source: 'poam', source_id: poamId,
-      created_by: username || null,
+    const last    = await db.task.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
+    const lastNum = last ? parseInt(last.id.replace('TF-', '')) || 0 : 0;
+    const taskId  = 'TF-' + String(lastNum + 1).padStart(4, '0');
+    await db.task.create({
+      data: {
+        id: taskId, title, siteId,
+        type: 'Finding', status: 'Open',
+        priority: severity === 'Critical' ? 'Critical' : severity === 'High' ? 'High' : 'Medium',
+        assignee: responsibleParty || null,
+        dueDate: scheduledCompletion || null,
+        created: new Date().toISOString().split('T')[0],
+        source: 'poam', sourceId: poamId,
+        createdBy: username || null,
+      },
     });
   } catch (err) {
     console.error('[SCORVA] POAM task auto-create failed for', poamId, ':', err.message);
@@ -36,13 +34,13 @@ async function createLinkedTask(poamId, title, site, responsible_party, schedule
 
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await POAM.find(req.applyTenantFilter({})).sort({ _id: 1 }));
+    res.json(await db.poam.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } }));
   } catch (err) { next(err); }
 });
 
 router.get('/:id', async (req, res, next) => {
   try {
-    const doc = await POAM.findById(req.params.id);
+    const doc = await db.poam.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
@@ -51,61 +49,52 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/bulk', async (req, res, next) => {
   const rows = Array.isArray(req.body?.rows) ? req.body.rows : [];
-  const siteID = req.resolveTenantSiteID(req.body);
+  const siteId = req.resolveTenantSiteId(req.body);
   if (!rows.length) return res.status(400).json({ error: 'rows must be a non-empty array' });
 
-  let inserted = 0;
-  let updated = 0;
-  let skipped = 0;
-
+  let inserted = 0, updated = 0, skipped = 0;
   try {
     for (const row of rows) {
-      const key = String(row._id || row.id || '').trim();
+      const key   = String(row._id || row.id || '').trim();
       const title = String(row.title || '').trim();
       if (!key || !title) { skipped++; continue; }
 
       const payload = {
-        _id: key,
-        title,
-        control_id: row.control_id || null,
-        weakness: row.weakness || '',
-        severity: row.severity || '',
-        status: row.status || 'Open',
-        siteID,
-        site: siteID,
-        source_type: row.source_type || '',
-        source_id: row.source_id || '',
-        responsible_party: row.responsible_party || '',
-        point_of_contact: row.point_of_contact || '',
+        id: key, title, controlId: row.control_id || null,
+        weakness: row.weakness || '', severity: row.severity || '',
+        status: row.status || 'Open', siteId,
+        sourceType: row.source_type || '', sourceId: row.source_id || '',
+        responsibleParty: row.responsible_party || '',
+        pointOfContact: row.point_of_contact || '',
         resources: row.resources || '',
-        scheduled_completion: row.scheduled_completion || null,
+        scheduledCompletion: row.scheduled_completion || null,
         milestones: Array.isArray(row.milestones) ? row.milestones : [],
-        identified_date: row.identified_date || null,
-        ato_id: row.ato_id || null,
-        poam_type: row.poam_type || '',
+        identifiedDate: row.identified_date || null,
+        atoId: row.ato_id || null, poamType: row.poam_type || '',
         comments: row.comments || '',
-        completed_date: row.completed_date || null,
-        closed_date: row.closed_date || null,
+        completedDate: row.completed_date || null,
+        closedDate: row.closed_date || null,
       };
-      const existing = await POAM.exists(req.applyTenantFilter({ _id: key }));
-      await POAM.updateOne(req.applyTenantFilter({ _id: key }), { $set: payload }, { upsert: true });
-      if (existing) updated++;
-      else inserted++;
+      const existing = await db.poam.findFirst({
+        where: { id: key, ...req.applyTenantFilter({}) },
+        select: { id: true },
+      });
+      await db.poam.upsert({ where: { id: key }, update: payload, create: payload });
+      if (existing) updated++; else inserted++;
     }
     res.json({ inserted, updated, skipped });
   } catch (err) { next(err); }
 });
 
-/* ── Backfill missing tasks for existing POAMs ── */
 router.post('/backfill-tasks', async (req, res, next) => {
   try {
-    const poams = await POAM.find(req.applyTenantFilter({}));
+    const poams = await db.poam.findMany({ where: req.applyTenantFilter({}) });
     let created = 0, skipped = 0;
     for (const p of poams) {
-      const exists = await Task.exists({ source: 'poam', source_id: p._id });
+      const exists = await db.task.findFirst({ where: { source: 'poam', sourceId: p.id }, select: { id: true } });
       if (exists) { skipped++; continue; }
-      await createLinkedTask(p._id, p.title, p.site, p.responsible_party,
-        p.scheduled_completion, p.severity, req.session.user?.username);
+      await createLinkedTask(p.id, p.title, p.siteId, p.responsibleParty,
+        p.scheduledCompletion, p.severity, req.session.user?.username);
       created++;
     }
     res.json({ created, skipped });
@@ -116,73 +105,79 @@ router.post('/', async (req, res, next) => {
   const { title, control_id, weakness, severity, status, source_type, source_id,
           responsible_party, point_of_contact, resources, scheduled_completion, milestones,
           identified_date, ato_id, poam_type, comments } = req.body;
-  const site = req.resolveTenantSiteID(req.body);
+  const siteId = req.resolveTenantSiteId(req.body);
   try {
-    const last = await POAM.findOne().sort({ _id: -1 }).select('_id');
-    const lastNum = last ? parseInt(last._id.replace('POA-', '')) : 0;
-    const id = 'POA-' + String(lastNum + 1).padStart(3, '0');
+    const last    = await db.poam.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
+    const lastNum = last ? parseInt(last.id.replace('POA-', '')) || 0 : 0;
+    const id      = 'POA-' + String(lastNum + 1).padStart(3, '0');
 
-    const doc = await POAM.create({
-      _id: id, title, control_id: control_id || null, weakness, severity,
-      status: status || 'Open', site, siteID: site, source_type, source_id, responsible_party,
-      point_of_contact, resources, scheduled_completion: scheduled_completion || null,
-      milestones: milestones || [], identified_date: identified_date || null,
-      ato_id: ato_id || null, poam_type, comments,
+    const doc = await db.poam.create({
+      data: {
+        id, title, controlId: control_id || null, weakness, severity,
+        status: status || 'Open', siteId, sourceType: source_type, sourceId: source_id,
+        responsibleParty: responsible_party, pointOfContact: point_of_contact,
+        resources, scheduledCompletion: scheduled_completion || null,
+        milestones: milestones || [], identifiedDate: identified_date || null,
+        atoId: ato_id || null, poamType: poam_type, comments,
+      },
     });
 
-    await createLinkedTask(id, title, site, responsible_party, scheduled_completion,
+    await createLinkedTask(id, title, siteId, responsible_party, scheduled_completion,
       severity, req.session.user?.username);
-
-    await audit(req.session.user.username, 'POAM_ADD', id, `Added: ${title}`, site);
+    await audit(req.session.user.username, 'POAM_ADD', id, `Added: ${title}`, siteId);
     res.status(201).json(doc);
   } catch (err) { next(err); }
 });
 
 router.patch('/:id', async (req, res, next) => {
-  const allowed = ['title','control_id','weakness','severity','status','site','siteID','responsible_party',
-                   'point_of_contact','resources','scheduled_completion','milestones',
-                   'ato_id','poam_type','comments','completed_date','closed_date'];
-  const updates = {};
-  for (const key of allowed) {
-    if (key in req.body) updates[key] = req.body[key];
+  const FIELD_MAP = {
+    title: 'title', control_id: 'controlId', weakness: 'weakness', severity: 'severity',
+    status: 'status', responsible_party: 'responsibleParty',
+    point_of_contact: 'pointOfContact', resources: 'resources',
+    scheduled_completion: 'scheduledCompletion', milestones: 'milestones',
+    ato_id: 'atoId', poam_type: 'poamType', comments: 'comments',
+    completed_date: 'completedDate', closed_date: 'closedDate',
+  };
+  const data = {};
+  for (const [k, pk] of Object.entries(FIELD_MAP)) {
+    if (k in req.body) data[pk] = req.body[k];
   }
-  if (!Object.keys(updates).length) return res.status(400).json({ error: 'No fields to update' });
+  if (!Object.keys(data).length) return res.status(400).json({ error: 'No fields to update' });
+
   try {
-    const doc = await POAM.findById(req.params.id);
+    const doc = await db.poam.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    const effectiveSiteID = req.resolveTenantSiteID(updates);
-    if (effectiveSiteID) {
-      updates.site = effectiveSiteID;
-      updates.siteID = effectiveSiteID;
-    }
 
-    const updated = await POAM.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
+    const siteId = req.resolveTenantSiteId(req.body);
+    if (siteId) data.siteId = siteId;
 
-    /* sync linked task */
+    const updated = await db.poam.update({ where: { id: req.params.id }, data });
+
     const taskSync = {};
-    if (updates.title)                               taskSync.title    = updates.title;
-    if (updates.scheduled_completion !== undefined)  taskSync.due_date = updates.scheduled_completion;
-    if (updates.responsible_party !== undefined)     taskSync.assignee = updates.responsible_party || null;
-    if (updates.status)                              taskSync.status   = POAM_STATUS_TO_TASK[updates.status] || 'Open';
-    if (updates.severity)                            taskSync.priority = updates.severity === 'Critical' ? 'Critical' : updates.severity === 'High' ? 'High' : 'Medium';
+    if (data.title)                taskSync.title    = data.title;
+    if ('scheduledCompletion' in data) taskSync.dueDate = data.scheduledCompletion;
+    if ('responsibleParty' in data)    taskSync.assignee = data.responsibleParty || null;
+    if (data.status)               taskSync.status   = POAM_STATUS_TO_TASK[data.status] || 'Open';
+    if (data.severity)             taskSync.priority = data.severity === 'Critical' ? 'Critical' : data.severity === 'High' ? 'High' : 'Medium';
     if (Object.keys(taskSync).length) {
-      await Task.updateOne({ source: 'poam', source_id: req.params.id }, { $set: taskSync });
+      await db.task.updateMany({ where: { source: 'poam', sourceId: req.params.id }, data: taskSync });
     }
 
-    await audit(req.session.user.username, 'POAM_UPDATE', req.params.id, `Updated: ${Object.keys(updates).join(', ')}`, updated.site);
+    await audit(req.session.user.username, 'POAM_UPDATE', req.params.id,
+      `Updated: ${Object.keys(data).join(', ')}`, updated.siteId);
     res.json(updated);
   } catch (err) { next(err); }
 });
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const doc = await POAM.findById(req.params.id);
+    const doc = await db.poam.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    await POAM.findByIdAndDelete(req.params.id);
-    await Task.deleteOne({ source: 'poam', source_id: req.params.id });
-    await audit(req.session.user.username, 'POAM_DELETE', req.params.id, 'Deleted', doc.site);
+    await db.poam.delete({ where: { id: req.params.id } });
+    await db.task.deleteMany({ where: { source: 'poam', sourceId: req.params.id } });
+    await audit(req.session.user.username, 'POAM_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

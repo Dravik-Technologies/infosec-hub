@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
+const BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const http = axios.create({ baseURL: BASE, withCredentials: true, timeout: 15000 });
 const TOKEN_KEY = 'scorva_token';
 const SELECTED_SITE_KEY = 'scorva_selected_site';

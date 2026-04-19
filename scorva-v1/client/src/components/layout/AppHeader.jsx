@@ -5,7 +5,7 @@ import axios from 'axios';
 import { useAuth }  from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
-const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
+const BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const TOKEN_KEY = 'scorva_token';
 
 /**

@@ -1,15 +1,19 @@
 services:
 
   # ── Shared Database ─────────────────────────────────────────────────────────
-  mongodb:
-    image: mongo:7
+  postgres:
+    image: postgres:16-alpine
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-securityapp}
     volumes:
-      - mongo_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-securityapp}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -18,39 +22,44 @@ services:
   # ── MTSI Hub — SSO portal (port 3010) ───────────────────────────────────────
   hub:
     build:
-      context: ./hub
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: hub/Dockerfile
     restart: unless-stopped
     ports:
       - "3010:3010"
     environment:
       PORT: 3010
       NODE_ENV: production
-      MONGODB_URI: mongodb://mongodb:27017/scorva
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
       SESSION_SECRET: ${HUB_SESSION_SECRET:-hub-change-me-in-production}
       SSO_TOKEN_TTL: 60
       SCORVA_HOST: scorva
       SCORVA_PORT: 3000
     depends_on:
-      mongodb:
+      postgres:
         condition: service_healthy
 
   # ── SCORVA — Cyber Command Center (port 3000) ────────────────────────────────
   scorva:
     build:
-      context: ./scorva-v1
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: scorva-v1/Dockerfile
     restart: unless-stopped
     ports:
       - "3000:3000"
     environment:
       PORT: 3000
       NODE_ENV: production
-      MONGODB_URI: mongodb://mongodb:27017/scorva
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
       SESSION_SECRET: ${SCORVA_SESSION_SECRET:-scorva-change-me-in-production}
+      JWT_SECRET: ${JWT_SECRET:-scorva-jwt-change-in-production}
+      JWT_EXPIRES_IN: 8h
+      HUB_URL: http://hub:3010
     depends_on:
-      mongodb:
+      postgres:
         condition: service_healthy
+      hub:
+        condition: service_started
 
   # ── CRATER API — eMASS RMF backend (port 3001, internal) ────────────────────
   crater-api:
@@ -63,12 +72,15 @@ services:
     environment:
       PORT: 3001
       NODE_ENV: production
-      MONGODB_URI: mongodb://mongodb:27017/crater
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
       JWT_SECRET: ${JWT_SECRET:-crater-dev-secret-change-in-production}
       JWT_EXPIRES_IN: 7d
+      HUB_URL: http://hub:3010
     depends_on:
-      mongodb:
+      postgres:
         condition: service_healthy
+      hub:
+        condition: service_started
 
   # ── CRATER UI — eMASS RMF frontend via nginx (port 3003) ───────────────────
   crater-ui:
@@ -84,14 +96,23 @@ services:
   # ── MASH — MTSI Advanced Sentinel Hub (port 8080) ───────────────────────────
   mash:
     build:
-      context: ./security-dashboard
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: security-dashboard/Dockerfile
     restart: unless-stopped
     ports:
       - "8080:8080"
     environment:
       PORT: 8080
       NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
+      HUB_URL: http://hub:3010
+      HUB_HOST: hub
+      HUB_PORT: 3010
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hub:
+        condition: service_started
 
   # ── Data Fabric — CIM-ARC platform (port 8081) ──────────────────────────────
   data-fabric:
@@ -104,7 +125,8 @@ services:
     environment:
       PORT: 8081
       NODE_ENV: production
+      HUB_URL: http://hub:3010
 
 volumes:
-  mongo_data:
+  postgres_data:
     driver: local

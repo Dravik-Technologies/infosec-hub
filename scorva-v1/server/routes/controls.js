@@ -1,25 +1,13 @@
 'use strict';
 
-const express  = require('express');
-const Control  = require('../models/Control');
-const ConMon   = require('../models/ConMon');
-const Task     = require('../models/Task');
-const audit    = require('../middleware/audit');
-const router   = express.Router();
-
-function strictTenantFilter(req, base = {}) {
-  if (!Array.isArray(req.tenantSiteIDs) || !req.tenantSiteIDs.length) {
-    return { ...base, siteID: '__NO_SITE__' };
-  }
-  return {
-    ...base,
-    siteID: { $in: req.tenantSiteIDs },
-  };
-}
+const express = require('express');
+const { db }  = require('../../../packages/db/src/index');
+const audit   = require('../middleware/audit');
+const router  = express.Router();
 
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await Control.find(strictTenantFilter(req)));
+    res.json(await db.control.findMany({ where: req.applyTenantFilter({}) }));
   } catch (err) { next(err); }
 });
 
@@ -27,87 +15,70 @@ router.post('/bulk-delete', async (req, res, next) => {
   const ids = Array.isArray(req.body?.ids)
     ? [...new Set(req.body.ids.map(String).map(v => v.trim()).filter(Boolean))]
     : [];
+  if (!ids.length) return res.status(400).json({ error: 'ids must be a non-empty array' });
 
-  if (!ids.length) {
-    return res.status(400).json({ error: 'ids must be a non-empty array' });
-  }
-
-  const hasTenantScope = Array.isArray(req.tenantSiteIDs) && req.tenantSiteIDs.length > 0;
+  const hasTenantScope  = Array.isArray(req.tenantSiteIds) && req.tenantSiteIds.length > 0;
   const isCorporateAdmin = req.user?.role === 'Corporate Admin';
   if (!hasTenantScope && !isCorporateAdmin) {
     return res.status(400).json({ error: 'A site context is required for bulk delete' });
   }
 
   const siteFilter = hasTenantScope
-    ? { siteID: { $in: req.tenantSiteIDs } }
-    : { siteID: { $exists: true, $ne: null } };
+    ? { siteId: { in: req.tenantSiteIds } }
+    : { siteId: { not: null } };
 
   try {
-    const allowedDocs = await ConMon.find({
-      _id: { $in: ids },
-      ...siteFilter,
-    }).select('_id controlID siteID');
-
-    const allowedIds = allowedDocs.map(d => String(d._id));
+    const allowed = await db.conMon.findMany({
+      where: { id: { in: ids }, ...siteFilter },
+      select: { id: true },
+    });
+    const allowedIds = allowed.map(d => d.id);
     if (!allowedIds.length) {
       return res.json({ requested: ids.length, deletedCount: 0, ignored: ids.length });
     }
 
-    const result = await ConMon.deleteMany({
-      _id: { $in: allowedIds },
-      ...siteFilter,
+    const result = await db.conMon.deleteMany({
+      where: { id: { in: allowedIds }, ...siteFilter },
     });
-
-    await audit(
-      req.user?.username || 'system',
-      'CONMON_BULK_DELETE',
-      'bulk',
-      `Deleted ${result.deletedCount || 0} ConMon controls in bulk`,
-      req.tenantSiteID || req.user?.siteID || null
-    );
-
-    res.json({
-      requested: ids.length,
-      deletedCount: result.deletedCount || 0,
-      ignored: ids.length - (result.deletedCount || 0),
-    });
+    await audit(req.user?.username || 'system', 'CONMON_BULK_DELETE', 'bulk',
+      `Deleted ${result.count} ConMon controls in bulk`,
+      req.tenantSiteId || req.user?.siteId || null);
+    res.json({ requested: ids.length, deletedCount: result.count, ignored: ids.length - result.count });
   } catch (err) { next(err); }
 });
 
 router.get('/:id', async (req, res, next) => {
   try {
-    const doc = await Control.findById(req.params.id);
+    const doc = await db.control.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
   } catch (err) { next(err); }
 });
 
-/* ── Bulk import ── must be before /:id routes ── */
 router.post('/bulk', async (req, res, next) => {
   const { controls, overwrite = false } = req.body;
-  const siteID = req.resolveTenantSiteID(req.body);
+  const siteId = req.resolveTenantSiteId(req.body);
   if (!Array.isArray(controls) || !controls.length) {
     return res.status(400).json({ error: 'controls must be a non-empty array' });
   }
 
   const docs = controls.map(c => ({
-    _id:                     String(c.id || '').trim(),
-    title:                   c.title || '',
-    family:                  c.family || '',
-    status:                  c.status || 'Not Implemented',
-    baseline:                c.baseline || null,
-    last_review:             c.last_review || null,
-    findings:                Number(c.findings) || 0,
-    notes:                   c.notes || null,
-    description:             c.description || null,
-    implementation_guidance: c.implementation_guidance || null,
-    conmon_status:           c.conmon_status || 'Open',
-    conmon_group:            c.conmon_group  || null,
-    conmon_frequency:        c.conmon_frequency || null,
-    siteID,
-    site: siteID,
-  })).filter(d => d._id && d.title);
+    id:                    String(c.id || '').trim(),
+    title:                 c.title || '',
+    family:                c.family || '',
+    status:                c.status || 'Not Implemented',
+    baseline:              c.baseline || null,
+    lastReview:            c.last_review || null,
+    findings:              Number(c.findings) || 0,
+    notes:                 c.notes || null,
+    description:           c.description || null,
+    implementationGuidance: c.implementation_guidance || null,
+    conmonStatus:          c.conmon_status || 'Open',
+    conmonGroup:           c.conmon_group  || null,
+    conmonFrequency:       c.conmon_frequency || null,
+    siteId,
+  })).filter(d => d.id && d.title);
 
   if (!docs.length) {
     return res.status(400).json({ error: 'No valid controls (each needs an id and title)' });
@@ -118,33 +89,30 @@ router.post('/bulk', async (req, res, next) => {
 
   try {
     if (overwrite) {
-      const ops = docs.map(d => ({
-        updateOne: { filter: req.applyTenantFilter({ _id: d._id }), update: { $set: d }, upsert: true },
-      }));
-      const r = await Control.bulkWrite(ops, { ordered: false });
-      overwritten = (r.upsertedCount || 0) + (r.modifiedCount || 0);
+      for (const d of docs) {
+        await db.control.upsert({
+          where: { id: d.id },
+          update: d,
+          create: d,
+        });
+        overwritten++;
+      }
     } else {
-      try {
-        const r = await Control.insertMany(docs, { ordered: false });
-        inserted = r.length;
-      } catch (bulkErr) {
-        inserted = bulkErr.result?.insertedCount ?? 0;
-        const writeErrors = bulkErr.writeErrors ?? [];
-        for (const we of writeErrors) {
-          if (we.code === 11000) skipped++;
-          else errors.push({ id: docs[we.index]?._id ?? '?', reason: we.errmsg ?? 'Unknown error' });
+      for (const d of docs) {
+        try {
+          await db.control.create({ data: d });
+          inserted++;
+        } catch (e) {
+          if (e.code === 'P2002') skipped++;
+          else errors.push({ id: d.id, reason: e.message });
         }
       }
     }
   } catch (err) { return next(err); }
 
-  await audit(
-    req.session.user.username,
-    'CONTROLS_BULK_IMPORT',
-    'bulk',
+  await audit(req.session.user.username, 'CONTROLS_BULK_IMPORT', 'bulk',
     `Bulk import: ${overwrite ? overwritten : inserted} added, ${skipped} skipped`,
-    siteID || req.tenantSiteID || null
-  );
+    siteId || req.tenantSiteId || null);
 
   res.json({ inserted: overwrite ? 0 : inserted, overwritten: overwrite ? overwritten : 0, skipped, errors: errors.slice(0, 20) });
 });
@@ -153,79 +121,82 @@ router.post('/', async (req, res, next) => {
   const { id, title, family, status, baseline, last_review, findings, notes,
           description, implementation_guidance,
           conmon_status, conmon_group, conmon_frequency } = req.body;
-  const siteID = req.resolveTenantSiteID(req.body);
+  const siteId = req.resolveTenantSiteId(req.body);
   try {
-    const doc = await Control.create({
-      _id: id, title, family,
-      status: status || 'Not Implemented',
-      baseline, last_review: last_review || null,
-      findings: findings || 0, notes: notes || null,
-      description: description || null,
-      implementation_guidance: implementation_guidance || null,
-      conmon_status: conmon_status || 'Open',
-      conmon_group:  conmon_group  || null,
-      conmon_frequency: conmon_frequency || null,
-      siteID,
-      site: siteID,
+    const doc = await db.control.create({
+      data: {
+        id, title, family,
+        status: status || 'Not Implemented',
+        baseline: baseline || null,
+        lastReview: last_review || null,
+        findings: findings || 0,
+        notes: notes || null,
+        description: description || null,
+        implementationGuidance: implementation_guidance || null,
+        conmonStatus: conmon_status || 'Open',
+        conmonGroup:  conmon_group  || null,
+        conmonFrequency: conmon_frequency || null,
+        siteId,
+      },
     });
-    await audit(req.session.user.username, 'CONTROL_ADD', id, `Added: ${title}`, siteID);
+    await audit(req.session.user.username, 'CONTROL_ADD', id, `Added: ${title}`, siteId);
     res.status(201).json(doc);
   } catch (err) { next(err); }
 });
 
 router.patch('/:id', async (req, res, next) => {
-  const allowed = ['title','family','status','baseline','last_review','findings','notes',
-                   'description','implementation_guidance',
-                   'conmon_status','conmon_group','conmon_frequency'];
-  const updates = {};
-  for (const key of allowed) {
-    if (key in req.body) updates[key] = req.body[key];
+  const FIELD_MAP = {
+    title: 'title', family: 'family', status: 'status', baseline: 'baseline',
+    last_review: 'lastReview', findings: 'findings', notes: 'notes',
+    description: 'description', implementation_guidance: 'implementationGuidance',
+    conmon_status: 'conmonStatus', conmon_group: 'conmonGroup', conmon_frequency: 'conmonFrequency',
+  };
+  const data = {};
+  for (const [k, pk] of Object.entries(FIELD_MAP)) {
+    if (k in req.body) data[pk] = req.body[k];
   }
-  if (!Object.keys(updates).length) return res.status(400).json({ error: 'No fields to update' });
+  if (!Object.keys(data).length) return res.status(400).json({ error: 'No fields to update' });
+
   try {
-    const existing = await Control.findById(req.params.id);
+    const existing = await db.control.findUnique({ where: { id: req.params.id } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(existing)) return res.status(403).json({ error: 'Forbidden' });
-    if (req.tenantSiteID) {
-      updates.siteID = req.tenantSiteID;
-      updates.site = req.tenantSiteID;
-    } else if (updates.siteID && !updates.site) {
-      updates.site = updates.siteID;
-    } else if (updates.site && !updates.siteID) {
-      updates.siteID = updates.site;
-    }
 
-    const doc = await Control.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
-    if (!doc) return res.status(404).json({ error: 'Not found' });
+    const siteId = req.tenantSiteId || existing.siteId;
+    if (siteId) data.siteId = siteId;
 
-    /* reverse cascade: if conmon_status → Compliant, auto-complete any fully-compliant ConMon activities */
-    if (updates.conmon_status === 'Compliant') {
+    const doc = await db.control.update({ where: { id: req.params.id }, data });
+
+    if (data.conmonStatus === 'Compliant') {
       const today = new Date().toISOString().split('T')[0];
-      const cms = await ConMon.find({ linked_controls: req.params.id, status: { $ne: 'Completed' } });
+      const cms   = await db.conMon.findMany({
+        where: { linkedControls: { has: req.params.id }, status: { not: 'Completed' } },
+      });
       for (const cm of cms) {
-        if (!cm.linked_controls?.length) continue;
-        const compliantN = await Control.countDocuments({
-          _id: { $in: cm.linked_controls }, conmon_status: 'Compliant',
+        if (!cm.linkedControls?.length) continue;
+        const compliantN = await db.control.count({
+          where: { id: { in: cm.linkedControls }, conmonStatus: 'Compliant' },
         });
-        if (compliantN >= cm.linked_controls.length) {
-          await ConMon.findByIdAndUpdate(cm._id, { $set: { status: 'Completed', completed_date: today } });
-          await Task.updateOne({ source: 'conmon', source_id: cm._id }, { $set: { status: 'Completed' } });
+        if (compliantN >= cm.linkedControls.length) {
+          await db.conMon.update({ where: { id: cm.id }, data: { status: 'Completed', completedDate: today } });
+          await db.task.updateMany({ where: { source: 'conmon', sourceId: cm.id }, data: { status: 'Completed' } });
         }
       }
     }
 
-    await audit(req.session.user.username, 'CONTROL_UPDATE', req.params.id, `Updated: ${Object.keys(updates).join(', ')}`, doc.siteID || doc.site || null);
+    await audit(req.session.user.username, 'CONTROL_UPDATE', req.params.id,
+      `Updated: ${Object.keys(data).join(', ')}`, doc.siteId);
     res.json(doc);
   } catch (err) { next(err); }
 });
 
 router.delete('/:id', async (req, res, next) => {
   try {
-    const doc = await Control.findById(req.params.id);
+    const doc = await db.control.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    await Control.findByIdAndDelete(req.params.id);
-    await audit(req.session.user.username, 'CONTROL_DELETE', req.params.id, 'Deleted', doc.siteID || doc.site || null);
+    await db.control.delete({ where: { id: req.params.id } });
+    await audit(req.session.user.username, 'CONTROL_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

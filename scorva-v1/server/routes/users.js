@@ -1,10 +1,10 @@
 'use strict';
 
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const audit = require('../middleware/audit');
-const router = express.Router();
+const bcrypt  = require('bcryptjs');
+const { db }  = require('../../../packages/db/src/index');
+const audit   = require('../middleware/audit');
+const router  = express.Router();
 
 function adminOnly(req, res, next) {
   if ((req.user?.role || req.session?.user?.role) !== 'Corporate Admin') {
@@ -14,23 +14,25 @@ function adminOnly(req, res, next) {
 }
 
 function normalizeSites(payload) {
-  const fromArrays = []
-    .concat(payload.siteIDs || [])
-    .concat(payload.sites || []);
-  const fromScalar = payload.siteID || payload.site || null;
-  const merged = [...fromArrays, fromScalar].filter(Boolean).map(v => String(v).trim()).filter(Boolean);
+  const from = []
+    .concat(payload.siteIds  || [])
+    .concat(payload.siteIDs  || [])
+    .concat(payload.sites    || []);
+  const scalar = payload.siteId || payload.siteID || payload.site || null;
+  const merged = [...from, scalar].filter(Boolean).map(v => String(v).trim()).filter(Boolean);
   return [...new Set(merged)];
 }
 
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await User.find(req.applyTenantFilter({})).sort({ _id: 1 }));
+    const where = req.applyTenantFilter({});
+    res.json(await db.user.findMany({ where, orderBy: { id: 'asc' } }));
   } catch (err) { next(err); }
 });
 
 router.get('/:id', async (req, res, next) => {
   try {
-    const doc = await User.findById(req.params.id);
+    const doc = await db.user.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     res.json(doc);
@@ -38,121 +40,100 @@ router.get('/:id', async (req, res, next) => {
 });
 
 router.post('/', adminOnly, async (req, res, next) => {
-  const { id, name, title, username, email, password, role, status, training_compliant, training_due, dod_8140 } = req.body;
+  const { id, name, title, username, email, password, role, status,
+          training_compliant, training_due, dod_8140 } = req.body;
   const manualId = (id || '').trim();
-  const siteIDs = normalizeSites(req.body);
-  const primarySiteID = siteIDs[0] || null;
+  const siteIds  = normalizeSites(req.body);
+  const siteId   = siteIds[0] || null;
 
   if (!manualId) return res.status(400).json({ error: 'id is required' });
   if (!password) return res.status(400).json({ error: 'password is required' });
 
   try {
-    if (await User.exists({ _id: manualId })) {
-      return res.status(409).json({ error: 'User ID already exists' });
-    }
+    const exists = await db.user.findUnique({ where: { id: manualId }, select: { id: true } });
+    if (exists) return res.status(409).json({ error: 'User ID already exists' });
 
-    const hash = await bcrypt.hash(password, 12);
-
-    const doc = await User.create({
-      _id: manualId,
-      name,
-      title,
-      username: username.toLowerCase(),
-      email: email.toLowerCase(),
-      password_hash: hash,
-      role: role || 'Viewer',
-      siteID: primarySiteID,
-      siteIDs,
-      site: primarySiteID,
-      status: status || 'Active',
-      training_compliant: training_compliant || false,
-      training_due: training_due || '',
-      dod_8140: dod_8140 || undefined,
+    const passwordHash = await bcrypt.hash(password, 12);
+    const doc = await db.user.create({
+      data: {
+        id: manualId, name, title,
+        username: username.toLowerCase(),
+        email: email.toLowerCase(),
+        passwordHash, role: role || 'Viewer',
+        siteId, siteIds, status: status || 'Active',
+        trainingCompliant: training_compliant || false,
+        trainingDue: training_due || null,
+        dod8140: dod_8140 || false,
+      },
     });
-
-    await audit(req.session.user.username, 'USER_CREATE', manualId, `Created user: ${username}`, primarySiteID);
+    await audit(req.session.user.username, 'USER_CREATE', manualId, `Created user: ${username}`, siteId);
     res.status(201).json(doc);
   } catch (err) { next(err); }
 });
 
 router.patch('/:id', adminOnly, async (req, res, next) => {
-  const allowed = ['id', 'name', 'title', 'email', 'role', 'site', 'siteID', 'sites', 'siteIDs', 'status', 'yubikey', 'workstation', 'training_compliant', 'training_due', 'dod_8140'];
-  const updates = {};
-  for (const key of allowed) {
-    if (key in req.body) updates[key] = req.body[key];
+  const ALLOWED = ['name','title','email','role','status','yubikey','workstation',
+                   'training_compliant','training_due','dod_8140'];
+  const data = {};
+  for (const key of ALLOWED) {
+    if (key in req.body) {
+      const prismaKey = key.replace(/_(\w)/g, (_, c) => c.toUpperCase());
+      data[prismaKey] = req.body[key];
+    }
   }
   if (req.body.password) {
-    updates.password_hash = await bcrypt.hash(req.body.password, 12);
+    data.passwordHash = await bcrypt.hash(req.body.password, 12);
   }
-  if (!Object.keys(updates).length) return res.status(400).json({ error: 'No fields to update' });
+
+  const siteIds = normalizeSites(req.body);
+  if (siteIds.length || 'siteId' in req.body || 'siteID' in req.body ||
+      'site' in req.body || 'siteIds' in req.body || 'siteIDs' in req.body ||
+      'sites' in req.body) {
+    data.siteIds = siteIds;
+    data.siteId  = siteIds[0] || null;
+  }
+
+  const requestedId = (req.body.id || '').trim();
+
+  if (!Object.keys(data).length && !requestedId) {
+    return res.status(400).json({ error: 'No fields to update' });
+  }
 
   try {
-    const requestedId = (updates.id || '').trim();
-    delete updates.id;
-
-    const siteIDs = normalizeSites(updates);
-    if (siteIDs.length || 'site' in updates || 'siteID' in updates || 'sites' in updates || 'siteIDs' in updates) {
-      updates.siteIDs = siteIDs;
-      updates.siteID = siteIDs[0] || null;
-      updates.site = siteIDs[0] || null;
-    }
-    delete updates.sites;
-
-    const current = await User.findById(req.params.id);
+    const current = await db.user.findUnique({ where: { id: req.params.id } });
     if (!current) return res.status(404).json({ error: 'Not found' });
 
-    // If ID changed, migrate record to new _id while preserving unique constraints.
     if (requestedId && requestedId !== req.params.id) {
       if (req.params.id === req.session.user.id) {
         return res.status(400).json({ error: 'Cannot change your own account ID while logged in' });
       }
-      if (await User.exists({ _id: requestedId })) {
-        return res.status(409).json({ error: 'User ID already exists' });
-      }
+      const idExists = await db.user.findUnique({ where: { id: requestedId }, select: { id: true } });
+      if (idExists) return res.status(409).json({ error: 'User ID already exists' });
 
-      const originalUsername = current.username;
-      const originalEmail = current.email;
-      const migrationSuffix = `__migrating__${Date.now()}`;
-
-      // Temporarily free unique keys so replacement can be created.
-      await User.updateOne(
-        { _id: req.params.id },
-        {
-          $set: {
-            username: `${originalUsername}${migrationSuffix}`,
-            email: `${originalEmail}${migrationSuffix}`,
-          },
-        }
-      );
+      const suffix = `__migrating__${Date.now()}`;
+      await db.user.update({ where: { id: req.params.id }, data: {
+        username: `${current.username}${suffix}`,
+        email:    `${current.email}${suffix}`,
+      }});
 
       try {
-        const base = current.toObject();
-        delete base._id;
-        delete base.__v;
-
-        const replacement = await User.create({
-          _id: requestedId,
-          ...base,
-          ...updates,
-          username: originalUsername,
-          email: originalEmail,
-        });
-
-        await User.findByIdAndDelete(req.params.id);
-        await audit(req.session.user.username, 'USER_UPDATE', req.params.id, `Updated ID: ${req.params.id} -> ${requestedId}`, replacement.siteID || replacement.site || null);
+        const { id: _id, ...rest } = current;
+        const replacement = await db.user.create({ data: { ...rest, ...data, id: requestedId,
+          username: current.username, email: current.email } });
+        await db.user.delete({ where: { id: req.params.id } });
+        await audit(req.session.user.username, 'USER_UPDATE', req.params.id,
+          `Updated ID: ${req.params.id} -> ${requestedId}`, replacement.siteId);
         return res.json(replacement);
-      } catch (migrationErr) {
-        // Roll back unique fields if migration failed.
-        await User.updateOne(
-          { _id: req.params.id },
-          { $set: { username: originalUsername, email: originalEmail } }
-        );
-        throw migrationErr;
+      } catch (migErr) {
+        await db.user.update({ where: { id: req.params.id }, data: {
+          username: current.username, email: current.email } });
+        throw migErr;
       }
     }
 
-    const doc = await User.findByIdAndUpdate(req.params.id, { $set: updates }, { new: true });
-    await audit(req.session.user.username, 'USER_UPDATE', req.params.id, `Updated: ${Object.keys(req.body).filter(k => k !== 'password').join(', ')}`, doc.siteID || doc.site || null);
+    const doc = await db.user.update({ where: { id: req.params.id }, data });
+    await audit(req.session.user.username, 'USER_UPDATE', req.params.id,
+      `Updated: ${Object.keys(req.body).filter(k => k !== 'password').join(', ')}`, doc.siteId);
     res.json(doc);
   } catch (err) { next(err); }
 });
@@ -162,11 +143,11 @@ router.delete('/:id', adminOnly, async (req, res, next) => {
     return res.status(400).json({ error: 'Cannot delete your own account' });
   }
   try {
-    const doc = await User.findById(req.params.id);
+    const doc = await db.user.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    await User.findByIdAndDelete(req.params.id);
-    await audit(req.session.user.username, 'USER_DELETE', req.params.id, 'User deleted', doc.siteID || doc.site || null);
+    await db.user.delete({ where: { id: req.params.id } });
+    await audit(req.session.user.username, 'USER_DELETE', req.params.id, 'User deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

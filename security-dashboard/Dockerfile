@@ -1,12 +1,12 @@
-FROM node:20-alpine
-WORKDIR /app
+FROM node:20-slim
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app/security-dashboard
 
-COPY package*.json ./
+COPY security-dashboard/package*.json ./
 RUN npm ci --omit=dev
 
-COPY . .
+COPY security-dashboard/ ./
 
 EXPOSE 8080
 ENV NODE_ENV=production
-
 CMD ["node", "server.js"]

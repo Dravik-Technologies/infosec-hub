@@ -1,21 +1,17 @@
 'use strict';
 
-const AuditLog = require('../models/AuditLog');
+const { db } = require('../../../packages/db/src/index');
 
-/**
- * Writes an entry to audit_log. Silently swallows errors so audit failures
- * never break the request that triggered them.
- */
-module.exports = async function audit(username, action, resource, detail, siteID) {
-  const effectiveSiteID = siteID || 'SYSTEM';
+module.exports = async function audit(username, action, resource, detail, siteId) {
   try {
-    await AuditLog.create({
-      username,
-      action,
-      resource:  resource  || null,
-      detail:    detail    || null,
-      siteID:    effectiveSiteID,
-      site:      effectiveSiteID,
+    await db.auditLog.create({
+      data: {
+        username: username || null,
+        action,
+        resource: resource || null,
+        detail:   detail   || null,
+        siteId:   siteId   || 'SYSTEM',
+      },
     });
   } catch (_) {}
 };

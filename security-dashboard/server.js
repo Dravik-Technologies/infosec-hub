@@ -12,15 +12,7 @@ const fs       = require('fs');
 const path     = require('path');
 const http     = require('http');
 const jwt      = require('jsonwebtoken');
-const mongoose = require('./server/db');
-
-// Pre-register typed Mongoose models
-require('./server/models/Employee');
-require('./server/models/Document');
-require('./server/models/Site');
-require('./server/models/InspectionItem');
-require('./server/models/Contract');
-require('./server/models/Transaction');
+// DB layer removed — MASH runs on JSON file persistence
 
 const PORT       = process.env.PORT || 8080;
 const DATA_DIR   = path.join(__dirname, 'data');
@@ -51,27 +43,7 @@ const uid = () => 'id-' + Math.random().toString(36).slice(2) + Date.now().toStr
 // Singletons: entire JSON stored as one doc with _id = 'singleton'
 const SINGLETON = new Set(['budget', 'timeline', 'compliance', 'settings']);
 
-const _models = {};
-function getModel(name) {
-    if (_models[name]) return _models[name];
-    // Use pre-registered typed models for employees / documents
-    try {
-        return (_models[name] = mongoose.model(
-            name === 'employees'   ? 'Employee'       :
-            name === 'documents'   ? 'MashDocument'   :
-            name === 'sites'       ? 'Site'           :
-            name === 'inspections' ? 'InspectionItem' :
-            name === 'contracts'     ? 'Contract'     :
-            name === 'transactions'  ? 'Transaction'  :
-            name
-        ));
-    } catch { /* fall through — create a flexible model */ }
-    const schema = new mongoose.Schema({ _id: String }, { strict: false, versionKey: false });
-    schema.set('toJSON', { transform(_, r) { r.id = r._id; delete r._id; return r; } });
-    return (_models[name] = mongoose.model(name, schema, name));
-}
-
-function dbOk() { return mongoose.connection.readyState === 1; }
+function dbOk() { return false; }
 
 // ── Seed collections from JSON on first run ───────────────────────────────────
 async function seedOne(name) {
@@ -102,8 +74,8 @@ async function seedAll() {
     console.log('[MASH] Seed complete.');
 }
 
-// Seed once connected
-mongoose.connection.once('connected', () => seedAll().catch(console.error));
+// Seed JSON files on startup
+seedAll().catch(console.error);
 
 // ── MongoDB CRUD helpers ──────────────────────────────────────────────────────
 

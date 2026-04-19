@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
-const BASE = import.meta.env.DEV ? 'http://localhost:3001' : '';
+const BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const TOKEN_KEY = 'scorva_token';
 const SELECTED_SITE_KEY = 'scorva_selected_site';
 const AuthContext = createContext(null);
@@ -20,6 +20,16 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Pick up JWT dropped in URL by the SSO redirect (/?token=<jwt>)
+    const params = new URLSearchParams(window.location.search);
+    const ssoToken = params.get('token');
+    if (ssoToken) {
+      localStorage.setItem(TOKEN_KEY, ssoToken);
+      params.delete('token');
+      const next = params.toString() ? `?${params}` : window.location.pathname;
+      window.history.replaceState({}, '', next);
+    }
+
     axios.get(`${BASE}/api/me`, { headers: authHeaders() })
       .then(r => setUser(r.data))
       .catch(() => setUser(null))

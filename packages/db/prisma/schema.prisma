@@ -1,0 +1,387 @@
+// Shared PostgreSQL schema for Security App Factory
+// All mission-app models include siteId for multi-tenant isolation.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+// ─── Hub / SCORVA shared models ────────────────────────────────────────────────
+
+model Site {
+  id        String   @id
+  label     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users         User[]
+  controls      Control[]
+  tasks         Task[]
+  poams         Poam[]
+  atoPackages   AtoPackage[]
+  conmons       ConMon[]
+  workstations  Workstation[]
+  yubiKeys      YubiKey[]
+  licenses      License[]
+  agreements    Agreement[]
+  notifications Notification[]
+  trackers      Tracker[]
+
+  @@map("sites")
+}
+
+model User {
+  id               String    @id
+  name             String
+  title            String?
+  username         String    @unique
+  email            String    @unique
+  passwordHash     String    @map("password_hash")
+  role             String    @default("Viewer")
+  siteId           String?   @map("site_id")
+  site             Site?     @relation(fields: [siteId], references: [id])
+  siteIds          String[]  @default([]) @map("site_ids")
+  status           String    @default("Active")
+  yubikey          String?
+  workstation      String?
+  lastLogin        DateTime? @map("last_login")
+  trainingCompliant Boolean  @default(false) @map("training_compliant")
+  trainingDue      String?   @map("training_due")
+  dod8140          Boolean   @default(false) @map("dod_8140")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Control {
+  id                    String   @id
+  title                 String
+  family                String?
+  status                String   @default("Not Implemented")
+  baseline              String?
+  lastReview            String?  @map("last_review")
+  findings              Int      @default(0)
+  notes                 String?
+  description           String?
+  implementationGuidance String? @map("implementation_guidance")
+  siteId                String   @map("site_id")
+  site                  Site     @relation(fields: [siteId], references: [id])
+  conmonStatus          String?  @map("conmon_status")
+  conmonGroup           String?  @map("conmon_group")
+  conmonFrequency       String?  @map("conmon_frequency")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("controls")
+}
+
+model Task {
+  id             String   @id
+  title          String
+  siteId         String   @map("site_id")
+  site           Site     @relation(fields: [siteId], references: [id])
+  type           String?
+  status         String   @default("Open")
+  priority       String?
+  assignee       String?
+  dueDate        String?  @map("due_date")
+  control        String?
+  linkedControls String[] @default([]) @map("linked_controls")
+  activityId     String?  @map("activity_id")
+  evidence       String?
+  created        String?
+  createdBy      String?  @map("created_by")
+  notes          String?
+  source         String?
+  sourceId       String?  @map("source_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("tasks")
+}
+
+model Poam {
+  id                  String   @id
+  title               String
+  controlId           String?  @map("control_id")
+  weakness            String?
+  severity            String?
+  status              String   @default("Open")
+  siteId              String   @map("site_id")
+  site                Site     @relation(fields: [siteId], references: [id])
+  sourceType          String?  @map("source_type")
+  sourceId            String?  @map("source_id")
+  responsibleParty    String?  @map("responsible_party")
+  pointOfContact      String?  @map("point_of_contact")
+  resources           String?
+  scheduledCompletion String?  @map("scheduled_completion")
+  milestones          Json?    @default("[]")
+  identifiedDate      String?  @map("identified_date")
+  atoId               String?  @map("ato_id")
+  poamType            String?  @map("poam_type")
+  comments            String?
+  completedDate       String?  @map("completed_date")
+  closedDate          String?  @map("closed_date")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  @@map("poams")
+}
+
+model AtoPackage {
+  id           String   @id
+  system       String
+  category     String
+  status       String
+  issued       String?
+  expires      String?
+  ao           String?
+  controls     Int      @default(0)
+  openFindings Int      @default(0) @map("open_findings")
+  siteId       String   @map("site_id")
+  site         Site     @relation(fields: [siteId], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("ato_packages")
+}
+
+model ConMon {
+  id                    String   @id @default(cuid())
+  siteId                String   @map("site_id")
+  site                  Site     @relation(fields: [siteId], references: [id])
+  controlId             String   @map("control_id")
+  controlTitle          String   @map("control_title")
+  family                String
+  status                String   @default("Pending")
+  dueDate               String   @map("due_date")
+  daagJsigFrequency     String?  @map("daag_jsig_frequency")
+  baselineApplicability String?  @map("baseline_applicability")
+  conmonGroup           String?  @map("conmon_group")
+  notes                 String?
+  completedDate         String?  @map("completed_date")
+  linkedControls        String[] @default([]) @map("linked_controls")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@unique([siteId, controlId])
+  @@map("con_mon")
+}
+
+model Workstation {
+  id             String   @id
+  assetTag       String?  @map("asset_tag")
+  hostname       String
+  type           String   @default("Workstation")
+  username       String?
+  siteId         String?  @map("site_id")
+  site           Site?    @relation(fields: [siteId], references: [id])
+  os             String?
+  ip             String?
+  location       String?
+  classification String   @default("Unclassified")
+  status         String   @default("Available")
+  system         String?
+  keyExpiry      String?  @map("key_expiry")
+  lastSeen       String?  @map("last_seen")
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@map("workstations")
+}
+
+model YubiKey {
+  id        String   @id
+  serial    String   @unique
+  model     String?
+  status    String   @default("Unassigned")
+  username  String?
+  siteId    String?  @map("site_id")
+  site      Site?    @relation(fields: [siteId], references: [id])
+  issued    String?
+  lastAuth  String?  @map("last_auth")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("yubi_keys")
+}
+
+model License {
+  id        String   @id
+  product   String
+  vendor    String?
+  seats     Int      @default(0)
+  used      Int      @default(0)
+  status    String   @default("Active")
+  siteId    String?  @map("site_id")
+  site      Site?    @relation(fields: [siteId], references: [id])
+  expires   String?
+  cost      Float?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("licenses")
+}
+
+model Agreement {
+  id         String   @id
+  title      String
+  category   String   @default("Agreement")
+  type       String
+  status     String   @default("Active")
+  signed     String?
+  expires    String?
+  parties    String?
+  assignedTo String?  @map("assigned_to")
+  siteId     String   @map("site_id")
+  site       Site     @relation(fields: [siteId], references: [id])
+  notes      String?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("agreements")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  username  String?
+  action    String
+  resource  String?
+  detail    String?
+  siteId    String   @map("site_id")
+  timestamp DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String   @id
+  type      String   @default("info")
+  title     String
+  message   String?
+  siteId    String?  @map("site_id")
+  site      Site?    @relation(fields: [siteId], references: [id])
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model Tracker {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  columns     Json?    @default("[]")
+  rows        Json?    @default("[]")
+  subtrackers Json?    @default("[]")
+  siteId      String?  @map("site_id")
+  site        Site?    @relation(fields: [siteId], references: [id])
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("trackers")
+}
+
+// ─── MASH models ───────────────────────────────────────────────────────────────
+
+model MashSite {
+  id             String   @id @default(cuid())
+  siteId         String   @unique @map("site_id")
+  name           String
+  location       String?
+  status         String   @default("Active")
+  scifZones      Int?     @map("scif_zones")
+  nextInspection String?  @map("next_inspection")
+
+  employees      Employee[]
+  inspections    InspectionItem[]
+  contracts      Contract[]
+  mashDocuments  MashDocument[]
+
+  @@map("mash_sites")
+}
+
+model Employee {
+  id                 String    @id @default(cuid())
+  name               String
+  mashSiteId         String    @map("mash_site_id")
+  mashSite           MashSite  @relation(fields: [mashSiteId], references: [siteId])
+  position           String?
+  clearanceLevel     String    @map("clearance_level")
+  clearanceGranted   String?   @map("clearance_granted")
+  reinvestigationDue String?   @map("reinvestigation_due")
+  trainingDueDate    String?   @map("training_due_date")
+  annualBriefingDue  String?   @map("annual_briefing_due")
+  status             String    @default("active")
+  notes              String?
+
+  @@map("employees")
+}
+
+model InspectionItem {
+  id          String   @id @default(cuid())
+  mashSiteId  String   @map("mash_site_id")
+  mashSite    MashSite @relation(fields: [mashSiteId], references: [siteId])
+  controlId   String?  @map("control_id")
+  description String?
+  status      String   @default("Pending")
+  notes       String?
+
+  @@map("inspections")
+}
+
+model Contract {
+  id           String    @id @default(cuid())
+  contractId   String    @map("contract_id")
+  mashSiteId   String    @map("mash_site_id")
+  mashSite     MashSite  @relation(fields: [mashSiteId], references: [siteId])
+  vendor       String?
+  scope        String?
+  totalValue   Float     @default(0) @map("total_value")
+  amountSpent  Float     @default(0) @map("amount_spent")
+  expiration   String?
+  status       String    @default("Active")
+  transactions Transaction[]
+
+  @@map("contracts")
+}
+
+model MashDocument {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("other")
+  mashSiteId  String   @map("mash_site_id")
+  mashSite    MashSite @relation(fields: [mashSiteId], references: [siteId])
+  status      String   @default("draft")
+  version     String   @default("v1.0")
+  fileRef     String?  @map("file_ref")
+  submittedBy String?  @map("submitted_by")
+  reviewedBy  String?  @map("reviewed_by")
+  approvedBy  String?  @map("approved_by")
+  notes       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("mash_documents")
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  transactionId String?  @map("transaction_id")
+  contractId    String   @map("contract_id")
+  contract      Contract @relation(fields: [contractId], references: [id])
+  mashSiteId    String   @map("mash_site_id")
+  amount        Float    @default(0)
+  type          String   @default("Expense")
+  date          DateTime @default(now())
+
+  @@map("transactions")
+}

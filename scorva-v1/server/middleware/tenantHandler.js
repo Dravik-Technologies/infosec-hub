@@ -1,117 +1,63 @@
 'use strict';
 
-/**
- * Builds a backward-compatible site filter that matches either the new `siteID`
- * field or the legacy `site` field for existing records.
- */
-function siteClause(siteIDs = []) {
-  return {
-    $or: [
-      { siteID: { $in: siteIDs } },
-      { site: { $in: siteIDs } },
-    ],
-  };
-}
-
-/**
- * Normalizes a site list from mixed input shapes.
- */
 function normalizeSites(...values) {
   const flat = values.flatMap(v => Array.isArray(v) ? v : [v]);
   return [...new Set(flat.filter(Boolean).map(v => String(v).trim()).filter(Boolean))];
 }
 
-/**
- * tenantHandler
- *
- * Enforces tenant isolation from JWT claims:
- * - Site User: restricted to token `siteIDs` (or fallback `siteID`).
- * - Corporate Admin: global access unless `x-selected-site` is present, then scoped.
- */
 module.exports = function tenantHandler(req, res, next) {
   const role = req.user?.role;
   const selectedSite = (req.headers['x-selected-site'] || '').toString().trim() || null;
   const isCorporateAdmin = role === 'Corporate Admin';
 
-  const tokenSiteIDs = normalizeSites(req.user?.siteIDs, req.user?.siteID);
-  if (!isCorporateAdmin && !tokenSiteIDs.length) {
+  const tokenSiteIds = normalizeSites(req.user?.siteIds, req.user?.siteIDs, req.user?.siteId, req.user?.siteID);
+  if (!isCorporateAdmin && !tokenSiteIds.length) {
     return res.status(403).json({ error: 'Forbidden: no site access assigned' });
   }
-  const tenantSiteIDs = isCorporateAdmin
-    ? normalizeSites(selectedSite)
-    : tokenSiteIDs;
+  const tenantSiteIds = isCorporateAdmin ? normalizeSites(selectedSite) : tokenSiteIds;
+  const tenantSiteId  = tenantSiteIds[0] || null;
 
-  const tenantSiteID = tenantSiteIDs[0] || null;
+  req.siteFilter    = tenantSiteId;
+  req.tenantSiteId  = tenantSiteId;
+  req.tenantSiteIds = tenantSiteIds;
+  // Legacy aliases kept for middleware that still reads siteID/siteIDs
+  req.tenantSiteID  = tenantSiteId;
+  req.tenantSiteIDs = tenantSiteIds;
 
-  // Keep compatibility with existing routes that read req.siteFilter/req.tenantSiteID.
-  req.siteFilter = tenantSiteID;
-  req.tenantSiteID = tenantSiteID;
-  req.tenantSiteIDs = tenantSiteIDs;
-
-  /**
-   * Applies tenant scoping to an existing query object.
-   */
-  req.applyTenantFilter = function applyTenantFilter(baseFilter = {}) {
-    if (!req.tenantSiteIDs.length) return { ...baseFilter };
-    return {
-      $and: [
-        { ...baseFilter },
-        siteClause(req.tenantSiteIDs),
-      ],
-    };
+  req.applyTenantFilter = function applyTenantFilter(baseWhere = {}) {
+    if (!req.tenantSiteIds.length) return baseWhere;
+    return { ...baseWhere, siteId: { in: req.tenantSiteIds } };
   };
 
-  /**
-   * Returns the effective site for creates/updates and keeps legacy `site` in sync.
-   */
-  req.resolveTenantSiteID = function resolveTenantSiteID(payload = {}) {
-    const payloadSiteID = payload.siteID || payload.site || null;
-    if (isCorporateAdmin) {
-      return req.tenantSiteID || payloadSiteID || null;
-    }
-    if (payloadSiteID && tokenSiteIDs.includes(payloadSiteID)) return payloadSiteID;
-    return tokenSiteIDs[0] || null;
+  req.resolveTenantSiteId = function resolveTenantSiteId(payload = {}) {
+    const payloadSiteId = payload.siteId || payload.siteID || payload.site || null;
+    if (isCorporateAdmin) return req.tenantSiteId || payloadSiteId || null;
+    if (payloadSiteId && tokenSiteIds.includes(payloadSiteId)) return payloadSiteId;
+    return tokenSiteIds[0] || null;
   };
+  req.resolveTenantSiteID = req.resolveTenantSiteId; // legacy alias
 
-  /**
-   * Checks whether a document belongs to the currently allowed tenant set.
-   */
   req.assertTenantDocument = function assertTenantDocument(doc) {
-    if (!doc || !req.tenantSiteIDs.length) return true;
-    const docSiteID = doc.siteID || doc.site || null;
-    return req.tenantSiteIDs.includes(docSiteID);
+    if (!doc || !req.tenantSiteIds.length) return true;
+    return req.tenantSiteIds.includes(doc.siteId || null);
   };
 
   if (!isCorporateAdmin) {
-    // Reject if non-admin user targets a site outside token site set.
     const attemptedSites = normalizeSites(
-      req.params?.siteID,
-      req.params?.siteId,
-      req.params?.site,
-      req.query?.siteID,
-      req.query?.siteId,
-      req.query?.site,
-      req.body?.siteID,
-      req.body?.siteId,
-      req.body?.site,
-      req.body?.siteIDs,
-      req.body?.sites,
+      req.params?.siteID, req.params?.siteId, req.params?.site,
+      req.query?.siteID,  req.query?.siteId,  req.query?.site,
+      req.body?.siteID,   req.body?.siteId,   req.body?.site,
+      req.body?.siteIDs,  req.body?.siteIds,  req.body?.sites,
       selectedSite
     );
-
-    const mismatch = attemptedSites.some(value => !tokenSiteIDs.includes(value));
-    if (mismatch) {
+    if (attemptedSites.some(v => !tokenSiteIds.includes(v))) {
       return res.status(403).json({ error: 'Forbidden: tenant mismatch' });
     }
   }
 
-  // Normalize site identifiers in body for downstream routes.
   if (req.body && typeof req.body === 'object') {
-    const effectiveSiteID = req.resolveTenantSiteID(req.body);
-    if (effectiveSiteID) {
-      req.body.siteID = effectiveSiteID;
-      req.body.site = effectiveSiteID;
-    }
+    const eff = req.resolveTenantSiteId(req.body);
+    if (eff) req.body.siteId = eff;
   }
 
   next();

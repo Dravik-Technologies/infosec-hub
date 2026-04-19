@@ -37,10 +37,14 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 /* POST /api/sso/token — authenticated hub user requests a launch token */
-router.post('/token', requireAuth, (req, res) => {
+router.post('/token', (req, res, next) => {
+  console.log(`[HUB SSO] /token called — session user: ${req.session?.user?.username ?? 'NONE'}`);
+  next();
+}, requireAuth, (req, res) => {
   const token   = crypto.randomBytes(32).toString('hex');
   const expires = Date.now() + TTL_MS;
   tokenStore.set(token, { user: req.session.user, expires });
+  console.log(`[HUB SSO] token issued for ${req.session.user.username}`);
   res.json({ token, expires });
 });
 
