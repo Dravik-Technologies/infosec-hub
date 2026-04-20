@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import {
-  Shield, ShieldCheck, FileText, BarChart3, Database,
+  Shield, ShieldCheck, FileText, BarChart3, Database, Flame,
   Sun, Moon, LogOut, ExternalLink, ArrowRight,
   Search, Tag, ChevronRight, Loader2,
 } from 'lucide-react';
 
-const ICON_MAP = { ShieldCheck, FileText, BarChart3, Database, Shield };
+const ICON_MAP = { ShieldCheck, FileText, BarChart3, Database, Shield, Flame };
 
 const APPS = [
   {
@@ -66,6 +66,20 @@ const APPS = [
     tags:    ['CIM-ARC', 'Reports', 'PMR', 'Data'],
     badge:   null,
   },
+  {
+    id:      'lava',
+    name:    'LAVA',
+    tagline: 'Network Access Portal',
+    desc:    'Magmatic onboarding portal with digitized DD Form 2875 SAAR workflow, Vulcan approval command, and hardware asset provisioning.',
+    url:     'http://localhost:3002',
+    ssoPath: '/auth/sso',
+    color:   'orange',
+    icon:    'Flame',
+    team:    'Network Administration',
+    status:  'live',
+    tags:    ['SAAR', 'DD Form 2875', 'Access Control', 'Hardware', 'YubiKey'],
+    badge:   null,
+  },
 ];
 
 const ALL_TEAMS = ['All', ...new Set(APPS.map(a => a.team))];
@@ -98,6 +112,13 @@ const COLOR_MAP = {
     badge:   'bg-scorva-cyan/10 text-scorva-cyan border border-scorva-cyan/20',
     launch:  'bg-scorva-cyan/10 hover:bg-scorva-cyan/20 text-scorva-cyan border border-scorva-cyan/20',
     glow:    'group-hover:shadow-cyan-500/10',
+  },
+  orange: {
+    border:  'border-orange-500/20 hover:border-orange-500/50',
+    icon:    'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20',
+    badge:   'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20',
+    launch:  'bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20',
+    glow:    'group-hover:shadow-orange-500/10',
   },
 };
 

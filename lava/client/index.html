@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LAVA Access Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      :root {
+        --bg:       #0B0505;
+        --bg-card:  #130808;
+        --bg-input: #1C0A0A;
+        --orange:   #FF4500;
+        --red:      #8B0000;
+        --text:     #E8E0DC;
+        --muted:    #9B8A86;
+        --border:   rgba(255,69,0,0.28);
+        --glow:     0 0 18px rgba(255,69,0,0.22), 0 0 36px rgba(139,0,0,0.12);
+        --font:     'Share Tech Mono', 'Courier New', Courier, monospace;
+      }
+      html, body, #root { height: 100%; }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font);
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+      ::-webkit-scrollbar { width: 6px; }
+      ::-webkit-scrollbar-track { background: var(--bg-card); }
+      ::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 3px; }
+      input, select, textarea, button {
+        font-family: var(--font);
+      }
+      a { color: var(--orange); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

@@ -1,0 +1,29 @@
+# ── Stage 1: build React client ─────────────────────────────────────────────
+FROM node:20-alpine AS client-builder
+WORKDIR /app/client
+
+COPY lava/client/package*.json ./
+RUN npm ci
+
+COPY lava/client/ ./
+RUN npm run build
+
+# ── Stage 2: production server ───────────────────────────────────────────────
+FROM node:20-slim
+RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+WORKDIR /app/lava
+
+COPY lava/package*.json ./
+RUN npm ci
+
+COPY packages/db/prisma/schema.prisma ./prisma/schema.prisma
+RUN npx prisma generate
+
+RUN npm prune --omit=dev
+
+COPY lava/server/ ./server/
+COPY --from=client-builder /app/client/dist ./client/dist
+
+EXPOSE 3002
+ENV NODE_ENV=production
+CMD ["node", "server/index.js"]

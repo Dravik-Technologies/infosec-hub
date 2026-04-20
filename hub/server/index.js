@@ -82,4 +82,10 @@ const APPS = [
     url: 'http://localhost:8081', ssoPath: '/sso', color: 'cyan', icon: 'Database',
     team: 'Data Engineering', status: 'live', tags: ['CIM-ARC', 'Reports', 'PMR', 'Data'],
   },
+  {
+    id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',
+    desc: 'Magmatic onboarding portal with digitized DD Form 2875 SAAR workflow, Vulcan approval command, and hardware asset provisioning.',
+    url: 'http://localhost:3002', ssoPath: '/auth/sso', color: 'orange', icon: 'Flame',
+    team: 'Network Administration', status: 'live', tags: ['SAAR', 'DD Form 2875', 'Access Control', 'Hardware', 'YubiKey'],
+  },
 ];

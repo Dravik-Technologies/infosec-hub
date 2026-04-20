@@ -127,6 +127,26 @@ services:
       NODE_ENV: production
       HUB_URL: http://hub:3010
 
+  # ── LAVA — Network Access Portal (port 3002) ────────────────────────────────
+  lava:
+    build:
+      context: .
+      dockerfile: lava/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
+      SESSION_SECRET: ${LAVA_SESSION_SECRET:-lava-change-me-in-production}
+      HUB_URL: http://hub:3010
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hub:
+        condition: service_started
+
 volumes:
   postgres_data:
     driver: local

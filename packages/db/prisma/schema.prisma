@@ -385,3 +385,90 @@ model Transaction {
 
   @@map("transactions")
 }
+
+// ─── LAVA models ───────────────────────────────────────────────────────────────
+
+model LavaSaar {
+  id                      String    @id @default(cuid())
+  // Personal
+  lastName                String    @map("last_name")
+  firstName               String    @map("first_name")
+  middleInitial           String?   @map("middle_initial")
+  rankGrade               String?   @map("rank_grade")
+  organization            String
+  officeSymbol            String?   @map("office_symbol")
+  phone                   String?
+  email                   String
+  supervisorName          String?   @map("supervisor_name")
+  supervisorPhone         String?   @map("supervisor_phone")
+  supervisorEmail         String?   @map("supervisor_email")
+  // System
+  systemName              String    @map("system_name")
+  systemOwner             String?   @map("system_owner")
+  classification          String    @default("UNCLASSIFIED")
+  purposeOfAccess         String?   @map("purpose_of_access")
+  // Access
+  accessType              String    @default("standard") @map("access_type")
+  privilegedJustification String?   @map("privileged_justification")
+  privilegedAccessType    String?   @map("privileged_access_type")
+  // Training
+  annualTrainingDate      DateTime? @map("annual_training_date")
+  derivativeTrainingDate  DateTime? @map("derivative_training_date")
+  // Workflow
+  status                  String    @default("pending")
+  rejectionReason         String?   @map("rejection_reason")
+  // Hardware hand-off
+  yubiKeySerial           String?   @map("yubi_key_serial")
+  tokenType               String?   @map("token_type")
+  // Agreement
+  agreementSigned         Boolean   @default(false) @map("agreement_signed")
+  agreementSignedAt       DateTime? @map("agreement_signed_at")
+  // Audit
+  submittedBy             String?   @map("submitted_by")
+  reviewedBy              String?   @map("reviewed_by")
+  provisionedBy           String?   @map("provisioned_by")
+  siteId                  String?   @map("site_id")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  @@map("lava_saars")
+}
+
+model LavaSystemRequest {
+  id             String      @id @default(cuid())
+  systemName     String      @map("system_name")
+  systemOwner    String      @map("system_owner")
+  ownerEmail     String      @map("owner_email")
+  ownerPhone     String?     @map("owner_phone")
+  classification String      @default("UNCLASSIFIED")
+  purpose        String
+  networkType    String?     @map("network_type")
+  status         String      @default("pending")
+  siteId         String?     @map("site_id")
+  createdAt      DateTime    @default(now()) @map("created_at")
+  updatedAt      DateTime    @updatedAt @map("updated_at")
+
+  assets         LavaAsset[]
+
+  @@map("lava_system_requests")
+}
+
+model LavaAsset {
+  id              String            @id @default(cuid())
+  systemRequestId String            @map("system_request_id")
+  systemRequest   LavaSystemRequest @relation(fields: [systemRequestId], references: [id], onDelete: Cascade)
+  assetTag        String?           @map("asset_tag")
+  serialNumber    String?           @map("serial_number")
+  make            String?
+  model           String?
+  assetType       String?           @map("asset_type")
+  classification  String            @default("UNCLASSIFIED")
+  assignedUser    String?           @map("assigned_user")
+  location        String?
+  notes           String?
+  siteId          String?           @map("site_id")
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  @@map("lava_assets")
+}
