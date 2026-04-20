@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import lavaLogo from '../assets/lava-logo.png';
 
 export default function Login() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm]     = useState({ username: '', password: '' });
-  const [error, setError]   = useState('');
+  const [form, setForm]       = useState({ username: '', password: '' });
+  const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
 
   if (user) {
@@ -29,14 +30,14 @@ export default function Login() {
   };
 
   const inputStyle = {
-    width:        '100%',
-    background:   'var(--bg-input)',
-    border:       '1px solid var(--border)',
-    color:        'var(--text)',
-    padding:      '0.75rem 1rem',
-    fontSize:     '0.85rem',
-    borderRadius: '3px',
-    outline:      'none',
+    width:         '100%',
+    background:    'var(--bg-input)',
+    border:        '1px solid var(--border)',
+    color:         'var(--text)',
+    padding:       '0.75rem 1rem',
+    fontSize:      '0.85rem',
+    borderRadius:  '3px',
+    outline:       'none',
     letterSpacing: '0.05em',
   };
 
@@ -49,13 +50,37 @@ export default function Login() {
   };
 
   return (
-    <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
-        {/* Header */}
+    <div style={{
+      minHeight:      'calc(100vh - 56px)',
+      display:        'flex',
+      alignItems:     'center',
+      justifyContent: 'center',
+      padding:        '2rem',
+      position:       'relative',
+    }}>
+
+      {/* Login card */}
+      <div style={{ position: 'relative', width: '100%', maxWidth: '420px', zIndex: 1 }}>
+
+        {/* Branding above card */}
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🌋</div>
-          <h1 style={{ color: 'var(--orange)', letterSpacing: '0.25em', fontSize: '1.1rem' }}>VULCAN COMMAND</h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.75rem', letterSpacing: '0.1em', marginTop: '0.4rem' }}>RESTRICTED ACCESS — AUTHORIZED PERSONNEL ONLY</p>
+          <img
+            src={lavaLogo}
+            alt="LAVA"
+            style={{
+              height:     '64px',
+              width:      '64px',
+              objectFit:  'contain',
+              marginBottom: '1rem',
+              filter:     'drop-shadow(0 0 16px rgba(255,69,0,0.7))',
+            }}
+          />
+          <h1 style={{ color: 'var(--orange)', letterSpacing: '0.3em', fontSize: '1.2rem', textShadow: '0 0 20px rgba(255,69,0,0.6)' }}>
+            VULCAN COMMAND
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.72rem', letterSpacing: '0.18em', marginTop: '0.4rem' }}>
+            CONTROLLED HEAT. CONTROLLED ACCESS.
+          </p>
         </div>
 
         {/* Card */}
@@ -68,13 +93,13 @@ export default function Login() {
         }}>
           {error && (
             <div style={{
-              background:   'rgba(139,0,0,0.15)',
-              border:       '1px solid rgba(139,0,0,0.4)',
-              color:        '#ff6666',
-              padding:      '0.75rem 1rem',
-              borderRadius: '3px',
-              marginBottom: '1.25rem',
-              fontSize:     '0.8rem',
+              background:    'rgba(139,0,0,0.2)',
+              border:        '1px solid rgba(139,0,0,0.5)',
+              color:         '#ff6666',
+              padding:       '0.75rem 1rem',
+              borderRadius:  '3px',
+              marginBottom:  '1.25rem',
+              fontSize:      '0.8rem',
               letterSpacing: '0.05em',
             }}>
               ⚠ {error}
@@ -114,13 +139,13 @@ export default function Login() {
                 background:    loading ? 'var(--red)' : 'var(--orange)',
                 color:         '#0B0505',
                 border:        'none',
-                padding:       '0.85rem',
+                padding:       '0.9rem',
                 fontSize:      '0.85rem',
                 fontWeight:    'bold',
-                letterSpacing: '0.2em',
+                letterSpacing: '0.25em',
                 borderRadius:  '3px',
                 cursor:        loading ? 'not-allowed' : 'pointer',
-                boxShadow:     '0 0 20px rgba(255,69,0,0.3)',
+                boxShadow:     '0 0 25px rgba(255,69,0,0.4)',
                 transition:    'all 0.15s',
               }}
             >
@@ -128,7 +153,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div style={{ textAlign: 'center', marginTop: '1.5rem', borderTop: '1px solid var(--border)', paddingTop: '1.25rem' }}>
+          <div style={{ textAlign: 'center', marginTop: '1.5rem', borderTop: '1px solid rgba(255,69,0,0.15)', paddingTop: '1.25rem' }}>
             <p style={{ color: 'var(--muted)', fontSize: '0.75rem', letterSpacing: '0.08em' }}>
               Not a Vulcan administrator?{' '}
               <Link to="/apply" style={{ color: 'var(--orange)' }}>Request access here</Link>
@@ -136,7 +161,7 @@ export default function Login() {
           </div>
         </div>
 
-        <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '0.65rem', marginTop: '1.25rem', letterSpacing: '0.1em' }}>
+        <p style={{ textAlign: 'center', color: 'rgba(155,138,134,0.5)', fontSize: '0.62rem', marginTop: '1.25rem', letterSpacing: '0.12em' }}>
           UNAUTHORIZED ACCESS IS A VIOLATION OF 18 U.S.C. § 1030
         </p>
       </div>

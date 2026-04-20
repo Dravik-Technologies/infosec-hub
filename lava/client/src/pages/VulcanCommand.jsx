@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import lavaBackdrop from '../assets/lava-backdrop.png';
 
 const STATUS_COLORS = {
   pending:     { bg: 'rgba(255,165,0,0.12)', border: 'rgba(255,165,0,0.4)', text: '#FFA500' },
@@ -103,7 +104,7 @@ export default function VulcanCommand() {
   const fmt = (iso) => iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
   return (
-    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
+    <div>
       {/* Toast */}
       {toast && (
         <div style={{ position: 'fixed', bottom: '2rem', right: '2rem', background: 'var(--bg-card)', border: '1px solid var(--orange)', padding: '0.85rem 1.25rem', borderRadius: '3px', boxShadow: '0 0 20px rgba(255,69,0,0.3)', zIndex: 300, fontSize: '0.82rem', color: 'var(--text)', letterSpacing: '0.05em' }}>
@@ -111,14 +112,34 @@ export default function VulcanCommand() {
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <p style={{ color: 'var(--orange)', letterSpacing: '0.3em', fontSize: '0.68rem' }}>// RESTRICTED — VULCAN PERSONNEL ONLY</p>
-        <h1 style={{ fontSize: '1.5rem', letterSpacing: '0.2em', marginTop: '0.35rem' }}>
-          VULCAN <span style={{ color: 'var(--orange)' }}>COMMAND</span>
-        </h1>
-        <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: '0.3rem' }}>SAAR Adjudication & Account Provisioning Center</p>
+      {/* ── Hero Banner ── */}
+      <div style={{
+        backgroundImage:    `url(${lavaBackdrop})`,
+        backgroundSize:     'cover',
+        backgroundPosition: 'center 25%',
+        backgroundRepeat:   'no-repeat',
+        position:           'relative',
+        minHeight:          '200px',
+        display:            'flex',
+        alignItems:         'flex-end',
+        borderBottom:       '1px solid var(--border)',
+      }}>
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(11,5,5,0.25) 0%, rgba(11,5,5,0.6) 50%, rgba(11,5,5,0.97) 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to right, rgba(11,5,5,0.55) 0%, transparent 35%, transparent 65%, rgba(11,5,5,0.55) 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'relative', maxWidth: '1280px', width: '100%', margin: '0 auto', padding: '0 1.5rem 1.75rem' }}>
+          <p style={{ color: 'var(--orange)', letterSpacing: '0.35em', fontSize: '0.66rem', marginBottom: '0.4rem', textShadow: '0 0 12px rgba(255,69,0,0.5)' }}>
+            // RESTRICTED — VULCAN PERSONNEL ONLY
+          </p>
+          <h1 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', letterSpacing: '0.25em', textShadow: '0 0 30px rgba(255,69,0,0.25)' }}>
+            VULCAN <span style={{ color: 'var(--orange)' }}>COMMAND</span>
+          </h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.78rem', marginTop: '0.35rem', letterSpacing: '0.12em' }}>
+            SAAR Adjudication &amp; Account Provisioning Center
+          </p>
+        </div>
       </div>
+
+    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2rem 1.5rem' }}>
 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
@@ -299,6 +320,7 @@ export default function VulcanCommand() {
           </div>
         </Modal>
       )}
+    </div>
     </div>
   );
 }

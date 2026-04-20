@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import lavaBackdrop from '../assets/lava-backdrop.png';
 
 const teamMembers = [
   { name: 'Mark Brahler',   role: 'LAVA CISO',       clearance: 'TS/SCI', bio: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin interdum libero vitae nisi suscipit, vel dictum est blandit.' },
@@ -27,87 +29,119 @@ export default function Landing() {
 
   return (
     <div>
-      {/* ── Hero ── */}
-      <section style={{
-        background:  'linear-gradient(160deg, #0B0505 0%, #1a0404 40%, #0B0505 100%)',
-        borderBottom: '1px solid var(--border)',
-        padding:     '5rem 1.5rem 4rem',
-        textAlign:   'center',
-        position:    'relative',
-        overflow:    'hidden',
-      }}>
-        {/* Decorative glow orbs */}
-        <div style={{ position: 'absolute', top: '20%', left: '15%', width: '300px', height: '300px', borderRadius: '50%', background: 'rgba(139,0,0,0.08)', filter: 'blur(80px)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', top: '30%', right: '10%', width: '200px', height: '200px', borderRadius: '50%', background: 'rgba(255,69,0,0.06)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+      {/* ── Hero — Asymmetric 70/30 Split ── */}
+      <>
+        <style>{`
+          .lava-hero { display: grid; grid-template-columns: 6fr 4fr; min-height: 540px; border-bottom: 1px solid var(--border); overflow: hidden; }
+          .lava-hero-image { min-height: 300px; }
+          @media (max-width: 768px) {
+            .lava-hero { grid-template-columns: 1fr; }
+            .lava-hero-image { min-height: 260px; order: -1; }
+          }
+          @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 18px rgba(255,69,0,0.45); }
+            50%       { box-shadow: 0 0 40px rgba(255,69,0,0.85), 0 0 70px rgba(255,69,0,0.3); }
+          }
+          .lava-cta { animation: pulse-glow 2.4s ease-in-out infinite; }
+        `}</style>
 
-        <div style={{ position: 'relative', maxWidth: '900px', margin: '0 auto' }}>
-          <p style={{ color: 'var(--orange)', letterSpacing: '0.4em', fontSize: '0.75rem', marginBottom: '1rem' }}>
-            PRIVATE NETWORK ACCESS SYSTEM
-          </p>
-          <h1 style={{
-            fontSize:      'clamp(2.5rem, 6vw, 4.5rem)',
-            letterSpacing: '0.25em',
-            lineHeight:    1.1,
-            marginBottom:  '1.25rem',
-            textShadow:    '0 0 40px rgba(255,69,0,0.35), 0 0 80px rgba(139,0,0,0.2)',
-          }}>
-            <span style={{ color: 'var(--orange)' }}>LAVA</span>{' '}
-            <span style={{ color: 'var(--text)' }}>NETWORK</span>{' '}
-            <span style={{ color: 'var(--red)', textShadow: '0 0 30px rgba(139,0,0,0.5)' }}>SYSTEM</span>
-          </h1>
-          <p style={{ fontSize: '0.95rem', color: 'var(--muted)', letterSpacing: '0.12em', marginBottom: '0.5rem' }}>
-            LAYERED ACCESS &amp; VERIFIED AUTHENTICATION
-          </p>
-          <p style={{ fontSize: '0.8rem', color: 'var(--muted)', opacity: 0.7, marginBottom: '2.5rem', letterSpacing: '0.08em' }}>
-            Onboarding Portal &mdash; System Access Authorization &amp; Resource Requests
-          </p>
+        <section className="lava-hero">
 
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link to="/apply" style={{
-              background:    'var(--orange)',
-              color:         '#0B0505',
-              padding:       '0.85rem 2.2rem',
-              borderRadius:  '3px',
-              fontSize:      '0.85rem',
-              letterSpacing: '0.15em',
-              fontWeight:    'bold',
-              textDecoration: 'none',
-              boxShadow:     '0 0 20px rgba(255,69,0,0.4)',
-            }}>
-              REQUEST ACCESS
-            </Link>
-            {!user && (
-              <Link to="/login" style={{
-                background:    'transparent',
-                color:         'var(--text)',
-                padding:       '0.85rem 2.2rem',
-                borderRadius:  '3px',
-                fontSize:      '0.85rem',
-                letterSpacing: '0.15em',
-                border:        '1px solid var(--border)',
-                textDecoration: 'none',
-              }}>
-                VULCAN LOGIN
-              </Link>
-            )}
-            {isVulcan && (
-              <Link to="/vulcan" style={{
-                background:    'var(--red)',
-                color:         'var(--text)',
-                padding:       '0.85rem 2.2rem',
-                borderRadius:  '3px',
-                fontSize:      '0.85rem',
-                letterSpacing: '0.15em',
-                border:        '1px solid var(--orange)',
-                textDecoration: 'none',
-                boxShadow:     '0 0 15px rgba(139,0,0,0.4)',
-              }}>
-                VULCAN COMMAND
-              </Link>
-            )}
-          </div>
-        </div>
-      </section>
+          {/* ── Left Column — Obsidian content zone ── */}
+          <motion.div
+            initial={{ x: -40, opacity: 0 }}
+            animate={{ x: 0,   opacity: 1 }}
+            transition={{ duration: 0.75, ease: 'easeOut' }}
+            style={{
+              background:     '#0B0505',
+              padding:        'clamp(3rem, 5vw, 5rem) clamp(2rem, 5vw, 4rem) clamp(3rem, 5vw, 5rem) clamp(1.5rem, 4vw, 3.5rem)',
+              display:        'flex',
+              flexDirection:  'column',
+              justifyContent: 'center',
+              position:       'relative',
+            }}
+          >
+            {/* Smoke-and-shadow blend into image column */}
+            <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: '120px', background: 'linear-gradient(to right, transparent, #0B0505)', pointerEvents: 'none', zIndex: 2 }} />
+
+            <div style={{ position: 'relative', zIndex: 3, maxWidth: '600px' }}>
+              <motion.p
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15, duration: 0.5 }}
+                style={{ color: 'var(--orange)', letterSpacing: '0.38em', fontSize: '0.68rem', marginBottom: '1.1rem' }}
+              >
+                PRIVATE NETWORK ACCESS SYSTEM
+              </motion.p>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25, duration: 0.6 }}
+                style={{ fontSize: 'clamp(1.5rem, 3vw, 2.2rem)', letterSpacing: '0.06em', lineHeight: 1.25, marginBottom: '1.75rem', color: 'var(--text)' }}
+              >
+                LAVA:{' '}
+                <span style={{ color: 'var(--orange)' }}>THE MOLTEN CORE</span>
+                <br />OF NATIONWIDE COLLABORATION
+              </motion.h1>
+
+              {/* CTAs */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.45, duration: 0.5 }}
+                style={{ display: 'flex', gap: '0.9rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '0.5rem' }}
+              >
+                <Link
+                  to="/apply"
+                  className="lava-cta"
+                  style={{
+                    background:     'var(--orange)',
+                    color:          '#0B0505',
+                    padding:        '0.9rem 2rem',
+                    borderRadius:   '3px',
+                    fontSize:       '0.82rem',
+                    letterSpacing:  '0.18em',
+                    fontWeight:     'bold',
+                    textDecoration: 'none',
+                    display:        'inline-block',
+                  }}
+                >
+                  REQUEST LAVA ACCESS
+                </Link>
+                {isVulcan && (
+                  <Link to="/vulcan" style={{
+                    background:     'transparent',
+                    color:          'var(--orange)',
+                    padding:        '0.9rem 1.75rem',
+                    borderRadius:   '3px',
+                    fontSize:       '0.82rem',
+                    letterSpacing:  '0.15em',
+                    border:         '1px solid rgba(255,69,0,0.4)',
+                    textDecoration: 'none',
+                  }}>
+                    VULCAN COMMAND →
+                  </Link>
+                )}
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* ── Right Column — Lava Vulcans image ── */}
+          <motion.div
+            className="lava-hero-image"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.1, ease: 'easeOut', delay: 0.2 }}
+            style={{
+              backgroundImage:    `url(${lavaBackdrop})`,
+              backgroundSize:     'cover',
+              backgroundPosition: 'center',
+              position:           'relative',
+            }}
+          >
+            {/* Left-edge smoke blend into obsidian */}
+            <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '160px', background: 'linear-gradient(to right, #0B0505, transparent)', pointerEvents: 'none' }} />
+            {/* Bottom fade */}
+            <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '60px', background: 'linear-gradient(to bottom, transparent, #0B0505)', pointerEvents: 'none' }} />
+          </motion.div>
+
+        </section>
+      </>
 
       {/* ── Stats Strip ── */}
       <section style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', padding: '1.25rem 1.5rem' }}>

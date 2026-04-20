@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import lavaLogo from '../assets/lava-logo.png';
 
 export default function NavBar() {
   const { user, isVulcan, logout } = useAuth();
@@ -47,8 +48,8 @@ export default function NavBar() {
         justifyContent: 'space-between',
       }}>
         {/* Logo */}
-        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-          <span style={{ fontSize: '1.4rem' }}>🌋</span>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+          <img src={lavaLogo} alt="LAVA" style={{ height: '36px', width: '36px', objectFit: 'contain', filter: 'drop-shadow(0 0 6px rgba(139,0,0,0.5))' }} />
           <span style={{ color: 'var(--orange)', fontWeight: 'bold', letterSpacing: '0.15em', fontSize: '1rem' }}>
             LAVA
           </span>
