@@ -19,18 +19,19 @@ model Site {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users         User[]
-  controls      Control[]
-  tasks         Task[]
-  poams         Poam[]
-  atoPackages   AtoPackage[]
-  conmons       ConMon[]
-  workstations  Workstation[]
-  yubiKeys      YubiKey[]
-  licenses      License[]
-  agreements    Agreement[]
-  notifications Notification[]
-  trackers      Tracker[]
+  users          User[]
+  controls       Control[]
+  tasks          Task[]
+  poams          Poam[]
+  atoPackages    AtoPackage[]
+  conmons        ConMon[]
+  workstations   Workstation[]
+  yubiKeys       YubiKey[]
+  licenses       License[]
+  agreements     Agreement[]
+  notifications  Notification[]
+  trackers       Tracker[]
+  projectSystems ProjectSystem[]
 
   @@map("sites")
 }
@@ -384,6 +385,73 @@ model Transaction {
   date          DateTime @default(now())
 
   @@map("transactions")
+}
+
+// ─── CRATER models (RMF Automation Engine) ─────────────────────────────────────
+
+model ProjectSystem {
+  id                    String         @id @default(cuid())
+  externalId            String?        @unique @map("external_id")
+  name                  String
+  abbreviation          String
+  systemType            String         @default("Major Application") @map("system_type")
+  organization          String
+  description           String?
+  classificationMarking String?        @map("classification_marking")
+  systemOwner           String?        @map("system_owner")
+  isso                  String?
+  issm                  String?
+  confidentiality       String         @default("Low")
+  integrity             String         @default("Low")
+  availability          String         @default("Low")
+  baseline              String         @default("LOW")
+  atoStatus             String         @default("Pre-ATO") @map("ato_status")
+  siteId                String         @map("site_id")
+  site                  Site           @relation(fields: [siteId], references: [id])
+  controls              ProjectControl[]
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
+
+  @@map("project_systems")
+}
+
+model ProjectControl {
+  id                      String        @id @default(cuid())
+  projectSystemId         String        @map("project_system_id")
+  projectSystem           ProjectSystem @relation(fields: [projectSystemId], references: [id], onDelete: Cascade)
+  controlId               String        @map("control_id")
+  controlTitle            String        @map("control_title")
+  family                  String
+  status                  String        @default("Not Implemented")
+  implementationStatement String?       @map("implementation_statement")
+  standardText            String?       @map("standard_text")
+  autoFilled              Boolean       @default(false) @map("auto_filled")
+  tailoringRequired       Boolean       @default(false) @map("tailoring_required")
+  implementationOrigin    String        @default("System Specific") @map("implementation_origin")
+  evidenceLinks           String[]      @default([]) @map("evidence_links")
+  assessorNotes           String?       @map("assessor_notes")
+  validatedAt             DateTime?     @map("validated_at")
+  validatedBy             String?       @map("validated_by")
+  siteId                  String        @map("site_id")
+  createdAt               DateTime      @default(now()) @map("created_at")
+  updatedAt               DateTime      @updatedAt @map("updated_at")
+
+  @@unique([projectSystemId, controlId])
+  @@map("project_controls")
+}
+
+model StandardLibrary {
+  id                      String   @id @default(cuid())
+  controlId               String   @unique @map("control_id")
+  controlTitle            String   @map("control_title")
+  family                  String
+  implementationStatement String   @map("implementation_statement")
+  implementationOrigin    String   @default("System Specific") @map("implementation_origin")
+  tailoringRequired       Boolean  @default(false) @map("tailoring_required")
+  createdAt               DateTime @default(now()) @map("created_at")
+  updatedAt               DateTime @updatedAt @map("updated_at")
+
+  @@map("standard_library")
 }
 
 // ─── LAVA models ───────────────────────────────────────────────────────────────

@@ -64,8 +64,8 @@ services:
   # ── CRATER API — eMASS RMF backend (port 3001, internal) ────────────────────
   crater-api:
     build:
-      context: ./emass-app/server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: emass-app/server/Dockerfile
     restart: unless-stopped
     ports:
       - "3001:3001"

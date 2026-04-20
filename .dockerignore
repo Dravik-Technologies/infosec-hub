@@ -1,0 +1,22 @@
+# Root .dockerignore — applies to all services using context: .
+# Excludes large directories to keep build context lean
+
+**/node_modules
+**/.git
+**/.turbo
+**/.cache
+**/dist
+**/*.log
+**/.env
+**/.env.local
+**/.env*.local
+
+# IDE / OS
+**/.DS_Store
+**/Thumbs.db
+**/.idea
+**/.vscode
+
+# Test artifacts
+**/coverage
+**/__pycache__

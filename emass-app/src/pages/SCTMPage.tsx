@@ -10,15 +10,17 @@ import {
   type ColumnDef,
   type SortingState,
 } from '@tanstack/react-table'
-import { Search, Download, Filter, ExternalLink, ChevronUp, ChevronDown, Wand2 } from 'lucide-react'
+import { Search, Download, Filter, ExternalLink, ChevronUp, ChevronDown, Wand2, Zap, AlertCircle } from 'lucide-react'
 import { useSystemStore } from '@/store/systemStore'
 import { useSCTMStore } from '@/store/sctmStore'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { PageHeader } from '@/components/ui/PageHeader'
+import RMFStepper from '@/components/rmf/RMFStepper'
 import { getControlStatusColor, exportCSV } from '@/lib/utils'
 import { getBaselineLabel } from '@/data/baselines'
 import { CONTROL_FAMILIES, getFamilyName, getControlById } from '@/data/controls'
+import { controlNeedsTailoring, getStandardImplementation, getUntailoredControls } from '@/lib/hydration'
 import type { SCTMEntry, ControlStatus } from '@/types'
 import { cn } from '@/lib/cn'
 
@@ -124,10 +126,23 @@ export default function SCTMPage() {
     },
     columnHelper.accessor('controlId', {
       header: 'Control ID',
-      cell: (info) => (
-        <span className="font-mono text-xs font-semibold text-teal-400">{info.getValue()}</span>
-      ),
-      size: 100,
+      cell: (info) => {
+        const id = info.getValue()
+        const needsTailoring = controlNeedsTailoring(id)
+        const entry = info.row.original
+        const standard = getStandardImplementation(id)
+        const strip = (s: string) => s.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()
+        const isTailored = needsTailoring && strip(entry.implementationStatement) !== strip(standard) && strip(entry.implementationStatement).length > 0
+        return (
+          <div className="flex items-center gap-1.5">
+            <span className="font-mono text-xs font-semibold text-cyan-400">{id}</span>
+            {needsTailoring && !isTailored && (
+              <AlertCircle className="w-3 h-3 shrink-0" style={{ color: '#FF5500' }} />
+            )}
+          </div>
+        )
+      },
+      size: 115,
     }),
     columnHelper.accessor('controlFamily', {
       header: 'Family',
@@ -239,6 +254,10 @@ export default function SCTMPage() {
     }
   }
 
+  const untailored = system?.selectedBaseline
+    ? getUntailoredControls(system.selectedBaseline, entries)
+    : []
+
   return (
     <div className="min-h-full flex flex-col">
       <PageHeader
@@ -246,8 +265,21 @@ export default function SCTMPage() {
         subtitle={system ? `${system.name} · ${getBaselineLabel(system.selectedBaseline)}` : ''}
         actions={
           <div className="flex items-center gap-2">
+            {untailored.length > 0 && (
+              <span
+                className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-medium"
+                style={{
+                  color: '#FF6B1A',
+                  background: 'rgba(255,85,0,0.08)',
+                  border: '1px solid rgba(255,85,0,0.3)',
+                }}
+              >
+                <AlertCircle className="w-3.5 h-3.5" />
+                {untailored.length} need tailoring
+              </span>
+            )}
             <Button variant="secondary" size="sm" icon={<Wand2 className="w-4 h-4" />} onClick={() => setShowDefaultsModal(true)}>
-              Apply Defaults
+              Auto-Hydrate
             </Button>
             <Button variant="secondary" size="sm" icon={<Download className="w-4 h-4" />} onClick={handleExportCSV}>
               Export CSV
@@ -255,6 +287,14 @@ export default function SCTMPage() {
           </div>
         }
       />
+
+      {/* RMF Stepper */}
+      <div
+        className="px-8 py-3 border-b"
+        style={{ borderColor: 'var(--color-border)', background: 'var(--color-surface)' }}
+      >
+        <RMFStepper systemId={systemId!} compact />
+      </div>
 
       {/* Status pills */}
       <div
@@ -410,9 +450,9 @@ export default function SCTMPage() {
             className="w-full max-w-md rounded-xl border p-6 shadow-2xl"
             style={{ background: 'var(--color-surface-2)', borderColor: 'var(--color-border)' }}
           >
-            <h2 className="text-base font-semibold text-slate-100 mb-2">Apply Default Implementations</h2>
+            <h2 className="text-base font-semibold text-slate-100 mb-2">Auto-Hydrate Controls</h2>
             <p className="text-sm text-slate-400 mb-4">
-              This will populate implementation statements, status, and origin for all controls that have a standard default based on NIST SP 800-53 Rev 5 common practices.
+              Automatically populate implementation statements, status, and origin for all controls using standard NIST SP 800-53 Rev 5 policy text. Controls marked with <span style={{ color: '#FF6B1A' }}>●</span> will still need site-specific tailoring in the Delta Editor.
             </p>
             <p className="text-sm text-slate-400 mb-6">
               Do you want to fill in only <strong className="text-slate-200">empty</strong> controls, or <strong className="text-slate-200">overwrite all</strong> (including controls you've already filled in)?

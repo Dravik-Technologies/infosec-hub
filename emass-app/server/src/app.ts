@@ -6,6 +6,7 @@ import sctmRoutes from './routes/sctm'
 import poamRoutes from './routes/poam'
 import vulnRoutes from './routes/vulnerabilities'
 import diagramRoutes from './routes/diagrams'
+import craterRoutes from './routes/crater'
 
 const app = express()
 
@@ -18,5 +19,6 @@ app.use('/api/systems', sctmRoutes)
 app.use('/api/systems', poamRoutes)
 app.use('/api/systems', vulnRoutes)
 app.use('/api/systems', diagramRoutes)
+app.use('/api/crater', craterRoutes)
 
 export default app
