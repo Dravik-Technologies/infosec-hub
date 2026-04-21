@@ -53,7 +53,7 @@ model User {
   lastLogin        DateTime? @map("last_login")
   trainingCompliant Boolean  @default(false) @map("training_compliant")
   trainingDue      String?   @map("training_due")
-  dod8140          Boolean   @default(false) @map("dod_8140")
+  dod8140          Json?     @map("dod_8140")
   createdAt        DateTime  @default(now()) @map("created_at")
   updatedAt        DateTime  @updatedAt @map("updated_at")
 
@@ -539,4 +539,31 @@ model LavaAsset {
   updatedAt       DateTime          @updatedAt @map("updated_at")
 
   @@map("lava_assets")
+}
+
+model MashCollection {
+  name      String   @id
+  data      Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("mash_collections")
+}
+
+model DataFabricDocument {
+  name      String   @id
+  data      Json
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("data_fabric_documents")
+}
+
+model DataFabricSession {
+  token     String   @id
+  createdAt DateTime @default(now()) @map("created_at")
+  expiresAt DateTime @map("expires_at")
+
+  @@index([expiresAt])
+  @@map("data_fabric_sessions")
 }

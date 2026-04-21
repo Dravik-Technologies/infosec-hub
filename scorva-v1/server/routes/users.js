@@ -63,7 +63,7 @@ router.post('/', adminOnly, async (req, res, next) => {
         siteId, siteIds, status: status || 'Active',
         trainingCompliant: training_compliant || false,
         trainingDue: training_due || null,
-        dod8140: dod_8140 || false,
+        dod8140: dod_8140 ?? null,
       },
     });
     await audit(req.session.user.username, 'USER_CREATE', manualId, `Created user: ${username}`, siteId);
