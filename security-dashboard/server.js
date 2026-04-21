@@ -1,6 +1,6 @@
 /**
  * MASH – MTSI Advanced Sentinel Hub
- * Express.js server — JWT auth proxied through the Hub, MongoDB persistence
+ * Express.js server — JWT auth proxied through the Hub, PostgreSQL-backed persistence
  * Run: npm install && npm start
  */
 'use strict';
@@ -10,14 +10,14 @@ require('dotenv').config();
 const express  = require('express');
 const fs       = require('fs');
 const path     = require('path');
-const http     = require('http');
 const jwt      = require('jsonwebtoken');
-// DB layer removed — MASH runs on JSON file persistence
+const { dbOk, getModel, readCollection } = require('./pg-store');
 
 const PORT       = process.env.PORT || 8080;
 const DATA_DIR   = path.join(__dirname, 'data');
 const JWT_SECRET = process.env.JWT_SECRET || 'mash-dev-secret-change-in-prod';
 const JWT_TTL    = '8h';
+const HUB_URL    = process.env.HUB_URL || null;
 const HUB_HOST   = process.env.HUB_HOST || '127.0.0.1';
 const HUB_PORT   = parseInt(process.env.HUB_PORT || '3010', 10);
 
@@ -38,12 +38,8 @@ function validCollection(name) {
 }
 const uid = () => 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
-// ── MongoDB model registry ────────────────────────────────────────────────────
-
 // Singletons: entire JSON stored as one doc with _id = 'singleton'
 const SINGLETON = new Set(['budget', 'timeline', 'compliance', 'settings']);
-
-function dbOk() { return false; }
 
 // ── Seed collections from JSON on first run ───────────────────────────────────
 async function seedOne(name) {
@@ -69,7 +65,8 @@ async function seedOne(name) {
 
 async function seedAll() {
     const ALL = ['sites','risks','budget','timeline','compliance','activity',
-                 'settings','milestones','construction','employees','documents'];
+                 'settings','milestones','construction','employees','documents',
+                 'transactions','contracts','inspections','role_mappings','users'];
     for (const c of ALL) await seedOne(c);
     console.log('[MASH] Seed complete.');
 }
@@ -77,7 +74,7 @@ async function seedAll() {
 // Seed JSON files on startup
 seedAll().catch(console.error);
 
-// ── MongoDB CRUD helpers ──────────────────────────────────────────────────────
+// ── PostgreSQL-backed CRUD helpers ────────────────────────────────────────────
 
 async function dbGet(collection) {
     const M = getModel(collection);
@@ -148,69 +145,47 @@ async function dbDelete(collection, id) {
 
 /** POST credentials to hub and get back the hub user object. */
 function proxyLoginToHub(username, password) {
-    const body = JSON.stringify({ username, password });
-    return new Promise((resolve, reject) => {
-        const req = http.request(
-            {
-                hostname: HUB_HOST, port: HUB_PORT,
-                path: '/auth/login', method: 'POST',
-                headers: {
-                    'Content-Type':   'application/json',
-                    'Content-Length': Buffer.byteLength(body),
-                },
-            },
-            res => {
-                let data = '';
-                res.on('data', chunk => { data += chunk; });
-                res.on('end', () => {
-                    try {
-                        const parsed = JSON.parse(data);
-                        if (res.statusCode === 200 && parsed.user) resolve(parsed.user);
-                        else reject(new Error(parsed.error || 'Invalid credentials'));
-                    } catch { reject(new Error('Bad response from hub')); }
-                });
-                res.on('error', reject);
-            }
-        );
-        req.setTimeout(10000, () => { req.destroy(); reject(new Error('Hub auth timeout')); });
-        req.on('error', reject);
-        req.write(body);
-        req.end();
+    const baseUrl = HUB_URL || `http://${HUB_HOST}:${HUB_PORT}`;
+    const loginUrl = new URL('/auth/login', baseUrl);
+    return fetch(loginUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+    }).then(async res => {
+        let parsed;
+        try {
+            parsed = await res.json();
+        } catch {
+            throw new Error('Bad response from hub');
+        }
+        if (res.ok && parsed.user) return parsed.user;
+        throw new Error(parsed.error || 'Invalid credentials');
     });
 }
 
 /** Consume the hub's one-time SSO token and return the hub user. */
 function verifyHubToken(token) {
-    return new Promise((resolve, reject) => {
-        const req = http.request(
-            {
-                hostname: HUB_HOST, port: HUB_PORT,
-                path: `/api/sso/verify?token=${encodeURIComponent(token)}`,
-                method: 'GET',
-            },
-            res => {
-                let data = '';
-                res.on('data', chunk => { data += chunk; });
-                res.on('end', () => {
-                    try {
-                        const parsed = JSON.parse(data);
-                        if (res.statusCode === 200 && parsed.valid) resolve(parsed.user);
-                        else reject(new Error(parsed.error || 'SSO verification failed'));
-                    } catch { reject(new Error('Bad response from hub')); }
-                });
-                res.on('error', reject);
-            }
-        );
-        req.setTimeout(5000, () => { req.destroy(); reject(new Error('Hub SSO timeout')); });
-        req.on('error', reject);
-        req.end();
+    const baseUrl = HUB_URL || `http://${HUB_HOST}:${HUB_PORT}`;
+    const verifyUrl = new URL('/api/sso/verify', baseUrl);
+    verifyUrl.searchParams.set('token', token);
+    return fetch(verifyUrl).then(async res => {
+        let parsed;
+        try {
+            parsed = await res.json();
+        } catch {
+            throw new Error('Bad response from hub');
+        }
+        if (res.ok && parsed.valid) return parsed.user;
+        throw new Error(parsed.error || 'SSO verification failed');
     });
 }
 
 // ── Hub user → MASH JWT payload ───────────────────────────────────────────────
-function mapHubUser(hubUser) {
+async function mapHubUser(hubUser) {
     // role_mappings.json: { "<hub_username_lowercase>": { role, siteId, displayTitle } }
-    const roleMap = readJson('role_mappings') || {};
+    const roleMap = dbOk()
+        ? ((await readCollection('role_mappings')) || {})
+        : (readJson('role_mappings') || {});
     const mapping = roleMap[(hubUser.username || '').toLowerCase()];
 
     let role   = 'global_fso';   // safe default — restrict later via mapping
@@ -326,7 +301,7 @@ app.post('/api/auth/login', async (req, res) => {
         return res.status(400).json({ error: 'Username and password are required' });
     try {
         const hubUser = await proxyLoginToHub(username, password);
-        const payload = mapHubUser(hubUser);
+        const payload = await mapHubUser(hubUser);
         const token   = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
         res.json({ token, user: payload });
     } catch (err) {
@@ -344,7 +319,7 @@ app.get('/auth/sso', async (req, res) => {
     if (!hub_token) return res.redirect('/?sso_error=missing_token');
     try {
         const hubUser = await verifyHubToken(hub_token);
-        const payload = { ...mapHubUser(hubUser), via: 'sso' };
+        const payload = { ...(await mapHubUser(hubUser)), via: 'sso' };
         const token   = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
         res.redirect(`/?mash_token=${token}`);
     } catch (err) {
@@ -787,7 +762,7 @@ app.get('/api/budget/transactions', async (req, res) => {
 // Aggregates InspectionItem documents into a per-control summary.
 // Each row answers: "of the sites that HAVE this control, how many passed?"
 //
-// MongoDB pipeline (two-stage):
+// Aggregation pipeline (two-stage):
 //   Stage 1 — group by (controlId, siteId) so each site contributes one row
 //             per control regardless of how many checklist entries it has.
 //   Stage 2 — group by controlId to count totalApplicableSites and
@@ -867,7 +842,7 @@ app.get('/api/compliance/matrix', async (req, res) => {
 // ── Executive Summary aggregation ────────────────────────────────────────────
 // GET /api/executive-summary
 //
-// Fires six simultaneous MongoDB aggregations via Promise.all and returns a
+// Fires six simultaneous aggregations via Promise.all and returns a
 // single JSON object with the three KPI buckets the ExecutiveBriefing needs:
 //
 //   financials  — Contract totals (allocated / spent / count)
@@ -1251,9 +1226,9 @@ app.listen(PORT, '0.0.0.0', () => {
     console.log('  ██║╚██╔╝██║██╔══██║╚════██║██╔══██║');
     console.log('  ██║ ╚═╝ ██║██║  ██║███████║██║  ██║');
     console.log('  ╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝\x1b[0m');
-    console.log(`\x1b[90m  MTSI Advanced Sentinel Hub  v2.3.0  (MongoDB + Hub Auth)\x1b[0m`);
+    console.log(`\x1b[90m  MTSI Advanced Sentinel Hub  v2.3.0  (PostgreSQL + Hub Auth)\x1b[0m`);
     console.log(`\x1b[32m  ● Running → http://localhost:${PORT}\x1b[0m`);
-    console.log(`\x1b[90m  Hub      → http://${HUB_HOST}:${HUB_PORT}\x1b[0m\n`);
+    console.log(`\x1b[90m  Hub      → ${HUB_URL || `http://${HUB_HOST}:${HUB_PORT}`}\x1b[0m\n`);
     if (JWT_SECRET === 'mash-dev-secret-change-in-prod')
         console.log('\x1b[33m  ⚠ JWT_SECRET not set — use env var in production\x1b[0m\n');
 });

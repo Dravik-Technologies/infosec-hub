@@ -2,46 +2,34 @@
 
 const express = require('express');
 const bcrypt  = require('bcryptjs');
-const http    = require('http');
 const { db }  = require('../../../packages/db/src/index');
 const router  = express.Router();
 
 function proxyLoginToScorva(username, password) {
-  const SCORVA_HOST = process.env.SCORVA_HOST || '127.0.0.1';
-  const SCORVA_PORT = parseInt(process.env.SCORVA_PORT || '3000', 10);
-  const body        = JSON.stringify({ username, password });
+  const scorvaBaseUrl = process.env.SCORVA_URL
+    || `http://${process.env.SCORVA_HOST || '127.0.0.1'}:${parseInt(process.env.SCORVA_PORT || '3000', 10)}`;
 
-  return new Promise((resolve, reject) => {
-    let settled = false;
-    function settle(fn, val) { if (!settled) { settled = true; fn(val); } }
+  const loginUrl = new URL('/auth/login', scorvaBaseUrl);
 
-    const req = http.request(
-      { hostname: SCORVA_HOST, port: SCORVA_PORT, path: '/auth/login', method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) } },
-      res => {
-        let data = '';
-        res.on('data', c => { data += c; });
-        res.on('end', () => {
-          try {
-            const parsed = JSON.parse(data);
-            if (res.statusCode === 200 && parsed.user) settle(resolve, parsed.user);
-            else settle(reject, new Error(parsed.error || 'Invalid credentials'));
-          } catch {
-            settle(reject, new Error('Bad response from SCORVA'));
-          }
-        });
-        res.on('error', e => settle(reject, e));
+  return fetch(loginUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+    .then(async res => {
+      let parsed;
+      try {
+        parsed = await res.json();
+      } catch {
+        throw new Error('Bad response from SCORVA');
       }
-    );
-    const timer = setTimeout(() => {
-      settle(reject, new Error('SCORVA proxy timeout'));
-      req.destroy();
-    }, 12000);
-    req.on('error', e => { clearTimeout(timer); settle(reject, e); });
-    req.on('close', () => clearTimeout(timer));
-    req.write(body);
-    req.end();
-  });
+      if (res.ok && parsed.user) return parsed.user;
+      throw new Error(parsed.error || 'Invalid credentials');
+    })
+    .catch(err => {
+      if (err.name === 'AbortError') throw new Error('SCORVA proxy timeout');
+      throw err;
+    });
 }
 
 router.post('/login', async (req, res) => {

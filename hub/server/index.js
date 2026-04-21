@@ -61,31 +61,31 @@ const APPS = [
   {
     id: 'scorva', name: 'SCORVA', tagline: 'Cyber Command Center',
     desc: 'NIST SP 800-53 Rev 5 compliance management — ATO tracking, continuous monitoring, POAM, asset inventory, and access governance.',
-    url: 'http://localhost:3000', ssoPath: '/auth/sso', color: 'teal', icon: 'ShieldCheck',
+    url: process.env.SCORVA_URL || 'http://localhost:3000', ssoPath: '/auth/sso', color: 'teal', icon: 'ShieldCheck',
     team: 'Cybersecurity', status: 'live', tags: ['NIST 800-53', 'RMF', 'ATO', 'ConMon', 'POAM'],
   },
   {
     id: 'crater', name: 'CRATER', tagline: 'eMASS RMF Toolkit',
     desc: 'eMASS-aligned RMF package builder with SCTM, POAM management, vulnerability tracking, diagrams, and compliance reporting.',
-    url: 'http://localhost:3003', ssoPath: '/sso.html', color: 'indigo', icon: 'FileText',
+    url: process.env.CRATER_URL || 'http://localhost:3003', ssoPath: '/sso.html', color: 'indigo', icon: 'FileText',
     team: 'GRC', status: 'live', tags: ['eMASS', 'RMF', 'SCTM', 'POAM', 'Vulnerabilities'],
   },
   {
     id: 'mash', name: 'MASH', tagline: 'MTSI Advanced Sentinel Hub',
     desc: 'DoD security compliance dashboard with live threat intelligence, audit log analysis, and posture monitoring.',
-    url: 'http://localhost:8080', ssoPath: '/auth/sso', color: 'gold', icon: 'BarChart3',
+    url: process.env.MASH_URL || 'http://localhost:8080', ssoPath: '/auth/sso', color: 'gold', icon: 'BarChart3',
     team: 'Security Operations', status: 'live', tags: ['Dashboard', 'Threat Intel', 'Compliance', 'DoD'],
   },
   {
     id: 'data-fabric', name: 'Data Fabric', tagline: 'CIM-ARC Data Platform',
     desc: 'CIM-ARC team portal featuring project reports, schedules, photo gallery, digital PMR, and team directory.',
-    url: 'http://localhost:8081', ssoPath: '/sso', color: 'cyan', icon: 'Database',
+    url: process.env.DATA_FABRIC_URL || 'http://localhost:8081', ssoPath: '/sso', color: 'cyan', icon: 'Database',
     team: 'Data Engineering', status: 'live', tags: ['CIM-ARC', 'Reports', 'PMR', 'Data'],
   },
   {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',
     desc: 'Magmatic onboarding portal with digitized DD Form 2875 SAAR workflow, Vulcan approval command, and hardware asset provisioning.',
-    url: 'http://localhost:3002', ssoPath: '/auth/sso', color: 'orange', icon: 'Flame',
+    url: process.env.LAVA_URL || 'http://localhost:3002', ssoPath: '/auth/sso', color: 'orange', icon: 'Flame',
     team: 'Network Administration', status: 'live', tags: ['SAAR', 'DD Form 2875', 'Access Control', 'Hardware', 'YubiKey'],
   },
 ];

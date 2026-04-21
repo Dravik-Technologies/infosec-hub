@@ -1,9 +1,12 @@
 'use strict';
 
-// Resolve @prisma/client from the app's own node_modules (process.cwd()),
-// not from packages/db — this ensures the correct platform binary is used
-// whether running locally or inside a Docker container.
-const clientPath = require.resolve('@prisma/client', { paths: [process.cwd()] });
+const path = require('path');
+
+// Prefer the client generated alongside the shared schema under packages/db,
+// then fall back to the app's node_modules for containerized app builds.
+const clientPath = require.resolve('@prisma/client', {
+  paths: [path.resolve(__dirname, '..'), process.cwd()],
+});
 const { PrismaClient } = require(clientPath);
 
 const globalForPrisma = globalThis;
