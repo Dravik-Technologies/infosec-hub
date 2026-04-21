@@ -32,7 +32,7 @@ export default function Landing() {
       {/* ── Hero — Asymmetric 70/30 Split ── */}
       <>
         <style>{`
-          .lava-hero { display: grid; grid-template-columns: 6fr 4fr; min-height: 540px; border-bottom: 1px solid var(--border); overflow: hidden; }
+          .lava-hero { display: grid; grid-template-columns: 1fr 1fr; min-height: 540px; border-bottom: 1px solid var(--border); overflow: hidden; }
           .lava-hero-image { min-height: 300px; }
           @media (max-width: 768px) {
             .lava-hero { grid-template-columns: 1fr; }
@@ -143,18 +143,23 @@ export default function Landing() {
         </section>
       </>
 
-      {/* ── Stats Strip ── */}
+      {/* ── Sites Strip ── */}
       <section style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border)', padding: '1.25rem 1.5rem' }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', gap: '3rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', gap: '0', flexWrap: 'wrap', alignItems: 'stretch' }}>
+          <div style={{ fontSize: '0.6rem', color: 'var(--muted)', letterSpacing: '0.2em', display: 'flex', alignItems: 'center', paddingRight: '2rem', marginRight: '2rem', borderRight: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
+            LAVA SITES
+          </div>
           {[
-            { label: 'CLASSIFICATION', value: 'UNCLASSIFIED' },
-            { label: 'NETWORK DOMAIN', value: 'MTSI WAN' },
-            { label: 'AUTH STANDARD',  value: 'DOD 8140 / SAAR' },
-            { label: 'MFA REQUIRED',   value: 'YUBIKEY' },
-          ].map(({ label, value }) => (
-            <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.65rem', color: 'var(--muted)', letterSpacing: '0.18em' }}>{label}</div>
-              <div style={{ color: 'var(--orange)', letterSpacing: '0.1em', fontSize: '0.85rem', marginTop: '0.2rem' }}>{value}</div>
+            { code: 'ALX', name: 'MTSI Alexandria, VA' },
+            { code: 'STL', name: 'MTSI St. Louis, MO' },
+            { code: 'CO',  name: 'MTSI Colorado Springs, CO' },
+            { code: 'DAY', name: 'MTSI Dayton, OH' },
+            { code: 'HSV', name: 'MTSI Huntsville, AL' },
+            { code: 'LV',  name: 'MTSI Las Vegas, NV' },
+          ].map(({ code, name }, i, arr) => (
+            <div key={code} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingRight: i < arr.length - 1 ? '2rem' : 0, marginRight: i < arr.length - 1 ? '2rem' : 0, borderRight: i < arr.length - 1 ? '1px solid rgba(255,69,0,0.15)' : 'none' }}>
+              <span style={{ color: 'var(--orange)', fontSize: '0.75rem', fontWeight: 'bold', letterSpacing: '0.12em' }}>{code}</span>
+              <span style={{ color: 'var(--muted)', fontSize: '0.7rem', letterSpacing: '0.06em' }}>{name}</span>
             </div>
           ))}
         </div>
