@@ -5,9 +5,23 @@ const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
+function actor(req) {
+  return req.user?.username || req.session?.user?.username || 'system';
+}
+
+function serializeAto(doc) {
+  if (!doc) return doc;
+  return {
+    ...doc,
+    open_findings: doc.openFindings ?? doc.open_findings ?? 0,
+    site_id: doc.siteId ?? doc.site_id ?? null,
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await db.atoPackage.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } }));
+    const docs = await db.atoPackage.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } });
+    res.json(docs.map(serializeAto));
   } catch (err) { next(err); }
 });
 
@@ -16,7 +30,7 @@ router.get('/:id', async (req, res, next) => {
     const doc = await db.atoPackage.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    res.json(doc);
+    res.json(serializeAto(doc));
   } catch (err) { next(err); }
 });
 
@@ -63,8 +77,8 @@ router.post('/', async (req, res, next) => {
         controls: controls || 0, openFindings: open_findings || 0, siteId,
       },
     });
-    await audit(req.session.user.username, 'ATO_ADD', id, `Added: ${system}`, siteId);
-    res.status(201).json(doc);
+    await audit(actor(req), 'ATO_ADD', id, `Added: ${system}`, siteId);
+    res.status(201).json(serializeAto(doc));
   } catch (err) { next(err); }
 });
 
@@ -72,7 +86,7 @@ router.patch('/:id', async (req, res, next) => {
   const FIELD_MAP = {
     system: 'system', category: 'category', status: 'status',
     issued: 'issued', expires: 'expires', ao: 'ao',
-    controls: 'controls', open_findings: 'openFindings',
+    controls: 'controls', open_findings: 'openFindings', openFindings: 'openFindings',
   };
   const data = {};
   for (const [k, pk] of Object.entries(FIELD_MAP)) {
@@ -86,9 +100,9 @@ router.patch('/:id', async (req, res, next) => {
     const siteId = req.resolveTenantSiteId(req.body);
     if (siteId) data.siteId = siteId;
     const updated = await db.atoPackage.update({ where: { id: req.params.id }, data });
-    await audit(req.session.user.username, 'ATO_UPDATE', req.params.id,
+    await audit(actor(req), 'ATO_UPDATE', req.params.id,
       `Updated: ${Object.keys(data).join(', ')}`, updated.siteId);
-    res.json(updated);
+    res.json(serializeAto(updated));
   } catch (err) { next(err); }
 });
 
@@ -98,7 +112,7 @@ router.delete('/:id', async (req, res, next) => {
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     await db.atoPackage.delete({ where: { id: req.params.id } });
-    await audit(req.session.user.username, 'ATO_DELETE', req.params.id, 'Deleted', doc.siteId);
+    await audit(actor(req), 'ATO_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

@@ -43,6 +43,18 @@ const EMPTY = {
   conmon_status: 'Open', conmon_group: '', conmon_frequency: '',
 };
 
+function toFormState(row = {}) {
+  return {
+    ...EMPTY,
+    ...row,
+    last_review: row.last_review ?? row.lastReview ?? '',
+    implementation_guidance: row.implementation_guidance ?? row.implementationGuidance ?? '',
+    conmon_status: row.conmon_status ?? row.conmonStatus ?? 'Open',
+    conmon_group: row.conmon_group ?? row.conmonGroup ?? '',
+    conmon_frequency: row.conmon_frequency ?? row.conmonFrequency ?? '',
+  };
+}
+
 /* ── Add / Edit form ── */
 function ControlForm({ value, onChange, isNew }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
@@ -242,8 +254,13 @@ export default function ControlsPage() {
     return matchSearch && matchStatus && matchConMon;
   });
 
-  function openCreate()  { setForm(EMPTY); setModal('create'); }
-  function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
+  function resetErrors() {
+    create.reset();
+    update.reset();
+  }
+
+  function openCreate()  { resetErrors(); setForm(EMPTY); setModal('create'); }
+  function openEdit(row) { resetErrors(); setForm(toFormState(row)); setEditing(row.id); setModal('edit'); }
   function openView(row) { setViewing(row); setModal('view'); }
   function handleSubmit(e) {
     e.preventDefault();
@@ -272,6 +289,8 @@ export default function ControlsPage() {
       </div>
     )},
   ];
+
+  const mutationError = create.error?.response?.data?.error || update.error?.response?.data?.error || create.error?.message || update.error?.message;
 
   if (isLoading) return <LoadingSpinner />;
   if (isError) {
@@ -362,6 +381,11 @@ export default function ControlsPage() {
         <Modal title={modal === 'create' ? 'Add Control' : 'Edit Control'} onClose={() => setModal(null)} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">
             <ControlForm value={form} onChange={setForm} isNew={modal === 'create'} />
+            {mutationError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+                {mutationError}
+              </div>
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
               <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending}>Save</button>

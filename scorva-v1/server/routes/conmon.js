@@ -23,7 +23,7 @@ function normalizeStatus(input) {
 }
 
 function normalizeControl(input, siteId) {
-  const controlId    = String(input.controlID ?? input.control_id ?? '').trim();
+  const controlId    = String(input.controlID ?? input.controlId ?? input.control_id ?? '').trim();
   const controlTitle = String(input.controlTitle ?? input.control_title ?? '').trim();
   const family       = String(input.family ?? '').trim();
   const dueDate      = String(input.dueDate ?? input.due_date ?? '').trim();

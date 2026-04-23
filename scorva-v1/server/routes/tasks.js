@@ -5,6 +5,10 @@ const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
+function actor(req) {
+  return req.user?.username || req.session?.user?.username || 'system';
+}
+
 function serializeTask(doc) {
   if (!doc) return doc;
   return {
@@ -26,11 +30,11 @@ router.get('/', async (req, res, next) => {
 
 router.get('/mine', async (req, res, next) => {
   try {
-    const username = req.session.user?.username;
+    const username = req.user?.username || req.session?.user?.username;
     if (!username) return res.json([]);
 
     const userDoc     = await db.user.findUnique({ where: { username }, select: { name: true, email: true } });
-    const displayName = userDoc?.name || req.session.user?.name;
+    const displayName = userDoc?.name || req.user?.name || req.session?.user?.name;
 
     const assigneeVals = [username];
     if (displayName && displayName !== username) assigneeVals.push(displayName);
@@ -71,10 +75,10 @@ router.post('/', async (req, res, next) => {
         activityId: activity_id || null,
         created: new Date().toISOString().split('T')[0],
         source: null, sourceId: null,
-        createdBy: req.session.user?.username || null,
+        createdBy: actor(req),
       },
     });
-    await audit(req.session.user.username, 'TASK_ADD', id, `Added: ${title}`, siteId);
+    await audit(actor(req), 'TASK_ADD', id, `Added: ${title}`, siteId);
     res.status(201).json(serializeTask(doc));
   } catch (err) { next(err); }
 });
@@ -124,7 +128,7 @@ router.patch('/:id', async (req, res, next) => {
       }
     }
 
-    await audit(req.session.user.username, 'TASK_UPDATE', req.params.id,
+    await audit(actor(req), 'TASK_UPDATE', req.params.id,
       `Updated: ${Object.keys(data).join(', ')}`, updated.siteId);
     res.json(serializeTask(updated));
   } catch (err) { next(err); }
@@ -136,7 +140,7 @@ router.delete('/:id', async (req, res, next) => {
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     await db.task.delete({ where: { id: req.params.id } });
-    await audit(req.session.user.username, 'TASK_DELETE', req.params.id, 'Deleted', doc.siteId);
+    await audit(actor(req), 'TASK_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

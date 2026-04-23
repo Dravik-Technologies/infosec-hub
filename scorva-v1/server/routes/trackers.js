@@ -6,6 +6,10 @@ const audit   = require('../middleware/audit');
 const { completeTasksForSource, ensureTaskForSource } = require('../utils/taskAutomation');
 const router  = express.Router();
 
+function actor(req) {
+  return req.user?.username || req.session?.user?.username || 'system';
+}
+
 function normalizeTrackerBody(body = {}) {
   return {
     name: body.name,
@@ -86,11 +90,11 @@ router.post('/', async (req, res, next) => {
       data: {
         ...payload,
         siteId: siteId || null,
-        createdBy: req.session.user.username,
+        createdBy: actor(req),
       },
     });
-    await syncTrackerTask(doc, req.session.user?.username || 'system');
-    await audit(req.session.user?.username || 'system', 'TRACKER_ADD', doc.id, `Added: ${doc.name}`, doc.siteId);
+    await syncTrackerTask(doc, actor(req));
+    await audit(actor(req), 'TRACKER_ADD', doc.id, `Added: ${doc.name}`, doc.siteId);
     res.status(201).json(serializeTracker(doc));
   } catch (err) { next(err); }
 });
@@ -112,9 +116,9 @@ router.patch('/:id', async (req, res, next) => {
     if (updated.status === 'Completed') {
       await completeTasksForSource('tracker', updated.id, `Tracker completed: ${updated.name}`);
     } else {
-      await syncTrackerTask(updated, req.session.user?.username || 'system');
+      await syncTrackerTask(updated, actor(req));
     }
-    await audit(req.session.user?.username || 'system', 'TRACKER_UPDATE', updated.id, `Updated: ${updated.name}`, updated.siteId);
+    await audit(actor(req), 'TRACKER_UPDATE', updated.id, `Updated: ${updated.name}`, updated.siteId);
     res.json(serializeTracker(updated));
   } catch (err) { next(err); }
 });
@@ -125,7 +129,7 @@ router.delete('/:id', async (req, res, next) => {
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (req.siteFilter && doc.siteId !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
     await db.tracker.delete({ where: { id: req.params.id } });
-    await audit(req.session.user?.username || 'system', 'TRACKER_DELETE', req.params.id, 'Deleted', doc.siteId);
+    await audit(actor(req), 'TRACKER_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });

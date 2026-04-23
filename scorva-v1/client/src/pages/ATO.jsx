@@ -15,6 +15,14 @@ import DonutChart       from '../components/ui/DonutChart';
 
 const EMPTY = { system: '', category: '', status: 'Pending Authorization', issued: '', expires: '', ao: '', controls: 0, open_findings: 0 };
 
+function toFormState(row = {}) {
+  return {
+    ...EMPTY,
+    ...row,
+    open_findings: row.open_findings ?? row.openFindings ?? 0,
+  };
+}
+
 function ATOForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
   return (
@@ -72,8 +80,8 @@ export default function ATOPage() {
   const update = useMutation({ mutationFn: ({ id, d }) => api.ato.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
   const remove = useMutation({ mutationFn: api.ato.remove, onSuccess: () => { invalidate(); setDelId(null); } });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
-  function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
+  function openCreate() { create.reset(); update.reset(); setForm(EMPTY); setModal('create'); }
+  function openEdit(row) { create.reset(); update.reset(); setForm(toFormState(row)); setEditing(row.id); setModal('edit'); }
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -96,6 +104,8 @@ export default function ATOPage() {
       </div>
     )},
   ];
+
+  const mutationError = create.error?.response?.data?.error || update.error?.response?.data?.error || create.error?.message || update.error?.message;
 
   if (isLoading) return <LoadingSpinner />;
   if (isError) {
@@ -195,12 +205,17 @@ export default function ATOPage() {
         </div>
       </StatusDashboard>
       <div className="mt-6">
-      <Table columns={cols} data={data} />
+      <Table columns={cols} data={data} onRowClick={openEdit} />
 
       {modal && (
         <Modal title={modal === 'create' ? 'New ATO' : 'Edit ATO'} onClose={() => setModal(null)}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <ATOForm value={form} onChange={setForm} />
+            {mutationError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+                {mutationError}
+              </div>
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
               <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending}>Save</button>

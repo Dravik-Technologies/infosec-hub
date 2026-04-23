@@ -5,9 +5,27 @@ const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
+function actor(req) {
+  return req.user?.username || req.session?.user?.username || 'system';
+}
+
+function serializeControl(doc) {
+  if (!doc) return doc;
+  return {
+    ...doc,
+    last_review: doc.lastReview ?? doc.last_review ?? null,
+    implementation_guidance: doc.implementationGuidance ?? doc.implementation_guidance ?? null,
+    conmon_status: doc.conmonStatus ?? doc.conmon_status ?? 'Open',
+    conmon_group: doc.conmonGroup ?? doc.conmon_group ?? null,
+    conmon_frequency: doc.conmonFrequency ?? doc.conmon_frequency ?? null,
+    site_id: doc.siteId ?? doc.site_id ?? null,
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await db.control.findMany({ where: req.applyTenantFilter({}) }));
+    const docs = await db.control.findMany({ where: req.applyTenantFilter({}) });
+    res.json(docs.map(serializeControl));
   } catch (err) { next(err); }
 });
 
@@ -52,7 +70,7 @@ router.get('/:id', async (req, res, next) => {
     const doc = await db.control.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    res.json(doc);
+    res.json(serializeControl(doc));
   } catch (err) { next(err); }
 });
 
@@ -110,7 +128,7 @@ router.post('/bulk', async (req, res, next) => {
     }
   } catch (err) { return next(err); }
 
-  await audit(req.session.user.username, 'CONTROLS_BULK_IMPORT', 'bulk',
+  await audit(actor(req), 'CONTROLS_BULK_IMPORT', 'bulk',
     `Bulk import: ${overwrite ? overwritten : inserted} added, ${skipped} skipped`,
     siteId || req.tenantSiteId || null);
 
@@ -139,17 +157,19 @@ router.post('/', async (req, res, next) => {
         siteId,
       },
     });
-    await audit(req.session.user.username, 'CONTROL_ADD', id, `Added: ${title}`, siteId);
-    res.status(201).json(doc);
+    await audit(actor(req), 'CONTROL_ADD', id, `Added: ${title}`, siteId);
+    res.status(201).json(serializeControl(doc));
   } catch (err) { next(err); }
 });
 
 router.patch('/:id', async (req, res, next) => {
   const FIELD_MAP = {
     title: 'title', family: 'family', status: 'status', baseline: 'baseline',
-    last_review: 'lastReview', findings: 'findings', notes: 'notes',
-    description: 'description', implementation_guidance: 'implementationGuidance',
-    conmon_status: 'conmonStatus', conmon_group: 'conmonGroup', conmon_frequency: 'conmonFrequency',
+    last_review: 'lastReview', lastReview: 'lastReview', findings: 'findings', notes: 'notes',
+    description: 'description', implementation_guidance: 'implementationGuidance', implementationGuidance: 'implementationGuidance',
+    conmon_status: 'conmonStatus', conmonStatus: 'conmonStatus',
+    conmon_group: 'conmonGroup', conmonGroup: 'conmonGroup',
+    conmon_frequency: 'conmonFrequency', conmonFrequency: 'conmonFrequency',
   };
   const data = {};
   for (const [k, pk] of Object.entries(FIELD_MAP)) {
@@ -184,9 +204,9 @@ router.patch('/:id', async (req, res, next) => {
       }
     }
 
-    await audit(req.session.user.username, 'CONTROL_UPDATE', req.params.id,
+    await audit(actor(req), 'CONTROL_UPDATE', req.params.id,
       `Updated: ${Object.keys(data).join(', ')}`, doc.siteId);
-    res.json(doc);
+    res.json(serializeControl(doc));
   } catch (err) { next(err); }
 });
 
@@ -196,7 +216,7 @@ router.delete('/:id', async (req, res, next) => {
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     await db.control.delete({ where: { id: req.params.id } });
-    await audit(req.session.user.username, 'CONTROL_DELETE', req.params.id, 'Deleted', doc.siteId);
+    await audit(actor(req), 'CONTROL_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });
   } catch (err) { next(err); }
 });
