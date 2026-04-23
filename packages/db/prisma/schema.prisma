@@ -19,19 +19,20 @@ model Site {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users          User[]
-  controls       Control[]
-  tasks          Task[]
-  poams          Poam[]
-  atoPackages    AtoPackage[]
-  conmons        ConMon[]
-  workstations   Workstation[]
-  yubiKeys       YubiKey[]
-  licenses       License[]
-  agreements     Agreement[]
-  notifications  Notification[]
-  trackers       Tracker[]
-  projectSystems ProjectSystem[]
+  users           User[]
+  controls        Control[]
+  tasks           Task[]
+  poams           Poam[]
+  atoPackages     AtoPackage[]
+  conmons         ConMon[]
+  workstations    Workstation[]
+  yubiKeys        YubiKey[]
+  licenses        License[]
+  agreements      Agreement[]
+  notifications   Notification[]
+  trackers        Tracker[]
+  projectSystems  ProjectSystem[]
+  securityEvents  SecurityEvent[]
 
   @@map("sites")
 }
@@ -129,6 +130,8 @@ model Poam {
   comments            String?
   completedDate       String?  @map("completed_date")
   closedDate          String?  @map("closed_date")
+  riskDecision        String?  @map("risk_decision")
+  riskRationale       String?  @map("risk_rationale")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
@@ -273,6 +276,22 @@ model Notification {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("notifications")
+}
+
+model SecurityEvent {
+  id          String   @id
+  type        String   @default("Other")
+  severity    String   @default("Medium")
+  source      String?
+  assetId     String?  @map("asset_id")
+  description String?
+  status      String   @default("New")
+  siteId      String   @map("site_id")
+  site        Site     @relation(fields: [siteId], references: [id])
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("security_events")
 }
 
 model Tracker {

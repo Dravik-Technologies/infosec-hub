@@ -8,7 +8,16 @@ import Badge         from '../components/ui/Badge';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2, Search, Upload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Upload, Download } from 'lucide-react';
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
@@ -214,9 +223,10 @@ export default function ControlsPage() {
   const [filterConMon, setFilterConMon] = useState('All');
   const [importOpen,   setImportOpen]  = useState(false);
 
-  const create = useMutation({ mutationFn: api.controls.create, onSuccess: () => { qc.invalidateQueries(['controls']); setModal(null); } });
-  const update = useMutation({ mutationFn: ({ id, d }) => api.controls.update(id, d), onSuccess: () => { qc.invalidateQueries(['controls']); qc.invalidateQueries(['conmon']); setModal(null); } });
-  const remove = useMutation({ mutationFn: api.controls.remove, onSuccess: () => { qc.invalidateQueries(['controls']); setDelId(null); } });
+  const create      = useMutation({ mutationFn: api.controls.create, onSuccess: () => { qc.invalidateQueries(['controls']); setModal(null); } });
+  const update      = useMutation({ mutationFn: ({ id, d }) => api.controls.update(id, d), onSuccess: () => { qc.invalidateQueries(['controls']); qc.invalidateQueries(['conmon']); setModal(null); } });
+  const remove      = useMutation({ mutationFn: api.controls.remove, onSuccess: () => { qc.invalidateQueries(['controls']); setDelId(null); } });
+  const exportXlsx  = useMutation({ mutationFn: api.reports.controls, onSuccess: ({ blob, filename }) => triggerDownload(blob, filename) });
 
   const sorted = [...data].sort((a, b) =>
     (a.id ?? '').localeCompare(b.id ?? '', undefined, { numeric: true, sensitivity: 'base' })
@@ -282,6 +292,9 @@ export default function ControlsPage() {
           <div className="flex gap-2">
             <button className="btn-secondary flex items-center gap-1.5" onClick={() => setImportOpen(true)}>
               <Upload size={14} /> Import
+            </button>
+            <button className="btn-secondary flex items-center gap-1.5" onClick={() => exportXlsx.mutate()} disabled={exportXlsx.isPending} title="Export controls to Excel">
+              <Download size={14} className={exportXlsx.isPending ? 'animate-pulse' : ''} /> Export
             </button>
             <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}>
               <Plus size={15} /> Add Control

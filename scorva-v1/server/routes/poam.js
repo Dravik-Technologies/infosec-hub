@@ -137,6 +137,7 @@ router.patch('/:id', async (req, res, next) => {
     scheduled_completion: 'scheduledCompletion', milestones: 'milestones',
     ato_id: 'atoId', poam_type: 'poamType', comments: 'comments',
     completed_date: 'completedDate', closed_date: 'closedDate',
+    risk_decision: 'riskDecision', risk_rationale: 'riskRationale',
   };
   const data = {};
   for (const [k, pk] of Object.entries(FIELD_MAP)) {

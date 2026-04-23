@@ -2,6 +2,7 @@
 
 const express = require('express');
 const { db }  = require('../../../packages/db/src/index');
+const { buildNotificationId } = require('../utils/notificationIds');
 const router  = express.Router();
 
 router.get('/', async (req, res, next) => {
@@ -33,12 +34,8 @@ router.post('/', async (req, res, next) => {
   const { type, title, message } = req.body;
   const siteId = req.resolveTenantSiteId(req.body);
   try {
-    const last    = await db.notification.findFirst({ orderBy: { createdAt: 'desc' }, select: { id: true } });
-    const lastNum = last ? parseInt(last.id.replace('N-', '')) || 0 : 0;
-    const id      = 'N-' + String(lastNum + 1).padStart(3, '0');
-
     const doc = await db.notification.create({
-      data: { id, type: type || 'info', title, message: message || null, siteId: siteId || null },
+      data: { id: buildNotificationId(), type: type || 'info', title, message: message || null, siteId: siteId || null },
     });
     res.status(201).json(doc);
   } catch (err) { next(err); }

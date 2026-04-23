@@ -29,6 +29,13 @@ const trackersRouter = require('./routes/trackers');
 const notificationsRouter = require('./routes/notifications');
 const sitesRouter = require('./routes/sites');
 const threatsRouter = require('./routes/threats');
+const metricsRouter        = require('./routes/metrics');
+const reportsRouter        = require('./routes/reports');
+const securityEventsRouter = require('./routes/security-events');
+const aggregateRouter      = require('./routes/aggregate');
+
+const poamAgingJob  = require('./jobs/poamAging');
+const cveAlertingJob = require('./jobs/cveAlerting');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -83,6 +90,10 @@ app.use('/api/yubikeys', requireAuth, tenantHandler, missionSiteScope, yubikeysR
 app.use('/api/licenses', requireAuth, tenantHandler, missionSiteScope, licensesRouter);
 app.use('/api/audit', requireAuth, tenantHandler, missionSiteScope, auditRouter);
 app.use('/api/notifications', requireAuth, tenantHandler, notificationsRouter);
+app.use('/api/metrics', requireAuth, tenantHandler, metricsRouter);
+app.use('/api/reports', requireAuth, tenantHandler, reportsRouter);
+app.use('/api/security-events', requireAuth, tenantHandler, securityEventsRouter);
+app.use('/api/aggregate', requireAuth, aggregateRouter);
 app.use('/api/sites', requireAuth, sitesRouter);
 app.use('/api/threats', requireAuth, threatsRouter);
 
@@ -108,4 +119,6 @@ app.use((err, _req, res, _next) => {
 
 app.listen(PORT, () => {
   console.log(`[SCORVA] Server on port ${PORT} (${process.env.NODE_ENV || 'development'})`);
+  poamAgingJob.start();
+  cveAlertingJob.start();
 });

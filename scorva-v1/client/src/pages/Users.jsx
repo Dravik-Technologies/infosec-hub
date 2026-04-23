@@ -31,6 +31,21 @@ const EMPTY = {
   dod_8140: { baseline: '', cert_name: '', cert_expiry: '', status: 'Pending' },
 };
 
+function normalizeUserForForm(row) {
+  return {
+    ...row,
+    id: row.id || row._id || '',
+    siteIDs: Array.isArray(row.siteIDs) && row.siteIDs.length
+      ? row.siteIDs
+      : (Array.isArray(row.siteIds) && row.siteIds.length ? row.siteIds : (row.site ? [row.site] : [])),
+    site: row.site || row.siteID || row.siteId || '',
+    password: '',
+    training_compliant: row.training_compliant ?? row.trainingCompliant ?? false,
+    training_due: row.training_due ?? row.trainingDue ?? '',
+    dod_8140: row.dod_8140 ?? row.dod8140 ?? { baseline: '', cert_name: '', cert_expiry: '', status: 'Pending' },
+  };
+}
+
 /* ── Edit / Create Form ── */
 function UserForm({ value, onChange, isNew, sites }) {
   const f   = (k, v)      => onChange({ ...value, [k]: v });
@@ -169,8 +184,11 @@ function UserForm({ value, onChange, isNew, sites }) {
 function UserDetailModal({ user, onEdit, onClose }) {
   const isAdmin = ADMIN_ROLES.includes(user.role);
   const today   = new Date().toISOString().split('T')[0];
-  const trainingOverdue = user.training_due && user.training_due < today && !user.training_compliant;
-  const certExpired = user.dod_8140?.cert_expiry && user.dod_8140.cert_expiry < today;
+  const trainingDue = user.training_due ?? user.trainingDue;
+  const trainingCompliant = user.training_compliant ?? user.trainingCompliant;
+  const dod8140 = user.dod_8140 ?? user.dod8140;
+  const trainingOverdue = trainingDue && trainingDue < today && !trainingCompliant;
+  const certExpired = dod8140?.cert_expiry && dod8140.cert_expiry < today;
 
   function Row({ label, value, mono }) {
     return (
@@ -192,7 +210,7 @@ function UserDetailModal({ user, onEdit, onClose }) {
           <Row label="Title"    value={user.title} />
           <Row label="Username" value={user.username}  mono />
           <Row label="Email"    value={user.email} />
-          <Row label="Sites"    value={Array.isArray(user.siteIDs) && user.siteIDs.length ? user.siteIDs.join(', ') : user.site} />
+          <Row label="Sites"    value={Array.isArray(user.siteIDs) && user.siteIDs.length ? user.siteIDs.join(', ') : (Array.isArray(user.siteIds) && user.siteIds.length ? user.siteIds.join(', ') : user.site)} />
         </div>
 
         {/* Access */}
@@ -206,7 +224,7 @@ function UserDetailModal({ user, onEdit, onClose }) {
             <span className="text-xs text-scorva-muted w-36 shrink-0">Status</span>
             <Badge label={user.status} />
           </div>
-          <Row label="Last Login" value={user.last_login ? user.last_login.split('T')[0] : null} mono />
+          <Row label="Last Login" value={(user.last_login || user.lastLogin) ? (user.last_login || user.lastLogin).split('T')[0] : null} mono />
         </div>
 
         {/* Training */}
@@ -214,12 +232,12 @@ function UserDetailModal({ user, onEdit, onClose }) {
           <p className="text-[10px] font-semibold text-scorva-muted uppercase tracking-widest mb-2">Annual Training</p>
           <div className="flex justify-between items-start py-2 border-b border-scorva-border/50">
             <span className="text-xs text-scorva-muted w-36 shrink-0">Status</span>
-            {user.training_compliant
+            {trainingCompliant
               ? <span className="flex items-center gap-1 text-xs text-emerald-400"><CheckCircle size={13} /> Complete</span>
               : <span className="flex items-center gap-1 text-xs text-red-400"><XCircle size={13} /> {trainingOverdue ? 'Overdue' : 'Incomplete'}</span>
             }
           </div>
-          <Row label="Due Date" value={user.training_due} mono />
+          <Row label="Due Date" value={trainingDue} mono />
         </div>
 
         {/* DoD 8140 — admins only */}
@@ -231,17 +249,17 @@ function UserDetailModal({ user, onEdit, onClose }) {
             </div>
             <div className="flex justify-between items-start py-2 border-b border-scorva-border/50">
               <span className="text-xs text-scorva-muted w-36 shrink-0">8140 Status</span>
-              {user.dod_8140?.status
-                ? <Badge label={user.dod_8140.status} />
+              {dod8140?.status
+                ? <Badge label={dod8140.status} />
                 : <span className="text-xs text-scorva-muted">—</span>
               }
             </div>
-            <Row label="Baseline"      value={user.dod_8140?.baseline} />
-            <Row label="Certification" value={user.dod_8140?.cert_name} />
+            <Row label="Baseline"      value={dod8140?.baseline} />
+            <Row label="Certification" value={dod8140?.cert_name} />
             <div className="flex justify-between items-start py-2">
               <span className="text-xs text-scorva-muted w-36 shrink-0">Cert Expiry</span>
               <span className={`text-xs font-mono ${certExpired ? 'text-red-400' : 'text-scorva-text'}`}>
-                {user.dod_8140?.cert_expiry || '—'}
+                {dod8140?.cert_expiry || '—'}
                 {certExpired && ' (Expired)'}
               </span>
             </div>
@@ -290,13 +308,7 @@ export default function UsersPage() {
   function openCreate() { setForm(EMPTY); setFormError(''); setModal('create'); }
   function openEdit(row) {
     setDetail(null);
-    setForm({
-      ...row,
-      id: row.id || row._id || '',
-      siteIDs: Array.isArray(row.siteIDs) && row.siteIDs.length ? row.siteIDs : (row.site ? [row.site] : []),
-      password: '',
-      dod_8140: row.dod_8140 || { baseline: '', cert_name: '', cert_expiry: '', status: 'Pending' },
-    });
+    setForm(normalizeUserForForm(row));
     setEditing(row.id);
     setFormError('');
     setModal('edit');
@@ -322,19 +334,27 @@ export default function UsersPage() {
     { key: 'id',       label: 'ID',           width: 90,  render: v => <span className="font-mono text-xs text-scorva-muted">{v}</span> },
     { key: 'name',     label: 'Name',          render: v => <span className="text-xs font-medium text-scorva-text">{v}</span> },
     { key: 'title',    label: 'Title',          render: v => <span className="text-xs text-scorva-muted">{v || '—'}</span> },
-    { key: 'siteIDs',  label: 'Sites',          render: (v, row) => <span className="text-xs">{Array.isArray(v) && v.length ? v.join(', ') : (row.site || '—')}</span> },
+    { key: 'siteIDs',  label: 'Sites',          render: (v, row) => <span className="text-xs">{Array.isArray(v) && v.length ? v.join(', ') : (Array.isArray(row.siteIds) && row.siteIds.length ? row.siteIds.join(', ') : (row.site || '—'))}</span> },
     { key: 'username', label: 'Username',       render: v => <span className="font-mono text-xs">{v}</span> },
     { key: 'email',    label: 'Email',          render: v => <span className="text-xs">{v}</span> },
     { key: 'role',     label: 'Role',           render: v => <Badge label={v} /> },
     { key: 'status',   label: 'Status',         render: v => <Badge label={v} /> },
     { key: 'training_compliant', label: 'Training', width: 80, render: (v, row) => {
-      const overdue = !v && row.training_due && row.training_due < today;
-      return v
+      const trainingCompliant = v ?? row.trainingCompliant;
+      const trainingDue = row.training_due ?? row.trainingDue;
+      const overdue = !trainingCompliant && trainingDue && trainingDue < today;
+      return trainingCompliant
         ? <CheckCircle size={15} className="text-emerald-400" />
         : <XCircle size={15} className={overdue ? 'text-red-400' : 'text-yellow-400'} />;
     }},
-    { key: 'training_due', label: 'Training Due', render: v => <span className={`font-mono text-xs ${v && v < today ? 'text-red-400' : ''}`}>{v || '—'}</span> },
-    { key: 'last_login',   label: 'Last Login',   render: v => <span className="font-mono text-xs">{v ? v.split('T')[0] : '—'}</span> },
+    { key: 'training_due', label: 'Training Due', render: (v, row) => {
+      const trainingDue = v ?? row.trainingDue;
+      return <span className={`font-mono text-xs ${trainingDue && trainingDue < today ? 'text-red-400' : ''}`}>{trainingDue || '—'}</span>;
+    }},
+    { key: 'last_login',   label: 'Last Login',   render: (v, row) => {
+      const lastLogin = v ?? row.lastLogin;
+      return <span className="font-mono text-xs">{lastLogin ? lastLogin.split('T')[0] : '—'}</span>;
+    }},
     ...(isAdmin ? [{ key: '_actions', label: '', render: (_, row) => (
       <div className="flex gap-2" onClick={e => e.stopPropagation()}>
         <button className="p-1.5 rounded text-scorva-muted hover:text-scorva-accent hover:bg-scorva-hover" onClick={() => openEdit(row)}><Pencil size={13} /></button>
@@ -356,7 +376,7 @@ export default function UsersPage() {
   const viewer    = data.filter(r => r.role === 'Viewer').length;
 
   const activeUsers     = data.filter(r => r.status === 'Active');
-  const trainedCount    = activeUsers.filter(r => r.training_compliant).length;
+  const trainedCount    = activeUsers.filter(r => r.training_compliant ?? r.trainingCompliant).length;
   const notTrainedCount = activeUsers.length - trainedCount;
   const trainingPct     = activeUsers.length ? Math.round((trainedCount / activeUsers.length) * 100) : 0;
 

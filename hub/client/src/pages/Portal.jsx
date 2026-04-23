@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import {
-  Shield, ShieldCheck, FileText, BarChart3, Database, Flame,
+  Shield, ShieldCheck, FileText, BarChart3, Flame,
   Sun, Moon, LogOut, ExternalLink, ArrowRight,
   Search, Tag, ChevronRight, Loader2,
 } from 'lucide-react';
 
-const ICON_MAP = { ShieldCheck, FileText, BarChart3, Database, Shield, Flame };
+const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame };
 
 const APPS = [
   {
@@ -53,20 +53,6 @@ const APPS = [
     badge:   null,
   },
   {
-    id:      'data-fabric',
-    name:    'Data Fabric',
-    tagline: 'CIM-ARC Data Platform',
-    desc:    'CIM-ARC team portal featuring project reports, schedules, photo gallery, digital PMR, and team directory.',
-    url:     'http://localhost:8081',
-    ssoPath: '/sso',
-    color:   'cyan',
-    icon:    'Database',
-    team:    'Data Engineering',
-    status:  'live',
-    tags:    ['CIM-ARC', 'Reports', 'PMR', 'Data'],
-    badge:   null,
-  },
-  {
     id:      'lava',
     name:    'LAVA',
     tagline: 'Network Access Portal',
@@ -81,8 +67,6 @@ const APPS = [
     badge:   null,
   },
 ];
-
-const ALL_TEAMS = ['All', ...new Set(APPS.map(a => a.team))];
 
 const COLOR_MAP = {
   teal: {
@@ -129,6 +113,7 @@ export default function Portal() {
   const [team,      setTeam]      = useState('All');
   const [launching, setLaunching] = useState(null);
   const [apps,      setApps]      = useState(APPS);
+  const teams = ['All', ...new Set(apps.map(app => app.team))];
 
   // Keep app list in sync with the server so ssoPath changes take effect
   // without a client rebuild.
@@ -230,7 +215,7 @@ export default function Portal() {
               </div>
               <div className="flex items-center gap-2 text-xs font-mono text-scorva-muted shrink-0">
                 <span className="px-2 py-1 rounded bg-scorva-hover border border-scorva-border">
-                  {APPS.length} apps available
+                  {apps.length} apps available
                 </span>
               </div>
             </div>
@@ -254,7 +239,7 @@ export default function Portal() {
             {/* Team filter */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <Tag size={12} className="text-scorva-muted shrink-0" />
-              {ALL_TEAMS.map(t => (
+              {teams.map(t => (
                 <button
                   key={t}
                   onClick={() => setTeam(t)}

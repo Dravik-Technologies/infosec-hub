@@ -23,6 +23,37 @@ function normalizeSites(payload) {
   return [...new Set(merged)];
 }
 
+function pickFirstDefined(...values) {
+  return values.find(v => v !== undefined);
+}
+
+function coerceBoolean(value, fallback = false) {
+  if (value === undefined || value === null || value === '') return fallback;
+  if (typeof value === 'boolean') return value;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    if (['true', '1', 'yes', 'on'].includes(normalized)) return true;
+    if (['false', '0', 'no', 'off'].includes(normalized)) return false;
+  }
+  if (typeof value === 'number') return value !== 0;
+  if (typeof value === 'object') {
+    if ('checked' in value) return coerceBoolean(value.checked, fallback);
+    if ('value' in value) return coerceBoolean(value.value, fallback);
+  }
+  return fallback;
+}
+
+function normalizeUserPayload(payload) {
+  return {
+    trainingCompliant: coerceBoolean(
+      pickFirstDefined(payload.training_compliant, payload.trainingCompliant),
+      false
+    ),
+    trainingDue: pickFirstDefined(payload.training_due, payload.trainingDue) || null,
+    dod8140: pickFirstDefined(payload.dod_8140, payload.dod8140) ?? null,
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
     const where = req.applyTenantFilter({});
@@ -40,11 +71,11 @@ router.get('/:id', async (req, res, next) => {
 });
 
 router.post('/', adminOnly, async (req, res, next) => {
-  const { id, name, title, username, email, password, role, status,
-          training_compliant, training_due, dod_8140 } = req.body;
+  const { id, name, title, username, email, password, role, status } = req.body;
   const manualId = (id || '').trim();
   const siteIds  = normalizeSites(req.body);
   const siteId   = siteIds[0] || null;
+  const { trainingCompliant, trainingDue, dod8140 } = normalizeUserPayload(req.body);
 
   if (!manualId) return res.status(400).json({ error: 'id is required' });
   if (!password) return res.status(400).json({ error: 'password is required' });
@@ -61,9 +92,9 @@ router.post('/', adminOnly, async (req, res, next) => {
         email: email.toLowerCase(),
         passwordHash, role: role || 'Viewer',
         siteId, siteIds, status: status || 'Active',
-        trainingCompliant: training_compliant || false,
-        trainingDue: training_due || null,
-        dod8140: dod_8140 ?? null,
+        trainingCompliant,
+        trainingDue,
+        dod8140,
       },
     });
     await audit(req.session.user.username, 'USER_CREATE', manualId, `Created user: ${username}`, siteId);
@@ -73,13 +104,23 @@ router.post('/', adminOnly, async (req, res, next) => {
 
 router.patch('/:id', adminOnly, async (req, res, next) => {
   const ALLOWED = ['name','title','email','role','status','yubikey','workstation',
-                   'training_compliant','training_due','dod_8140'];
+                   'training_compliant','training_due','dod_8140',
+                   'trainingCompliant','trainingDue','dod8140'];
   const data = {};
   for (const key of ALLOWED) {
     if (key in req.body) {
       const prismaKey = key.replace(/_(\w)/g, (_, c) => c.toUpperCase());
       data[prismaKey] = req.body[key];
     }
+  }
+  if ('training_compliant' in req.body || 'trainingCompliant' in req.body) {
+    data.trainingCompliant = normalizeUserPayload(req.body).trainingCompliant;
+  }
+  if ('training_due' in req.body || 'trainingDue' in req.body) {
+    data.trainingDue = normalizeUserPayload(req.body).trainingDue;
+  }
+  if ('dod_8140' in req.body || 'dod8140' in req.body) {
+    data.dod8140 = normalizeUserPayload(req.body).dod8140;
   }
   if (req.body.password) {
     data.passwordHash = await bcrypt.hash(req.body.password, 12);

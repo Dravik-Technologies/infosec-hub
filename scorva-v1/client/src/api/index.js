@@ -115,5 +115,27 @@ export const api = {
   // Sites
   sites:       { list: () => get('/api/sites'), create: d => post('/api/sites', d), update: (id, d) => patch(`/api/sites/${id}`, d), remove: id => del(`/api/sites/${id}`) },
   // Threat Intel (NVD CVE feed — proxied via backend)
-  threats:     { latest: () => get('/api/threats/latest') },
+  threats:  { latest: () => get('/api/threats/latest') },
+  // ConMon Metrics & KPIs
+  metrics:  { get: () => get('/api/metrics') },
+  // Security Events
+  securityEvents: {
+    list:   () => get('/api/security-events'),
+    create: d  => post('/api/security-events', d),
+    update: (id, d) => patch(`/api/security-events/${id}`, d),
+    remove: id => del(`/api/security-events/${id}`),
+  },
+  // ISSM Program View (cross-site aggregate)
+  aggregate: { metrics: () => get('/api/aggregate/metrics') },
+  // Excel report exports (return raw blob + suggested filename)
+  reports:  {
+    poam:     () => http.get('/api/reports/poam',     { responseType: 'blob' }).then(r => ({ blob: r.data, filename: extractFilename(r, 'POAM_Report.xlsx') })),
+    controls: () => http.get('/api/reports/controls', { responseType: 'blob' }).then(r => ({ blob: r.data, filename: extractFilename(r, 'Controls_Report.xlsx') })),
+  },
 };
+
+function extractFilename(response, fallback) {
+  const cd = response.headers['content-disposition'] || '';
+  const match = cd.match(/filename="?([^";\n]+)"?/i);
+  return match ? match[1] : fallback;
+}

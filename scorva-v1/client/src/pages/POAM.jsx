@@ -8,13 +8,22 @@ import Badge         from '../components/ui/Badge';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2, RefreshCw } from 'lucide-react';
+import { Plus, Pencil, Trash2, RefreshCw, Download } from 'lucide-react';
 import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
 
-const EMPTY = { title: '', weakness: '', severity: 'Medium', status: 'Open', responsible_party: '', scheduled_completion: '', poam_type: '', comments: '' };
+const EMPTY = { title: '', weakness: '', severity: 'Medium', status: 'Open', responsible_party: '', scheduled_completion: '', poam_type: '', comments: '', risk_decision: '', risk_rationale: '' };
+
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href    = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function POAMForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
@@ -52,9 +61,20 @@ function POAMForm({ value, onChange }) {
         <label className="block text-xs text-scorva-muted mb-1">Responsible Party</label>
         <UserSelect value={value.responsible_party || ''} onChange={v => f('responsible_party', v)} placeholder="Select responsible party…" />
       </div>
-      <div className="col-span-2">
+      <div>
+        <label className="block text-xs text-scorva-muted mb-1">Risk Decision</label>
+        <select className="input-base" value={value.risk_decision || ''} onChange={e => f('risk_decision', e.target.value)}>
+          <option value="">— None —</option>
+          {['Mitigate', 'Accept', 'Transfer', 'Avoid'].map(s => <option key={s}>{s}</option>)}
+        </select>
+      </div>
+      <div>
         <label className="block text-xs text-scorva-muted mb-1">Comments</label>
         <textarea className="input-base resize-none" rows={2} value={value.comments || ''} onChange={e => f('comments', e.target.value)} />
+      </div>
+      <div className="col-span-2">
+        <label className="block text-xs text-scorva-muted mb-1">Risk Rationale</label>
+        <textarea className="input-base resize-none" rows={2} value={value.risk_rationale || ''} onChange={e => f('risk_rationale', e.target.value)} />
       </div>
     </div>
   );
@@ -80,6 +100,10 @@ export default function POAMPage() {
   const backfill = useMutation({
     mutationFn: api.poam.backfillTasks,
     onSuccess: (r) => { invalidate(); alert(`Sync complete: ${r.created} task(s) created, ${r.skipped} already existed.`); },
+  });
+  const exportXlsx = useMutation({
+    mutationFn: api.reports.poam,
+    onSuccess: ({ blob, filename }) => triggerDownload(blob, filename),
   });
 
   function openCreate() { setForm(EMPTY); setModal('create'); }
@@ -126,6 +150,9 @@ export default function POAMPage() {
           <div className="flex gap-2">
             <button className="btn-secondary flex items-center gap-1.5" onClick={() => backfill.mutate()} disabled={backfill.isPending} title="Create missing tasks for existing POAMs">
               <RefreshCw size={14} className={backfill.isPending ? 'animate-spin' : ''} /> Sync Tasks
+            </button>
+            <button className="btn-secondary flex items-center gap-1.5" onClick={() => exportXlsx.mutate()} disabled={exportXlsx.isPending} title="Export POAM report to Excel">
+              <Download size={14} className={exportXlsx.isPending ? 'animate-pulse' : ''} /> Export
             </button>
             <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} />New POAM</button>
           </div>

@@ -8,6 +8,7 @@ import {
   BookOpen, Users, Monitor, Key, ArrowRight, Shield,
   Clock, Zap, ExternalLink, RefreshCw, FileText, Package,
   LayoutGrid, ClipboardList, Bell, Building2, TrendingUp,
+  BarChart2,
 } from 'lucide-react';
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
@@ -97,6 +98,7 @@ export default function Dashboard() {
   const { data: notifs   = [] } = useQuery({ queryKey: ['notifications', siteScopeKey], queryFn: api.notifications.list, refetchInterval: 60_000 });
   const { data: auditResp }     = useQuery({ queryKey: ['audit', siteScopeKey],    queryFn: () => api.audit.list({ limit: 6 }), refetchInterval: 30_000 });
   const auditLog = auditResp?.rows ?? [];
+  const { data: metrics } = useQuery({ queryKey: ['metrics', siteScopeKey], queryFn: api.metrics.get, refetchInterval: 60_000 });
 
   const {
     data: threats = [],
@@ -189,6 +191,43 @@ export default function Dashboard() {
           ))}
         </div>
       </div>
+
+      {/* ── ConMon KPI Strip ── */}
+      {metrics && (
+        <div>
+          <SectionLabel>ConMon KPIs</SectionLabel>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <KpiTile
+              icon={AlertTriangle}
+              label="POAM Overdue"
+              value={`${metrics.poamAging.pctOverdue}%`}
+              sub={`${metrics.poamAging.overdueCount} of ${metrics.poamAging.open} open`}
+              warn={metrics.poamAging.overdueCount > 0}
+            />
+            <KpiTile
+              icon={Clock}
+              label="Avg Days Open"
+              value={metrics.poamAging.avgDaysOpen}
+              sub="open POA&Ms"
+              warn={metrics.poamAging.avgDaysOpen > 30}
+            />
+            <KpiTile
+              icon={BarChart2}
+              label="SLA On-Time"
+              value={metrics.remediationSla.pctOnTime != null ? `${metrics.remediationSla.pctOnTime}%` : 'N/A'}
+              sub={`${metrics.remediationSla.closedOnTime}/${metrics.remediationSla.closedWithDue} closed w/ due`}
+              good={metrics.remediationSla.pctOnTime >= 80}
+            />
+            <KpiTile
+              icon={BookOpen}
+              label="Controls Impl."
+              value={`${metrics.controlCoverage.pctImplemented}%`}
+              sub={`${metrics.controlCoverage.implemented}/${metrics.controlCoverage.total} implemented`}
+              accent
+            />
+          </div>
+        </div>
+      )}
 
       {/* ── Bottom row: Threat Feed (compact/scrollable) + Activity ── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -321,6 +360,22 @@ function SectionLabel({ children }) {
     <div className="flex items-center gap-2 mb-3">
       <span className="text-[10px] font-mono font-semibold text-scorva-muted uppercase tracking-widest">{children}</span>
       <div className="flex-1 h-px bg-scorva-border" />
+    </div>
+  );
+}
+
+function KpiTile({ icon: Icon, label, value, sub, warn = false, good = false, accent = false }) {
+  const color = accent ? 'text-scorva-accent' : good ? 'text-emerald-400' : warn ? 'text-orange-400' : 'text-scorva-text';
+  const iconBg = accent ? 'bg-scorva-accent/15 text-scorva-accent' : good ? 'bg-emerald-500/15 text-emerald-400' : warn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted';
+  const border = accent ? 'border-scorva-accent/30' : good ? 'border-emerald-500/20' : warn ? 'border-orange-500/25' : '';
+  return (
+    <div className={`card p-4 flex gap-3 items-start ${border}`}>
+      <div className={`p-2 rounded-lg shrink-0 ${iconBg}`}><Icon size={15} /></div>
+      <div className="min-w-0 flex-1">
+        <div className={`text-2xl font-bold font-mono leading-none ${color}`}>{value ?? '—'}</div>
+        <div className="text-[10px] text-scorva-muted mt-0.5 truncate">{label}</div>
+        {sub && <div className="text-[9px] font-mono text-scorva-muted/60 mt-1 truncate">{sub}</div>}
+      </div>
     </div>
   );
 }

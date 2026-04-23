@@ -85,6 +85,22 @@ function normalizeCell(value) {
   return String(value).trim();
 }
 
+function serializeConMon(doc) {
+  if (!doc) return doc;
+  return {
+    ...doc,
+    control_id: doc.controlId ?? doc.control_id ?? '',
+    control_title: doc.controlTitle ?? doc.control_title ?? '',
+    due_date: doc.dueDate ?? doc.due_date ?? '',
+    daag_jsig_frequency: doc.daagJsigFrequency ?? doc.daag_jsig_frequency ?? '',
+    baseline_applicability: doc.baselineApplicability ?? doc.baseline_applicability ?? '',
+    conmon_group: doc.conmonGroup ?? doc.conmon_group ?? '',
+    completed_date: doc.completedDate ?? doc.completed_date ?? null,
+    linked_controls: doc.linkedControls ?? doc.linked_controls ?? [],
+    site_id: doc.siteId ?? doc.site_id ?? null,
+  };
+}
+
 async function parseExcelRows(buffer) {
   const workbook = new ExcelJS.Workbook();
   await workbook.xlsx.load(buffer);
@@ -121,7 +137,7 @@ router.get('/', async (req, res, next) => {
     const docs = await db.conMon.findMany({
       where: tenantSiteFilter(req), orderBy: { controlId: 'asc' },
     });
-    res.json(docs);
+    res.json(docs.map(serializeConMon));
   } catch (err) { next(err); }
 });
 
@@ -130,7 +146,7 @@ router.get('/:id', async (req, res, next) => {
     const doc = await db.conMon.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    res.json(doc);
+    res.json(serializeConMon(doc));
   } catch (err) { next(err); }
 });
 
@@ -176,7 +192,7 @@ router.post('/', async (req, res, next) => {
     const created = await db.conMon.create({ data: doc });
     await audit(req.user?.username || 'system', 'CONMON_ADD', created.id,
       `Added: ${created.controlId}`, siteId);
-    res.status(201).json(created);
+    res.status(201).json(serializeConMon(created));
   } catch (err) { next(err); }
 });
 
@@ -190,7 +206,7 @@ router.patch('/:id', async (req, res, next) => {
     const updated    = await db.conMon.update({ where: { id: req.params.id }, data: normalized });
     await audit(req.user?.username || 'system', 'CONMON_UPDATE', req.params.id,
       `Updated ConMon control: ${updated.controlId}`, existing.siteId);
-    res.json(updated);
+    res.json(serializeConMon(updated));
   } catch (err) { next(err); }
 });
 

@@ -85,7 +85,9 @@ export default function App() {
         <Route path="/sites"        element={<Navigate to="/admin/sites"              replace />} />
         <Route path="/agreements"   element={<Navigate to="/admin/agreements"         replace />} />
         <Route path="/audit"        element={<Navigate to="/admin/audit"              replace />} />
-        <Route path="/notifications" element={<Navigate to="/admin/notifications"     replace />} />
+        <Route path="/notifications"   element={<Navigate to="/admin/notifications"    replace />} />
+        <Route path="/security-events" element={<Navigate to="/monitoring/events"      replace />} />
+        <Route path="/program-view"    element={<Navigate to="/admin/program-view"     replace />} />
 
         {/* ── Fallback ── */}
         <Route path="*" element={<Navigate to="/" replace />} />

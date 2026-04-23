@@ -3,12 +3,12 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useEffect } from 'react';
 import {
-  Shield, ShieldCheck, FileText, BarChart3, Database,
+  Shield, ShieldCheck, FileText, BarChart3,
   ArrowRight, Lock, Sun, Moon, Zap, Globe, Users, Activity,
 } from 'lucide-react';
 
 const ICON_MAP = {
-  ShieldCheck, FileText, BarChart3, Database, Shield,
+  ShieldCheck, FileText, BarChart3, Shield,
 };
 
 const APPS = [
@@ -44,17 +44,6 @@ const APPS = [
     port:    8080,
     tags:    ['Dashboard', 'Threat Intel', 'DoD'],
   },
-  {
-    id:      'data-fabric',
-    name:    'Data Fabric',
-    tagline: 'CIM-ARC Data Platform',
-    desc:    'CIM-ARC team portal featuring project reports, schedules, photo gallery, digital PMR, and team directory.',
-    color:   'cyan',
-    icon:    'Database',
-    team:    'Data Engineering',
-    port:    8081,
-    tags:    ['CIM-ARC', 'Reports', 'PMR'],
-  },
 ];
 
 const COLOR_MAP = {
@@ -65,7 +54,7 @@ const COLOR_MAP = {
 };
 
 const STATS = [
-  { value: '4',       label: 'Mission Apps' },
+  { value: String(APPS.length), label: 'Mission Apps' },
   { value: 'SSO',     label: 'Single Sign-On' },
   { value: 'NIST',    label: '800-53 Ready' },
   { value: 'DoD',     label: 'Compliant' },
@@ -75,7 +64,7 @@ const FEATURES = [
   { icon: Lock,     label: 'Unified Auth',        desc: 'One login grants access to every app in the hub via SSO token exchange.' },
   { icon: Globe,    label: 'App Factory',          desc: 'Browse, discover, and launch purpose-built mission applications from all teams.' },
   { icon: Users,    label: 'Role-Based Access',    desc: 'Shared user directory and role system across all hub applications.' },
-  { icon: Activity, label: 'Multi-Team Platform',  desc: 'Apps contributed by Cybersecurity, GRC, SecOps, and Data Engineering teams.' },
+  { icon: Activity, label: 'Multi-Team Platform',  desc: 'Apps contributed by Cybersecurity, GRC, and Security Operations teams.' },
   { icon: Zap,      label: 'Instant Launch',       desc: 'Click-to-launch any app with your hub session — no re-authentication needed.' },
   { icon: Shield,   label: 'Security-First',       desc: 'Built on DoD-aligned security standards with session-based authentication.' },
 ];

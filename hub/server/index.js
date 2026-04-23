@@ -77,12 +77,6 @@ const APPS = [
     team: 'Security Operations', status: 'live', tags: ['Dashboard', 'Threat Intel', 'Compliance', 'DoD'],
   },
   {
-    id: 'data-fabric', name: 'Data Fabric', tagline: 'CIM-ARC Data Platform',
-    desc: 'CIM-ARC team portal featuring project reports, schedules, photo gallery, digital PMR, and team directory.',
-    url: process.env.DATA_FABRIC_URL || 'http://localhost:8081', ssoPath: '/sso', color: 'cyan', icon: 'Database',
-    team: 'Data Engineering', status: 'live', tags: ['CIM-ARC', 'Reports', 'PMR', 'Data'],
-  },
-  {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',
     desc: 'Magmatic onboarding portal with digitized DD Form 2875 SAAR workflow, Vulcan approval command, and hardware asset provisioning.',
     url: process.env.LAVA_URL || 'http://localhost:3002', ssoPath: '/auth/sso', color: 'orange', icon: 'Flame',
