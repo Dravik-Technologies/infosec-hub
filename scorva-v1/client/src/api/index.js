@@ -67,7 +67,14 @@ export const api = {
     bulkDelete: ids => post('/api/controls/bulk-delete', { ids }),
   },
   // POAM
-  poam:        { list: () => get('/api/poam'), create: d => post('/api/poam', d), update: (id, d) => patch(`/api/poam/${id}`, d), remove: id => del(`/api/poam/${id}`), backfillTasks: () => post('/api/poam/backfill-tasks', {}) },
+  poam:        {
+    list: () => get('/api/poam'),
+    create: d => post('/api/poam', d),
+    update: (id, d) => patch(`/api/poam/${id}`, d),
+    remove: id => del(`/api/poam/${id}`),
+    backfillTasks: () => post('/api/poam/backfill-tasks', {}),
+    transitionRiskWorkflow: (id, d) => post(`/api/poam/${id}/risk-workflow`, d),
+  },
   // Tasks
   tasks:       { list: () => get('/api/tasks'), listMine: () => get('/api/tasks/mine'), create: d => post('/api/tasks', d), update: (id, d) => patch(`/api/tasks/${id}`, d), remove: id => del(`/api/tasks/${id}`) },
   // Users

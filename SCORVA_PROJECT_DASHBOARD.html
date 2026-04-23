@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SCORVA Cyber Program Dashboard</title>
+  <style>
+    :root {
+      --bg: #06111a;
+      --bg-2: #091a26;
+      --panel: rgba(10, 25, 36, 0.92);
+      --panel-2: rgba(14, 34, 49, 0.96);
+      --border: #1d425b;
+      --border-soft: rgba(83, 170, 214, 0.16);
+      --text: #e8f6ff;
+      --muted: #90afc3;
+      --cyan: #47d7ff;
+      --cyan-2: #13b7e6;
+      --green: #2ce6a6;
+      --yellow: #ffcd57;
+      --orange: #ff9b52;
+      --red: #ff6d7a;
+      --blue: #77b8ff;
+      --glow: 0 0 0 1px rgba(71, 215, 255, 0.08), 0 12px 32px rgba(0, 0, 0, 0.35);
+      --mono: "Cascadia Code", "Consolas", "SFMono-Regular", monospace;
+      --sans: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at 12% 18%, rgba(71, 215, 255, 0.12), transparent 22%),
+        radial-gradient(circle at 88% 14%, rgba(44, 230, 166, 0.10), transparent 18%),
+        linear-gradient(180deg, #041019 0%, #07131d 30%, #06111a 100%);
+    }
+
+    .scanlines::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px);
+      background-size: 100% 6px;
+      opacity: 0.18;
+    }
+
+    .wrap {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 28px 18px 56px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 12px 16px;
+      border: 1px solid var(--border-soft);
+      border-radius: 16px;
+      background: rgba(8, 18, 28, 0.75);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--glow);
+    }
+
+    .topbar .label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-family: var(--mono);
+    }
+
+    .topbar .value {
+      margin-top: 4px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.65fr 1.1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      background:
+        linear-gradient(180deg, rgba(14, 34, 49, 0.96), rgba(10, 25, 36, 0.94));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      box-shadow: var(--glow);
+      overflow: visible;
+    }
+
+    .card h1,
+    .card h2,
+    .card h3,
+    .card p {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 2.05rem;
+      margin-bottom: 10px;
+      letter-spacing: 0.03em;
+      text-shadow: 0 0 24px rgba(71, 215, 255, 0.10);
+    }
+
+    .hero-sub {
+      color: var(--muted);
+      max-width: 82ch;
+      line-height: 1.55;
+      font-size: 0.98rem;
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      margin-bottom: 14px;
+      font-family: var(--mono);
+    }
+
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .stat {
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,0.025);
+      border-radius: 14px;
+      padding: 14px;
+      position: relative;
+    }
+
+    .stat::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--cyan), transparent);
+      opacity: 0.9;
+    }
+
+    .stat .k {
+      font-size: 0.74rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-family: var(--mono);
+      margin-bottom: 8px;
+    }
+
+    .stat .v {
+      font-size: 1.75rem;
+      font-weight: 700;
+    }
+
+    .signal-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .signal {
+      border-radius: 14px;
+      border: 1px solid var(--border-soft);
+      padding: 14px;
+      background: rgba(255,255,255,0.025);
+      min-height: 118px;
+    }
+
+    .signal .name {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      font-family: var(--mono);
+      margin-bottom: 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .pill.green { color: var(--green); background: rgba(44,230,166,0.10); border-color: rgba(44,230,166,0.22); }
+    .pill.yellow { color: var(--yellow); background: rgba(255,205,87,0.10); border-color: rgba(255,205,87,0.24); }
+    .pill.red { color: var(--red); background: rgba(255,109,122,0.10); border-color: rgba(255,109,122,0.24); }
+    .pill.cyan { color: var(--cyan); background: rgba(71,215,255,0.10); border-color: rgba(71,215,255,0.24); }
+    .pill.orange { color: var(--orange); background: rgba(255,155,82,0.10); border-color: rgba(255,155,82,0.24); }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid rgba(71,215,255,0.22);
+      background: rgba(71,215,255,0.06);
+      color: var(--cyan);
+      padding: 9px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.86rem;
+      font-weight: 600;
+    }
+
+    .btn:hover {
+      background: rgba(71,215,255,0.12);
+    }
+
+    .btn.active {
+      background: rgba(71,215,255,0.18);
+      color: #dff8ff;
+      box-shadow: 0 0 0 1px rgba(71,215,255,0.14) inset;
+    }
+
+    .progress-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .progress-card {
+      border: 1px solid var(--border-soft);
+      background: rgba(255,255,255,0.02);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .progress-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .progress-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    .progress-value {
+      font-family: var(--mono);
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .progress-bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(144,175,195,0.12);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      box-shadow: 0 0 18px rgba(71,215,255,0.22);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 12px 10px;
+      border-bottom: 1px solid rgba(144, 175, 195, 0.14);
+      vertical-align: top;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-family: var(--mono);
+      background: rgba(255,255,255,0.02);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .mono {
+      font-family: var(--mono);
+    }
+
+    code {
+      font-family: var(--mono);
+      color: #d9f5ff;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(144, 175, 195, 0.16);
+      padding: 2px 6px;
+      border-radius: 8px;
+    }
+
+    .quicknav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .quicknav a {
+      text-decoration: none;
+      color: var(--cyan);
+      border: 1px solid rgba(71,215,255,0.22);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.86rem;
+      background: rgba(71,215,255,0.05);
+    }
+
+    .quicknav a:hover {
+      background: rgba(71,215,255,0.10);
+    }
+
+    details {
+      border: 1px solid var(--border-soft);
+      border-radius: 14px;
+      background: rgba(255,255,255,0.02);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    details[open] {
+      box-shadow: 0 0 0 1px rgba(71,215,255,0.08);
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .summary-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .summary-title {
+      font-size: 0.98rem;
+    }
+
+    .summary-meta {
+      color: var(--muted);
+      font-size: 0.83rem;
+      font-family: var(--mono);
+    }
+
+    .details-body {
+      padding: 0 16px 16px;
+      color: var(--text);
+    }
+
+    .details-body p {
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .runbook {
+      background: rgba(4, 13, 22, 0.75);
+      border: 1px solid rgba(71,215,255,0.14);
+      border-radius: 14px;
+      padding: 14px;
+      margin-top: 12px;
+    }
+
+    .runbook h4 {
+      margin: 0 0 10px;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--cyan);
+      font-family: var(--mono);
+    }
+
+    .cmd {
+      display: block;
+      white-space: pre-wrap;
+      background: #041019;
+      border: 1px solid rgba(144, 175, 195, 0.14);
+      color: #dff7ff;
+      border-radius: 12px;
+      padding: 12px;
+      font-family: var(--mono);
+      font-size: 0.86rem;
+      line-height: 1.5;
+      margin: 10px 0;
+    }
+
+    .timeline {
+      position: relative;
+      margin-top: 8px;
+    }
+
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: linear-gradient(180deg, rgba(71,215,255,0.35), rgba(71,215,255,0.08));
+    }
+
+    .tl-item {
+      position: relative;
+      padding-left: 36px;
+      margin-bottom: 16px;
+    }
+
+    .tl-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .tl-item::before {
+      content: "";
+      position: absolute;
+      left: 6px;
+      top: 6px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 0 4px rgba(71,215,255,0.10);
+    }
+
+    .tl-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .tl-meta {
+      color: var(--muted);
+      font-size: 0.83rem;
+      font-family: var(--mono);
+      margin-bottom: 6px;
+    }
+
+    .small-list {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+    }
+
+    .small-list li {
+      margin: 6px 0;
+      line-height: 1.45;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .muted-note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .status-chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .workstream-row.hidden-row {
+      display: none;
+    }
+
+    .accent {
+      color: var(--cyan);
+    }
+
+    .danger {
+      color: var(--red);
+    }
+
+    .ok {
+      color: var(--green);
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+        color: #000000;
+      }
+
+      .scanlines::before,
+      .quicknav,
+      .toolbar {
+        display: none !important;
+      }
+
+      .card,
+      .topbar {
+        box-shadow: none;
+        background: #ffffff;
+        border: 1px solid #cccccc;
+      }
+
+      .pill,
+      .btn {
+        color: #000000 !important;
+        background: #ffffff !important;
+        border-color: #999999 !important;
+      }
+    }
+
+    @media (max-width: 1100px) {
+      .hero, .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-stats {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .signal-grid {
+        grid-template-columns: 1fr;
+      }
+
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tr {
+        border-bottom: 1px solid rgba(144,175,195,0.14);
+      }
+
+      td {
+        padding: 10px 6px;
+      }
+    }
+  </style>
+</head>
+<body class="scanlines">
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="label">SCORVA Cyber Program Dashboard</div>
+        <div class="value">Executive Delivery, Deployment, and Runbook View</div>
+      </div>
+      <div>
+        <span class="pill green">Milestone: Production Rollout Complete</span>
+        <span class="pill cyan">Theme: Cyber Operations</span>
+      </div>
+    </div>
+
+    <div class="quicknav">
+      <a href="#exec">Executive View</a>
+      <a href="#runbook">Runbook</a>
+      <a href="#sprints">Sprint Timeline</a>
+      <a href="#workstreams">Workstreams</a>
+      <a href="#risks">Risks</a>
+    </div>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <button class="btn" id="expandAllBtn" type="button">Expand All Runbooks</button>
+        <button class="btn" id="collapseAllBtn" type="button">Collapse All Runbooks</button>
+        <button class="btn" id="printBtn" type="button">Print / Save PDF</button>
+      </div>
+      <div class="toolbar-group">
+        <button class="btn active filter-btn" data-filter="all" type="button">All Workstreams</button>
+        <button class="btn filter-btn" data-filter="green" type="button">Green</button>
+        <button class="btn filter-btn" data-filter="yellow" type="button">Yellow</button>
+      </div>
+    </div>
+
+    <div class="hero" id="exec">
+      <section class="card">
+        <div class="section-title">Mission Status</div>
+        <h1>SCORVA Cyber Program Delivery Dashboard</h1>
+        <p class="hero-sub">
+          This dashboard tracks SCORVA as a cyber operations and compliance platform. It combines delivery status, deployment readiness,
+          production rollout instructions, and the sprint plan needed to move the latest features live in Azure Container Apps and Azure PostgreSQL.
+        </p>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <div class="k">Overall Completion</div>
+            <div class="v">68%</div>
+          </div>
+          <div class="stat">
+            <div class="k">Done</div>
+            <div class="v">4 / 27</div>
+          </div>
+          <div class="stat">
+            <div class="k">Partial</div>
+            <div class="v">22 / 27</div>
+          </div>
+          <div class="stat">
+            <div class="k">Current Priority</div>
+            <div class="v">Sprint 2 Analytics</div>
+          </div>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-card">
+            <div class="progress-head">
+              <div class="progress-title">Production Readiness</div>
+              <div class="progress-value">100%</div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 100%"></div></div>
+            <p class="muted-note">The current SCORVA production build is stable: Program View, Security Events, POA&amp;M updates, and the Azure PostgreSQL schema are aligned.</p>
+          </div>
+          <div class="progress-card">
+            <div class="progress-head">
+              <div class="progress-title">Requirements Coverage</div>
+              <div class="progress-value">68%</div>
+            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: 68%"></div></div>
+            <p class="muted-note">Core cyber workflows are stronger after the validated POA&amp;M risk workflow. The next maturity push is executive analytics, trend views, and heatmaps.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Operational Signals</div>
+        <div class="signal-grid">
+          <div class="signal">
+            <div class="name">Database State</div>
+            <div class="pill green">Updated</div>
+            <p class="footer-note">POA&amp;M risk workflow fields and <code>security_events</code> schema are live in Azure PostgreSQL.</p>
+            <div class="status-chip-row">
+              <span class="pill cyan">Prisma Synced</span>
+              <span class="pill green">Verified Live</span>
+            </div>
+          </div>
+          <div class="signal">
+            <div class="name">Container State</div>
+            <div class="pill green">Current Revision Active</div>
+            <p class="footer-note"><code>saf-scorva</code> is serving the updated frontend and backend revision in production.</p>
+            <div class="status-chip-row">
+              <span class="pill green">UI Updated</span>
+              <span class="pill green">Release Stable</span>
+            </div>
+          </div>
+          <div class="signal">
+            <div class="name">Latest Image</div>
+            <div class="pill cyan">Ready</div>
+            <p class="footer-note"><code>secappfactory.azurecr.us/scorva:latest</code></p>
+            <p class="muted-note">Best practice for rollout: pin the exact digest in Azure Container Apps instead of relying on <code>:latest</code>.</p>
+          </div>
+          <div class="signal">
+            <div class="name">New Features</div>
+            <div class="pill green">Live</div>
+            <p class="footer-note">Program View, Security Events, and POA&amp;M risk workflow are now available in the live SCORVA deployment.</p>
+            <div class="status-chip-row">
+              <span class="pill green">Program View</span>
+              <span class="pill green">Security Events</span>
+              <span class="pill green">Risk Workflow</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid-2">
+      <section class="card">
+        <div class="section-title">Executive Snapshot</div>
+        <table>
+          <thead>
+            <tr><th>Area</th><th>Status</th><th>Notes</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Core platform</td><td><span class="pill green">Green</span></td><td>SCORVA is operational for core cyber workflows</td></tr>
+            <tr><td>Azure PostgreSQL schema</td><td><span class="pill green">Green</span></td><td>Latest Prisma migrations have been applied successfully</td></tr>
+            <tr><td>Azure Container App deployment</td><td><span class="pill green">Green</span></td><td>Newest image is deployed and serving successfully in production</td></tr>
+            <tr><td>Requirements coverage</td><td><span class="pill yellow">Yellow</span></td><td>Strong functional base; integrations and automation remain partial</td></tr>
+            <tr><td>Executive readiness</td><td><span class="pill yellow">Yellow</span></td><td>Good operational story, but some enterprise maturity areas still need closure</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Deployment Facts</div>
+        <table>
+          <thead>
+            <tr><th>Item</th><th>Status</th><th>Detail</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Container App</td><td><span class="pill green">Current</span></td><td><code>saf-scorva</code></td></tr>
+            <tr><td>Resource Group</td><td><span class="pill cyan">Known</span></td><td><code>saf-rg</code></td></tr>
+            <tr><td>Image Digest</td><td><span class="pill cyan">Current</span></td><td><code>sha256:69a34f6816c0a74d1522eebb9d39d62a3f7b4e77adcf86cf6fe70c78bb65b238</code></td></tr>
+            <tr><td>Security Events table</td><td><span class="pill green">Live</span></td><td>Schema already applied in Azure PostgreSQL</td></tr>
+            <tr><td>POA&amp;M risk workflow</td><td><span class="pill green">Live</span></td><td>Workflow state, review notes, and reviewer metadata verified</td></tr>
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <section class="card" id="runbook">
+      <div class="section-title">Interactive Runbook</div>
+
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="pill green">Done</span>
+            <div>
+              <div class="summary-title">Formal POA&amp;M risk workflow rollout complete</div>
+              <div class="summary-meta">Migration, build, rollout, and production validation are complete</div>
+            </div>
+          </div>
+          <span class="pill green">Validated</span>
+        </summary>
+        <div class="details-body">
+          <p>
+            Sprint 1 is complete. The POA&amp;M module now supports governed risk workflow states, reviewer metadata,
+            transition rules, and on-screen workflow actions in production.
+          </p>
+          <div class="runbook">
+            <h4>Completed</h4>
+            <ol class="small-list">
+              <li>Add Prisma fields for workflow state, submitted/reviewed timestamps, reviewer identity, and review notes.</li>
+              <li>Add backend transition rules and role gates for submit, review, approve, and reject actions.</li>
+              <li>Add audit logging for POA&amp;M risk workflow transitions.</li>
+              <li>Add POA&amp;M UI workflow badges, reviewer notes, and action buttons.</li>
+              <li>Apply migration, build/push image, roll Azure Container App revision, and validate workflow in production.</li>
+            </ol>
+          </div>
+          <div class="runbook">
+            <h4>Production Validation</h4>
+            <div class="cmd">Validated:
+- Submit for Review
+- Start Review
+- Approve
+- Reject
+- POA&amp;M workflow badges and review metadata</div>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="pill red">P1</span>
+            <div>
+              <div class="summary-title">Start Sprint 2 executive analytics</div>
+              <div class="summary-meta">Next highest-value maturity item after POA&amp;M workflow completion</div>
+            </div>
+          </div>
+          <span class="pill yellow">Next</span>
+        </summary>
+        <div class="details-body">
+          <p>
+            Sprint 2 should strengthen executive visibility by turning current operational data into trends, heatmaps,
+            and leadership-ready risk indicators across sites.
+          </p>
+          <div class="runbook">
+            <h4>Sprint 2 Checklist</h4>
+            <ol class="small-list">
+              <li>Add trend metrics for POA&amp;M open/closed aging, control implementation, ATO expiration, and security event severity.</li>
+              <li>Add cross-site risk heatmap data to the aggregate API.</li>
+              <li>Enhance Program View with historical trend cards and red/yellow/green executive indicators.</li>
+              <li>Validate analytics do not break tenant scoping or Corporate Admin restrictions.</li>
+              <li>Build, push, roll a new ACA revision, and update this dashboard after validation.</li>
+            </ol>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <div class="summary-left">
+            <span class="pill orange">P1</span>
+            <div>
+              <div class="summary-title">Current release validation status</div>
+              <div class="summary-meta">Completed checks for the current production baseline</div>
+            </div>
+          </div>
+          <span class="pill cyan">Verification</span>
+        </summary>
+        <div class="details-body">
+          <p>The following production checks have now been completed successfully.</p>
+          <div class="runbook">
+            <h4>Completed</h4>
+            <ol class="small-list">
+              <li><strong>Program View</strong> appears and loads for Corporate Admin users.</li>
+              <li><strong>Security Events</strong> appears under Monitoring and saves successfully with correct site scope.</li>
+              <li><strong>POA&amp;M</strong> edit/save path is working after the form normalization fix.</li>
+              <li>Azure PostgreSQL schema is aligned with the live code.</li>
+            </ol>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <div class="summary-left">
+            <span class="pill yellow">P2</span>
+            <div>
+              <div class="summary-title">Repeatable release steps for the next SCORVA build</div>
+              <div class="summary-meta">Keep this sequence to avoid schema drift or UI/backend mismatch</div>
+            </div>
+          </div>
+          <span class="pill cyan">Commands</span>
+        </summary>
+        <div class="details-body">
+          <div class="runbook">
+            <h4>Build and Push</h4>
+            <div class="cmd">docker build -f scorva-v1/Dockerfile -t secappfactory.azurecr.us/scorva:latest .
+docker push secappfactory.azurecr.us/scorva:latest</div>
+          </div>
+          <div class="runbook">
+            <h4>Apply Prisma Migrations to Azure PostgreSQL</h4>
+            <div class="cmd">export PATH="$HOME/.nvm/versions/node/v22.6.0/bin:$PATH"
+export DATABASE_URL="postgresql://&lt;user&gt;:&lt;password&gt;@&lt;host&gt;:5432/securityapp?sslmode=require"
+
+node packages/db/node_modules/prisma/build/index.js migrate deploy --schema=packages/db/prisma/schema.prisma</div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section class="card" id="execution-order">
+      <div class="section-title">Execution Order</div>
+      <p class="muted-note">
+        This is the recommended next-action sequence for SCORVA so work lands cleanly, production stays stable,
+        and the next build does not get ahead of the database or deployment state.
+      </p>
+
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="pill red">First</span>
+            <div>
+              <div class="summary-title">Cut over the live Azure Container App revision</div>
+              <div class="summary-meta">Highest priority because the code and database are already ahead of production UI</div>
+            </div>
+          </div>
+          <span class="pill yellow">Required</span>
+        </summary>
+        <div class="details-body">
+          <div class="runbook">
+            <h4>Checklist</h4>
+            <ol class="small-list">
+              <li>Open <code>saf-scorva</code> in Azure Portal.</li>
+              <li>Go to <strong>Containers</strong>.</li>
+              <li>Set the image to the exact pushed digest instead of relying on <code>:latest</code>.</li>
+              <li>Save and wait for a new revision to be created.</li>
+              <li>Confirm the new revision shows today’s timestamp under <strong>Revisions and replicas</strong>.</li>
+            </ol>
+            <div class="cmd">secappfactory.azurecr.us/scorva@sha256:1ea08d5a5aa6848268d962cb9560833496a98dd8f43e912f7e0f1cbd7e9a9b61</div>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <div class="summary-left">
+            <span class="pill orange">Second</span>
+            <div>
+              <div class="summary-title">Validate the current production release end to end</div>
+              <div class="summary-meta">Do this before starting the next feature batch so the baseline is clean</div>
+            </div>
+          </div>
+          <span class="pill cyan">Verification</span>
+        </summary>
+        <div class="details-body">
+          <div class="runbook">
+            <h4>Checklist</h4>
+            <ol class="small-list">
+              <li>Hard refresh the live app after the new revision becomes active.</li>
+              <li>Confirm <strong>Program View</strong> appears for a Corporate Admin account.</li>
+              <li>Confirm <strong>Security Events</strong> appears under Monitoring.</li>
+              <li>Open POA&amp;M and verify there are no missing-column schema errors.</li>
+              <li>Create, edit, and delete a test security event.</li>
+              <li>Open Program View and confirm aggregate metrics load.</li>
+            </ol>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <div class="summary-left">
+            <span class="pill yellow">Third</span>
+            <div>
+              <div class="summary-title">Stabilize the release branch before new feature work</div>
+              <div class="summary-meta">This reduces regression risk on the next build</div>
+            </div>
+          </div>
+          <span class="pill yellow">Quality Gate</span>
+        </summary>
+        <div class="details-body">
+          <div class="runbook">
+            <h4>Checklist</h4>
+            <ol class="small-list">
+              <li>Record the active image digest and ACA revision ID used in production.</li>
+              <li>Keep the new Prisma migrations checked in with the code that depends on them.</li>
+              <li>Capture any production validation issues in the dashboard before starting more changes.</li>
+              <li>Only begin the next feature sprint after the current rollout is confirmed healthy.</li>
+            </ol>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <div class="summary-left">
+            <span class="pill cyan">Fourth</span>
+            <div>
+              <div class="summary-title">Build the next feature batch in the right sequence</div>
+              <div class="summary-meta">Recommended order for flawless future builds and deployments</div>
+            </div>
+          </div>
+          <span class="pill cyan">Build Order</span>
+        </summary>
+        <div class="details-body">
+          <div class="runbook">
+            <h4>Recommended Build Sequence</h4>
+            <ol class="small-list">
+              <li><strong>Schema first</strong>: update Prisma schema and create the migration before UI or API code depends on it.</li>
+              <li><strong>Server second</strong>: add backend routes, guards, jobs, and data validation.</li>
+              <li><strong>Client third</strong>: wire pages, tabs, and dashboard views only after API contracts are stable.</li>
+              <li><strong>Local validation fourth</strong>: verify migration deploy, build output, and critical workflows.</li>
+              <li><strong>Image build fifth</strong>: build and push the new Docker image.</li>
+              <li><strong>Azure rollout last</strong>: update ACA to the exact image digest, then verify production.</li>
+            </ol>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <section class="card" id="sprints">
+      <div class="section-title">Sprint Timeline</div>
+      <div class="timeline">
+        <div class="tl-item">
+          <div class="tl-title">Sprint 0: Production Cutover</div>
+          <div class="tl-meta">Completed</div>
+          <ul class="small-list">
+            <li>SCORVA is live on the corrected Azure Container App revision.</li>
+            <li>Program View is working in production.</li>
+            <li>Security Events is working in production.</li>
+            <li>POA&amp;M save behavior is stabilized.</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">Sprint 1: POA&amp;M Risk Workflow Maturity</div>
+          <div class="tl-meta">Completed</div>
+          <ul class="small-list">
+            <li>Workflow states, reviewer metadata, and transition rules are live.</li>
+            <li>Migration, build, push, and ACA rollout are complete.</li>
+            <li>Production validation passed for POA&amp;M risk workflow actions.</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">Sprint 2: Executive Analytics</div>
+          <div class="tl-meta">Next sprint: 1 week</div>
+          <ul class="small-list">
+            <li>Add trend analytics for POA&amp;Ms, controls, ATO expirations, and security events.</li>
+            <li>Add risk heatmaps and historical charts for leadership reporting.</li>
+            <li>Expand Program View into a stronger executive readiness board.</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">Sprint 3: Evidence and Reporting</div>
+          <div class="tl-meta">1 week</div>
+          <ul class="small-list">
+            <li>Add one-click compliance and evidence package export.</li>
+            <li>Package POA&amp;M, controls, evidence, and status artifacts into audit-ready output.</li>
+            <li>Add scheduled reporting options if needed.</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">Sprint 4: Integration and Detection</div>
+          <div class="tl-meta">1 to 2 weeks</div>
+          <ul class="small-list">
+            <li>Add scanner/SIEM/CMDB or ticketing integration priorities.</li>
+            <li>Add automated asset discovery and baseline drift detection.</li>
+            <li>Reduce manual operational burden and increase platform authority.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="workstreams">
+      <div class="section-title">Workstream Status Board</div>
+      <table>
+        <thead>
+          <tr><th>Workstream</th><th>Status</th><th>Completion</th><th>Current Focus</th></tr>
+        </thead>
+        <tbody>
+          <tr class="workstream-row" data-status="green"><td>Authorization: Controls / ATO / POA&amp;M</td><td><span class="pill green">Green</span></td><td>90%</td><td>Risk workflow complete; next focus is richer reporting</td></tr>
+          <tr class="workstream-row" data-status="green"><td>Monitoring: ConMon / Tasks / Trackers</td><td><span class="pill green">Green</span></td><td>80%</td><td>Operational refinement and schedule enforcement</td></tr>
+          <tr class="workstream-row" data-status="green"><td>Monitoring: Security Events</td><td><span class="pill green">Green</span></td><td>80%</td><td>Live in production; next step is better correlation and anomaly logic</td></tr>
+          <tr class="workstream-row" data-status="green"><td>Administration: Program View</td><td><span class="pill green">Green</span></td><td>80%</td><td>Live in production; next step is trend and heatmap expansion</td></tr>
+          <tr class="workstream-row" data-status="green"><td>Assets: Workstations / YubiKeys / Licenses</td><td><span class="pill green">Green</span></td><td>80%</td><td>Automated discovery and change detection</td></tr>
+          <tr class="workstream-row" data-status="yellow"><td>Reporting / Evidence</td><td><span class="pill yellow">Yellow</span></td><td>55%</td><td>One-click compliance package export</td></tr>
+          <tr class="workstream-row" data-status="yellow"><td>Threat Awareness</td><td><span class="pill yellow">Yellow</span></td><td>55%</td><td>Move beyond NVD-only awareness into integrations</td></tr>
+          <tr class="workstream-row" data-status="yellow"><td>Automation / Detection</td><td><span class="pill yellow">Yellow</span></td><td>45%</td><td>Drift detection, scanning, automation depth</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <div class="grid-3" id="risks">
+      <section class="card">
+        <div class="section-title">Top Risks</div>
+        <ul class="small-list">
+          <li><span class="danger">High:</span> Azure Container Apps still serving the old frontend bundle.</li>
+          <li><span class="danger">High:</span> Reusing <code>:latest</code> may not force a fresh image pull.</li>
+          <li><span class="accent">Medium:</span> Frontend bundle size is still large and should be optimized.</li>
+          <li><span class="accent">Medium:</span> Enterprise automation depth still lags functional surface area.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Success Criteria</div>
+        <ul class="small-list">
+          <li>New revision exists for <code>saf-scorva</code>.</li>
+          <li><strong>Program View</strong> is visible for Corporate Admin users.</li>
+          <li><strong>Security Events</strong> appears under Monitoring.</li>
+          <li>Aggregate metrics work in production.</li>
+          <li>Security Events CRUD works end to end.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Best Way To Use This Page</div>
+        <ul class="small-list">
+          <li>Use the <strong>Interactive Runbook</strong> section during rollout.</li>
+          <li>Use the <strong>Sprint Timeline</strong> for planning and leadership updates.</li>
+          <li>Use the <strong>Workstream Status Board</strong> in weekly reviews.</li>
+        </ul>
+        <p class="footer-note">This HTML version is meant to be the browser-friendly command and status view for SCORVA delivery.</p>
+      </section>
+    </div>
+  </div>
+  <script>
+    const detailsNodes = Array.from(document.querySelectorAll('details'));
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+    const printBtn = document.getElementById('printBtn');
+    const filterButtons = Array.from(document.querySelectorAll('.filter-btn'));
+    const workstreamRows = Array.from(document.querySelectorAll('.workstream-row'));
+
+    if (expandAllBtn) {
+      expandAllBtn.addEventListener('click', () => {
+        detailsNodes.forEach(node => { node.open = true; });
+      });
+    }
+
+    if (collapseAllBtn) {
+      collapseAllBtn.addEventListener('click', () => {
+        detailsNodes.forEach(node => { node.open = false; });
+      });
+    }
+
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
+
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const filter = btn.dataset.filter;
+        filterButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        workstreamRows.forEach(row => {
+          const show = filter === 'all' || row.dataset.status === filter;
+          row.classList.toggle('hidden-row', !show);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

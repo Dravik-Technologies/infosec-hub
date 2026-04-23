@@ -132,6 +132,12 @@ model Poam {
   closedDate          String?  @map("closed_date")
   riskDecision        String?  @map("risk_decision")
   riskRationale       String?  @map("risk_rationale")
+  riskWorkflowState   String   @default("Draft") @map("risk_workflow_state")
+  riskSubmittedAt     DateTime? @map("risk_submitted_at")
+  riskSubmittedBy     String?  @map("risk_submitted_by")
+  riskReviewedAt      DateTime? @map("risk_reviewed_at")
+  riskReviewedBy      String?  @map("risk_reviewed_by")
+  riskReviewNotes     String?  @map("risk_review_notes")
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 

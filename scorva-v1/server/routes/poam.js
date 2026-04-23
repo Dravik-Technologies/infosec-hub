@@ -10,6 +10,71 @@ const POAM_STATUS_TO_TASK = {
   'Completed': 'Completed', 'Closed': 'Completed',
 };
 
+const RISK_WORKFLOW = {
+  Draft: ['Submitted'],
+  Submitted: ['Draft', 'Under Review'],
+  'Under Review': ['Approved', 'Rejected'],
+  Rejected: ['Draft', 'Submitted'],
+  Approved: ['Draft'],
+};
+
+const REVIEWER_ROLES = new Set(['Site Admin', 'Corporate Admin']);
+
+function canReviewRisk(role) {
+  return REVIEWER_ROLES.has(role);
+}
+
+function assertRiskDecisionFields(doc, incoming = {}) {
+  const riskDecision = incoming.riskDecision ?? doc.riskDecision;
+  const riskRationale = incoming.riskRationale ?? doc.riskRationale;
+  if (!riskDecision || !riskRationale) {
+    return 'Risk decision and rationale are required before submitting for review.';
+  }
+  return null;
+}
+
+function buildRiskWorkflowUpdate(doc, nextState, username, reviewNotes) {
+  const now = new Date();
+  switch (nextState) {
+    case 'Submitted':
+      return {
+        riskWorkflowState: nextState,
+        riskSubmittedAt: now,
+        riskSubmittedBy: username || null,
+        riskReviewedAt: null,
+        riskReviewedBy: null,
+        riskReviewNotes: reviewNotes ?? doc.riskReviewNotes ?? null,
+      };
+    case 'Under Review':
+      return {
+        riskWorkflowState: nextState,
+        riskReviewedAt: now,
+        riskReviewedBy: username || null,
+        riskReviewNotes: reviewNotes ?? doc.riskReviewNotes ?? null,
+      };
+    case 'Approved':
+      return {
+        riskWorkflowState: nextState,
+        riskReviewedAt: now,
+        riskReviewedBy: username || null,
+        riskReviewNotes: reviewNotes ?? doc.riskReviewNotes ?? null,
+      };
+    case 'Rejected':
+      return {
+        riskWorkflowState: nextState,
+        riskReviewedAt: now,
+        riskReviewedBy: username || null,
+        riskReviewNotes: reviewNotes ?? null,
+      };
+    case 'Draft':
+    default:
+      return {
+        riskWorkflowState: 'Draft',
+        riskReviewNotes: reviewNotes ?? doc.riskReviewNotes ?? null,
+      };
+  }
+}
+
 async function createLinkedTask(poamId, title, siteId, responsibleParty, scheduledCompletion, severity, username) {
   try {
     const last    = await db.task.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
@@ -138,6 +203,7 @@ router.patch('/:id', async (req, res, next) => {
     ato_id: 'atoId', poam_type: 'poamType', comments: 'comments',
     completed_date: 'completedDate', closed_date: 'closedDate',
     risk_decision: 'riskDecision', risk_rationale: 'riskRationale',
+    risk_review_notes: 'riskReviewNotes',
   };
   const data = {};
   for (const [k, pk] of Object.entries(FIELD_MAP)) {
@@ -167,6 +233,61 @@ router.patch('/:id', async (req, res, next) => {
 
     await audit(req.session.user.username, 'POAM_UPDATE', req.params.id,
       `Updated: ${Object.keys(data).join(', ')}`, updated.siteId);
+    res.json(updated);
+  } catch (err) { next(err); }
+});
+
+router.post('/:id/risk-workflow', async (req, res, next) => {
+  const nextState = String(req.body?.state || '').trim();
+  const reviewNotes = typeof req.body?.review_notes === 'string' ? req.body.review_notes.trim() : undefined;
+  const incomingRiskFields = {};
+  if ('risk_decision' in (req.body || {})) incomingRiskFields.riskDecision = req.body.risk_decision || null;
+  if ('risk_rationale' in (req.body || {})) incomingRiskFields.riskRationale = req.body.risk_rationale || null;
+  if ('risk_review_notes' in (req.body || {})) incomingRiskFields.riskReviewNotes = req.body.risk_review_notes || null;
+  const role = req.user?.role || req.session?.user?.role;
+  const username = req.user?.username || req.session?.user?.username;
+
+  if (!nextState || !['Draft', 'Submitted', 'Under Review', 'Approved', 'Rejected'].includes(nextState)) {
+    return res.status(400).json({ error: 'Invalid workflow state' });
+  }
+
+  try {
+    const doc = await db.poam.findUnique({ where: { id: req.params.id } });
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
+
+    const currentState = doc.riskWorkflowState || 'Draft';
+    if (!RISK_WORKFLOW[currentState]?.includes(nextState)) {
+      return res.status(400).json({ error: `Cannot move risk workflow from ${currentState} to ${nextState}` });
+    }
+
+    if ((nextState === 'Under Review' || nextState === 'Approved' || nextState === 'Rejected') && !canReviewRisk(role)) {
+      return res.status(403).json({ error: 'Only Site Admin or Corporate Admin can review POA&M risk workflow.' });
+    }
+
+    if (nextState === 'Submitted' || nextState === 'Approved') {
+      const decisionError = assertRiskDecisionFields(doc, incomingRiskFields);
+      if (decisionError) return res.status(400).json({ error: decisionError });
+    }
+
+    if (nextState === 'Rejected' && !reviewNotes) {
+      return res.status(400).json({ error: 'Review notes are required when rejecting a POA&M risk response.' });
+    }
+
+    const data = {
+      ...incomingRiskFields,
+      ...buildRiskWorkflowUpdate(doc, nextState, username, reviewNotes),
+    };
+    const updated = await db.poam.update({ where: { id: req.params.id }, data });
+
+    await audit(
+      username,
+      'POAM_RISK_WORKFLOW',
+      req.params.id,
+      `Risk workflow ${currentState} -> ${nextState}`,
+      updated.siteId
+    );
+
     res.json(updated);
   } catch (err) { next(err); }
 });

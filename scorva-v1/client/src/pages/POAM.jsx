@@ -14,7 +14,70 @@ import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
 
-const EMPTY = { title: '', weakness: '', severity: 'Medium', status: 'Open', responsible_party: '', scheduled_completion: '', poam_type: '', comments: '', risk_decision: '', risk_rationale: '' };
+const EMPTY = {
+  title: '',
+  weakness: '',
+  severity: 'Medium',
+  status: 'Open',
+  responsible_party: '',
+  scheduled_completion: '',
+  poam_type: '',
+  comments: '',
+  risk_decision: '',
+  risk_rationale: '',
+  risk_workflow_state: 'Draft',
+  risk_review_notes: '',
+  risk_submitted_at: '',
+  risk_submitted_by: '',
+  risk_reviewed_at: '',
+  risk_reviewed_by: '',
+};
+
+const REVIEWER_ROLES = new Set(['Corporate Admin', 'Site Admin']);
+
+const WORKFLOW_ACTIONS = {
+  Draft: [{ state: 'Submitted', label: 'Submit for Review' }],
+  Submitted: [
+    { state: 'Draft', label: 'Return to Draft' },
+    { state: 'Under Review', label: 'Start Review', reviewerOnly: true },
+  ],
+  'Under Review': [
+    { state: 'Approved', label: 'Approve', reviewerOnly: true },
+    { state: 'Rejected', label: 'Reject', reviewerOnly: true },
+  ],
+  Rejected: [
+    { state: 'Draft', label: 'Rework Draft' },
+    { state: 'Submitted', label: 'Resubmit' },
+  ],
+  Approved: [{ state: 'Draft', label: 'Reopen Draft', reviewerOnly: true }],
+};
+
+function formatWorkflowTimestamp(value) {
+  if (!value) return '—';
+  try {
+    return new Date(value).toLocaleString();
+  } catch (_) {
+    return value;
+  }
+}
+
+function toFormState(row = {}) {
+  return {
+    ...EMPTY,
+    ...row,
+    responsible_party: row.responsible_party ?? row.responsibleParty ?? '',
+    scheduled_completion: row.scheduled_completion ?? row.scheduledCompletion ?? '',
+    poam_type: row.poam_type ?? row.poamType ?? '',
+    risk_decision: row.risk_decision ?? row.riskDecision ?? '',
+    risk_rationale: row.risk_rationale ?? row.riskRationale ?? '',
+    risk_workflow_state: row.risk_workflow_state ?? row.riskWorkflowState ?? 'Draft',
+    risk_review_notes: row.risk_review_notes ?? row.riskReviewNotes ?? '',
+    risk_submitted_at: row.risk_submitted_at ?? row.riskSubmittedAt ?? '',
+    risk_submitted_by: row.risk_submitted_by ?? row.riskSubmittedBy ?? '',
+    risk_reviewed_at: row.risk_reviewed_at ?? row.riskReviewedAt ?? '',
+    risk_reviewed_by: row.risk_reviewed_by ?? row.riskReviewedBy ?? '',
+  };
+}
 
 function triggerDownload(blob, filename) {
   const url = URL.createObjectURL(blob);
@@ -80,9 +143,68 @@ function POAMForm({ value, onChange }) {
   );
 }
 
+function RiskWorkflowPanel({ value, onChange, canReview, onTransition, isTransitioning }) {
+  const actions = (WORKFLOW_ACTIONS[value.risk_workflow_state || 'Draft'] || []).filter(action => !action.reviewerOnly || canReview);
+
+  return (
+    <div className="rounded-xl border border-scorva-border bg-scorva-panel/40 p-4 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <div className="text-xs uppercase tracking-[0.22em] text-scorva-muted">Risk Workflow</div>
+          <div className="mt-2 flex items-center gap-2">
+            <Badge label={value.risk_workflow_state || 'Draft'} />
+            <span className="text-sm text-scorva-muted">Formal review path for the selected risk response.</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 text-sm">
+        <div>
+          <div className="text-xs text-scorva-muted mb-1">Submitted</div>
+          <div className="text-scorva-text">{formatWorkflowTimestamp(value.risk_submitted_at)}</div>
+          <div className="text-xs text-scorva-muted mt-1">By {value.risk_submitted_by || '—'}</div>
+        </div>
+        <div>
+          <div className="text-xs text-scorva-muted mb-1">Last Review</div>
+          <div className="text-scorva-text">{formatWorkflowTimestamp(value.risk_reviewed_at)}</div>
+          <div className="text-xs text-scorva-muted mt-1">By {value.risk_reviewed_by || '—'}</div>
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs text-scorva-muted mb-1">Review Notes</label>
+        <textarea
+          className="input-base resize-none"
+          rows={3}
+          value={value.risk_review_notes || ''}
+          onChange={e => onChange({ ...value, risk_review_notes: e.target.value })}
+          placeholder="Reviewer rationale, approval guidance, or rejection notes."
+        />
+      </div>
+
+      {!!actions.length && (
+        <div className="flex flex-wrap gap-2">
+          {actions.map(action => (
+            <button
+              key={action.state}
+              type="button"
+              className={action.state === 'Approved' ? 'btn-primary' : 'btn-secondary'}
+              disabled={isTransitioning}
+              onClick={() => onTransition(action.state)}
+            >
+              {action.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function POAMPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const canReviewRisk = REVIEWER_ROLES.has(user?.role);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading, isError, error } = useQuery({ queryKey: ['poam', siteScopeKey], queryFn: api.poam.list });
   const [modal, setModal]     = useState(null);
@@ -97,6 +219,13 @@ export default function POAMPage() {
   const create   = useMutation({ mutationFn: api.poam.create,                           onSuccess: () => { invalidate(); setModal(null); } });
   const update   = useMutation({ mutationFn: ({ id, d }) => api.poam.update(id, d),     onSuccess: () => { invalidate(); setModal(null); } });
   const remove   = useMutation({ mutationFn: api.poam.remove,                           onSuccess: () => { invalidate(); setDelId(null); } });
+  const transitionRisk = useMutation({
+    mutationFn: ({ id, d }) => api.poam.transitionRiskWorkflow(id, d),
+    onSuccess: (updated) => {
+      invalidate();
+      setForm(toFormState(updated));
+    },
+  });
   const backfill = useMutation({
     mutationFn: api.poam.backfillTasks,
     onSuccess: (r) => { invalidate(); alert(`Sync complete: ${r.created} task(s) created, ${r.skipped} already existed.`); },
@@ -106,21 +235,50 @@ export default function POAMPage() {
     onSuccess: ({ blob, filename }) => triggerDownload(blob, filename),
   });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
-  function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
+  function resetErrors() {
+    create.reset();
+    update.reset();
+    transitionRisk.reset();
+  }
+
+  function openCreate() { resetErrors(); setEditing(null); setForm(EMPTY); setModal('create'); }
+  function openEdit(row) { resetErrors(); setForm(toFormState(row)); setEditing(row.id); setModal('edit'); }
   function handleSubmit(e) {
     e.preventDefault();
     if (modal === 'create') create.mutate(form);
     else update.mutate({ id: editing, d: form });
   }
 
+  function handleRiskTransition(nextState) {
+    if (!editing) return;
+    transitionRisk.mutate({
+      id: editing,
+      d: {
+        state: nextState,
+        review_notes: form.risk_review_notes || '',
+        risk_review_notes: form.risk_review_notes || '',
+        risk_decision: form.risk_decision || '',
+        risk_rationale: form.risk_rationale || '',
+      },
+    });
+  }
+
+  const mutationError =
+    create.error?.response?.data?.error ||
+    update.error?.response?.data?.error ||
+    transitionRisk.error?.response?.data?.error ||
+    create.error?.message ||
+    update.error?.message ||
+    transitionRisk.error?.message;
+
   const cols = [
     { key: 'id',       label: 'ID',       width: 90, render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span> },
     { key: 'title',    label: 'Title' },
     { key: 'severity', label: 'Severity', render: v => <Badge label={v} /> },
     { key: 'status',   label: 'Status',   render: v => <Badge label={v} /> },
-    { key: 'responsible_party', label: 'Responsible Party' },
-    { key: 'scheduled_completion', label: 'Due', render: v => <span className="font-mono text-xs">{v || '—'}</span> },
+    { key: 'riskWorkflowState', label: 'Risk Workflow', render: (_, row) => <Badge label={row.risk_workflow_state || row.riskWorkflowState || 'Draft'} /> },
+    { key: 'responsibleParty', label: 'Responsible Party', render: (_, row) => row.responsible_party || row.responsibleParty || '—' },
+    { key: 'scheduledCompletion', label: 'Due', render: (_, row) => <span className="font-mono text-xs">{row.scheduled_completion || row.scheduledCompletion || '—'}</span> },
     { key: '_actions', label: '', render: (_, row) => (
       <div className="flex gap-2" onClick={e => e.stopPropagation()}>
         <button className="p-1.5 rounded text-scorva-muted hover:text-scorva-accent hover:bg-scorva-hover" onClick={() => openEdit(row)}><Pencil size={13} /></button>
@@ -189,9 +347,23 @@ export default function POAMPage() {
         <Modal title={modal === 'create' ? 'New POAM' : 'Edit POAM'} onClose={() => setModal(null)} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">
             <POAMForm value={form} onChange={setForm} />
+            {modal === 'edit' && (
+              <RiskWorkflowPanel
+                value={form}
+                onChange={setForm}
+                canReview={canReviewRisk}
+                onTransition={handleRiskTransition}
+                isTransitioning={transitionRisk.isPending}
+              />
+            )}
+            {mutationError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+                {mutationError}
+              </div>
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
-              <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending}>Save</button>
+              <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending || transitionRisk.isPending}>Save</button>
             </div>
           </form>
         </Modal>

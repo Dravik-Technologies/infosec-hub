@@ -64,6 +64,8 @@ export default function SecurityEventsPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const isCorporateAdmin = user?.role === 'Corporate Admin';
+  const needsExplicitSite = isCorporateAdmin && !selectedSite;
 
   const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ['security-events', siteScopeKey],
@@ -85,9 +87,14 @@ export default function SecurityEventsPage() {
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
   function handleSubmit(e) {
     e.preventDefault();
-    if (modal === 'create') create.mutate(form);
+    if (modal === 'create') {
+      if (needsExplicitSite) return;
+      create.mutate(form);
+    }
     else update.mutate({ id: editing, d: form });
   }
+
+  const mutationError = create.error?.response?.data?.error || update.error?.response?.data?.error || create.error?.message || update.error?.message;
 
   const cols = [
     { key: 'id',          label: 'ID',       width: 130, render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span> },
@@ -122,11 +129,17 @@ export default function SecurityEventsPage() {
         title="Security Events"
         description="Track and correlate security incidents across assets"
         action={
-          <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}>
+          <button className="btn-primary flex items-center gap-1.5" onClick={openCreate} disabled={needsExplicitSite}>
             <Plus size={15} /> Log Event
           </button>
         }
       />
+
+      {needsExplicitSite && (
+        <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
+          Select a specific site in the header before logging a security event. Corporate Admins cannot create events while scoped to `All Sites`.
+        </div>
+      )}
 
       <StatusDashboard>
         <div className="flex flex-wrap gap-6 items-start">
@@ -165,9 +178,19 @@ export default function SecurityEventsPage() {
           >
             <form onSubmit={handleSubmit} className="space-y-4">
               <EventForm value={form} onChange={setForm} />
+              {needsExplicitSite && modal === 'create' && (
+                <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-300">
+                  Choose a specific site from the top-right site selector before saving this event.
+                </div>
+              )}
+              {mutationError && (
+                <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+                  {mutationError}
+                </div>
+              )}
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
-                <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending}>Save</button>
+                <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending || (modal === 'create' && needsExplicitSite)}>Save</button>
               </div>
             </form>
           </Modal>
