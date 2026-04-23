@@ -91,7 +91,7 @@ export default function LoginPage({ onLogin }) {
               <i className="fa-solid fa-keyboard mt-0.5" style={{ fontSize: '.7rem', color: 'var(--gold)' }} />
               <div>
                 <div className="text-xs font-semibold" style={{ color: 'var(--gold)' }}>Direct login</div>
-                <div style={{ fontSize: '.62rem', color: 'rgba(143,163,192,.5)', marginTop: '2px' }}>Use your Hub credentials. Dev: <span className="font-mono" style={{ color: 'rgba(201,168,76,.7)' }}>admin / admin</span></div>
+                <div style={{ fontSize: '.62rem', color: 'rgba(143,163,192,.5)', marginTop: '2px' }}>Use your Hub credentials.</div>
               </div>
             </div>
           </div>

@@ -1,0 +1,44 @@
+[
+  {
+    "id": "corr-001",
+    "title": "Badge anomaly + unusual network login",
+    "domains": ["physical", "cyber", "personnel"],
+    "siteId": "lincolnia-hq",
+    "site": "MTSI Lorton",
+    "severity": "critical",
+    "status": "active",
+    "confidence": 92,
+    "summary": "Failed badge access after hours followed by VPN login from unfamiliar geography for the same user.",
+    "businessImpact": "Potential insider or credential compromise requiring joint SOC/PSOC escalation.",
+    "linkedRiskId": "risk-001",
+    "createdAt": "2026-04-22T14:10:00Z"
+  },
+  {
+    "id": "corr-002",
+    "title": "Construction project + elevated cyber incidents",
+    "domains": ["pm", "cyber", "physical"],
+    "siteId": "texas-field",
+    "site": "MTSI Colorado Springs",
+    "severity": "high",
+    "status": "active",
+    "confidence": 78,
+    "summary": "Secure space build pending authorization overlaps with increased temporary vendor access and endpoint alerts.",
+    "businessImpact": "Operational disruption risk if vendor access controls are not tightened before kickoff.",
+    "linkedRiskId": "risk-003",
+    "createdAt": "2026-04-21T11:30:00Z"
+  },
+  {
+    "id": "corr-003",
+    "title": "Overdue inspection + open POA&M drift",
+    "domains": ["industrial", "risk"],
+    "siteId": "maryland-warehouse",
+    "site": "MTSI Niceville",
+    "severity": "medium",
+    "status": "active",
+    "confidence": 81,
+    "summary": "Annual self-inspection is overdue while related TEMPEST and training remediation items remain open.",
+    "businessImpact": "Regional consistency and audit readiness are degrading.",
+    "linkedRiskId": "risk-008",
+    "createdAt": "2026-04-20T09:45:00Z"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "inc-001",
+    "title": "Unauthorized badge attempt correlated with VPN anomaly",
+    "domain": "converged",
+    "siteId": "lincolnia-hq",
+    "site": "MTSI Lorton",
+    "severity": "critical",
+    "status": "active",
+    "businessImpact": "Potential insider threat affecting operations center access and privileged network activity.",
+    "owner": "SOC / PSOC Joint Desk",
+    "createdAt": "2026-04-22T13:40:00Z"
+  },
+  {
+    "id": "inc-002",
+    "title": "SCIF temporary access control exception during renovation",
+    "domain": "physical",
+    "siteId": "maryland-warehouse",
+    "site": "MTSI Niceville",
+    "severity": "high",
+    "status": "triage",
+    "businessImpact": "Elevated compliance exposure until temporary controls are verified.",
+    "owner": "Industrial Security / PM",
+    "createdAt": "2026-04-21T18:15:00Z"
+  },
+  {
+    "id": "inc-003",
+    "title": "Two overdue annual briefings with active cleared access",
+    "domain": "personnel",
+    "siteId": "maryland-warehouse",
+    "site": "MTSI Niceville",
+    "severity": "medium",
+    "status": "active",
+    "businessImpact": "Training compliance degradation may trigger access restrictions.",
+    "owner": "PerSec",
+    "createdAt": "2026-04-20T15:05:00Z"
+  }
+]

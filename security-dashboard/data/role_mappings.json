@@ -1,8 +1,65 @@
 {
-  "__comment": "Maps hub usernames (lowercase) to MASH roles. Add an entry here for any hub user who should have site_manager scope. Everyone else defaults to global_fso.",
+  "__comment": "Maps Hub usernames to MASH roles, domains, permissions, and optional site scope. Hub SSO remains the authentication source.",
   "admin": {
-    "role": "global_fso",
+    "role": "vp_security",
     "siteId": null,
+    "siteIds": [],
+    "domains": ["executive", "cyber", "physical", "personnel", "industrial", "program", "pm", "risk"],
+    "permissions": ["*"],
+    "displayTitle": "VP of Security"
+  },
+  "v.kilika": {
+    "role": "security_director",
+    "siteId": null,
+    "siteIds": [],
+    "domains": ["executive", "cyber", "physical", "personnel", "industrial", "program", "pm", "risk"],
+    "permissions": ["*"],
     "displayTitle": "Director of Security"
+  },
+  "exec": {
+    "role": "executive",
+    "siteId": null,
+    "siteIds": [],
+    "domains": ["executive"],
+    "permissions": ["read"],
+    "displayTitle": "Executive Viewer"
+  },
+  "persec": {
+    "role": "persec",
+    "siteId": null,
+    "siteIds": [],
+    "displayTitle": "Personnel Security Lead"
+  },
+  "industrial": {
+    "role": "industrial_security",
+    "siteId": null,
+    "siteIds": [],
+    "displayTitle": "Industrial Security Lead"
+  },
+  "program.security": {
+    "role": "program_security",
+    "siteId": null,
+    "siteIds": [],
+    "displayTitle": "Program Security Lead"
+  },
+  "cyber": {
+    "role": "cybersecurity",
+    "siteId": null,
+    "siteIds": [],
+    "displayTitle": "Cybersecurity Lead"
+  },
+  "pm": {
+    "role": "pm",
+    "siteId": null,
+    "siteIds": [],
+    "domains": ["executive", "cyber", "physical", "personnel", "industrial", "program", "pm", "risk"],
+    "permissions": ["*"],
+    "displayTitle": "Security Program Manager"
+  },
+  "j.martinez": {
+    "role": "site_manager",
+    "siteId": "lincolnia-hq",
+    "siteIds": ["lincolnia-hq"],
+    "displayTitle": "SSM — Lincolnia HQ"
   }
 }

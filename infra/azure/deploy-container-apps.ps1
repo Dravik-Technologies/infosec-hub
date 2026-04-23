@@ -12,8 +12,10 @@ param(
   [Parameter(Mandatory = $true)][string]$CraterJwtSecret,
   [Parameter(Mandatory = $true)][string]$LavaSessionSecret,
   [Parameter(Mandatory = $true)][string]$MashJwtSecret,
+  [string]$PostgresHostSuffix = "postgres.database.usgovcloudapi.net",
   [string]$ImageTag = "latest",
-  [string]$AppPrefix = "saf"
+  [string]$AppPrefix = "saf",
+  [string]$MashImageName = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -103,12 +105,19 @@ $script:AcrLoginServer = $acr.loginServer
 $script:AcrUsername = $acrCred.username
 $script:AcrPassword = $acrCred.passwords[0].value
 
-$databaseUrl = "postgresql://${PostgresAdminUser}:${PostgresAdminPassword}@${PostgresServer}.postgres.database.azure.com:5432/${PostgresDatabase}?sslmode=require"
+if ($PostgresServer -like "*.*") {
+  $postgresHost = $PostgresServer
+} else {
+  $postgresHost = "${PostgresServer}.${PostgresHostSuffix}"
+}
+
+$databaseUrl = "postgresql://${PostgresAdminUser}:${PostgresAdminPassword}@${postgresHost}:5432/${PostgresDatabase}?sslmode=require"
 
 $hubName = Get-AppName "hub"
 $scorvaName = Get-AppName "scorva"
 $lavaName = Get-AppName "lava"
 $mashName = Get-AppName "mash"
+$mashImageRepo = if ([string]::IsNullOrWhiteSpace($MashImageName)) { $mashName } else { $MashImageName }
 $dataFabricName = Get-AppName "data-fabric"
 $craterApiName = Get-AppName "crater-api"
 $craterUiName = Get-AppName "crater-ui"
@@ -204,7 +213,7 @@ $null = Ensure-ContainerApp `
 
 $null = Ensure-ContainerApp `
   -Name $mashName `
-  -Image "$AcrLoginServer/mash:$ImageTag" `
+  -Image "$AcrLoginServer/${mashImageRepo}:$ImageTag" `
   -TargetPort 8080 `
   -Ingress "external" `
   -Secrets @{ dburl = $databaseUrl; mshjwt = $MashJwtSecret } `
@@ -214,6 +223,8 @@ $null = Ensure-ContainerApp `
     DATABASE_URL = "secretref:dburl"
     JWT_SECRET = "secretref:mshjwt"
     HUB_URL = $hubUrl
+    HUB_HOST = $hubName
+    HUB_PORT = "3010"
   }
 
 $null = Ensure-ContainerApp `
@@ -234,4 +245,6 @@ Write-Host "Deployment complete."
 Write-Host "Hub URL:          $hubUrl"
 Write-Host "SCORVA URL:       $scorvaUrl"
 Write-Host "Crater API FQDN:  $craterApiFqdn"
-Write-Host "Run logs with:    az containerapp logs show -n $hubName -g $ResourceGroup --follow"
+Write-Host "MASH image:       $AcrLoginServer/${mashImageRepo}:$ImageTag"
+Write-Host "Run Hub logs:     az containerapp logs show -n $hubName -g $ResourceGroup --follow"
+Write-Host "Run MASH logs:    az containerapp logs show -n $mashName -g $ResourceGroup --follow"

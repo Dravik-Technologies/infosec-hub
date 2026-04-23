@@ -1,0 +1,26 @@
+[
+  {
+    "id": "per-001",
+    "person": "Contractor Group A",
+    "siteId": "lincolnia-hq",
+    "site": "MTSI Lorton",
+    "type": "Periodic Reinvestigation",
+    "status": "open",
+    "riskLevel": "medium",
+    "owner": "PerSec",
+    "dueDate": "2026-04-30",
+    "summary": "Three contractor PR packages submitted and awaiting adjudication."
+  },
+  {
+    "id": "per-002",
+    "person": "Two cleared personnel",
+    "siteId": "maryland-warehouse",
+    "site": "MTSI Niceville",
+    "type": "Annual Security Training",
+    "status": "overdue",
+    "riskLevel": "high",
+    "owner": "PerSec",
+    "dueDate": "2026-05-01",
+    "summary": "Access suspension risk if completion slips past grace period."
+  }
+]

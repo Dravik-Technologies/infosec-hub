@@ -11,12 +11,13 @@ const express  = require('express');
 const fs       = require('fs');
 const path     = require('path');
 const jwt      = require('jsonwebtoken');
-const { dbOk, getModel, readCollection } = require('./pg-store');
+const { dbOk, getDb, getModel, readCollection } = require('./pg-store');
 
 const PORT       = process.env.PORT || 8080;
 const DATA_DIR   = path.join(__dirname, 'data');
 const JWT_SECRET = process.env.JWT_SECRET || 'mash-dev-secret-change-in-prod';
 const JWT_TTL    = '8h';
+const AUTH_VERSION = 2;
 const HUB_URL    = process.env.HUB_URL || null;
 const HUB_HOST   = process.env.HUB_HOST || '127.0.0.1';
 const HUB_PORT   = parseInt(process.env.HUB_PORT || '3010', 10);
@@ -39,16 +40,104 @@ function validCollection(name) {
 const uid = () => 'id-' + Math.random().toString(36).slice(2) + Date.now().toString(36);
 
 // Singletons: entire JSON stored as one doc with _id = 'singleton'
-const SINGLETON = new Set(['budget', 'timeline', 'compliance', 'settings']);
+const SINGLETON = new Set(['budget', 'timeline', 'compliance', 'settings', 'role_mappings']);
+
+const ROLE_DEFS = {
+    vp_security: {
+        label: 'VP of Security',
+        domains: ['executive', 'cyber', 'physical', 'personnel', 'industrial', 'program', 'pm', 'risk'],
+        permissions: ['*'],
+    },
+    global_fso: {
+        label: 'Global FSO',
+        domains: ['executive', 'physical', 'personnel', 'industrial', 'program', 'pm', 'risk'],
+        permissions: ['*'],
+    },
+    security_director: {
+        label: 'Director of Security',
+        domains: ['executive', 'cyber', 'physical', 'personnel', 'industrial', 'program', 'pm', 'risk'],
+        permissions: ['*'],
+    },
+    persec: {
+        label: 'Personnel Security',
+        domains: ['personnel'],
+        permissions: ['personnel_security:write', 'employees:write', 'risks:write'],
+    },
+    industrial_security: {
+        label: 'Industrial Security',
+        domains: ['industrial', 'physical'],
+        permissions: ['compliance:write', 'self_inspections:write', 'physical_systems:write', 'risks:write'],
+    },
+    program_security: {
+        label: 'Program Security',
+        domains: ['program', 'risk'],
+        permissions: ['compliance:write', 'documents:write', 'risks:write', 'timeline:write'],
+    },
+    cybersecurity: {
+        label: 'Cybersecurity',
+        domains: ['cyber'],
+        permissions: ['cyber_posture:write', 'incidents:write', 'correlations:write', 'risks:write'],
+    },
+    pm: {
+        label: 'Program Manager',
+        domains: ['executive', 'cyber', 'physical', 'personnel', 'industrial', 'program', 'pm', 'risk'],
+        permissions: ['*'],
+    },
+    site_manager: {
+        label: 'Site Manager',
+        domains: ['physical', 'personnel', 'industrial', 'pm', 'risk'],
+        permissions: ['sites:write', 'compliance:write', 'self_inspections:write', 'construction:write', 'risks:write', 'employees:write', 'documents:write'],
+    },
+    executive: {
+        label: 'Executive',
+        domains: ['executive'],
+        permissions: ['read'],
+    },
+};
+
+const COLLECTION_DOMAINS = {
+    sites: 'physical',
+    risks: 'risk',
+    budget: 'program',
+    timeline: 'program',
+    compliance: 'industrial',
+    activity: 'program',
+    milestones: 'program',
+    construction: 'pm',
+    employees: 'personnel',
+    documents: 'program',
+    transactions: 'program',
+    contracts: 'program',
+    inspections: 'industrial',
+    self_inspections: 'industrial',
+    physical_systems: 'physical',
+    personnel_security: 'personnel',
+    cyber_posture: 'cyber',
+    incidents: 'risk',
+    correlations: 'risk',
+    role_mappings: 'admin',
+};
 
 // ── Seed collections from JSON on first run ───────────────────────────────────
 async function seedOne(name) {
     if (!dbOk()) return;
     const M = getModel(name);
     if (SINGLETON.has(name)) {
-        if (await M.exists({ _id: 'singleton' })) return;
         const data = readJson(name);
         if (!data) return;
+        const existing = await M.findById('singleton').lean();
+        if (existing) {
+            if (name === 'role_mappings') {
+                const { _id, __v, ...current } = existing;
+                await M.findOneAndReplace(
+                    { _id: 'singleton' },
+                    { _id: 'singleton', ...current, ...data },
+                    { upsert: true, new: true }
+                );
+                console.log(`[MASH] Merged singleton seed: ${name}`);
+            }
+            return;
+        }
         await M.create({ _id: 'singleton', ...data });
         console.log(`[MASH] Seeded singleton: ${name}`);
     } else {
@@ -66,7 +155,9 @@ async function seedOne(name) {
 async function seedAll() {
     const ALL = ['sites','risks','budget','timeline','compliance','activity',
                  'settings','milestones','construction','employees','documents',
-                 'transactions','contracts','inspections','role_mappings','users'];
+                 'transactions','contracts','inspections','role_mappings','users',
+                 'incidents','correlations','self_inspections','physical_systems',
+                 'personnel_security','cyber_posture','audit_log'];
     for (const c of ALL) await seedOne(c);
     console.log('[MASH] Seed complete.');
 }
@@ -141,6 +232,418 @@ async function dbDelete(collection, id) {
     return !!(await getModel(collection).findByIdAndDelete(id));
 }
 
+async function readData(collection) {
+    if (dbOk()) return dbGet(collection);
+    const data = readJson(collection);
+    return SINGLETON.has(collection) ? (data != null ? data : {}) : (data != null ? data : []);
+}
+
+async function writeData(collection, data) {
+    if (dbOk()) {
+        await dbPut(collection, data);
+    } else {
+        writeJson(collection, data);
+    }
+}
+
+async function appendData(collection, item) {
+    if (dbOk()) return dbPost(collection, item);
+    const current = readJson(collection) || [];
+    const saved = { ...item, id: item.id || uid() };
+    current.push(saved);
+    writeJson(collection, current);
+    return saved;
+}
+
+function normalizeRole(role) {
+    return ROLE_DEFS[role] ? role : 'executive';
+}
+
+function expandPermissions(role, mapping = {}) {
+    const def = ROLE_DEFS[normalizeRole(role)] || ROLE_DEFS.executive;
+    const permissions = new Set([...(def.permissions || []), ...((mapping.permissions || []))]);
+    const domains = new Set([...(def.domains || []), ...((mapping.domains || []))]);
+    return { permissions: [...permissions], domains: [...domains] };
+}
+
+function canWrite(user, collection) {
+    if (!user) return false;
+    const permissions = user.permissions || [];
+    if (permissions.includes('*')) return true;
+    if (permissions.includes(`${collection}:write`)) return true;
+    const domain = COLLECTION_DOMAINS[collection];
+    return Boolean(domain && user.domains && user.domains.includes(domain) && permissions.includes(`${domain}:write`));
+}
+
+function apiCollectionFromPath(req) {
+    const [first, second] = req.path.split('/').filter(Boolean);
+    if (first === 'access-admin') return 'role_mappings';
+    if (first === 'self-inspections') return 'self_inspections';
+    if (first === 'construction-risk') return 'construction';
+    if (first === 'executive-posture') return 'activity';
+    if (first === 'budget' && second === 'transactions') return 'transactions';
+    if (first === 'timeline' && second === 'milestones') return 'timeline';
+    return first;
+}
+
+async function logAudit(req, action, collection, targetId, outcome = 'ok', detail = {}) {
+    const entry = {
+        id: uid(),
+        action,
+        collection,
+        targetId: targetId || null,
+        outcome,
+        detail,
+        username: (req.user && req.user.username) || 'system',
+        role: (req.user && req.user.role) || 'unknown',
+        createdAt: new Date().toISOString(),
+    };
+    try {
+        if (dbOk()) await dbPost('audit_log', entry);
+        else {
+            const audit = readJson('audit_log') || [];
+            audit.unshift(entry);
+            writeJson('audit_log', audit.slice(0, 1000));
+        }
+    } catch (err) {
+        console.warn('[MASH audit]', err.message);
+    }
+}
+
+function requireWritePermission(req, res, next) {
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+    const collection = apiCollectionFromPath(req);
+    if (!collection || (collection !== 'role_mappings' && !validCollection(collection)))
+        return res.status(400).json({ error: 'Invalid collection' });
+    if (!canWrite(req.user, collection)) {
+        logAudit(req, req.method, collection, req.params && req.params.id, 'denied').catch(() => {});
+        return res.status(403).json({ error: `Forbidden — ${req.user.role} cannot update ${collection}` });
+    }
+    next();
+}
+
+function cleanRoleMappings(raw) {
+    const mappings = raw && typeof raw === 'object' && !Array.isArray(raw) ? { ...raw } : {};
+    delete mappings._id;
+    delete mappings.__v;
+    return mappings;
+}
+
+function publicRoleDefs() {
+    return Object.fromEntries(Object.entries(ROLE_DEFS).map(([id, def]) => [id, {
+        id,
+        label: def.label,
+        domains: def.domains || [],
+        permissions: def.permissions || [],
+    }]));
+}
+
+function sanitizeRoleMapping(input = {}) {
+    const role = normalizeRole(input.role);
+    const def = ROLE_DEFS[role] || ROLE_DEFS.executive;
+    const siteId = input.siteId || null;
+    return {
+        role,
+        siteId,
+        siteIds: Array.isArray(input.siteIds) ? input.siteIds.filter(Boolean) : (siteId ? [siteId] : []),
+        domains: Array.isArray(input.domains) ? input.domains : (def.domains || []),
+        permissions: Array.isArray(input.permissions) ? input.permissions : (def.permissions || []),
+        displayTitle: input.displayTitle || def.label || role,
+    };
+}
+
+async function readRoleMappings() {
+    return cleanRoleMappings(await readData('role_mappings'));
+}
+
+async function writeRoleMappings(mappings) {
+    await writeData('role_mappings', mappings);
+}
+
+async function readHubUsers() {
+    if (dbOk()) {
+        const client = getDb();
+        const users = await client.user.findMany({
+            orderBy: [{ name: 'asc' }, { username: 'asc' }],
+            select: {
+                id: true,
+                username: true,
+                name: true,
+                email: true,
+                role: true,
+                title: true,
+                siteId: true,
+                siteIds: true,
+                status: true,
+            },
+        });
+        return users.map(user => ({
+            ...user,
+            status: user.status || 'Active',
+            siteIds: Array.isArray(user.siteIds) ? user.siteIds : [],
+        }));
+    }
+    const users = readJson('users') || [];
+    return users.map(({ passwordHash, ...user }) => ({
+        ...user,
+        status: user.status || 'Active',
+        siteIds: Array.isArray(user.siteIds) ? user.siteIds : (user.siteId ? [user.siteId] : []),
+    }));
+}
+
+function scoreSeverity(severity) {
+    return ({ critical: 25, high: 16, medium: 9, low: 4 }[(severity || '').toLowerCase()] || 5);
+}
+
+function riskScoreFromSignals({ risks = [], sites = [], inspections = [], construction = [], incidents = [], correlations = [] }) {
+    const openRisks = risks.filter(r => !['resolved', 'closed'].includes((r.status || '').toLowerCase()));
+    const riskLoad = openRisks.reduce((sum, r) => sum + scoreSeverity(r.severity), 0);
+    const avgCompliance = sites.length ? sites.reduce((sum, s) => sum + (s.compliance || 0), 0) / sites.length : 90;
+    const overdueInspections = inspections.filter(i => ['overdue', 'late'].includes((i.status || '').toLowerCase())).length;
+    const constructionExceptions = construction.reduce((sum, p) => sum + ((p.blockers && p.blockers.length) || 0), 0);
+    const incidentLoad = incidents.filter(i => !['closed', 'resolved'].includes((i.status || '').toLowerCase())).length * 4;
+    const correlationLoad = correlations.filter(c => (c.status || 'active').toLowerCase() === 'active').length * 4;
+    const raw = 100 - (100 - avgCompliance) - Math.min(28, riskLoad) - Math.min(10, overdueInspections * 3)
+        - Math.min(8, constructionExceptions * 2) - Math.min(12, incidentLoad) - Math.min(12, correlationLoad);
+    return Math.max(0, Math.min(100, Math.round(raw)));
+}
+
+async function maybeCreateConstructionRisk(req, project) {
+    const blockers = project.blockers || [];
+    const tempIssues = (project.temporaryControls || []).filter(c =>
+        ['missing', 'failed', 'overdue'].includes((c.status || '').toLowerCase())
+    );
+    const status = (project.status || '').toLowerCase();
+    if (!blockers.length && !tempIssues.length && !['blocked', 'deviation'].includes(status)) return;
+
+    const existing = await readData('risks');
+    const alreadyLinked = Array.isArray(existing) && existing.some(r =>
+        r.sourceType === 'construction' && r.sourceId === project.id && !['resolved', 'closed'].includes((r.status || '').toLowerCase())
+    );
+    if (alreadyLinked) return;
+
+    await appendData('risks', {
+        id: uid(),
+        title: `Construction security deviation — ${project.title || project.name || project.site || project.siteId}`,
+        description: [
+            blockers.length ? `Blockers: ${blockers.join('; ')}` : null,
+            tempIssues.length ? `Temporary control issues: ${tempIssues.map(c => `${c.name || c.control}: ${c.status}`).join('; ')}` : null,
+        ].filter(Boolean).join(' '),
+        severity: blockers.length || tempIssues.length > 1 ? 'high' : 'medium',
+        probability: 'medium',
+        impact: 'high',
+        status: 'open',
+        siteId: project.siteId,
+        site: project.site,
+        domain: 'pm',
+        sourceType: 'construction',
+        sourceId: project.id,
+        owner: project.owner || project.pm || project.contractor || 'Security PM',
+        dueDate: project.projectedCompletion || project.endDate,
+        businessImpact: 'Construction deviation may weaken temporary controls or delay secure-space accreditation.',
+        createdAt: new Date().toISOString(),
+        createdBy: (req.user && req.user.username) || 'system',
+    });
+}
+
+function normalizeEvidence(input, user) {
+    const list = Array.isArray(input) ? input : (input ? [input] : []);
+    return list.map(item => ({
+        id: item.id || uid(),
+        fileName: item.fileName || item.name || 'evidence',
+        type: item.type || 'document',
+        fileRef: item.fileRef || item.url || item.href || '',
+        notes: item.notes || '',
+        uploadedBy: item.uploadedBy || (user && user.username) || 'system',
+        uploadedAt: item.uploadedAt || new Date().toISOString(),
+    }));
+}
+
+function isOpenStatus(status) {
+    return !['closed', 'resolved', 'complete', 'completed'].includes((status || '').toLowerCase());
+}
+
+async function buildExecutivePosture(user) {
+    const [sitesRaw, risksRaw, complianceRaw, constructionRaw, inspectionsRaw, physicalRaw, personnelRaw, cyberRaw, incidentsRaw, correlationsRaw] = await Promise.all([
+        readData('sites'), readData('risks'), readData('compliance'), readData('construction'),
+        readData('self_inspections'), readData('physical_systems'), readData('personnel_security'),
+        readData('cyber_posture'), readData('incidents'), readData('correlations'),
+    ]);
+
+    const sites = applyRBAC('sites', sitesRaw, user);
+    const risks = applyRBAC('risks', risksRaw, user);
+    const compliance = applyRBAC('compliance', complianceRaw, user);
+    const construction = applyRBAC('construction', constructionRaw, user);
+    const selfInspections = applyRBAC('self_inspections', inspectionsRaw, user);
+    const physicalSystems = applyRBAC('physical_systems', physicalRaw, user);
+    const personnelSecurity = applyRBAC('personnel_security', personnelRaw, user);
+    const cyberPosture = applyRBAC('cyber_posture', cyberRaw, user);
+    const incidents = applyRBAC('incidents', incidentsRaw, user);
+    const correlations = applyRBAC('correlations', correlationsRaw, user);
+
+    const openRisks = risks.filter(r => isOpenStatus(r.status));
+    const activeIncidents = incidents.filter(i => isOpenStatus(i.status));
+    const activeCorrelations = correlations.filter(c => (c.status || 'active').toLowerCase() === 'active');
+    const overdueInspections = selfInspections.filter(i => ['overdue', 'late'].includes((i.status || '').toLowerCase()));
+    const constructionExceptions = construction.filter(p =>
+        (p.blockers || []).length ||
+        ['blocked', 'deviation', 'pending-auth'].includes((p.status || '').toLowerCase()) ||
+        (p.temporaryControls || []).some(c => ['missing', 'failed', 'overdue'].includes((c.status || '').toLowerCase()))
+    );
+    const unhealthyPhysical = physicalSystems.filter(s => !['online', 'nominal', 'healthy'].includes((s.status || '').toLowerCase()));
+    const personnelExceptions = personnelSecurity.filter(p =>
+        ['overdue', 'expired', 'suspended', 'open'].includes((p.status || '').toLowerCase()) ||
+        ['high', 'critical'].includes((p.riskLevel || '').toLowerCase())
+    );
+    const cyberExceptions = cyberPosture.filter(c =>
+        ['critical', 'high'].includes((c.severity || c.riskLevel || '').toLowerCase()) ||
+        ['open', 'degraded', 'active'].includes((c.status || '').toLowerCase())
+    );
+
+    const score = riskScoreFromSignals({
+        risks: openRisks, sites, inspections: selfInspections, construction,
+        incidents: activeIncidents, correlations: activeCorrelations,
+    });
+
+    return {
+        generatedAt: new Date().toISOString(),
+        score,
+        status: score >= 85 ? 'Nominal' : score >= 70 ? 'Guarded' : score >= 55 ? 'Elevated' : 'Critical',
+        domains: [
+            { id: 'cyber', label: 'Cyber', score: Math.max(0, 100 - cyberExceptions.length * 12), exceptions: cyberExceptions.length },
+            { id: 'physical', label: 'Physical / Industrial', score: Math.max(0, 100 - unhealthyPhysical.length * 10 - overdueInspections.length * 5), exceptions: unhealthyPhysical.length + overdueInspections.length },
+            { id: 'personnel', label: 'Personnel Security', score: Math.max(0, 100 - personnelExceptions.length * 12), exceptions: personnelExceptions.length },
+            { id: 'program', label: 'Program / POA&M', score: Math.max(0, 100 - openRisks.length * 5), exceptions: openRisks.length },
+            { id: 'pm', label: 'Construction / PM', score: Math.max(0, 100 - constructionExceptions.length * 14), exceptions: constructionExceptions.length },
+        ],
+        metrics: {
+            sites: sites.length,
+            activeIncidents: activeIncidents.length,
+            activeCorrelations: activeCorrelations.length,
+            openRisks: openRisks.length,
+            highRisks: openRisks.filter(r => ['critical', 'high'].includes((r.severity || '').toLowerCase())).length,
+            overdueInspections: overdueInspections.length,
+            constructionExceptions: constructionExceptions.length,
+            physicalExceptions: unhealthyPhysical.length,
+            personnelExceptions: personnelExceptions.length,
+            cyberExceptions: cyberExceptions.length,
+        },
+        topRisks: openRisks.sort((a, b) => scoreSeverity(b.severity) - scoreSeverity(a.severity)).slice(0, 6),
+        incidents: activeIncidents.slice(0, 8),
+        correlations: activeCorrelations.slice(0, 8),
+        overdueInspections: overdueInspections.slice(0, 8),
+        constructionExceptions: constructionExceptions.slice(0, 8),
+        siteHeat: sites.map(site => ({
+            id: site.id,
+            siteId: site.siteId,
+            name: site.name,
+            location: site.location,
+            score: site.compliance || 0,
+            riskCount: openRisks.filter(r => r.siteId === site.id || r.siteId === site.siteId).length,
+            constructionCount: construction.filter(c => c.siteId === site.id || c.siteId === site.siteId).length,
+            inspectionStatus: overdueInspections.some(i => i.siteId === site.id || i.siteId === site.siteId) ? 'overdue' : 'current',
+        })),
+        teamPerformance: {
+            soc: { workload: cyberExceptions.length + activeCorrelations.length, avgResponse: '18m', resolutionRate: 91 },
+            psoc: { workload: unhealthyPhysical.length + activeIncidents.filter(i => i.domain === 'physical').length, avgResponse: '24m', resolutionRate: 88 },
+            investigations: { workload: personnelExceptions.length + activeIncidents.filter(i => i.domain === 'personnel').length, avgResponse: '2.1d', resolutionRate: 84 },
+        },
+        sourceCounts: {
+            complianceFindings: ((compliance && compliance.findings) || []).length,
+            selfInspections: selfInspections.length,
+            physicalSystems: physicalSystems.length,
+            personnelSecurity: personnelSecurity.length,
+            cyberPosture: cyberPosture.length,
+        },
+    };
+}
+
+async function buildEscalations(user) {
+    const [risksRaw, inspectionsRaw, constructionRaw, incidentsRaw, correlationsRaw] = await Promise.all([
+        readData('risks'), readData('self_inspections'), readData('construction'),
+        readData('incidents'), readData('correlations'),
+    ]);
+    const risks = applyRBAC('risks', risksRaw, user);
+    const inspections = applyRBAC('self_inspections', inspectionsRaw, user);
+    const construction = applyRBAC('construction', constructionRaw, user);
+    const incidents = applyRBAC('incidents', incidentsRaw, user);
+    const correlations = applyRBAC('correlations', correlationsRaw, user);
+
+    const rows = [];
+    risks.filter(r => isOpenStatus(r.status) && ['critical', 'high'].includes((r.severity || '').toLowerCase())).forEach(r => rows.push({
+        id: `risk-${r.id}`,
+        type: 'risk',
+        title: r.title,
+        severity: r.severity || 'medium',
+        status: r.status || 'open',
+        siteId: r.siteId,
+        site: r.site,
+        owner: r.owner,
+        dueDate: r.dueDate,
+        sourceId: r.id,
+        businessImpact: r.businessImpact,
+    }));
+    inspections.filter(i => ['overdue', 'late', 'fail'].includes((i.status || '').toLowerCase())).forEach(i => rows.push({
+        id: `inspection-${i.id}`,
+        type: 'self_inspection',
+        title: i.title || i.type || 'Self-inspection exception',
+        severity: i.score < 50 ? 'high' : 'medium',
+        status: i.status || 'open',
+        siteId: i.siteId,
+        site: i.site,
+        owner: i.owner,
+        dueDate: i.dueDate,
+        sourceId: i.id,
+        evidenceCount: i.evidenceCount || ((i.evidence || []).length),
+        businessImpact: 'Inspection exception may affect readiness, compliance posture, or local control effectiveness.',
+    }));
+    construction.filter(p =>
+        (p.blockers || []).length ||
+        ['blocked', 'deviation', 'pending-auth'].includes((p.status || '').toLowerCase()) ||
+        (p.temporaryControls || []).some(c => ['missing', 'failed', 'overdue'].includes((c.status || '').toLowerCase()))
+    ).forEach(p => rows.push({
+        id: `construction-${p.id}`,
+        type: 'construction',
+        title: p.title || p.name || 'Construction security exception',
+        severity: (p.blockers || []).length ? 'high' : 'medium',
+        status: p.status || 'active',
+        siteId: p.siteId,
+        site: p.site,
+        owner: p.owner || p.pm,
+        dueDate: p.projectedCompletion || p.endDate,
+        sourceId: p.id,
+        businessImpact: 'Construction deviation may weaken temporary controls or delay secure-space handover.',
+    }));
+    incidents.filter(i => isOpenStatus(i.status) && ['critical', 'high'].includes((i.severity || '').toLowerCase())).forEach(i => rows.push({
+        id: `incident-${i.id}`,
+        type: 'incident',
+        title: i.title,
+        severity: i.severity || 'medium',
+        status: i.status || 'active',
+        siteId: i.siteId,
+        site: i.site,
+        owner: i.owner,
+        dueDate: i.dueDate,
+        sourceId: i.id,
+        businessImpact: i.businessImpact,
+    }));
+    correlations.filter(c => (c.status || 'active').toLowerCase() === 'active').forEach(c => rows.push({
+        id: `correlation-${c.id}`,
+        type: 'correlation',
+        title: c.title || c.signal || 'Cross-domain signal',
+        severity: c.severity || c.riskLevel || 'medium',
+        status: c.status || 'active',
+        siteId: c.siteId,
+        site: c.site,
+        owner: c.owner,
+        dueDate: c.dueDate,
+        sourceId: c.id,
+        businessImpact: c.businessImpact || 'Cross-domain signal may indicate converged or insider-threat activity.',
+    }));
+
+    return rows.sort((a, b) => scoreSeverity(b.severity) - scoreSeverity(a.severity));
+}
+
 // ── Hub proxy helpers ──────────────────────────────────────────────────────────
 
 /** POST credentials to hub and get back the hub user object. */
@@ -183,34 +686,58 @@ function verifyHubToken(token) {
 // ── Hub user → MASH JWT payload ───────────────────────────────────────────────
 async function mapHubUser(hubUser) {
     // role_mappings.json: { "<hub_username_lowercase>": { role, siteId, displayTitle } }
-    const roleMap = dbOk()
+    const roleMapRaw = dbOk()
         ? ((await readCollection('role_mappings')) || {})
         : (readJson('role_mappings') || {});
-    const mapping = roleMap[(hubUser.username || '').toLowerCase()];
+    const roleMap = Array.isArray(roleMapRaw)
+        ? (roleMapRaw.find(row => row && typeof row === 'object' && !row.id) || roleMapRaw[0] || {})
+        : roleMapRaw;
+    const usernameKey = (hubUser.username || '').toLowerCase();
+    const emailKey = (hubUser.email || '').toLowerCase();
+    const mapping = roleMap[usernameKey] || roleMap[emailKey];
 
-    let role   = 'global_fso';   // safe default — restrict later via mapping
-    let siteId = null;
-    let title  = hubUser.title || hubUser.role || 'Security Staff';
+    let role    = 'executive';
+    let siteId  = hubUser.siteId || hubUser.site || null;
+    let siteIds = Array.isArray(hubUser.siteIds) ? hubUser.siteIds : (siteId ? [siteId] : []);
+    let title   = hubUser.title || hubUser.role || 'Security Staff';
 
     if (mapping) {
-        role   = mapping.role          ?? role;
-        siteId = mapping.siteId        ?? siteId;
-        title  = mapping.displayTitle  || title;
+        role    = normalizeRole(mapping.role != null ? mapping.role : role);
+        siteId  = mapping.siteId != null ? mapping.siteId : siteId;
+        siteIds = Array.isArray(mapping.siteIds) ? mapping.siteIds : (siteId ? [siteId] : []);
+        title   = mapping.displayTitle  || title;
     } else {
-        // Infer from hub role string
+        // Conservative inference: broad Hub roles like "Corporate Admin" do not
+        // grant MASH write access unless the security role is explicit.
+        const roleText = `${hubUser.role || ''} ${hubUser.title || ''}`.toLowerCase();
+        if (roleText.includes('vp of security') || roleText.includes('vp security')) {
+            role = 'vp_security';
+        } else if (roleText.includes('director of security') || roleText.includes('security director')) {
+            role = 'security_director';
+        } else if (roleText.includes('security program manager') || /\bpm\b/.test(roleText)) {
+            role = 'pm';
+        }
         const siteManagerRoles = ['Site Manager', 'Field Officer', 'Site Staff', 'Site Lead'];
-        if (siteManagerRoles.some(r => (hubUser.role || '').includes(r))) {
+        if (role === 'executive' && siteManagerRoles.some(r => (hubUser.role || '').includes(r))) {
             role = 'site_manager';
         }
     }
+
+    const expanded = expandPermissions(role, mapping || {});
+    if (!siteIds.length && siteId) siteIds = [siteId];
 
     return {
         sub:      hubUser.id || hubUser._id || hubUser.username,
         username: hubUser.username,
         role,
+        roleLabel: (ROLE_DEFS[role] && ROLE_DEFS[role].label) || role,
+        domains: expanded.domains,
+        permissions: expanded.permissions,
         siteId:   siteId || null,
+        siteIds,
         name:     hubUser.name  || hubUser.username,
         title,
+        authVersion: AUTH_VERSION,
     };
 }
 
@@ -236,24 +763,26 @@ const SITE_NAMES = {
 };
 
 function applyRBAC(collection, data, user) {
-    if (user.role !== 'site_manager' || !user.siteId) return data;
+    const scopedSites = new Set([...(user.siteIds || []), user.siteId].filter(Boolean));
+    if (user.role !== 'site_manager' || scopedSites.size === 0) return data;
     const sid = user.siteId;
+    const inScope = value => scopedSites.has(value);
 
     switch (collection) {
         case 'sites':
-            return Array.isArray(data) ? data.filter(s => s.id === sid) : data;
+            return Array.isArray(data) ? data.filter(s => inScope(s.id) || inScope(s.siteId)) : data;
         case 'risks':
-            return Array.isArray(data) ? data.filter(r => r.siteId === sid || r.siteId === 'all') : data;
+            return Array.isArray(data) ? data.filter(r => inScope(r.siteId) || r.siteId === 'all') : data;
         case 'compliance': {
             if (!data || typeof data !== 'object') return data;
-            return { ...data, findings: (data.findings || []).filter(f => f.siteId === sid) };
+            return { ...data, findings: (data.findings || []).filter(f => inScope(f.siteId)) };
         }
         case 'budget': {
             if (!data || typeof data !== 'object') return data;
             return {
                 ...data,
-                bySite:             (data.bySite             || []).filter(b => b.siteId === sid),
-                recentTransactions: (data.recentTransactions || []).filter(t => t.siteId === sid || t.siteId === 'all'),
+                bySite:             (data.bySite             || []).filter(b => inScope(b.siteId)),
+                recentTransactions: (data.recentTransactions || []).filter(t => inScope(t.siteId) || t.siteId === 'all'),
             };
         }
         case 'timeline': {
@@ -267,13 +796,20 @@ function applyRBAC(collection, data, user) {
             };
         }
         case 'activity':
-            return Array.isArray(data) ? data.filter(a => a.siteId === sid || a.siteId === 'all' || !a.siteId) : data;
+            return Array.isArray(data) ? data.filter(a => inScope(a.siteId) || a.siteId === 'all' || !a.siteId) : data;
         case 'construction':
-            return Array.isArray(data) ? data.filter(c => c.siteId === sid) : data;
+            return Array.isArray(data) ? data.filter(c => inScope(c.siteId)) : data;
         case 'employees':
-            return Array.isArray(data) ? data.filter(e => e.siteId === sid) : data;
+            return Array.isArray(data) ? data.filter(e => inScope(e.siteId)) : data;
         case 'documents':
-            return Array.isArray(data) ? data.filter(d => d.siteId === sid) : data;
+            return Array.isArray(data) ? data.filter(d => inScope(d.siteId)) : data;
+        case 'self_inspections':
+        case 'physical_systems':
+        case 'personnel_security':
+        case 'cyber_posture':
+        case 'incidents':
+        case 'correlations':
+            return Array.isArray(data) ? data.filter(x => inScope(x.siteId) || x.siteId === 'all' || !x.siteId) : data;
         default:
             return data;
     }
@@ -342,9 +878,9 @@ app.get('/public/briefing', async (req, res) => {
                 dbGet('sites'), dbGet('risks'), dbGet('budget'),
             ]);
         } else {
-            sites  = readJson('sites')  ?? [];
-            risks  = readJson('risks')  ?? [];
-            budget = readJson('budget') ?? {};
+            sites  = readJson('sites')  || [];
+            risks  = readJson('risks')  || [];
+            budget = readJson('budget') || {};
         }
         res.json({ sites, risks, budget, generatedAt: new Date().toISOString() });
     } catch (err) {
@@ -355,6 +891,251 @@ app.get('/public/briefing', async (req, res) => {
 
 // ── Protect all /api/* routes ──────────────────────────────────────────────────
 app.use('/api', requireAuth);
+app.use('/api', requireWritePermission);
+
+// ── Access administration ────────────────────────────────────────────────────
+app.get('/api/access-admin/users', async (req, res) => {
+    try {
+        const mappings = await readRoleMappings();
+        const users = await readHubUsers();
+        res.json({
+            users: users.map(user => ({
+                ...user,
+                mashMapping: mappings[(user.username || '').toLowerCase()] || mappings[(user.email || '').toLowerCase()] || null,
+            })),
+        });
+    } catch (err) {
+        console.error('[MASH GET /api/access-admin/users]', err.message);
+        res.status(500).json({ error: 'Unable to load Hub users' });
+    }
+});
+
+app.get('/api/access-admin/role-mappings', async (req, res) => {
+    try {
+        res.json({
+            roles: publicRoleDefs(),
+            mappings: await readRoleMappings(),
+        });
+    } catch (err) {
+        console.error('[MASH GET /api/access-admin/role-mappings]', err.message);
+        res.status(500).json({ error: 'Unable to load role mappings' });
+    }
+});
+
+app.put('/api/access-admin/role-mappings/:username', async (req, res) => {
+    try {
+        const username = decodeURIComponent(req.params.username || '').trim().toLowerCase();
+        if (!username) return res.status(400).json({ error: 'Username is required' });
+        const mappings = await readRoleMappings();
+        mappings[username] = sanitizeRoleMapping(req.body || {});
+        await writeRoleMappings(mappings);
+        await logAudit(req, 'PUT', 'role_mappings', username, 'ok', { role: mappings[username].role });
+        res.json({ ok: true, username, mapping: mappings[username], mappings });
+    } catch (err) {
+        console.error('[MASH PUT /api/access-admin/role-mappings/:username]', err.message);
+        res.status(500).json({ error: 'Unable to save role mapping' });
+    }
+});
+
+app.delete('/api/access-admin/role-mappings/:username', async (req, res) => {
+    try {
+        const username = decodeURIComponent(req.params.username || '').trim().toLowerCase();
+        if (!username) return res.status(400).json({ error: 'Username is required' });
+        const mappings = await readRoleMappings();
+        delete mappings[username];
+        await writeRoleMappings(mappings);
+        await logAudit(req, 'DELETE', 'role_mappings', username);
+        res.json({ ok: true, username, mappings });
+    } catch (err) {
+        console.error('[MASH DELETE /api/access-admin/role-mappings/:username]', err.message);
+        res.status(500).json({ error: 'Unable to remove role mapping' });
+    }
+});
+
+// ── VP Security posture aggregation ───────────────────────────────────────────
+app.get('/api/executive-posture', async (req, res) => {
+    try {
+        res.json(await buildExecutivePosture(req.user));
+    } catch (err) {
+        console.error('[MASH GET /api/executive-posture]', err.message);
+        res.status(500).json({ error: 'Unable to build executive posture' });
+    }
+});
+
+app.get('/api/escalations', async (req, res) => {
+    try {
+        res.json({
+            generatedAt: new Date().toISOString(),
+            items: await buildEscalations(req.user),
+        });
+    } catch (err) {
+        console.error('[MASH GET /api/escalations]', err.message);
+        res.status(500).json({ error: 'Unable to build escalation queue' });
+    }
+});
+
+app.get('/api/executive-report', async (req, res) => {
+    try {
+        const posture = await buildExecutivePosture(req.user);
+        const escalations = await buildEscalations(req.user);
+        res.json({
+            title: 'MASH Executive Security Report',
+            classification: 'CUI//SP-SECURITY',
+            generatedAt: new Date().toISOString(),
+            generatedBy: req.user.username,
+            audience: 'VP Security / C-suite / Board',
+            posture,
+            boardMetrics: {
+                enterpriseRiskScore: posture.score,
+                postureStatus: posture.status,
+                sitesCovered: posture.metrics.sites,
+                highRisks: posture.metrics.highRisks,
+                activeIncidents: posture.metrics.activeIncidents,
+                activeCorrelations: posture.metrics.activeCorrelations,
+                overdueInspections: posture.metrics.overdueInspections,
+                constructionExceptions: posture.metrics.constructionExceptions,
+            },
+            narrative: [
+                `${posture.status} enterprise posture with a score of ${posture.score}.`,
+                `${posture.metrics.highRisks} high or critical open risks require executive attention.`,
+                `${posture.metrics.activeCorrelations} active cross-domain signals are being tracked for converged-risk indicators.`,
+                `${posture.metrics.overdueInspections} overdue inspections and ${posture.metrics.constructionExceptions} construction exceptions are feeding the risk register.`,
+            ],
+            escalations: escalations.slice(0, 12),
+        });
+    } catch (err) {
+        console.error('[MASH GET /api/executive-report]', err.message);
+        res.status(500).json({ error: 'Unable to build executive report' });
+    }
+});
+
+app.get('/api/construction-risk', async (req, res) => {
+    try {
+        const [constructionRaw, risksRaw] = await Promise.all([readData('construction'), readData('risks')]);
+        const construction = applyRBAC('construction', constructionRaw, req.user);
+        const risks = applyRBAC('risks', risksRaw, req.user);
+        const rows = construction.map(project => {
+            const temporaryControlIssues = (project.temporaryControls || []).filter(c =>
+                ['missing', 'failed', 'overdue'].includes((c.status || '').toLowerCase())
+            );
+            const linkedRisks = risks.filter(r => r.sourceId === project.id || r.projectId === project.id || r.siteId === project.siteId);
+            return {
+                ...project,
+                temporaryControlIssues,
+                linkedRisks,
+                riskLevel: (project.blockers || []).length || temporaryControlIssues.length ? 'high' : 'medium',
+                deviationCount: (project.blockers || []).length + temporaryControlIssues.length,
+            };
+        });
+        res.json(rows);
+    } catch (err) {
+        console.error('[MASH GET /api/construction-risk]', err.message);
+        res.status(500).json({ error: 'Unable to load construction risk' });
+    }
+});
+
+app.get('/api/self-inspections', async (req, res) => {
+    try {
+        const inspections = applyRBAC('self_inspections', await readData('self_inspections'), req.user);
+        res.json(inspections);
+    } catch (err) {
+        console.error('[MASH GET /api/self-inspections]', err.message);
+        res.status(500).json({ error: 'Unable to load self-inspections' });
+    }
+});
+
+app.post('/api/self-inspections', async (req, res) => {
+    try {
+        const evidence = normalizeEvidence(req.body.evidence || req.body.evidenceItems, req.user);
+        const item = {
+            ...req.body,
+            id: req.body.id || uid(),
+            evidence,
+            evidenceCount: evidence.length,
+            createdAt: new Date().toISOString(),
+        };
+        const saved = await appendData('self_inspections', item);
+        if (['fail', 'overdue'].includes((item.status || '').toLowerCase()) || item.score < 70) {
+            await appendData('risks', {
+                id: uid(),
+                title: `Inspection finding — ${item.title || item.type || item.site || item.siteId}`,
+                description: item.summary || item.notes || 'Self-inspection generated remediation item.',
+                severity: item.score < 50 ? 'high' : 'medium',
+                probability: 'medium',
+                impact: item.score < 50 ? 'high' : 'medium',
+                status: 'open',
+                siteId: item.siteId,
+                site: item.site,
+                domain: 'industrial',
+                sourceType: 'self_inspection',
+                sourceId: saved.id,
+                owner: item.owner,
+                dueDate: item.dueDate,
+                businessImpact: 'Potential compliance exposure and inspection readiness degradation.',
+                createdAt: new Date().toISOString(),
+            });
+        }
+        await logAudit(req, 'POST', 'self_inspections', saved.id);
+        res.status(201).json({ ok: true, data: saved });
+    } catch (err) {
+        console.error('[MASH POST /api/self-inspections]', err.message);
+        res.status(500).json({ error: 'Unable to create self-inspection' });
+    }
+});
+
+app.patch('/api/self-inspections/:id', async (req, res) => {
+    try {
+        const updates = { ...req.body, updatedAt: new Date().toISOString() };
+        if (Object.prototype.hasOwnProperty.call(req.body, 'evidence') || Object.prototype.hasOwnProperty.call(req.body, 'evidenceItems')) {
+            updates.evidence = normalizeEvidence(req.body.evidence || req.body.evidenceItems, req.user);
+            updates.evidenceCount = updates.evidence.length;
+            delete updates.evidenceItems;
+        }
+        const result = dbOk()
+            ? await dbPatch('self_inspections', req.params.id, updates)
+            : null;
+        let saved = result;
+        if (!dbOk()) {
+            const current = readJson('self_inspections') || [];
+            const idx = current.findIndex(i => i.id === req.params.id);
+            if (idx === -1) return res.status(404).json({ error: 'Self-inspection not found' });
+            current[idx] = { ...current[idx], ...updates };
+            saved = current[idx];
+            writeJson('self_inspections', current);
+        }
+        if (!saved) return res.status(404).json({ error: 'Self-inspection not found' });
+        await logAudit(req, 'PATCH', 'self_inspections', req.params.id);
+        res.json({ ok: true, data: saved });
+    } catch (err) {
+        console.error('[MASH PATCH /api/self-inspections/:id]', err.message);
+        res.status(500).json({ error: 'Unable to update self-inspection' });
+    }
+});
+
+app.post('/api/self-inspections/:id/evidence', async (req, res) => {
+    try {
+        const evidence = normalizeEvidence(req.body.evidence || req.body, req.user);
+        if (!evidence.length) return res.status(400).json({ error: 'Evidence metadata is required' });
+
+        const current = await readData('self_inspections');
+        const idx = current.findIndex(i => i.id === req.params.id || i._id === req.params.id);
+        if (idx === -1) return res.status(404).json({ error: 'Self-inspection not found' });
+
+        const existing = current[idx].evidence || [];
+        current[idx] = {
+            ...current[idx],
+            evidence: existing.concat(evidence),
+            evidenceCount: existing.length + evidence.length,
+            updatedAt: new Date().toISOString(),
+        };
+        await writeData('self_inspections', current);
+        await logAudit(req, 'POST_EVIDENCE', 'self_inspections', req.params.id, 'ok', { evidenceCount: evidence.length });
+        res.status(201).json({ ok: true, data: current[idx] });
+    } catch (err) {
+        console.error('[MASH POST /api/self-inspections/:id/evidence]', err.message);
+        res.status(500).json({ error: 'Unable to add self-inspection evidence' });
+    }
+});
 
 // ── Typed Site routes ─────────────────────────────────────────────────────────
 // Registered BEFORE the generic /api/:collection handlers.
@@ -1119,7 +1900,7 @@ app.get('/api/:collection', async (req, res) => {
             data = await dbGet(collection);
         } else {
             data = readJson(collection);
-            data = SINGLETON.has(collection) ? (data ?? {}) : (data ?? []);
+            data = SINGLETON.has(collection) ? (data != null ? data : {}) : (data != null ? data : []);
         }
         res.json(applyRBAC(collection, data, req.user));
     } catch (err) {
@@ -1134,6 +1915,7 @@ app.put('/api/:collection', async (req, res) => {
     try {
         if (dbOk()) { await dbPut(collection, req.body); }
         else         { writeJson(collection, req.body); }
+        await logAudit(req, 'PUT', collection, null);
         res.json({ ok: true });
     } catch (err) {
         console.error('[MASH PUT]', err.message);
@@ -1155,6 +1937,8 @@ app.post('/api/:collection', async (req, res) => {
             else                         { writeJson(collection, item); }
             result = item;
         }
+        if (collection === 'construction') await maybeCreateConstructionRisk(req, result);
+        await logAudit(req, 'POST', collection, result.id || result._id);
         res.status(201).json({ ok: true, data: result });
     } catch (err) {
         console.error('[MASH POST]', err.message);
@@ -1186,6 +1970,8 @@ app.patch('/api/:collection/:id', async (req, res) => {
                 return res.status(400).json({ error: 'Cannot PATCH this collection' });
             }
         }
+        if (collection === 'construction') await maybeCreateConstructionRisk(req, result);
+        await logAudit(req, 'PATCH', collection, id);
         res.json({ ok: true, data: result });
     } catch (err) {
         console.error('[MASH PATCH]', err.message);
@@ -1205,6 +1991,7 @@ app.delete('/api/:collection/:id', async (req, res) => {
             if (!Array.isArray(existing)) return res.status(400).json({ error: 'Not an array' });
             writeJson(collection, existing.filter(i => i.id !== id));
         }
+        await logAudit(req, 'DELETE', collection, id);
         res.json({ ok: true });
     } catch (err) {
         console.error('[MASH DELETE]', err.message);

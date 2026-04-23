@@ -1,0 +1,35 @@
+[
+  {
+    "id": "cy-001",
+    "siteId": "lincolnia-hq",
+    "site": "MTSI Lorton",
+    "source": "SIEM",
+    "metric": "Unusual Login",
+    "status": "active",
+    "severity": "critical",
+    "owner": "SOC",
+    "summary": "VPN login from unfamiliar geography correlated with badge anomaly."
+  },
+  {
+    "id": "cy-002",
+    "siteId": "texas-field",
+    "site": "MTSI Colorado Springs",
+    "source": "EDR",
+    "metric": "Endpoint Anomaly",
+    "status": "open",
+    "severity": "high",
+    "owner": "Cybersecurity",
+    "summary": "Temporary vendor workstation produced suspicious process chain during construction prep."
+  },
+  {
+    "id": "cy-003",
+    "siteId": "all",
+    "site": "Enterprise",
+    "source": "Vulnerability Scanner",
+    "metric": "Critical Vulnerability SLA",
+    "status": "tracking",
+    "severity": "medium",
+    "owner": "Cybersecurity",
+    "summary": "91% of critical vulnerabilities remediated within SLA."
+  }
+]

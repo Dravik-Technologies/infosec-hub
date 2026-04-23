@@ -238,14 +238,56 @@ async function safeJson(res) {
  * Data-driven nav: adding a new view = one object here, nothing else changes.
  */
 const NAV_ITEMS = [
-  { id:'briefing',   label:'Exec Briefing', icon:'fa-file-shield'          },
-  { id:'dashboard',  label:'Dashboard',      icon:'fa-gauge-high'           },
-  { id:'sites',      label:'Sites',           icon:'fa-building'             },
-  { id:'compliance', label:'Compliance',      icon:'fa-shield-halved'        },
-  { id:'budget',     label:'Budget',          icon:'fa-chart-bar'            },
-  { id:'timeline',   label:'Timeline',        icon:'fa-diagram-gantt'        },
-  { id:'risks',      label:'Risks & Build',   icon:'fa-triangle-exclamation' },
+  { id:'briefing',   label:'Exec Briefing', icon:'fa-file-shield',          domain:'executive'  },
+  { id:'dashboard',  label:'VP Cockpit',     icon:'fa-gauge-high',           permission:'enterprise:view' },
+  { id:'sites',      label:'Sites',          icon:'fa-building',             domain:'physical'   },
+  { id:'compliance', label:'Compliance',     icon:'fa-shield-halved',        domain:'industrial' },
+  { id:'budget',     label:'Budget',         icon:'fa-chart-bar',            domain:'program'    },
+  { id:'timeline',   label:'Timeline',       icon:'fa-diagram-gantt',        domain:'program'    },
+  { id:'risks',      label:'Risks & Build',  icon:'fa-triangle-exclamation', domain:'risk'       },
+  { id:'access',     label:'Access Admin',   icon:'fa-user-shield',          permission:'role_mappings:write' },
 ];
+
+const ROLE_LABELS = {
+  vp_security: 'VP Security',
+  global_fso: 'Global FSO',
+  security_director: 'Director of Security',
+  persec: 'PerSec',
+  industrial_security: 'Industrial Security',
+  program_security: 'Program Security',
+  cybersecurity: 'Cybersecurity',
+  pm: 'PM',
+  site_manager: 'Site Manager',
+  executive: 'Executive',
+};
+
+const AUTH_VERSION = 2;
+
+function userCan(user, permission) {
+  const perms = user?.permissions || [];
+  return perms.includes('*') || perms.includes(permission);
+}
+
+function userCanView(user, domain) {
+  if (!domain) return true;
+  const perms = user?.permissions || [];
+  const domains = user?.domains || [];
+  return perms.includes('*') || domains.includes(domain) || domain === 'executive';
+}
+
+function userCanNavigate(user, item) {
+  if (item.permission) return userCan(user, item.permission);
+  return userCanView(user, item.domain);
+}
+
+function defaultViewFor(user) {
+  const first = NAV_ITEMS.find(item => userCanNavigate(user, item));
+  return first?.id || 'briefing';
+}
+
+function writableFor(user, collection) {
+  return userCan(user, `${collection}:write`);
+}
 
 /* ─── UTILITIES ───────────────────────────────────────────────────────────────*/
 function useClock() {
@@ -1059,11 +1101,184 @@ function ExecutiveBriefing({ data }) {
    Audience: Program Managers, FSOs
    Tactical overview: facility posture, upcoming milestones, recent activity.
 ════════════════════════════════════════════════════════════════════════════ */
-function DashboardView({ data, onNavigate }) {
+function DashboardView({ data, onNavigate, currentUser }) {
   const sites      = data.sites || [];
   const risks      = data.risks || [];
   const milestones = data.timeline?.milestones || data.milestones || [];
   const activity   = data.activity || [];
+  const posture    = data.executivePosture || {};
+  const incidents  = posture.incidents || data.incidents || [];
+  const correlations = posture.correlations || data.correlations || [];
+  const domains    = posture.domains || [];
+  const metrics    = posture.metrics || {};
+  const overdueInspections = posture.overdueInspections || data.selfInspections?.filter(i => ['overdue','late'].includes((i.status || '').toLowerCase())) || [];
+  const constructionExceptions = posture.constructionExceptions || [];
+  const topRisks = posture.topRisks || risks.filter(r => r.status !== 'resolved').slice(0, 6);
+  const siteHeat = posture.siteHeat || sites.map(s => ({ id:s.id, name:s.name, location:s.location, score:s.compliance || 0, riskCount:0, constructionCount:0, inspectionStatus:'current' }));
+  const score = posture.score ?? (sites.length ? Math.round(sites.reduce((a,s)=>a+(s.compliance||0),0)/sites.length) : 0);
+  const scoreColor = score >= 85 ? '#10B981' : score >= 70 ? '#F59E0B' : '#EF4444';
+  const roleLabel = currentUser?.roleLabel || ROLE_LABELS[currentUser?.role] || 'Security Staff';
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6">
+      <SectionHeader eyebrow="Enterprise Security Command" title="VP Security Cockpit">
+        <span className="mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded"
+              style={{background:'var(--zt-hover)',border:'1px solid var(--zt-border)',color:'var(--zt-dim)'}}>
+          {roleLabel}
+        </span>
+        <button onClick={()=>onNavigate('briefing')}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-500 text-white transition-colors">
+          <i className="fa-solid fa-file-export text-[10px]"/> Board Brief
+        </button>
+      </SectionHeader>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_2fr] gap-4">
+        <div className="rounded-xl p-6" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="mono text-[10px] uppercase tracking-[.18em] text-zt-dim mb-3">Enterprise Risk Score</div>
+          <div className="flex items-end gap-3 mb-4">
+            <div className="mono text-7xl font-light leading-none" style={{color:scoreColor}}>{score}</div>
+            <div className="pb-2">
+              <div className="mono text-xs uppercase tracking-widest" style={{color:scoreColor}}>{posture.status || 'Calculated'}</div>
+              <div className="mono text-[10px] text-zt-dim mt-1">Generated {posture.generatedAt ? new Date(posture.generatedAt).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : 'from live collections'}</div>
+            </div>
+          </div>
+          <ThinBar pct={score} color={scoreColor} height={7}/>
+          <div className="grid grid-cols-2 gap-3 mt-5">
+            {[
+              ['Sites', metrics.sites ?? sites.length, '#3B82F6'],
+              ['Open Risks', metrics.openRisks ?? risks.filter(r=>r.status!=='resolved').length, '#F59E0B'],
+              ['Incidents', metrics.activeIncidents ?? incidents.length, '#EF4444'],
+              ['Correlations', metrics.activeCorrelations ?? correlations.length, '#A78BFA'],
+            ].map(([label,value,color]) => (
+              <div key={label} className="rounded-lg p-3" style={{background:'var(--zt-hover)',border:'1px solid var(--zt-border)'}}>
+                <div className="mono text-[9px] uppercase tracking-widest text-zt-dim mb-1">{label}</div>
+                <div className="mono text-2xl font-light" style={{color}}>{value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+          {domains.map(d => {
+            const col = d.score >= 85 ? '#10B981' : d.score >= 70 ? '#F59E0B' : '#EF4444';
+            return (
+              <button key={d.id} onClick={()=> d.id === 'pm' ? onNavigate('risks') : d.id === 'program' ? onNavigate('timeline') : d.id === 'physical' ? onNavigate('compliance') : onNavigate('risks')}
+                      className="text-left rounded-xl p-4 transition-colors hover:bg-white/[.03]"
+                      style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+                <div className="mono text-[9px] uppercase tracking-widest text-zt-dim mb-3">{d.label}</div>
+                <div className="mono text-3xl font-light mb-3" style={{color:col}}>{d.score}</div>
+                <ThinBar pct={d.score} color={col} height={4}/>
+                <div className="mono text-[9px] text-zt-dim mt-2">{d.exceptions} exception{d.exceptions === 1 ? '' : 's'}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="rounded-xl overflow-hidden" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom:'1px solid var(--zt-border)'}}>
+            <span className="mono text-[10px] uppercase tracking-[.14em] text-zt-muted">Active Incidents</span>
+            <span className="mono text-[9px] text-zt-dim">{incidents.length} active</span>
+          </div>
+          {(incidents.length ? incidents : []).slice(0,5).map(i => (
+            <div key={i.id} className="px-5 py-3 border-b border-zt-border last:border-0">
+              <div className="flex items-center gap-2 mb-1"><SeverityBadge severity={i.severity}/><span className="text-xs font-medium text-zt-text">{i.title}</span></div>
+              <div className="mono text-[9px] text-zt-dim">{i.site || i.siteId || 'Enterprise'} · {i.owner || 'Unassigned'}</div>
+            </div>
+          ))}
+          {incidents.length === 0 && <EmptyState message="No active incidents"/>}
+        </div>
+
+        <div className="rounded-xl overflow-hidden" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom:'1px solid var(--zt-border)'}}>
+            <span className="mono text-[10px] uppercase tracking-[.14em] text-zt-muted">Cross-Domain Correlations</span>
+            <span className="mono text-[9px] text-zt-dim">{correlations.length} signals</span>
+          </div>
+          {correlations.slice(0,5).map(c => (
+            <div key={c.id} className="px-5 py-3 border-b border-zt-border last:border-0">
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <span className="text-xs font-medium text-zt-text">{c.title}</span>
+                <span className="mono text-[10px]" style={{color:'#A78BFA'}}>{c.confidence || 0}%</span>
+              </div>
+              <div className="mono text-[9px] text-zt-dim line-clamp-2">{c.summary}</div>
+            </div>
+          ))}
+          {correlations.length === 0 && <EmptyState message="No active correlations"/>}
+        </div>
+
+        <div className="rounded-xl overflow-hidden" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom:'1px solid var(--zt-border)'}}>
+            <span className="mono text-[10px] uppercase tracking-[.14em] text-zt-muted">Overdue Inspections</span>
+            <span className="mono text-[9px] text-zt-dim">{overdueInspections.length} overdue</span>
+          </div>
+          {overdueInspections.slice(0,5).map(i => (
+            <div key={i.id} className="px-5 py-3 border-b border-zt-border last:border-0">
+              <div className="flex items-center justify-between gap-3 mb-1">
+                <span className="text-xs font-medium text-zt-text">{i.title}</span>
+                <span className="mono text-[10px] text-red-400">{fmtDate(i.dueDate)}</span>
+              </div>
+              <div className="mono text-[9px] text-zt-dim">{i.site || i.siteId} · {i.owner || 'Unassigned'} · score {i.score ?? '—'}</div>
+            </div>
+          ))}
+          {overdueInspections.length === 0 && <EmptyState message="All self-inspections current"/>}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="rounded-xl overflow-hidden" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom:'1px solid var(--zt-border)'}}>
+            <span className="mono text-[10px] uppercase tracking-[.14em] text-zt-muted">National Site Heat Map</span>
+            <button onClick={()=>onNavigate('sites')} className="mono text-[10px] uppercase tracking-widest text-zt-dim hover:text-blue-400">Drill down →</button>
+          </div>
+          <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+            {siteHeat.slice(0,8).map(s => {
+              const col = s.score >= 95 ? '#10B981' : s.score >= 82 ? '#F59E0B' : '#EF4444';
+              return (
+                <div key={s.id || s.siteId || s.name} className="rounded-lg p-3" style={{background:'var(--zt-hover)',border:'1px solid var(--zt-border)'}}>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-xs font-medium text-zt-text truncate">{s.name}</span>
+                    <span className="mono text-xs font-semibold" style={{color:col}}>{s.score}%</span>
+                  </div>
+                  <ThinBar pct={s.score} color={col} height={4}/>
+                  <div className="mono text-[9px] text-zt-dim mt-2">{s.riskCount} risks · {s.constructionCount} projects · inspections {s.inspectionStatus}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="rounded-xl overflow-hidden" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="px-5 py-4 flex items-center justify-between" style={{borderBottom:'1px solid var(--zt-border)'}}>
+            <span className="mono text-[10px] uppercase tracking-[.14em] text-zt-muted">Top Remediation / POA&M Items</span>
+            <button onClick={()=>onNavigate('risks')} className="mono text-[10px] uppercase tracking-widest text-zt-dim hover:text-blue-400">Open register →</button>
+          </div>
+          {topRisks.slice(0,6).map(r => (
+            <div key={r.id || r.title} className="px-5 py-3 border-b border-zt-border last:border-0">
+              <div className="flex items-center gap-2 mb-1">
+                <SeverityBadge severity={r.severity}/>
+                <span className="text-xs font-medium text-zt-text truncate">{r.title}</span>
+              </div>
+              <div className="mono text-[9px] text-zt-dim">{r.domain || r.standard || 'risk'} · {r.site || r.siteId || 'Enterprise'} · {r.businessImpact || r.mitigation || 'Remediation tracking required'}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {Object.entries(posture.teamPerformance || {}).map(([team, perf]) => (
+          <div key={team} className="rounded-xl p-4" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+            <div className="mono text-[10px] uppercase tracking-widest text-zt-dim mb-2">{team}</div>
+            <div className="grid grid-cols-3 gap-2">
+              <div><div className="mono text-xl text-zt-text">{perf.workload}</div><div className="mono text-[9px] text-zt-dim">workload</div></div>
+              <div><div className="mono text-xl text-zt-text">{perf.avgResponse}</div><div className="mono text-[9px] text-zt-dim">response</div></div>
+              <div><div className="mono text-xl text-zt-text">{perf.resolutionRate}%</div><div className="mono text-[9px] text-zt-dim">resolved</div></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   const avgCompliance = sites.length ? Math.round(sites.reduce((a,s)=>a+(s.compliance||0),0)/sites.length) : 0;
   const openRisks     = risks.filter(r=>r.status!=='resolved').length;
@@ -3375,7 +3590,7 @@ function TimelineView({ data }) {
    VIEW 7 — RISKS & CONSTRUCTION
    Tabbed risk register + construction project progress.
 ════════════════════════════════════════════════════════════════════════════ */
-function RisksView({ data }) {
+function RisksView({ data, currentUser }) {
   // ── Local state (fetched fresh so mutations reflect immediately) ──────────
   const [risks,        setRisks]        = useState(data.risks        || []);
   const [construction, setConstruction] = useState(data.construction || []);
@@ -3425,12 +3640,16 @@ function RisksView({ data }) {
 
   const [riskForm,  setRiskForm]  = useState(EMPTY_RISK);
   const [buildForm, setBuildForm] = useState(EMPTY_BUILD);
+  const canWriteRisks = writableFor(currentUser, 'risks');
+  const canWriteBuild = writableFor(currentUser, 'construction');
 
   function openCreateRisk() {
+    if (!canWriteRisks) return;
     setDrawerSection('risk'); setDrawerMode('create'); setEditTarget(null);
     setRiskForm(EMPTY_RISK); setSaveError(''); setDrawerOpen(true);
   }
   function openEditRisk(r) {
+    if (!canWriteRisks) return;
     setDrawerSection('risk'); setDrawerMode('edit'); setEditTarget(r);
     setRiskForm({
       title:           r.title           || '',
@@ -3449,10 +3668,12 @@ function RisksView({ data }) {
     setSaveError(''); setDrawerOpen(true);
   }
   function openCreateBuild() {
+    if (!canWriteBuild) return;
     setDrawerSection('build'); setDrawerMode('create'); setEditTarget(null);
     setBuildForm(EMPTY_BUILD); setSaveError(''); setDrawerOpen(true);
   }
   function openEditBuild(proj) {
+    if (!canWriteBuild) return;
     setDrawerSection('build'); setDrawerMode('edit'); setEditTarget(proj);
     setBuildForm({
       title:           proj.title           || proj.name || '',
@@ -3550,11 +3771,11 @@ function RisksView({ data }) {
                 </button>
               ))}
             </div>
-            <button onClick={openCreateRisk}
+            {canWriteRisks && <button onClick={openCreateRisk}
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium
                                bg-blue-600 hover:bg-blue-500 text-white transition-colors">
               <i className="fa-solid fa-plus text-[10px]"/> Log Risk
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -3569,7 +3790,7 @@ function RisksView({ data }) {
               </div>
               {visibleRisks.map(r => (
                 <div key={r.id || r.title}
-                     className={`tbl-row ${RCOLS} cursor-pointer hover:bg-white/[.03] transition-colors`}
+                     className={`tbl-row ${RCOLS} ${canWriteRisks ? 'cursor-pointer' : ''} hover:bg-white/[.03] transition-colors`}
                      onClick={() => openEditRisk(r)}>
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-zt-text truncate">{r.title}</div>
@@ -3594,11 +3815,11 @@ function RisksView({ data }) {
             <i className="fa-solid fa-helmet-safety text-sm" style={{color:'#F59E0B'}}/>
             <span className="mono text-[10px] font-semibold uppercase tracking-[.14em] text-zt-muted">Active Construction Projects</span>
           </div>
-          <button onClick={openCreateBuild}
+          {canWriteBuild && <button onClick={openCreateBuild}
                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium
                              bg-blue-600 hover:bg-blue-500 text-white transition-colors">
             <i className="fa-solid fa-plus text-[10px]"/> Add Project
-          </button>
+          </button>}
         </div>
         {construction.length === 0
           ? <EmptyState message="No active construction projects"/>
@@ -3607,8 +3828,7 @@ function RisksView({ data }) {
               const color = pct >= 100 ? '#10B981' : pct >= 60 ? '#3B82F6' : pct >= 30 ? '#F59E0B' : '#EF4444';
               return (
                 <div key={proj.id || i}
-                     className="px-5 py-4 border-b border-zt-border last:border-0 cursor-pointer
-                                hover:bg-white/[.03] transition-colors"
+                     className={`px-5 py-4 border-b border-zt-border last:border-0 ${canWriteBuild ? 'cursor-pointer' : ''} hover:bg-white/[.03] transition-colors`}
                      onClick={() => openEditBuild(proj)}>
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex-1 min-w-0">
@@ -3895,6 +4115,308 @@ function RisksView({ data }) {
 }
 
 /* ════════════════════════════════════════════════════════════════════════════
+   VIEW 8 — ACCESS ADMIN
+   Maps Hub users to MASH roles, permissions, domains, and site scope.
+════════════════════════════════════════════════════════════════════════════ */
+function AccessAdminView({ currentUser }) {
+  const [users, setUsers] = useState([]);
+  const [roles, setRoles] = useState({});
+  const [mappings, setMappings] = useState({});
+  const [selectedKey, setSelectedKey] = useState('');
+  const [form, setForm] = useState({
+    username: '',
+    role: 'executive',
+    displayTitle: 'Executive Viewer',
+    siteId: '',
+    siteIdsText: '',
+  });
+  const [filter, setFilter] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+
+  const roleOptions = Object.values(roles);
+  const selectedUser = users.find(u => (u.username || '').toLowerCase() === selectedKey);
+  const visibleUsers = users.filter(user => {
+    const q = filter.trim().toLowerCase();
+    if (!q) return true;
+    return [user.username, user.name, user.email, user.role, user.siteId]
+      .filter(Boolean).some(value => String(value).toLowerCase().includes(q));
+  });
+
+  async function load() {
+    setLoading(true); setError(''); setMessage('');
+    try {
+      const [userRes, mappingRes] = await Promise.all([
+        fetch('/api/access-admin/users', { headers: AUTH.hdrs() }),
+        fetch('/api/access-admin/role-mappings', { headers: AUTH.hdrs() }),
+      ]);
+      const userJson = await safeJson(userRes);
+      const mappingJson = await safeJson(mappingRes);
+      const nextUsers = userJson.users || [];
+      const nextMappings = mappingJson.mappings || {};
+      setUsers(nextUsers);
+      setRoles(mappingJson.roles || {});
+      setMappings(nextMappings);
+      const firstKey = selectedKey || (nextUsers[0]?.username || '').toLowerCase() || Object.keys(nextMappings)[0] || '';
+      if (firstKey) selectUser(firstKey, nextUsers, nextMappings, mappingJson.roles || {});
+    } catch (err) {
+      setError(err.message || 'Unable to load access admin data');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  function roleDefaults(roleId, roleSet = roles) {
+    const role = roleSet[roleId] || roleSet.executive || {};
+    return {
+      displayTitle: role.label || ROLE_LABELS[roleId] || roleId,
+      domains: role.domains || [],
+      permissions: role.permissions || [],
+    };
+  }
+
+  function selectUser(username, userList = users, mappingSet = mappings, roleSet = roles) {
+    const key = (username || '').toLowerCase();
+    const user = userList.find(u => (u.username || '').toLowerCase() === key);
+    const mapping = mappingSet[key] || {};
+    const roleId = mapping.role || 'executive';
+    const defaults = roleDefaults(roleId, roleSet);
+    setSelectedKey(key);
+    setForm({
+      username: key,
+      role: roleId,
+      displayTitle: mapping.displayTitle || defaults.displayTitle,
+      siteId: mapping.siteId || user?.siteId || '',
+      siteIdsText: (mapping.siteIds || user?.siteIds || []).join(', '),
+    });
+    setMessage(''); setError('');
+  }
+
+  function updateRole(roleId) {
+    const defaults = roleDefaults(roleId);
+    setForm(prev => ({
+      ...prev,
+      role: roleId,
+      displayTitle: defaults.displayTitle,
+    }));
+  }
+
+  async function saveMapping(e) {
+    e.preventDefault();
+    const username = form.username.trim().toLowerCase();
+    if (!username) { setError('Select or enter a username.'); return; }
+    const defaults = roleDefaults(form.role);
+    const payload = {
+      role: form.role,
+      displayTitle: form.displayTitle || defaults.displayTitle,
+      siteId: form.siteId || null,
+      siteIds: form.siteIdsText.split(',').map(v => v.trim()).filter(Boolean),
+      domains: defaults.domains,
+      permissions: defaults.permissions,
+    };
+    setSaving(true); setError(''); setMessage('');
+    try {
+      const res = await fetch(`/api/access-admin/role-mappings/${encodeURIComponent(username)}`, {
+        method: 'PUT',
+        headers: AUTH.hdrs(),
+        body: JSON.stringify(payload),
+      });
+      const json = await safeJson(res);
+      setMappings(json.mappings || { ...mappings, [username]: json.mapping });
+      setSelectedKey(username);
+      setMessage(`${username} mapped to ${roles[payload.role]?.label || payload.role}.`);
+    } catch (err) {
+      setError(err.message || 'Unable to save role mapping');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeMapping() {
+    const username = form.username.trim().toLowerCase();
+    if (!username || !mappings[username]) return;
+    if (!window.confirm(`Remove MASH role mapping for ${username}? They will fall back to Executive read-only unless Hub title inference applies.`)) return;
+    setSaving(true); setError(''); setMessage('');
+    try {
+      const res = await fetch(`/api/access-admin/role-mappings/${encodeURIComponent(username)}`, {
+        method: 'DELETE',
+        headers: AUTH.hdrs(),
+      });
+      const json = await safeJson(res);
+      setMappings(json.mappings || {});
+      setMessage(`${username} mapping removed.`);
+      selectUser(username, users, json.mappings || {}, roles);
+    } catch (err) {
+      setError(err.message || 'Unable to remove role mapping');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (!userCan(currentUser, 'role_mappings:write')) {
+    return <EmptyState message="Access Admin requires security leadership permissions"/>;
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto space-y-6">
+      <SectionHeader eyebrow="Access Control" title="MASH Role Mapping Console">
+        <button onClick={load}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium text-zt-muted border border-zt-border hover:bg-white/5 transition-colors">
+          <i className="fa-solid fa-rotate-right text-[10px]"/> Refresh
+        </button>
+      </SectionHeader>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[420px_1fr] gap-4">
+        <div className="rounded-xl overflow-hidden" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="px-5 py-4" style={{borderBottom:'1px solid var(--zt-border)'}}>
+            <div className="mono text-[10px] uppercase tracking-[.14em] text-zt-muted mb-3">Hub Users</div>
+            <input value={filter} onChange={e=>setFilter(e.target.value)}
+                   placeholder="Search name, username, email, site..."
+                   className="w-full px-3 py-2 rounded-lg text-sm bg-transparent text-zt-text border border-zt-border focus:border-blue-500 focus:outline-none"/>
+          </div>
+          <div className="max-h-[620px] overflow-y-auto">
+            {loading && <EmptyState message="Loading users..."/>}
+            {!loading && visibleUsers.length === 0 && <EmptyState message="No users found"/>}
+            {visibleUsers.map(user => {
+              const key = (user.username || '').toLowerCase();
+              const mapping = mappings[key];
+              const roleId = mapping?.role || 'executive';
+              const active = selectedKey === key;
+              return (
+                <button key={key || user.id} onClick={()=>selectUser(key)}
+                        className="w-full text-left px-5 py-3 border-b border-zt-border last:border-0 transition-colors"
+                        style={{background:active?'rgba(59,130,246,.08)':'transparent'}}>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-zt-text truncate">{user.name || user.username}</div>
+                      <div className="mono text-[10px] text-zt-dim truncate">{user.username} · {user.email || 'no email'}</div>
+                    </div>
+                    <span className="mono text-[9px] px-2 py-1 rounded uppercase tracking-wider"
+                          style={{background:mapping?'rgba(16,185,129,.1)':'rgba(148,163,184,.08)',color:mapping?'#34D399':'#94A3B8',border:'1px solid var(--zt-border)'}}>
+                      {ROLE_LABELS[roleId] || roleId}
+                    </span>
+                  </div>
+                  <div className="mono text-[9px] text-zt-dim mt-2 truncate">
+                    Hub: {user.role || 'Unspecified'} · Site: {user.siteId || 'Enterprise'}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <form onSubmit={saveMapping} className="rounded-xl overflow-hidden" style={{background:'var(--zt-card)',border:'1px solid var(--zt-border)'}}>
+          <div className="px-6 py-5 flex items-center justify-between gap-4" style={{borderBottom:'1px solid var(--zt-border)'}}>
+            <div>
+              <div className="mono text-[10px] uppercase tracking-[.14em] text-zt-muted">Selected User</div>
+              <div className="text-lg font-semibold text-zt-text mt-1">{selectedUser?.name || form.username || 'No user selected'}</div>
+              <div className="mono text-[10px] text-zt-dim mt-1">{selectedUser?.email || selectedUser?.username || 'Choose a Hub user to map'}</div>
+            </div>
+            {mappings[form.username] && (
+              <button type="button" onClick={removeMapping} disabled={saving}
+                      className="px-3 py-2 rounded-lg text-xs font-medium text-red-400 border border-red-500/30 hover:bg-red-500/10 disabled:opacity-50 transition-colors">
+                <i className="fa-solid fa-trash mr-1.5"/> Remove Mapping
+              </button>
+            )}
+          </div>
+
+          <div className="p-6 space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="mono text-[10px] uppercase tracking-wider text-zt-muted block mb-1.5">Username Key</label>
+                <input value={form.username} onChange={e=>setForm(p=>({...p, username:e.target.value.toLowerCase()}))}
+                       className="w-full px-3 py-2 rounded-lg text-sm bg-transparent text-zt-text border border-zt-border focus:border-blue-500 focus:outline-none"/>
+              </div>
+              <div>
+                <label className="mono text-[10px] uppercase tracking-wider text-zt-muted block mb-1.5">Display Title</label>
+                <input value={form.displayTitle} onChange={e=>setForm(p=>({...p, displayTitle:e.target.value}))}
+                       className="w-full px-3 py-2 rounded-lg text-sm bg-transparent text-zt-text border border-zt-border focus:border-blue-500 focus:outline-none"/>
+              </div>
+            </div>
+
+            <div>
+              <label className="mono text-[10px] uppercase tracking-wider text-zt-muted block mb-2">MASH Role</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {roleOptions.map(role => {
+                  const active = form.role === role.id;
+                  return (
+                    <button key={role.id} type="button" onClick={()=>updateRole(role.id)}
+                            className="text-left rounded-lg p-3 transition-colors"
+                            style={{background:active?'rgba(59,130,246,.1)':'var(--zt-hover)',border:`1px solid ${active?'rgba(59,130,246,.45)':'var(--zt-border)'}`}}>
+                      <div className="text-sm font-medium text-zt-text">{role.label}</div>
+                      <div className="mono text-[9px] text-zt-dim mt-1 truncate">{role.id}</div>
+                      <div className="mono text-[9px] text-zt-dim mt-2">{role.permissions?.includes('*') ? 'All access' : `${role.permissions?.length || 0} write permission(s)`}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="mono text-[10px] uppercase tracking-wider text-zt-muted block mb-1.5">Primary Site ID</label>
+                <input value={form.siteId} onChange={e=>setForm(p=>({...p, siteId:e.target.value}))}
+                       placeholder="lincolnia-hq or blank for enterprise"
+                       className="w-full px-3 py-2 rounded-lg text-sm bg-transparent text-zt-text border border-zt-border focus:border-blue-500 focus:outline-none"/>
+              </div>
+              <div>
+                <label className="mono text-[10px] uppercase tracking-wider text-zt-muted block mb-1.5">Allowed Site IDs</label>
+                <input value={form.siteIdsText} onChange={e=>setForm(p=>({...p, siteIdsText:e.target.value}))}
+                       placeholder="lincolnia-hq, texas-field"
+                       className="w-full px-3 py-2 rounded-lg text-sm bg-transparent text-zt-text border border-zt-border focus:border-blue-500 focus:outline-none"/>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-lg p-4" style={{background:'var(--zt-hover)',border:'1px solid var(--zt-border)'}}>
+                <div className="mono text-[10px] uppercase tracking-wider text-zt-muted mb-2">Domains</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(roleDefaults(form.role).domains || []).map(domain => (
+                    <span key={domain} className="mono text-[9px] px-2 py-1 rounded uppercase tracking-wider"
+                          style={{background:'rgba(59,130,246,.09)',color:'#93C5FD',border:'1px solid rgba(59,130,246,.18)'}}>
+                      {domain}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-lg p-4" style={{background:'var(--zt-hover)',border:'1px solid var(--zt-border)'}}>
+                <div className="mono text-[10px] uppercase tracking-wider text-zt-muted mb-2">Permissions</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(roleDefaults(form.role).permissions || []).map(permission => (
+                    <span key={permission} className="mono text-[9px] px-2 py-1 rounded uppercase tracking-wider"
+                          style={{background:'rgba(16,185,129,.08)',color:'#6EE7B7',border:'1px solid rgba(16,185,129,.16)'}}>
+                      {permission}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {message && <div className="mono text-xs text-emerald-400">{message}</div>}
+            {error && <div className="mono text-xs text-red-400">{error}</div>}
+          </div>
+
+          <div className="px-6 py-4 flex items-center justify-end gap-3" style={{borderTop:'1px solid var(--zt-border)'}}>
+            <button type="button" onClick={()=>selectedKey && selectUser(selectedKey)}
+                    className="px-3 py-2 rounded-lg text-xs font-medium text-zt-muted border border-zt-border hover:bg-white/5 transition-colors">
+              Reset
+            </button>
+            <button type="submit" disabled={saving || !form.username}
+                    className="px-4 py-2 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white transition-colors">
+              {saving ? 'Saving...' : 'Save Role Mapping'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
    THEME TOGGLE — reads/writes html.dark class directly, no prop drilling.
 ════════════════════════════════════════════════════════════════════════════ */
 function ThemeToggle() {
@@ -3950,7 +4472,6 @@ function LoginPage({ onLogin }) {
             {loading?'Authenticating…':'Sign In'}
           </button>
         </form>
-        <p className="mono text-center text-xs mt-6 text-zt-dim">Dev: admin / admin</p>
       </div>
     </div>
   );
@@ -3958,7 +4479,8 @@ function LoginPage({ onLogin }) {
 
 function Sidebar({ activeView, onNavigate, user, onLogout }) {
   const initials  = (user?.name||'U').split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const roleLabel = user?.role==='global_fso'?'Global FSO':user?.role==='site_manager'?'Site Manager':user?.role==='executive'?'Executive':'Staff';
+  const roleLabel = user?.roleLabel || ROLE_LABELS[user?.role] || 'Staff';
+  const navItems = NAV_ITEMS.filter(item => userCanNavigate(user, item));
   return (
     <aside className="hidden md:flex flex-col shrink-0"
            style={{width:'216px',background:'var(--zt-surface)',borderRight:'1px solid var(--zt-border)',overflowY:'auto'}}>
@@ -3973,7 +4495,7 @@ function Sidebar({ activeView, onNavigate, user, onLogout }) {
         </div>
       </div>
       <nav className="flex-1 py-3">
-        {NAV_ITEMS.map(item=>(
+        {navItems.map(item=>(
           <button key={item.id} className={`nav-item ${activeView===item.id?'active':''}`} onClick={()=>onNavigate(item.id)}>
             <i className={`fa-solid ${item.icon} nav-icon w-4 text-center text-sm`}/>
             <span>{item.label}</span>
@@ -4040,11 +4562,21 @@ function App() {
         return payload;
       } catch {}
     }
-    return AUTH.getUser();
+    const cached = AUTH.getUser();
+    if (cached && cached.authVersion !== AUTH_VERSION) {
+      AUTH.clearAll();
+      return null;
+    }
+    return cached;
   });
 
-  const [activeView, setActiveView] = useState('dashboard');
-  const [data, setData] = useState({ sites:[],risks:[],budget:{},timeline:{},compliance:{},activity:[],milestones:[],construction:[] });
+  const [activeView, setActiveView] = useState(() => defaultViewFor(currentUser));
+  const [data, setData] = useState({
+    sites:[], risks:[], budget:{}, timeline:{}, compliance:{}, activity:[],
+    milestones:[], construction:[], incidents:[], correlations:[],
+    selfInspections:[], physicalSystems:[], personnelSecurity:[], cyberPosture:[],
+    executivePosture:null,
+  });
   const [loaded, setLoaded] = useState(false);
 
   /*
@@ -4053,18 +4585,39 @@ function App() {
    */
   useEffect(() => {
     if (!currentUser) return;
+    if (!NAV_ITEMS.some(item => item.id === activeView && userCanNavigate(currentUser, item))) {
+      setActiveView(defaultViewFor(currentUser));
+      return;
+    }
     (async () => {
-      const [sites,risks,budget,timeline,compliance,activity,milestones,construction] = await Promise.all([
+      if (currentUser.role === 'executive' && !userCan(currentUser, '*')) {
+        const executivePosture = await API.get('executive-posture');
+        setData({
+          sites:[], risks:[], budget:{}, timeline:{}, compliance:{}, activity:[],
+          milestones:[], construction:[], incidents:[], correlations:[],
+          selfInspections:[], physicalSystems:[], personnelSecurity:[], cyberPosture:[],
+          executivePosture:executivePosture??null,
+        });
+        setLoaded(true);
+        return;
+      }
+      const [sites,risks,budget,timeline,compliance,activity,milestones,construction,incidents,correlations,selfInspections,physicalSystems,personnelSecurity,cyberPosture,executivePosture] = await Promise.all([
         API.get('sites'), API.get('risks'), API.get('budget'), API.get('timeline'),
         API.get('compliance'), API.get('activity'), API.get('milestones'), API.get('construction'),
+        API.get('incidents'), API.get('correlations'), API.get('self-inspections'),
+        API.get('physical_systems'), API.get('personnel_security'), API.get('cyber_posture'),
+        API.get('executive-posture'),
       ]);
       setData({ sites:sites??[], risks:risks??[], budget:budget??{}, timeline:timeline??{},
-                compliance:compliance??{}, activity:activity??[], milestones:milestones??[], construction:construction??[] });
+                compliance:compliance??{}, activity:activity??[], milestones:milestones??[], construction:construction??[],
+                incidents:incidents??[], correlations:correlations??[], selfInspections:selfInspections??[],
+                physicalSystems:physicalSystems??[], personnelSecurity:personnelSecurity??[], cyberPosture:cyberPosture??[],
+                executivePosture:executivePosture??null });
       setLoaded(true);
     })();
-  }, [currentUser]);
+  }, [currentUser, activeView]);
 
-  function handleLogin(u)  { setCurrentUser(u); setActiveView('dashboard'); }
+  function handleLogin(u)  { setCurrentUser(u); setActiveView(defaultViewFor(u)); }
   function handleLogout()  { AUTH.clearAll(); setCurrentUser(null); setLoaded(false); }
 
   if (!currentUser) return <LoginPage onLogin={handleLogin}/>;
@@ -4087,12 +4640,13 @@ function App() {
 
   const sections = {
     briefing:   <ExecutiveBriefing data={data}/>,
-    dashboard:  <DashboardView     data={data} onNavigate={setActiveView}/>,
+    dashboard:  <DashboardView     data={data} onNavigate={setActiveView} currentUser={currentUser}/>,
     sites:      <SitesSection       data={data} onDataChange={setData}/>,
     compliance: <ComplianceSection  data={data}/>,
     budget:     <BudgetView        data={data}/>,
     timeline:   <TimelineView      data={data}/>,
-    risks:      <RisksView         data={data}/>,
+    risks:      <RisksView         data={data} currentUser={currentUser}/>,
+    access:     <AccessAdminView   currentUser={currentUser}/>,
   };
 
   return (

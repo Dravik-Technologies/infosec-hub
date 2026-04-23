@@ -1,20 +1,30 @@
 'use strict';
 
-const { db } = require('../packages/db/src');
+let db = null;
 
-const SINGLETON = new Set(['budget', 'timeline', 'compliance', 'settings']);
+function getDb() {
+  if (!process.env.DATABASE_URL) return null;
+  if (!db) ({ db } = require('../packages/db/src'));
+  return db;
+}
+
+const SINGLETON = new Set(['budget', 'timeline', 'compliance', 'settings', 'role_mappings']);
 
 function isDbConfigured() {
   return Boolean(process.env.DATABASE_URL);
 }
 
 async function readCollection(name) {
-  const row = await db.mashCollection.findUnique({ where: { name } });
+  const client = getDb();
+  if (!client) return null;
+  const row = await client.mashCollection.findUnique({ where: { name } });
   return row ? row.data : null;
 }
 
 async function writeCollection(name, data) {
-  await db.mashCollection.upsert({
+  const client = getDb();
+  if (!client) throw new Error('DATABASE_URL is not configured');
+  await client.mashCollection.upsert({
     where: { name },
     create: { name, data },
     update: { data },
@@ -331,6 +341,7 @@ function getModel(name) {
 
 module.exports = {
   dbOk: isDbConfigured,
+  getDb,
   getModel,
   readCollection,
   writeCollection,
