@@ -11,14 +11,26 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import ImportConMonModal from '../components/ImportConMonModal';
 import { Plus, Pencil, Trash2, CheckCircle, Upload } from 'lucide-react';
+import UserSelect from '../components/ui/UserSelect';
 
-const STATUS_TABS = ['Pending', 'Completed', 'All'];
+const STATUS_TABS = ['Pending', 'Overdue', 'Due Soon', 'Completed', 'All'];
 
 const EMPTY_FORM = {
   control_id: '', control_title: '', family: '',
   daag_jsig_frequency: '', baseline_applicability: '',
-  conmon_group: '', notes: '', due_date: '',
+  conmon_group: '', assignee: '', review_outcome: '', notes: '', due_date: '',
 };
+
+function dueState(item, todayStr) {
+  if (item.status === 'Completed') return 'Completed';
+  if (!item.due_date) return 'Upcoming';
+  if (item.due_date < todayStr) return 'Overdue';
+  const due = new Date(item.due_date);
+  const today = new Date(todayStr);
+  if (Number.isNaN(due.getTime())) return 'Upcoming';
+  const days = Math.ceil((due.getTime() - today.getTime()) / (24 * 60 * 60 * 1000));
+  return days <= 30 ? 'Due Soon' : 'Upcoming';
+}
 
 /* ── Control Form (create / edit) ── */
 function ControlForm({ value, onChange }) {
@@ -81,6 +93,10 @@ function ControlForm({ value, onChange }) {
         />
       </div>
       <div>
+        <label className="block text-xs text-scorva-muted mb-1">ASSIGNEE</label>
+        <UserSelect value={value.assignee || ''} onChange={v => f('assignee', v)} placeholder="Select owner…" />
+      </div>
+      <div>
         <label className="block text-xs text-scorva-muted mb-1">DUE DATE</label>
         <input
           type="date"
@@ -88,6 +104,13 @@ function ControlForm({ value, onChange }) {
           value={value.due_date}
           onChange={e => f('due_date', e.target.value)}
         />
+      </div>
+      <div>
+        <label className="block text-xs text-scorva-muted mb-1">REVIEW OUTCOME</label>
+        <select className="input-base" value={value.review_outcome || ''} onChange={e => f('review_outcome', e.target.value)}>
+          <option value="">Not Reviewed</option>
+          {['Compliant', 'Finding', 'Needs POA&M'].map(s => <option key={s}>{s}</option>)}
+        </select>
       </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">NOTES / DEPENDENCIES</label>
@@ -132,6 +155,7 @@ function ControlDetail({ item, onComplete }) {
             {item.conmon_group}
           </span>
         )}
+        {item.review_outcome && <Badge label={item.review_outcome} />}
       </div>
 
       {/* Fields grid */}
@@ -140,6 +164,8 @@ function ControlDetail({ item, onComplete }) {
         <Field label="Family"                 value={item.family} />
         <Field label="Baseline Applicability" value={item.baseline_applicability} wide />
         <Field label="Due Date"               value={item.due_date}               mono />
+        <Field label="Assignee"               value={item.assignee} />
+        <Field label="Review Outcome"         value={item.review_outcome || 'Not Reviewed'} />
         {item.completed_date && (
           <div>
             <div className="text-xs text-scorva-muted mb-0.5 uppercase tracking-wider">Completed</div>
@@ -263,6 +289,8 @@ export default function ConMonPage() {
       daag_jsig_frequency:    row.daag_jsig_frequency    || '',
       baseline_applicability: row.baseline_applicability || '',
       conmon_group:           row.conmon_group            || '',
+      assignee:               row.assignee                || '',
+      review_outcome:         row.review_outcome          || '',
       notes:                  row.notes                  || '',
       due_date:               row.due_date               || '',
     });
@@ -290,13 +318,18 @@ export default function ConMonPage() {
   const todayStr  = new Date().toISOString().split('T')[0];
   const pending   = sorted.filter(i => i.status !== 'Completed');
   const completed = sorted.filter(i => i.status === 'Completed');
-  const overdue   = pending.filter(i => i.due_date && i.due_date < todayStr);
+  const overdue   = pending.filter(i => dueState(i, todayStr) === 'Overdue');
+  const dueSoon   = pending.filter(i => dueState(i, todayStr) === 'Due Soon');
   const pctDone   = items.length ? Math.round(completed.length / items.length * 100) : 0;
 
   /* ── filtered by tab ── */
   const filtered = tab === 'All'
     ? sorted
-    : sorted.filter(i => (tab === 'Pending' ? i.status !== 'Completed' : i.status === 'Completed'));
+    : sorted.filter(i => {
+      if (tab === 'Pending') return i.status !== 'Completed';
+      if (tab === 'Completed') return i.status === 'Completed';
+      return dueState(i, todayStr) === tab;
+    });
 
   const filteredIds = useMemo(() => filtered.map(row => row.id), [filtered]);
   const allFilteredSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
@@ -354,6 +387,10 @@ export default function ConMonPage() {
       key: 'conmon_group', label: 'ConMon Group', width: 130,
       render: v => <span className="text-xs">{v || '—'}</span>,
     },
+    {
+      key: 'assignee', label: 'Assignee', width: 130,
+      render: v => <span className="text-xs text-scorva-muted">{v || '—'}</span>,
+    },
   ];
 
   const dueDateCol = {
@@ -363,6 +400,10 @@ export default function ConMonPage() {
         {v || '—'}
       </span>
     ),
+  };
+  const dueStateCol = {
+    key: '_due_state', label: 'Queue', width: 100,
+    render: (_, row) => <Badge label={dueState(row, todayStr)} />,
   };
 
   const actionsCol = {
@@ -388,6 +429,7 @@ export default function ConMonPage() {
   const pendingCols = [
     ...sharedCols,
     dueDateCol,
+    dueStateCol,
     { key: 'status', label: 'Status', width: 90, render: v => <Badge label={v || 'Pending'} /> },
     actionsCol,
   ];
@@ -395,6 +437,7 @@ export default function ConMonPage() {
   const completedCols = [
     ...sharedCols,
     dueDateCol,
+    dueStateCol,
     {
       key: 'completed_date', label: 'Completed', width: 110,
       render: v => <span className="font-mono text-xs text-emerald-400">{v || '—'}</span>,
@@ -405,6 +448,7 @@ export default function ConMonPage() {
   const allCols = [
     ...sharedCols,
     dueDateCol,
+    dueStateCol,
     { key: 'status', label: 'Status', width: 90, render: v => <Badge label={v || 'Pending'} /> },
     {
       key: 'completed_date', label: 'Completed', width: 110,
@@ -451,6 +495,7 @@ export default function ConMonPage() {
         <div className="flex flex-wrap gap-2">
           <StatTile label="Total Controls" value={items.length} />
           <StatTile label="Pending"        value={pending.length}   color={pending.length   > 0 ? 'yellow' : 'default'} />
+          <StatTile label="Due Soon"       value={dueSoon.length}   color={dueSoon.length   > 0 ? 'yellow' : 'default'} />
           <StatTile label="Completed"      value={completed.length} color={completed.length > 0 ? 'green'  : 'default'} />
           <StatTile label="Overdue"        value={overdue.length}   color={overdue.length   > 0 ? 'red'    : 'default'} />
         </div>

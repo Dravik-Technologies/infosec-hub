@@ -19,6 +19,16 @@ function parseCtrlStr(str) {
   return (str || '').split(/[,\n]/).map(s => s.trim()).filter(Boolean);
 }
 
+function sourceLabel(task) {
+  const source = task.source || '';
+  if (!source) return 'Manual';
+  if (source === 'poam') return 'POA&M';
+  if (source === 'conmon') return 'ConMon';
+  if (source === 'tracker') return 'Tracker';
+  if (source === 'security-event') return 'Security Event';
+  return source;
+}
+
 function TaskForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
   return (
@@ -36,7 +46,7 @@ function TaskForm({ value, onChange }) {
       <div>
         <label className="block text-xs text-scorva-muted mb-1">STATUS</label>
         <select className="input-base" value={value.status} onChange={e => f('status', e.target.value)}>
-          {['Open','In Progress','Completed','Closed'].map(s => <option key={s}>{s}</option>)}
+          {['Open','In Progress','Blocked','Completed','Closed'].map(s => <option key={s}>{s}</option>)}
         </select>
       </div>
       <div>
@@ -80,8 +90,8 @@ function CompleteModal({ task, onConfirm, onCancel }) {
       <div className="space-y-4">
         <div>
           <p className="text-sm text-scorva-text font-medium mb-1">{task.title}</p>
-          {task.source === 'conmon' && task.source_id && (
-            <p className="text-xs text-scorva-muted font-mono">↳ ConMon Activity: {task.source_id}</p>
+          {task.source && (task.source_id || task.sourceId) && (
+            <p className="text-xs text-scorva-muted font-mono">↳ {sourceLabel(task)}: {task.source_id || task.sourceId}</p>
           )}
         </div>
         <div>
@@ -169,6 +179,8 @@ export default function TasksPage() {
   const shown     = activeTab === 'active' ? active : completed;
 
   const overdue = active.filter(t => t.due_date && t.due_date < todayStr).length;
+  const blocked = active.filter(t => t.status === 'Blocked').length;
+  const highPriority = active.filter(t => t.priority === 'High' || t.priority === 'Critical').length;
 
   /* ── table columns (shared base) ── */
   function linkedCtrlsCell(ids = []) {
@@ -186,6 +198,7 @@ export default function TasksPage() {
   const baseCols = [
     { key: 'id',       label: 'ID',       width: 90,  render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span> },
     { key: 'title',    label: 'Title' },
+    { key: 'source', label: 'Source', width: 110, render: (_, row) => <Badge label={sourceLabel(row)} /> },
     { key: 'priority', label: 'Priority', render: v => <Badge label={v} /> },
     { key: 'due_date', label: 'Due', width: 100,
       render: v => <span className={`font-mono text-xs ${v && v < todayStr ? 'text-red-400' : ''}`}>{v || '—'}</span> },
@@ -243,12 +256,15 @@ export default function TasksPage() {
             segments={[
               { label: 'Open',        value: active.filter(t => t.status === 'Open').length,        color: 'red'    },
               { label: 'In Progress', value: active.filter(t => t.status === 'In Progress').length, color: 'yellow' },
+              { label: 'Blocked',     value: blocked,                                               color: 'red'    },
               { label: 'Completed',   value: completed.length,                                      color: 'green'  },
             ]}
           />
           <div className="flex flex-wrap gap-2 items-start">
             <StatTile label="Total Tasks"  value={data.length} />
             <StatTile label="Overdue"      value={overdue}    color={overdue > 0 ? 'red' : 'default'} />
+            <StatTile label="Blocked"      value={blocked}    color={blocked > 0 ? 'red' : 'default'} />
+            <StatTile label="High Priority" value={highPriority} color={highPriority > 0 ? 'yellow' : 'default'} />
             <StatTile label="Completed"    value={completed.length} color="green" />
           </div>
         </div>

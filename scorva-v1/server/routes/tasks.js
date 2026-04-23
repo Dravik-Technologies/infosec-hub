@@ -5,9 +5,22 @@ const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
+function serializeTask(doc) {
+  if (!doc) return doc;
+  return {
+    ...doc,
+    due_date: doc.dueDate ?? doc.due_date ?? null,
+    linked_controls: doc.linkedControls ?? doc.linked_controls ?? [],
+    activity_id: doc.activityId ?? doc.activity_id ?? null,
+    source_id: doc.sourceId ?? doc.source_id ?? null,
+    created_by: doc.createdBy ?? doc.created_by ?? null,
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await db.task.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'desc' } }));
+    const docs = await db.task.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'desc' } });
+    res.json(docs.map(serializeTask));
   } catch (err) { next(err); }
 });
 
@@ -16,17 +29,18 @@ router.get('/mine', async (req, res, next) => {
     const username = req.session.user?.username;
     if (!username) return res.json([]);
 
-    const userDoc     = await db.user.findUnique({ where: { username }, select: { name: true } });
+    const userDoc     = await db.user.findUnique({ where: { username }, select: { name: true, email: true } });
     const displayName = userDoc?.name || req.session.user?.name;
 
     const assigneeVals = [username];
     if (displayName && displayName !== username) assigneeVals.push(displayName);
+    if (userDoc?.email) assigneeVals.push(userDoc.email);
 
     const tasks = await db.task.findMany({
       where: req.applyTenantFilter({ assignee: { in: assigneeVals } }),
       orderBy: { id: 'desc' },
     });
-    res.json(tasks);
+    res.json(tasks.map(serializeTask));
   } catch (err) { next(err); }
 });
 
@@ -35,7 +49,7 @@ router.get('/:id', async (req, res, next) => {
     const doc = await db.task.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
-    res.json(doc);
+    res.json(serializeTask(doc));
   } catch (err) { next(err); }
 });
 
@@ -61,7 +75,7 @@ router.post('/', async (req, res, next) => {
       },
     });
     await audit(req.session.user.username, 'TASK_ADD', id, `Added: ${title}`, siteId);
-    res.status(201).json(doc);
+    res.status(201).json(serializeTask(doc));
   } catch (err) { next(err); }
 });
 
@@ -112,7 +126,7 @@ router.patch('/:id', async (req, res, next) => {
 
     await audit(req.session.user.username, 'TASK_UPDATE', req.params.id,
       `Updated: ${Object.keys(data).join(', ')}`, updated.siteId);
-    res.json(updated);
+    res.json(serializeTask(updated));
   } catch (err) { next(err); }
 });
 

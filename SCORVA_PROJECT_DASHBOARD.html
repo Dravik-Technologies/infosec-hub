@@ -679,7 +679,7 @@
           </div>
           <div class="stat">
             <div class="k">Current Priority</div>
-            <div class="v">Sprint 2 Analytics</div>
+            <div class="v">Ops Workflow Sprint</div>
           </div>
         </div>
 
@@ -698,7 +698,7 @@
               <div class="progress-value">68%</div>
             </div>
             <div class="progress-bar"><div class="progress-fill" style="width: 68%"></div></div>
-            <p class="muted-note">Core cyber workflows are stronger after the validated POA&amp;M risk workflow. The next maturity push is executive analytics, trend views, and heatmaps.</p>
+            <p class="muted-note">Core cyber workflows are stronger after POA&amp;M risk workflow and Program View analytics. The next maturity push is ConMon execution, tasker discipline, and tracker governance.</p>
           </div>
         </div>
       </section>
@@ -718,10 +718,10 @@
           <div class="signal">
             <div class="name">Container State</div>
             <div class="pill green">Current Revision Active</div>
-            <p class="footer-note"><code>saf-scorva</code> is serving the updated frontend and backend revision in production.</p>
+            <p class="footer-note"><code>saf-scorva</code> is stable in production. Sprint 3 operational workflow image is pushed and ready for the next revision.</p>
             <div class="status-chip-row">
-              <span class="pill green">UI Updated</span>
               <span class="pill green">Release Stable</span>
+              <span class="pill yellow">Sprint 3 Pending ACA</span>
             </div>
           </div>
           <div class="signal">
@@ -768,9 +768,9 @@
             <tr><th>Item</th><th>Status</th><th>Detail</th></tr>
           </thead>
           <tbody>
-            <tr><td>Container App</td><td><span class="pill green">Current</span></td><td><code>saf-scorva</code></td></tr>
+            <tr><td>Container App</td><td><span class="pill yellow">Sprint 3 Pending Revision</span></td><td><code>saf-scorva</code></td></tr>
             <tr><td>Resource Group</td><td><span class="pill cyan">Known</span></td><td><code>saf-rg</code></td></tr>
-            <tr><td>Image Digest</td><td><span class="pill cyan">Current</span></td><td><code>sha256:69a34f6816c0a74d1522eebb9d39d62a3f7b4e77adcf86cf6fe70c78bb65b238</code></td></tr>
+            <tr><td>Image Digest</td><td><span class="pill cyan">Sprint 3 Ready</span></td><td><code>sha256:e70a2869e3cfb3aab192e510c6226510c77f0385f5905b39739869ccb8ccf95f</code></td></tr>
             <tr><td>Security Events table</td><td><span class="pill green">Live</span></td><td>Schema already applied in Azure PostgreSQL</td></tr>
             <tr><td>POA&amp;M risk workflow</td><td><span class="pill green">Live</span></td><td>Workflow state, review notes, and reviewer metadata verified</td></tr>
           </tbody>
@@ -828,21 +828,123 @@
               <div class="summary-meta">Next highest-value maturity item after POA&amp;M workflow completion</div>
             </div>
           </div>
-          <span class="pill yellow">Next</span>
+          <span class="pill yellow">Ready To Roll</span>
         </summary>
         <div class="details-body">
           <p>
-            Sprint 2 should strengthen executive visibility by turning current operational data into trends, heatmaps,
-            and leadership-ready risk indicators across sites.
+            Sprint 2 code has been built and pushed. The next action is creating a new Azure Container App revision,
+            then validating Program View analytics in production.
           </p>
           <div class="runbook">
             <h4>Sprint 2 Checklist</h4>
             <ol class="small-list">
-              <li>Add trend metrics for POA&amp;M open/closed aging, control implementation, ATO expiration, and security event severity.</li>
-              <li>Add cross-site risk heatmap data to the aggregate API.</li>
-              <li>Enhance Program View with historical trend cards and red/yellow/green executive indicators.</li>
-              <li>Validate analytics do not break tenant scoping or Corporate Admin restrictions.</li>
-              <li>Build, push, roll a new ACA revision, and update this dashboard after validation.</li>
+              <li>Add trend metrics for POA&amp;M aging, control implementation, ATO expiration, and security event severity.</li>
+              <li>Add cross-site risk heatmap data and top-risk-site ranking to the aggregate API.</li>
+              <li>Enhance Program View with executive analytics cards and red/yellow/green risk indicators.</li>
+              <li>Build and push the Sprint 2 image to ACR.</li>
+              <li>Next: roll a new ACA revision and validate Program View analytics in production.</li>
+            </ol>
+          </div>
+          <div class="runbook">
+            <h4>Image To Roll</h4>
+            <div class="cmd">secappfactory.azurecr.us/scorva:latest
+sha256:77f7024ad936f075db14236d14d0dfcf59a56b65ecaceb1ca495add436c973a4</div>
+          </div>
+        </div>
+      </details>
+
+      <details open>
+        <summary>
+          <div class="summary-left">
+            <span class="pill red">P1</span>
+            <div>
+              <div class="summary-title">Start operational workflow sprint: ConMon, taskers, trackers</div>
+              <div class="summary-meta">Focus the next build on execution discipline and recurring cyber operations</div>
+            </div>
+          </div>
+          <span class="pill yellow">Built / Pending ACA</span>
+        </summary>
+        <div class="details-body">
+          <p>
+            This sprint makes SCORVA stronger as a day-to-day cyber operations system. The first Sprint 3 build is complete
+            and pushed to ACR, with ConMon ownership/outcomes, tracker schedules/templates, and source-linked tasker automation.
+          </p>
+          <div class="runbook">
+            <h4>Completed In Build</h4>
+            <ol class="small-list">
+              <li>Add ConMon assignee and review outcome fields with overdue/due-soon queue visibility.</li>
+              <li>Add Tracker category, frequency, owner, next due, last completed, status, and control linkage.</li>
+              <li>Add scheduled requirement templates for backups, training, access reviews, patching, log review, IR readiness, and configuration review.</li>
+              <li>Add source-linked task automation for ConMon and Tracker due work while preserving POA&amp;M task sync.</li>
+              <li>Build and push Sprint 3 image to ACR.</li>
+            </ol>
+          </div>
+          <div class="runbook">
+            <h4>Image To Roll</h4>
+            <div class="cmd">secappfactory.azurecr.us/scorva:latest
+sha256:e70a2869e3cfb3aab192e510c6226510c77f0385f5905b39739869ccb8ccf95f</div>
+          </div>
+          <div class="runbook">
+            <h4>Build Scope</h4>
+            <ol class="small-list">
+              <li><strong>ConMon queue maturity:</strong> add better due/overdue grouping, status aging, and next-review visibility.</li>
+              <li><strong>Tasker discipline:</strong> add clearer task status bands, overdue indicators, priority sorting, and owner accountability.</li>
+              <li><strong>Tracker governance:</strong> add tracker health indicators, stale tracker detection, and linkage to tasks or ConMon where useful.</li>
+              <li><strong>Operational dashboard:</strong> add a compact execution summary showing due soon, overdue, blocked, unassigned, and completed work.</li>
+              <li><strong>Auditability:</strong> ensure key task/tracker status changes are logged and visible enough for weekly review.</li>
+            </ol>
+          </div>
+          <div class="runbook">
+            <h4>ConMon Improvements</h4>
+            <ol class="small-list">
+              <li>Group reviews by <strong>Overdue</strong>, <strong>Due Soon</strong>, <strong>Upcoming</strong>, and <strong>Completed</strong>.</li>
+              <li>Add review outcome signals such as <strong>Compliant</strong>, <strong>Finding</strong>, <strong>Needs POA&amp;M</strong>, and <strong>Not Reviewed</strong>.</li>
+              <li>Add quick actions for <strong>Complete Review</strong>, <strong>Create POA&amp;M</strong>, and <strong>Create Tasker</strong>.</li>
+              <li>Auto-create taskers for due-soon, overdue, or finding-generating ConMon items.</li>
+              <li>Add summary tiles for overdue reviews, due in 7/30 days, completed this month, and findings generated.</li>
+            </ol>
+          </div>
+          <div class="runbook">
+            <h4>Tracker Best-Practice Categories</h4>
+            <ol class="small-list">
+              <li><strong>Backups:</strong> backup verification, restore tests, offsite checks, and failure follow-up.</li>
+              <li><strong>Training:</strong> annual cyber awareness, privileged user training, role-based training, and overdue training review.</li>
+              <li><strong>Account management:</strong> inactive account review, privileged access review, termination checks, and access recertification.</li>
+              <li><strong>Vulnerability and patching:</strong> scan cadence, patch windows, remediation verification, and exception tracking.</li>
+              <li><strong>Log review and incident readiness:</strong> weekly log review, SIEM alert review, tabletop exercises, and IR contact validation.</li>
+              <li><strong>Configuration and physical operations:</strong> baseline review, unauthorized software checks, badge/access reviews, and visitor log review.</li>
+            </ol>
+          </div>
+          <div class="runbook">
+            <h4>Auto-Tasker Behavior</h4>
+            <ol class="small-list">
+              <li>Continue syncing POA&amp;M assignments into linked taskers.</li>
+              <li>Create or sync taskers when ConMon reviews become due, overdue, or produce findings.</li>
+              <li>Create or sync taskers when tracker requirements become due based on frequency and next due date.</li>
+              <li>Prevent duplicates by enforcing one active tasker per <code>source</code> and <code>sourceId</code>.</li>
+              <li>Show tasker source clearly as <strong>POA&amp;M</strong>, <strong>ConMon</strong>, <strong>Tracker</strong>, or <strong>Security Event</strong>.</li>
+              <li>Add a <strong>My Taskers</strong> filter based on assignee, username, or responsible party.</li>
+            </ol>
+          </div>
+          <div class="runbook">
+            <h4>Recommended Build Order</h4>
+            <div class="cmd">1. Inspect existing ConMon, Tasks, and Trackers schemas/routes/pages
+2. Decide if schema fields are needed for due windows, blocked status, or tracker ownership
+3. Add shared task automation helpers for source-linked taskers
+4. Add backend summary endpoints for operational execution metrics
+5. Improve ConMon page grouping, due/overdue visibility, and quick actions
+6. Improve Tasks page sorting, ownership, source visibility, and My Taskers
+7. Improve Trackers page templates, frequency, health, and staleness indicators
+8. Build/push image, roll ACA revision, validate in production</div>
+          </div>
+          <div class="runbook">
+            <h4>Exit Criteria</h4>
+            <ol class="small-list">
+              <li>Users can quickly see what ConMon reviews are overdue, due soon, and completed.</li>
+              <li>Taskers clearly show overdue, blocked, unassigned, high-priority, and recently completed work.</li>
+              <li>Trackers show health/staleness and support weekly leadership review.</li>
+              <li>Site scoping and Corporate Admin all-site behavior remain correct.</li>
+              <li>The sprint ships cleanly through Docker build, ACR push, ACA revision, and production validation.</li>
             </ol>
           </div>
         </div>
@@ -1035,15 +1137,26 @@ node packages/db/node_modules/prisma/build/index.js migrate deploy --schema=pack
         </div>
         <div class="tl-item">
           <div class="tl-title">Sprint 2: Executive Analytics</div>
-          <div class="tl-meta">Next sprint: 1 week</div>
+          <div class="tl-meta">Built and pushed; pending ACA rollout</div>
           <ul class="small-list">
-            <li>Add trend analytics for POA&amp;Ms, controls, ATO expirations, and security events.</li>
-            <li>Add risk heatmaps and historical charts for leadership reporting.</li>
-            <li>Expand Program View into a stronger executive readiness board.</li>
+            <li>Trend inputs for POA&amp;Ms, controls, ATO expirations, and security events are implemented.</li>
+            <li>Risk heatmap and top-risk-site ranking are implemented.</li>
+            <li>Program View executive readiness board is built and ready for production validation.</li>
           </ul>
         </div>
         <div class="tl-item">
-          <div class="tl-title">Sprint 3: Evidence and Reporting</div>
+          <div class="tl-title">Sprint 3: Operational Workflow Maturity</div>
+          <div class="tl-meta">Built and pushed; pending ACA rollout</div>
+          <ul class="small-list">
+            <li>Improve ConMon queue visibility, due/overdue grouping, next-review signals, and quick actions.</li>
+            <li>Auto-populate taskers from POA&amp;M, ConMon, and tracker requirements while preventing duplicates.</li>
+            <li>Add tracker templates for recurring cyber operations such as backups, training, access reviews, patching, log review, and incident readiness.</li>
+            <li>Improve tasker accountability with source visibility, My Taskers, ownership, priority, blocked, and overdue states.</li>
+            <li>Improve tracker governance with frequency, next due, last completed, health/staleness indicators, and weekly review readiness.</li>
+          </ul>
+        </div>
+        <div class="tl-item">
+          <div class="tl-title">Sprint 4: Evidence and Reporting</div>
           <div class="tl-meta">1 week</div>
           <ul class="small-list">
             <li>Add one-click compliance and evidence package export.</li>
@@ -1052,7 +1165,7 @@ node packages/db/node_modules/prisma/build/index.js migrate deploy --schema=pack
           </ul>
         </div>
         <div class="tl-item">
-          <div class="tl-title">Sprint 4: Integration and Detection</div>
+          <div class="tl-title">Sprint 5: Integration and Detection</div>
           <div class="tl-meta">1 to 2 weeks</div>
           <ul class="small-list">
             <li>Add scanner/SIEM/CMDB or ticketing integration priorities.</li>
@@ -1071,7 +1184,7 @@ node packages/db/node_modules/prisma/build/index.js migrate deploy --schema=pack
         </thead>
         <tbody>
           <tr class="workstream-row" data-status="green"><td>Authorization: Controls / ATO / POA&amp;M</td><td><span class="pill green">Green</span></td><td>90%</td><td>Risk workflow complete; next focus is richer reporting</td></tr>
-          <tr class="workstream-row" data-status="green"><td>Monitoring: ConMon / Tasks / Trackers</td><td><span class="pill green">Green</span></td><td>80%</td><td>Operational refinement and schedule enforcement</td></tr>
+          <tr class="workstream-row" data-status="green"><td>Monitoring: ConMon / Tasks / Trackers</td><td><span class="pill green">Green</span></td><td>80%</td><td>Next sprint focus: execution dashboard, due/overdue queues, tasker accountability, tracker health</td></tr>
           <tr class="workstream-row" data-status="green"><td>Monitoring: Security Events</td><td><span class="pill green">Green</span></td><td>80%</td><td>Live in production; next step is better correlation and anomaly logic</td></tr>
           <tr class="workstream-row" data-status="green"><td>Administration: Program View</td><td><span class="pill green">Green</span></td><td>80%</td><td>Live in production; next step is trend and heatmap expansion</td></tr>
           <tr class="workstream-row" data-status="green"><td>Assets: Workstations / YubiKeys / Licenses</td><td><span class="pill green">Green</span></td><td>80%</td><td>Automated discovery and change detection</td></tr>

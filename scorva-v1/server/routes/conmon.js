@@ -3,6 +3,7 @@
 const express = require('express');
 const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
+const { completeTasksForSource, ensureTaskForSource } = require('../utils/taskAutomation');
 
 let multer  = null;
 let ExcelJS = null;
@@ -39,6 +40,8 @@ function normalizeControl(input, siteId) {
     daagJsigFrequency:    String(input.daagJsigFrequency    ?? input.daag_jsig_frequency    ?? '').trim(),
     baselineApplicability: String(input.baselineApplicability ?? input.baseline_applicability ?? '').trim(),
     conmonGroup:          String(input.conmonGroup           ?? input.conmon_group            ?? '').trim(),
+    assignee:             String(input.assignee              ?? '').trim() || null,
+    reviewOutcome:        String(input.reviewOutcome         ?? input.review_outcome          ?? '').trim() || null,
     notes:                String(input.notes ?? '').trim(),
     completedDate,
   };
@@ -95,10 +98,39 @@ function serializeConMon(doc) {
     daag_jsig_frequency: doc.daagJsigFrequency ?? doc.daag_jsig_frequency ?? '',
     baseline_applicability: doc.baselineApplicability ?? doc.baseline_applicability ?? '',
     conmon_group: doc.conmonGroup ?? doc.conmon_group ?? '',
+    review_outcome: doc.reviewOutcome ?? doc.review_outcome ?? '',
     completed_date: doc.completedDate ?? doc.completed_date ?? null,
     linked_controls: doc.linkedControls ?? doc.linked_controls ?? [],
     site_id: doc.siteId ?? doc.site_id ?? null,
   };
+}
+
+function shouldCreateConMonTask(doc) {
+  if (!doc || doc.status === 'Completed' || !doc.dueDate) return false;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const due = new Date(doc.dueDate);
+  const now = new Date(todayStr);
+  if (Number.isNaN(due.getTime())) return false;
+  const days = Math.ceil((due.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+  return days <= 30 || doc.reviewOutcome === 'Finding' || doc.reviewOutcome === 'Needs POA&M';
+}
+
+async function syncConMonTask(doc, username) {
+  if (!shouldCreateConMonTask(doc)) return null;
+  return ensureTaskForSource({
+    source: 'conmon',
+    sourceId: doc.id,
+    siteId: doc.siteId,
+    title: `ConMon review: ${doc.controlId}${doc.controlTitle ? ` - ${doc.controlTitle}` : ''}`,
+    type: doc.reviewOutcome === 'Finding' || doc.reviewOutcome === 'Needs POA&M' ? 'Finding' : 'Task',
+    priority: doc.reviewOutcome === 'Finding' || doc.reviewOutcome === 'Needs POA&M' ? 'High' : 'Medium',
+    assignee: doc.assignee || null,
+    dueDate: doc.dueDate || null,
+    control: doc.controlId || null,
+    linkedControls: doc.linkedControls || [],
+    notes: doc.notes || null,
+    username,
+  });
 }
 
 async function parseExcelRows(buffer) {
@@ -190,6 +222,7 @@ router.post('/', async (req, res, next) => {
   if (!doc?.controlId) return res.status(400).json({ error: 'controlID is required' });
   try {
     const created = await db.conMon.create({ data: doc });
+    await syncConMonTask(created, req.user?.username || 'system');
     await audit(req.user?.username || 'system', 'CONMON_ADD', created.id,
       `Added: ${created.controlId}`, siteId);
     res.status(201).json(serializeConMon(created));
@@ -204,6 +237,11 @@ router.patch('/:id', async (req, res, next) => {
 
     const normalized = normalizeControl({ ...existing, ...req.body }, existing.siteId);
     const updated    = await db.conMon.update({ where: { id: req.params.id }, data: normalized });
+    if (updated.status === 'Completed') {
+      await completeTasksForSource('conmon', updated.id, updated.notes || 'ConMon review completed');
+    } else {
+      await syncConMonTask(updated, req.user?.username || 'system');
+    }
     await audit(req.user?.username || 'system', 'CONMON_UPDATE', req.params.id,
       `Updated ConMon control: ${updated.controlId}`, existing.siteId);
     res.json(serializeConMon(updated));
