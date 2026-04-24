@@ -6,6 +6,7 @@ import { Shield } from 'lucide-react';
 import Landing from './pages/Landing';
 import Login   from './pages/Login';
 import Portal  from './pages/Portal';
+import RequestAccess from './pages/RequestAccess';
 
 function LoadingScreen() {
   return (
@@ -45,6 +46,7 @@ export default function App() {
         {/* Public */}
         <Route path="/"      element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/request-access" element={<RequestAccess />} />
 
         {/* Protected */}
         <Route path="/portal" element={

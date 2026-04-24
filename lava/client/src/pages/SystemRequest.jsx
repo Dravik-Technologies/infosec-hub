@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const CLASSIFICATIONS = ['UNCLASSIFIED', 'CUI', 'SECRET', 'TOP SECRET', 'TS/SCI'];
 const NETWORK_TYPES   = ['NIPRNET', 'SIPRNET', 'JWICS', 'SIPRNet Enclave', 'Standalone', 'Other'];
+const SYSTEM_STATUSES = ['pending', 'active', 'rejected', 'decommissioned'];
+const ASSET_STATUSES = ['Assigned', 'Available', 'In Repair', 'Lost', 'Retired', 'Destroyed'];
 
 const inputStyle  = { width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border)', color: 'var(--text)', padding: '0.65rem 0.85rem', fontSize: '0.82rem', borderRadius: '3px', outline: 'none' };
 const labelStyle  = { display: 'block', color: 'var(--muted)', fontSize: '0.68rem', letterSpacing: '0.14em', marginBottom: '0.35rem' };
@@ -14,7 +17,20 @@ const SectionTitle = ({ label }) => (
   <h3 style={{ color: 'var(--orange)', fontSize: '0.78rem', letterSpacing: '0.2em', marginBottom: '1.25rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem' }}>{label}</h3>
 );
 
+const Modal = ({ title, children, onClose }) => (
+  <div style={{ position: 'fixed', inset: 0, background: 'rgba(11,5,5,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }} onClick={onClose}>
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 0 40px rgba(255,69,0,0.2)', borderRadius: '4px', padding: '2rem', width: '100%', maxWidth: '640px', maxHeight: '85vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h2 style={{ color: 'var(--orange)', fontSize: '0.9rem', letterSpacing: '0.2em' }}>{title}</h2>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '1.2rem' }}>✕</button>
+      </div>
+      {children}
+    </div>
+  </div>
+);
+
 export default function SystemRequest() {
+  const { isVulcan } = useAuth();
   const [systems, setSystems]       = useState([]);
   const [loading, setLoading]       = useState(true);
   const [showForm, setShowForm]     = useState(false);
@@ -24,7 +40,16 @@ export default function SystemRequest() {
   const [toast, setToast]           = useState('');
   const [uploading, setUploading]   = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [savingStatus, setSavingStatus] = useState(false);
+  const [savingAsset, setSavingAsset] = useState(false);
   const [errors, setErrors]         = useState({});
+  const [reviewNotes, setReviewNotes] = useState('');
+  const [systemStatus, setSystemStatus] = useState('pending');
+  const [editingAsset, setEditingAsset] = useState(null);
+  const [assetForm, setAssetForm] = useState({
+    assetTag: '', serialNumber: '', make: '', model: '', assetType: '',
+    status: 'Assigned', classification: 'UNCLASSIFIED', assignedUser: '', location: '', notes: '',
+  });
   const fileInputRef = useRef(null);
 
   const [form, setForm] = useState({
@@ -57,6 +82,8 @@ export default function SystemRequest() {
 
   const handleSelectSystem = (s) => {
     setActiveSystem(s);
+    setSystemStatus(s.status);
+    setReviewNotes(s.reviewNotes || '');
     loadAssets(s.id);
   };
 
@@ -128,7 +155,62 @@ export default function SystemRequest() {
     } catch { showToast('Failed to remove asset'); }
   };
 
+  const openEditAsset = (asset) => {
+    setEditingAsset(asset);
+    setAssetForm({
+      assetTag: asset.assetTag || '',
+      serialNumber: asset.serialNumber || '',
+      make: asset.make || '',
+      model: asset.model || '',
+      assetType: asset.assetType || '',
+      status: asset.status || 'Assigned',
+      classification: asset.classification || 'UNCLASSIFIED',
+      assignedUser: asset.assignedUser || '',
+      location: asset.location || '',
+      notes: asset.notes || '',
+    });
+  };
+
+  const closeAssetModal = () => {
+    setEditingAsset(null);
+    setAssetForm({
+      assetTag: '', serialNumber: '', make: '', model: '', assetType: '',
+      status: 'Assigned', classification: 'UNCLASSIFIED', assignedUser: '', location: '', notes: '',
+    });
+  };
+
+  const handleUpdateSystemStatus = async () => {
+    if (!activeSystem) return;
+    setSavingStatus(true);
+    try {
+      const { data } = await axios.patch(`/api/systems/${activeSystem.id}/status`, { status: systemStatus, reviewNotes }, { withCredentials: true });
+      showToast(`System status updated to ${data.status}.`);
+      await loadSystems();
+      setActiveSystem((prev) => ({ ...prev, ...data }));
+    } catch (err) {
+      showToast(err?.response?.data?.error || 'Failed to update system status');
+    } finally {
+      setSavingStatus(false);
+    }
+  };
+
+  const handleSaveAsset = async () => {
+    if (!editingAsset) return;
+    setSavingAsset(true);
+    try {
+      const { data } = await axios.patch(`/api/hardware/${editingAsset.id}`, assetForm, { withCredentials: true });
+      setAssets((prev) => prev.map((asset) => (asset.id === data.id ? data : asset)));
+      showToast(`Asset ${data.assetTag || data.serialNumber || data.id} updated.`);
+      closeAssetModal();
+    } catch (err) {
+      showToast(err?.response?.data?.error || 'Failed to update asset');
+    } finally {
+      setSavingAsset(false);
+    }
+  };
+
   const statusColor = (s) => ({ pending: '#FFA500', active: '#00C864', rejected: '#ff6666', decommissioned: 'var(--muted)' }[s] || 'var(--muted)');
+  const formatDate = (iso) => iso ? new Date(iso).toLocaleDateString() : '—';
 
   return (
     <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
@@ -263,6 +345,30 @@ export default function SystemRequest() {
                   <div style={{ color: 'var(--text)', fontSize: '0.82rem', lineHeight: 1.7 }}>{activeSystem.purpose}</div>
                 </div>
               )}
+              {isVulcan && (
+                <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '220px 1fr', gap: '1rem', alignItems: 'end' }}>
+                    <div>
+                      <label style={labelStyle}>SYSTEM STATUS</label>
+                      <select style={inputStyle} value={systemStatus} onChange={(e) => setSystemStatus(e.target.value)}>
+                        {SYSTEM_STATUSES.map((status) => <option key={status} value={status}>{status.toUpperCase()}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={labelStyle}>REVIEW NOTES</label>
+                      <textarea style={{ ...inputStyle, minHeight: '84px', resize: 'vertical' }} value={reviewNotes} onChange={(e) => setReviewNotes(e.target.value)} placeholder="Approval notes, onboarding blockers, or decommissioning details..." />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.9rem', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ color: 'var(--muted)', fontSize: '0.72rem' }}>
+                      Reviewed by: <span style={{ color: 'var(--text)' }}>{activeSystem.reviewedBy || '—'}</span>
+                    </div>
+                    <button onClick={handleUpdateSystemStatus} disabled={savingStatus} style={{ ...btnBase, background: 'var(--orange)', color: '#0B0505', border: 'none', fontWeight: 'bold' }}>
+                      {savingStatus ? 'SAVING...' : 'SAVE STATUS'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Hardware Section */}
@@ -293,7 +399,7 @@ export default function SystemRequest() {
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.78rem' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--border)' }}>
-                        {['Asset Tag', 'Serial #', 'Make / Model', 'Type', 'Classification', 'Assigned To', 'Location', ''].map(h => (
+                        {['Asset Tag', 'Serial #', 'Make / Model', 'Type', 'Status', 'Classification', 'Assigned To', 'Location', ''].map(h => (
                           <th key={h} style={{ color: 'var(--muted)', fontSize: '0.62rem', letterSpacing: '0.12em', padding: '0.5rem 0.75rem', textAlign: 'left', fontWeight: 'normal' }}>{h}</th>
                         ))}
                       </tr>
@@ -305,10 +411,12 @@ export default function SystemRequest() {
                           <td style={{ padding: '0.55rem 0.75rem', color: 'var(--text)', fontFamily: 'monospace' }}>{a.serialNumber || '—'}</td>
                           <td style={{ padding: '0.55rem 0.75rem', color: 'var(--text)' }}>{[a.make, a.model].filter(Boolean).join(' ') || '—'}</td>
                           <td style={{ padding: '0.55rem 0.75rem', color: 'var(--muted)' }}>{a.assetType || '—'}</td>
+                          <td style={{ padding: '0.55rem 0.75rem', color: 'var(--orange)' }}>{a.status || 'Assigned'}</td>
                           <td style={{ padding: '0.55rem 0.75rem', color: 'var(--muted)' }}>{a.classification}</td>
                           <td style={{ padding: '0.55rem 0.75rem', color: 'var(--text)' }}>{a.assignedUser || '—'}</td>
                           <td style={{ padding: '0.55rem 0.75rem', color: 'var(--muted)' }}>{a.location || '—'}</td>
                           <td style={{ padding: '0.55rem 0.75rem' }}>
+                            <button onClick={() => openEditAsset(a)} style={{ background: 'none', border: 'none', color: 'var(--orange)', cursor: 'pointer', fontSize: '0.72rem', marginRight: '0.5rem' }} title="Edit asset">EDIT</button>
                             <button onClick={() => handleDeleteAsset(a.id)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.8rem' }} title="Remove asset">✕</button>
                           </td>
                         </tr>
@@ -321,6 +429,85 @@ export default function SystemRequest() {
           </div>
         )}
       </div>
+      {editingAsset && (
+        <Modal title="EDIT HARDWARE ASSET" onClose={closeAssetModal}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>ASSET TAG</label>
+              <input style={inputStyle} value={assetForm.assetTag} onChange={(e) => setAssetForm((prev) => ({ ...prev, assetTag: e.target.value }))} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>SERIAL NUMBER</label>
+              <input style={inputStyle} value={assetForm.serialNumber} onChange={(e) => setAssetForm((prev) => ({ ...prev, serialNumber: e.target.value }))} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>MAKE</label>
+              <input style={inputStyle} value={assetForm.make} onChange={(e) => setAssetForm((prev) => ({ ...prev, make: e.target.value }))} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>MODEL</label>
+              <input style={inputStyle} value={assetForm.model} onChange={(e) => setAssetForm((prev) => ({ ...prev, model: e.target.value }))} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>TYPE</label>
+              <input style={inputStyle} value={assetForm.assetType} onChange={(e) => setAssetForm((prev) => ({ ...prev, assetType: e.target.value }))} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>STATUS</label>
+              <select style={inputStyle} value={assetForm.status} onChange={(e) => setAssetForm((prev) => ({ ...prev, status: e.target.value }))}>
+                {ASSET_STATUSES.map((status) => <option key={status}>{status}</option>)}
+              </select>
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>CLASSIFICATION</label>
+              <select style={inputStyle} value={assetForm.classification} onChange={(e) => setAssetForm((prev) => ({ ...prev, classification: e.target.value }))}>
+                {CLASSIFICATIONS.map((classification) => <option key={classification}>{classification}</option>)}
+              </select>
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>ASSIGNED USER</label>
+              <input style={inputStyle} value={assetForm.assignedUser} onChange={(e) => setAssetForm((prev) => ({ ...prev, assignedUser: e.target.value }))} />
+            </div>
+            <div style={fieldStyle}>
+              <label style={labelStyle}>LOCATION</label>
+              <input style={inputStyle} value={assetForm.location} onChange={(e) => setAssetForm((prev) => ({ ...prev, location: e.target.value }))} />
+            </div>
+            <div style={{ ...fieldStyle, gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>NOTES</label>
+              <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} value={assetForm.notes} onChange={(e) => setAssetForm((prev) => ({ ...prev, notes: e.target.value }))} />
+            </div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
+            <button onClick={closeAssetModal} style={{ ...btnBase, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)' }}>CANCEL</button>
+            <button onClick={handleSaveAsset} disabled={savingAsset} style={{ ...btnBase, background: 'var(--orange)', color: '#0B0505', border: 'none', fontWeight: 'bold' }}>
+              {savingAsset ? 'SAVING...' : 'SAVE ASSET'}
+            </button>
+          </div>
+          {editingAsset.assignmentHistory?.length > 0 && (
+            <div style={{ marginTop: '1.25rem', borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
+              <div style={{ color: 'var(--orange)', fontSize: '0.72rem', letterSpacing: '0.16em', marginBottom: '0.75rem' }}>ASSIGNMENT HISTORY</div>
+              <div style={{ display: 'grid', gap: '0.6rem' }}>
+                {editingAsset.assignmentHistory.map((entry) => (
+                  <div key={entry.id} style={{ background: 'rgba(255,69,0,0.05)', border: '1px solid rgba(255,69,0,0.08)', borderRadius: '3px', padding: '0.75rem' }}>
+                    <div style={{ color: 'var(--text)', fontSize: '0.78rem' }}>{entry.assignedUser || 'Unassigned'}</div>
+                    <div style={{ color: 'var(--muted)', fontSize: '0.68rem', marginTop: '0.15rem' }}>
+                      Assigned {formatDate(entry.assignedAt)} by {entry.assignedBy || '—'}
+                      {entry.returnedAt ? ` • Returned ${formatDate(entry.returnedAt)}` : ' • Active assignment'}
+                    </div>
+                    {(entry.previousUser || entry.notes) && (
+                      <div style={{ color: 'var(--muted)', fontSize: '0.68rem', marginTop: '0.2rem' }}>
+                        {entry.previousUser ? `Previous: ${entry.previousUser}` : ''}
+                        {entry.previousUser && entry.notes ? ' • ' : ''}
+                        {entry.notes || ''}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
     </div>
   );
 }

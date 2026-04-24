@@ -3,6 +3,7 @@
 const express = require('express');
 const bcrypt  = require('bcryptjs');
 const { db }  = require('../../../packages/db/src/index');
+const { getAllowedApps, hasAppAccess } = require('../../../packages/db/src/appAccess');
 const router  = express.Router();
 
 function proxyLoginToScorva(username, password) {
@@ -43,7 +44,7 @@ router.post('/login', async (req, res) => {
       id: 'dev-admin', name: 'Dev Admin', username: 'admin',
       email: 'admin@dev.local', role: 'Corporate Admin',
       siteId: 'MTSI-ALX', siteIds: ['MTSI-ALX', 'MTSI-HVL'],
-      site: 'MTSI-ALX', initials: 'DA',
+      site: 'MTSI-ALX', initials: 'DA', allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava'],
     };
     return res.json({ user: req.session.user });
   }
@@ -60,6 +61,9 @@ router.post('/login', async (req, res) => {
 
     const valid = await bcrypt.compare(password, found.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!hasAppAccess(found, 'hub')) {
+      return res.status(403).json({ error: 'Hub access has not been granted for this account' });
+    }
 
     req.session.user = {
       id:       found.id,
@@ -71,13 +75,14 @@ router.post('/login', async (req, res) => {
       siteIds:  found.siteIds,
       site:     found.siteId,
       initials: found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
+      allowedApps: getAllowedApps(found),
     };
 
     db.user.update({ where: { id: found.id }, data: { lastLogin: new Date() } }).catch(() => {});
     return res.json({ user: req.session.user });
   } catch (err) {
     // Fallback: proxy to SCORVA if database is unreachable
-    if (err.message?.includes('connect') || err.code === 'P1001') {
+    if ((err.message && err.message.includes('connect')) || err.code === 'P1001') {
       try {
         console.log('[HUB] DB offline — proxying login to SCORVA');
         const scorvaUser = await proxyLoginToScorva(username, password);

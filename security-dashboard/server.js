@@ -855,6 +855,9 @@ app.get('/auth/sso', async (req, res) => {
     if (!hub_token) return res.redirect('/?sso_error=missing_token');
     try {
         const hubUser = await verifyHubToken(hub_token);
+        if (hubUser.requestedApp && hubUser.requestedApp !== 'mash') {
+            return res.redirect('/?sso_error=invalid_target');
+        }
         const payload = { ...(await mapHubUser(hubUser)), via: 'sso' };
         const token   = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
         res.redirect(`/?mash_token=${token}`);

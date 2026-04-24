@@ -22,6 +22,7 @@ RUN npx prisma generate
 RUN npm prune --omit=dev
 
 COPY lava/server/ ./server/
+COPY packages/db/src/ /app/packages/db/src/
 COPY --from=client-builder /app/client/dist ./client/dist
 
 EXPOSE 3002

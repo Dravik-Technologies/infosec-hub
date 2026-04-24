@@ -21,6 +21,7 @@
 const express     = require('express');
 const crypto      = require('crypto');
 const requireAuth = require('../middleware/requireAuth');
+const { hasAppAccess } = require('../../../packages/db/src/appAccess');
 const router      = express.Router();
 
 const TTL_MS = (parseInt(process.env.SSO_TOKEN_TTL, 10) || 60) * 1000;
@@ -38,14 +39,22 @@ setInterval(() => {
 
 /* POST /api/sso/token — authenticated hub user requests a launch token */
 router.post('/token', (req, res, next) => {
-  console.log(`[HUB SSO] /token called — session user: ${req.session?.user?.username ?? 'NONE'}`);
+  const sessionUser = req.session && req.session.user ? req.session.user.username : 'NONE';
+  console.log(`[HUB SSO] /token called — session user: ${sessionUser}`);
   next();
 }, requireAuth, (req, res) => {
+  const appId = String((req.body && req.body.appId) || '').trim().toLowerCase();
+  if (!appId) {
+    return res.status(400).json({ error: 'appId is required' });
+  }
+  if (!hasAppAccess(req.session.user, appId)) {
+    return res.status(403).json({ error: `Access to ${appId} has not been granted` });
+  }
   const token   = crypto.randomBytes(32).toString('hex');
   const expires = Date.now() + TTL_MS;
-  tokenStore.set(token, { user: req.session.user, expires });
-  console.log(`[HUB SSO] token issued for ${req.session.user.username}`);
-  res.json({ token, expires });
+  tokenStore.set(token, { user: { ...req.session.user, requestedApp: appId }, appId, expires });
+  console.log(`[HUB SSO] token issued for ${req.session.user.username} -> ${appId}`);
+  res.json({ token, expires, appId });
 });
 
 /* GET /api/sso/verify?token=<token> — called by external apps */

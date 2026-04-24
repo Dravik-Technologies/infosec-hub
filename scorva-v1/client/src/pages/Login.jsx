@@ -6,6 +6,7 @@ import { Shield, Eye, EyeOff } from 'lucide-react';
 export default function Login() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const hubRequestUrl = `${import.meta.env.VITE_HUB_URL || 'http://localhost:3010'}/request-access?app=scorva`;
   const [form, setForm]     = useState({ username: '', password: '' });
   const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
@@ -103,6 +104,9 @@ export default function Login() {
 
         <p className="text-center text-xs text-scorva-muted mt-6">
           NIST SP 800-53 Rev 5 Compliance Management
+        </p>
+        <p className="text-center text-xs text-scorva-muted mt-2">
+          Need access first? <a href={hubRequestUrl} className="text-scorva-accent hover:underline">Request it through HUB</a>
         </p>
         <p className="text-center mt-3">
           <button

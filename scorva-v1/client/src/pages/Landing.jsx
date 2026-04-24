@@ -60,6 +60,8 @@ export default function Landing() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { dark, toggle } = useTheme();
+  const hubRequestUrl = `${import.meta.env.VITE_HUB_URL || 'http://localhost:3010'}/request-access?app=scorva`;
+  const reason = new URLSearchParams(window.location.search).get('reason');
 
   // If already logged in, offer to go to portal (don't force redirect — let them see the landing)
   useEffect(() => {
@@ -106,6 +108,11 @@ export default function Landing() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-scorva-accent/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative max-w-4xl mx-auto text-center">
+          {reason === 'scorva_access_required' && (
+            <div className="mb-6 inline-flex max-w-2xl items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs">
+              Your account authenticated, but SCORVA access has not been provisioned yet. Submit a HUB request and the admins can finish the handoff.
+            </div>
+          )}
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-scorva-accent/10 border border-scorva-accent/20 mb-6">
             <Lock size={12} className="text-scorva-accent" />
             <span className="text-xs font-mono text-scorva-accent tracking-widest uppercase">NIST SP 800-53 Rev 5 · RMF Compliant</span>
@@ -129,6 +136,12 @@ export default function Landing() {
               Sign In to Portal
               <ArrowRight size={18} />
             </button>
+            <a
+              href={hubRequestUrl}
+              className="btn-secondary py-3 px-8 text-base"
+            >
+              Request SCORVA Access
+            </a>
             <a
               href="#features"
               className="btn-secondary py-3 px-8 text-base"

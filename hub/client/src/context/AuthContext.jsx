@@ -37,14 +37,14 @@ export function AuthProvider({ children }) {
    *   empty string for client-side SSO, or null if the app needs no auth.
    * @returns {Promise<string>} full launch URL
    */
-  async function launchApp(appUrl, ssoPath) {
+  async function launchApp(appId, appUrl, ssoPath) {
     if (ssoPath === null || ssoPath === undefined) {
       // App needs no authentication — open directly
       return appUrl;
     }
     const { data } = await axios.post(
       `${BASE}/api/sso/token`,
-      {},
+      { appId },
       { withCredentials: true }
     );
     if (ssoPath === '') {

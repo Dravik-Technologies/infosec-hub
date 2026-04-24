@@ -113,7 +113,16 @@ export default function Portal() {
   const [team,      setTeam]      = useState('All');
   const [launching, setLaunching] = useState(null);
   const [apps,      setApps]      = useState(APPS);
+  const [adminUsers, setAdminUsers] = useState([]);
+  const [adminRequests, setAdminRequests] = useState([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [requestLoading, setRequestLoading] = useState(false);
+  const [adminError, setAdminError] = useState('');
+  const [adminMessage, setAdminMessage] = useState('');
+  const [createForm, setCreateForm] = useState({ id: '', name: '', username: '', email: '', password: '', role: 'Viewer', allowedApps: ['hub'] });
   const teams = ['All', ...new Set(apps.map(app => app.team))];
+  const manageableApps = ['hub', ...APPS.map(app => app.id)];
+  const isAdmin = user?.role === 'Corporate Admin';
 
   // Keep app list in sync with the server so ssoPath changes take effect
   // without a client rebuild.
@@ -124,6 +133,12 @@ export default function Portal() {
       .then(data => { if (Array.isArray(data) && data.length) setApps(data); })
       .catch(() => { /* keep local APPS on network failure */ });
   }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    loadAdminUsers();
+    loadAccessRequests();
+  }, [isAdmin]);
 
   const visible = apps.filter(app => {
     const matchTeam   = team === 'All' || app.team === team;
@@ -139,13 +154,133 @@ export default function Portal() {
   async function handleLaunch(app) {
     setLaunching(app.id);
     try {
-      const url = await launchApp(app.url, app.ssoPath ?? null);
+      const url = await launchApp(app.id, app.url, app.ssoPath ?? null);
       window.open(url, '_blank', 'noopener,noreferrer');
     } catch {
       // SSO token failed — open without token (app may redirect to its own login)
       window.open(app.url, '_blank', 'noopener,noreferrer');
     } finally {
       setLaunching(null);
+    }
+  }
+
+  async function loadAdminUsers() {
+    const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
+    setAdminLoading(true); setAdminError('');
+    try {
+      const res = await fetch(`${BASE}/api/admin/users`, { credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to load users');
+      setAdminUsers(data.users || []);
+    } catch (err) {
+      setAdminError(err.message);
+    } finally {
+      setAdminLoading(false);
+    }
+  }
+
+  async function loadAccessRequests() {
+    const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
+    setRequestLoading(true); setAdminError('');
+    try {
+      const res = await fetch(`${BASE}/api/admin/access-requests`, { credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to load access requests');
+      setAdminRequests(data.requests || []);
+    } catch (err) {
+      setAdminError(err.message);
+    } finally {
+      setRequestLoading(false);
+    }
+  }
+
+  function toggleUserApp(userId, appId) {
+    setAdminUsers(current => current.map(entry => {
+      if (entry.id !== userId) return entry;
+      const allowedApps = entry.allowedApps.includes(appId)
+        ? entry.allowedApps.filter(app => app !== appId)
+        : entry.allowedApps.concat(appId);
+      return { ...entry, allowedApps };
+    }));
+  }
+
+  async function saveUserAccess(user) {
+    const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
+    setAdminError(''); setAdminMessage('');
+    try {
+      const res = await fetch(`${BASE}/api/admin/users/${encodeURIComponent(user.id)}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: user.status,
+          allowedApps: user.allowedApps,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to save user');
+      setAdminUsers(current => current.map(entry => entry.id === user.id ? data.user : entry));
+      setAdminMessage(`Saved access for ${user.username}.`);
+    } catch (err) {
+      setAdminError(err.message);
+    }
+  }
+
+  async function createUser(e) {
+    e.preventDefault();
+    const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
+    setAdminError(''); setAdminMessage('');
+    try {
+      const res = await fetch(`${BASE}/api/admin/users`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(createForm),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to create user');
+      setAdminUsers(current => [data.user, ...current]);
+      if (Array.isArray(data.fulfilledRequests) && data.fulfilledRequests.length) {
+        setAdminRequests(current => current.map(entry => {
+          const matched = data.fulfilledRequests.find(request => request.id === entry.id);
+          return matched || entry;
+        }));
+      }
+      setCreateForm({ id: '', name: '', username: '', email: '', password: '', role: 'Viewer', allowedApps: ['hub'] });
+      setAdminMessage(`Created ${data.user.username}.`);
+    } catch (err) {
+      setAdminError(err.message);
+    }
+  }
+
+  function toggleCreateApp(appId) {
+    setCreateForm(current => ({
+      ...current,
+      allowedApps: current.allowedApps.includes(appId)
+        ? current.allowedApps.filter(app => app !== appId)
+        : current.allowedApps.concat(appId),
+    }));
+  }
+
+  async function reviewRequest(requestId, status) {
+    const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
+    setAdminError(''); setAdminMessage('');
+    try {
+      const res = await fetch(`${BASE}/api/admin/access-requests/${encodeURIComponent(requestId)}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to review request');
+      setAdminRequests(current => current.map(entry => entry.id === requestId ? data.request : entry));
+      if (data.user) {
+        setAdminUsers(current => current.map(entry => entry.id === data.user.id ? data.user : entry));
+      }
+      setAdminMessage(data.message || `Request ${status}.`);
+    } catch (err) {
+      setAdminError(err.message);
     }
   }
 
@@ -348,6 +483,192 @@ export default function Portal() {
             </div>
           )}
         </div>
+
+        {isAdmin && (
+          <div className="max-w-5xl mx-auto px-6 md:px-10 pb-8 space-y-4">
+            <div className="card p-5">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-sm font-bold text-scorva-text font-mono tracking-widest uppercase">Access Requests</h2>
+                  <p className="text-xs text-scorva-muted mt-1">Requests from app landing pages queue here. Approval grants HUB plus the requested app when a matching user exists.</p>
+                </div>
+                <button onClick={loadAccessRequests} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors">
+                  Refresh
+                </button>
+              </div>
+
+              {requestLoading ? (
+                <div className="text-xs font-mono text-scorva-muted">Loading requests...</div>
+              ) : adminRequests.length === 0 ? (
+                <div className="text-xs text-scorva-muted">No access requests yet.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-scorva-muted border-b border-scorva-border">
+                        <th className="py-2 pr-3">User</th>
+                        <th className="py-2 pr-3">App</th>
+                        <th className="py-2 pr-3">Justification</th>
+                        <th className="py-2 pr-3">Status</th>
+                        <th className="py-2">Review</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminRequests.map(entry => (
+                        <tr key={entry.id} className="border-b border-scorva-border/60 align-top">
+                          <td className="py-3 pr-3">
+                            <div className="text-scorva-text font-medium">{entry.name}</div>
+                            <div className="text-scorva-muted font-mono">{entry.username}</div>
+                            <div className="text-scorva-muted">{entry.email}</div>
+                          </td>
+                          <td className="py-3 pr-3">
+                            <div className="text-scorva-text font-medium">{entry.appLabel}</div>
+                            <div className="text-scorva-muted">Submitted {new Date(entry.createdAt).toLocaleDateString()}</div>
+                          </td>
+                          <td className="py-3 pr-3 max-w-xs">
+                            <div className="text-scorva-muted whitespace-pre-wrap">{entry.justification || 'No justification provided.'}</div>
+                          </td>
+                          <td className="py-3 pr-3">
+                            <div className="text-scorva-text capitalize">{String(entry.status || '').replaceAll('_', ' ')}</div>
+                            {entry.reviewedBy && (
+                              <div className="text-scorva-muted">by {entry.reviewedBy}</div>
+                            )}
+                          </td>
+                          <td className="py-3">
+                            <div className="flex flex-wrap gap-2">
+                              <button onClick={() => reviewRequest(entry.id, 'approved')} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400">
+                                Approve
+                              </button>
+                              <button onClick={() => reviewRequest(entry.id, 'denied')} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 border border-red-500/30 text-red-400">
+                                Deny
+                              </button>
+                              {entry.status !== 'pending' && (
+                                <button onClick={() => reviewRequest(entry.id, 'pending')} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-scorva-hover border border-scorva-border text-scorva-text">
+                                  Re-open
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="card p-5">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <div>
+                  <h2 className="text-sm font-bold text-scorva-text font-mono tracking-widest uppercase">Hub Access Admin</h2>
+                  <p className="text-xs text-scorva-muted mt-1">HUB grants app launch rights. App-local roles still live in each application.</p>
+                </div>
+                <button onClick={loadAdminUsers} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors">
+                  Refresh
+                </button>
+              </div>
+
+              <form onSubmit={createUser} className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-5">
+                <input className="input-base text-xs" placeholder="User ID" value={createForm.id} onChange={e => setCreateForm(f => ({ ...f, id: e.target.value }))} required />
+                <input className="input-base text-xs" placeholder="Name" value={createForm.name} onChange={e => setCreateForm(f => ({ ...f, name: e.target.value }))} required />
+                <input className="input-base text-xs" placeholder="Username" value={createForm.username} onChange={e => setCreateForm(f => ({ ...f, username: e.target.value.toLowerCase() }))} required />
+                <input className="input-base text-xs" placeholder="Email" value={createForm.email} onChange={e => setCreateForm(f => ({ ...f, email: e.target.value.toLowerCase() }))} required />
+                <input className="input-base text-xs" type="password" placeholder="Temporary password" value={createForm.password} onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))} required />
+                <select className="input-base text-xs" value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}>
+                  <option>Viewer</option>
+                  <option>Site Admin</option>
+                  <option>Corporate Admin</option>
+                </select>
+                <div className="md:col-span-6 flex flex-wrap gap-2">
+                  {manageableApps.map(appId => (
+                    <button
+                      key={appId}
+                      type="button"
+                      onClick={() => toggleCreateApp(appId)}
+                      className={`text-[11px] font-mono px-2.5 py-1 rounded-md border transition-colors ${
+                        createForm.allowedApps.includes(appId)
+                          ? 'bg-scorva-accent text-white dark:text-scorva-bg border-scorva-accent'
+                          : 'bg-scorva-card border-scorva-border text-scorva-muted hover:border-scorva-accent/40 hover:text-scorva-text'
+                      }`}
+                    >
+                      {appId}
+                    </button>
+                  ))}
+                  <button type="submit" className="ml-auto px-3 py-1.5 rounded-lg text-xs font-semibold bg-scorva-accent text-white dark:text-scorva-bg">
+                    Create User
+                  </button>
+                </div>
+              </form>
+
+              {adminMessage && <div className="text-xs text-emerald-400 mb-3">{adminMessage}</div>}
+              {adminError && <div className="text-xs text-red-400 mb-3">{adminError}</div>}
+
+              {adminLoading ? (
+                <div className="text-xs font-mono text-scorva-muted">Loading users...</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-scorva-muted border-b border-scorva-border">
+                        <th className="py-2 pr-3">User</th>
+                        <th className="py-2 pr-3">Role</th>
+                        <th className="py-2 pr-3">Status</th>
+                        <th className="py-2 pr-3">App Access</th>
+                        <th className="py-2">Save</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {adminUsers.map(entry => (
+                        <tr key={entry.id} className="border-b border-scorva-border/60 align-top">
+                          <td className="py-3 pr-3">
+                            <div className="text-scorva-text font-medium">{entry.name}</div>
+                            <div className="text-scorva-muted font-mono">{entry.username}</div>
+                          </td>
+                          <td className="py-3 pr-3">
+                            <div className="text-scorva-text">{entry.role}</div>
+                            <div className="text-scorva-muted">{entry.email}</div>
+                          </td>
+                          <td className="py-3 pr-3">
+                            <select
+                              className="input-base text-xs"
+                              value={entry.status}
+                              onChange={e => setAdminUsers(current => current.map(userRow => userRow.id === entry.id ? { ...userRow, status: e.target.value } : userRow))}
+                            >
+                              <option>Active</option>
+                              <option>Inactive</option>
+                            </select>
+                          </td>
+                          <td className="py-3 pr-3">
+                            <div className="flex flex-wrap gap-2">
+                              {manageableApps.map(appId => (
+                                <label key={appId} className="flex items-center gap-1.5 text-scorva-muted">
+                                  <input
+                                    type="checkbox"
+                                    checked={entry.allowedApps.includes(appId)}
+                                    onChange={() => toggleUserApp(entry.id, appId)}
+                                  />
+                                  <span className="font-mono">{appId}</span>
+                                </label>
+                              ))}
+                            </div>
+                          </td>
+                          <td className="py-3">
+                            <button
+                              onClick={() => saveUserAccess(entry)}
+                              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors"
+                            >
+                              Save
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ── SSO info footer ── */}
         <div className="max-w-5xl mx-auto px-6 md:px-10 pb-10">

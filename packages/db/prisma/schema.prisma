@@ -519,9 +519,16 @@ model LavaSaar {
   // Workflow
   status                  String    @default("pending")
   rejectionReason         String?   @map("rejection_reason")
+  reviewerComment         String?   @map("reviewer_comment")
   // Hardware hand-off
   yubiKeySerial           String?   @map("yubi_key_serial")
   tokenType               String?   @map("token_type")
+  provisioningNotes       String?   @map("provisioning_notes")
+  accessExpiresAt         DateTime? @map("access_expires_at")
+  revalidationDueAt       DateTime? @map("revalidation_due_at")
+  revokedAt               DateTime? @map("revoked_at")
+  revokedBy               String?   @map("revoked_by")
+  revocationReason        String?   @map("revocation_reason")
   // Agreement
   agreementSigned         Boolean   @default(false) @map("agreement_signed")
   agreementSignedAt       DateTime? @map("agreement_signed_at")
@@ -546,6 +553,8 @@ model LavaSystemRequest {
   purpose        String
   networkType    String?     @map("network_type")
   status         String      @default("pending")
+  reviewedBy     String?     @map("reviewed_by")
+  reviewNotes    String?     @map("review_notes")
   siteId         String?     @map("site_id")
   createdAt      DateTime    @default(now()) @map("created_at")
   updatedAt      DateTime    @updatedAt @map("updated_at")
@@ -564,6 +573,7 @@ model LavaAsset {
   make            String?
   model           String?
   assetType       String?           @map("asset_type")
+  status          String            @default("Assigned")
   classification  String            @default("UNCLASSIFIED")
   assignedUser    String?           @map("assigned_user")
   location        String?
@@ -572,7 +582,36 @@ model LavaAsset {
   createdAt       DateTime          @default(now()) @map("created_at")
   updatedAt       DateTime          @updatedAt @map("updated_at")
 
+  assignmentHistory LavaAssetAssignmentHistory[]
+
   @@map("lava_assets")
+}
+
+model LavaAssetAssignmentHistory {
+  id             String    @id @default(cuid())
+  assetId        String    @map("asset_id")
+  asset          LavaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assignedUser   String?   @map("assigned_user")
+  previousUser   String?   @map("previous_user")
+  assignedBy     String?   @map("assigned_by")
+  notes          String?
+  assignedAt     DateTime  @default(now()) @map("assigned_at")
+  returnedAt     DateTime? @map("returned_at")
+
+  @@map("lava_asset_assignment_history")
+}
+
+model LavaAuditLog {
+  id         String   @id @default(cuid())
+  actor      String?
+  action     String
+  entityType String   @map("entity_type")
+  entityId   String?  @map("entity_id")
+  details    String?
+  siteId     String?  @map("site_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("lava_audit_logs")
 }
 
 model MashCollection {

@@ -26,6 +26,7 @@ const Card = ({ children, style = {} }) => (
 
 export default function Landing() {
   const { user, isVulcan } = useAuth();
+  const hubRequestUrl = `${import.meta.env.VITE_HUB_URL || 'http://localhost:3010'}/request-access?app=lava`;
 
   return (
     <div>
@@ -103,6 +104,21 @@ export default function Landing() {
                 >
                   REQUEST LAVA ACCESS
                 </Link>
+                <a
+                  href={hubRequestUrl}
+                  style={{
+                    background:     'transparent',
+                    color:          'var(--text)',
+                    padding:        '0.9rem 1.75rem',
+                    borderRadius:   '3px',
+                    fontSize:       '0.82rem',
+                    letterSpacing:  '0.15em',
+                    border:         '1px solid rgba(255,69,0,0.25)',
+                    textDecoration: 'none',
+                  }}
+                >
+                  REQUEST HUB ACCESS
+                </a>
                 {isVulcan && (
                   <Link to="/vulcan" style={{
                     background:     'transparent',

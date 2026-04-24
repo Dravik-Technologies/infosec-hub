@@ -11,7 +11,10 @@ const session    = require('express-session');
 
 const requireAuth = require('./middleware/requireAuth');
 const authRouter  = require('./routes/auth');
+const adminRouter = require('./routes/admin');
+const accessRequestRouter = require('./routes/accessRequests');
 const ssoRouter   = require('./routes/sso');
+const { hasAppAccess } = require('../../packages/db/src/appAccess');
 
 const app   = express();
 const PORT  = process.env.PORT || 3010;
@@ -40,9 +43,11 @@ app.use(session({
 }));
 
 app.use('/auth', authRouter);
+app.use('/api/access-requests', accessRequestRouter);
 app.get('/api/me', requireAuth, (req, res) => res.json(req.session.user));
 app.use('/api/sso', ssoRouter);
-app.get('/api/apps', requireAuth, (_req, res) => res.json(APPS));
+app.use('/api/admin', requireAuth, adminRouter);
+app.get('/api/apps', requireAuth, (req, res) => res.json(APPS.filter(app => hasAppAccess(req.session.user, app.id))));
 
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDist));

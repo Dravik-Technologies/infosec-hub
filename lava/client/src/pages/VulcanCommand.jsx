@@ -7,6 +7,8 @@ const STATUS_COLORS = {
   approved:    { bg: 'rgba(0,200,100,0.1)',  border: 'rgba(0,200,100,0.35)', text: '#00C864' },
   rejected:    { bg: 'rgba(139,0,0,0.15)',   border: 'rgba(139,0,0,0.4)',    text: '#ff6666' },
   provisioned: { bg: 'rgba(255,69,0,0.12)', border: 'rgba(255,69,0,0.4)',   text: '#FF4500' },
+  suspended:   { bg: 'rgba(255,191,71,0.12)', border: 'rgba(255,191,71,0.35)', text: '#ffbf47' },
+  revoked:     { bg: 'rgba(180,60,60,0.18)', border: 'rgba(180,60,60,0.4)', text: '#ff7d7d' },
 };
 
 const Badge = ({ status }) => {
@@ -40,10 +42,15 @@ export default function VulcanCommand() {
   const [filter, setFilter]         = useState('all');
   const [loading, setLoading]       = useState(true);
   const [selected, setSelected]     = useState(null);
-  const [modal, setModal]           = useState(null); // 'detail' | 'approve' | 'reject' | 'provision'
+  const [modal, setModal]           = useState(null); // 'detail' | 'approve' | 'reject' | 'provision' | 'revalidate' | 'suspend' | 'revoke'
   const [rejectReason, setRejectReason] = useState('');
+  const [reviewerComment, setReviewerComment] = useState('');
   const [yubiSerial, setYubiSerial] = useState('');
   const [tokenType, setTokenType]   = useState('YubiKey');
+  const [provisioningNotes, setProvisioningNotes] = useState('');
+  const [lifecycleReason, setLifecycleReason] = useState('');
+  const [accessExpiresAt, setAccessExpiresAt] = useState('');
+  const [revalidationDueAt, setRevalidationDueAt] = useState('');
   const [working, setWorking]       = useState(false);
   const [toast, setToast]           = useState('');
 
@@ -67,12 +74,37 @@ export default function VulcanCommand() {
 
   useEffect(() => { load(); }, [load]);
 
-  const closeModal = () => { setModal(null); setSelected(null); setRejectReason(''); setYubiSerial(''); };
+  const closeModal = () => {
+    setModal(null);
+    setSelected(null);
+    setRejectReason('');
+    setReviewerComment('');
+    setYubiSerial('');
+    setTokenType('YubiKey');
+    setProvisioningNotes('');
+    setLifecycleReason('');
+    setAccessExpiresAt('');
+    setRevalidationDueAt('');
+  };
+
+  const nextYear = () => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + 1);
+    return date.toISOString().slice(0, 10);
+  };
+
+  const openLifecycleModal = (saar, type) => {
+    setSelected(saar);
+    setModal(type);
+    setLifecycleReason('');
+    setAccessExpiresAt(saar.accessExpiresAt ? saar.accessExpiresAt.slice(0, 10) : nextYear());
+    setRevalidationDueAt(saar.revalidationDueAt ? saar.revalidationDueAt.slice(0, 10) : nextYear());
+  };
 
   const handleApprove = async () => {
     setWorking(true);
     try {
-      await axios.patch(`/api/saar/${selected.id}/status`, { status: 'approved' }, { withCredentials: true });
+      await axios.patch(`/api/saar/${selected.id}/status`, { status: 'approved', reviewerComment }, { withCredentials: true });
       showToast('SAAR approved successfully.');
       closeModal(); load();
     } catch (err) { showToast(err?.response?.data?.error || 'Action failed'); }
@@ -82,7 +114,7 @@ export default function VulcanCommand() {
   const handleReject = async () => {
     setWorking(true);
     try {
-      await axios.patch(`/api/saar/${selected.id}/status`, { status: 'rejected', rejectionReason: rejectReason }, { withCredentials: true });
+      await axios.patch(`/api/saar/${selected.id}/status`, { status: 'rejected', rejectionReason: rejectReason, reviewerComment }, { withCredentials: true });
       showToast('SAAR rejected.');
       closeModal(); load();
     } catch (err) { showToast(err?.response?.data?.error || 'Action failed'); }
@@ -93,10 +125,20 @@ export default function VulcanCommand() {
     if (!yubiSerial.trim()) return showToast('Serial number is required.');
     setWorking(true);
     try {
-      await axios.patch(`/api/saar/${selected.id}/provision`, { yubiKeySerial: yubiSerial, tokenType }, { withCredentials: true });
+      await axios.patch(`/api/saar/${selected.id}/provision`, { yubiKeySerial: yubiSerial, tokenType, provisioningNotes, accessExpiresAt, revalidationDueAt }, { withCredentials: true });
       showToast(`Account provisioned. Token SN: ${yubiSerial}`);
       closeModal(); load();
     } catch (err) { showToast(err?.response?.data?.error || 'Provisioning failed'); }
+    finally { setWorking(false); }
+  };
+
+  const handleLifecycle = async (action) => {
+    setWorking(true);
+    try {
+      await axios.patch(`/api/saar/${selected.id}/lifecycle`, { action, reason: lifecycleReason, accessExpiresAt, revalidationDueAt }, { withCredentials: true });
+      showToast(`Access ${action} successful.`);
+      closeModal(); load();
+    } catch (err) { showToast(err?.response?.data?.error || 'Lifecycle action failed'); }
     finally { setWorking(false); }
   };
 
@@ -149,6 +191,11 @@ export default function VulcanCommand() {
           { label: 'APPROVED',    value: stats.approved || 0,    color: '#00C864' },
           { label: 'REJECTED',    value: stats.rejected || 0,    color: '#ff6666' },
           { label: 'PROVISIONED', value: stats.provisioned || 0, color: 'var(--orange)' },
+          { label: 'APPROVED WAIT', value: stats.approvedNotProvisioned || 0, color: '#8fd3ff' },
+          { label: 'PENDING 7+',  value: stats.pendingOver7 || 0, color: '#ffbf47' },
+          { label: 'PENDING 30+', value: stats.pendingOver30 || 0, color: '#ff6666' },
+          { label: 'TRAINING EXP', value: stats.expiredTraining || 0, color: '#ff7d7d' },
+          { label: 'REVAL DUE', value: stats.revalidationDue || 0, color: '#7ee0c3' },
         ].map(({ label, value, color }) => (
           <div key={label} style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '4px', padding: '1.25rem', boxShadow: 'var(--glow)', textAlign: 'center' }}>
             <div style={{ color, fontSize: '1.8rem', lineHeight: 1 }}>{value}</div>
@@ -159,7 +206,7 @@ export default function VulcanCommand() {
 
       {/* Filter */}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-        {['all', 'pending', 'approved', 'rejected', 'provisioned'].map(f => (
+        {['all', 'pending', 'approved', 'rejected', 'provisioned', 'suspended', 'revoked'].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{ ...btnBase, background: filter === f ? 'var(--orange)' : 'var(--bg-card)', color: filter === f ? '#0B0505' : 'var(--muted)', border: `1px solid ${filter === f ? 'transparent' : 'var(--border)'}`, fontWeight: filter === f ? 'bold' : 'normal' }}>
             {f.toUpperCase()}
           </button>
@@ -180,12 +227,14 @@ export default function VulcanCommand() {
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.82rem' }}>LOADING SAAR RECORDS...</div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.82rem' }}>NO RECORDS MATCH FILTER: {filter.toUpperCase()}</div>
-        ) : filtered.map((s) => (
-          <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 1.5fr', padding: '0.85rem 1.25rem', borderBottom: '1px solid rgba(255,69,0,0.07)', alignItems: 'center', transition: 'background 0.1s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,69,0,0.04)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+        ) : filtered.map((s) => {
+          const stale = s.status === 'pending' && s.pendingAgeDays >= 7;
+          return (
+          <div key={s.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.5fr 1fr 1fr 1.5fr', padding: '0.85rem 1.25rem', borderBottom: '1px solid rgba(255,69,0,0.07)', alignItems: 'center', transition: 'background 0.1s', background: stale ? 'rgba(255,191,71,0.06)' : 'transparent', borderLeft: stale ? '3px solid #ffbf47' : '3px solid transparent' }} onMouseEnter={e => e.currentTarget.style.background = stale ? 'rgba(255,191,71,0.1)' : 'rgba(255,69,0,0.04)'} onMouseLeave={e => e.currentTarget.style.background = stale ? 'rgba(255,191,71,0.06)' : 'transparent'}>
             <div>
               <div style={{ color: 'var(--text)', fontSize: '0.82rem' }}>{s.firstName} {s.lastName}</div>
               <div style={{ color: 'var(--muted)', fontSize: '0.68rem', marginTop: '0.15rem' }}>{s.email}</div>
-              <div style={{ color: 'var(--muted)', fontSize: '0.65rem' }}>{fmt(s.createdAt)}</div>
+              <div style={{ color: stale ? '#ffbf47' : 'var(--muted)', fontSize: '0.65rem' }}>{fmt(s.createdAt)}{s.status === 'pending' ? ` • ${s.pendingAgeDays}d` : ''}</div>
             </div>
             <div style={{ color: 'var(--text)', fontSize: '0.8rem' }}>{s.systemName}</div>
             <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{s.organization}</div>
@@ -206,9 +255,16 @@ export default function VulcanCommand() {
               {s.status === 'approved' && (
                 <button onClick={() => { setSelected(s); setModal('provision'); }} style={{ ...btnBase, padding: '0.35rem 0.65rem', background: 'rgba(255,69,0,0.1)', color: 'var(--orange)', border: '1px solid var(--border)', fontSize: '0.65rem' }}>PROVISION</button>
               )}
+              {(s.status === 'provisioned' || s.status === 'suspended') && (
+                <>
+                  <button onClick={() => openLifecycleModal(s, 'revalidate')} style={{ ...btnBase, padding: '0.35rem 0.65rem', background: 'rgba(0,200,100,0.1)', color: '#7ee0c3', border: '1px solid rgba(126,224,195,0.3)', fontSize: '0.65rem' }}>REVALIDATE</button>
+                  {s.status !== 'suspended' && <button onClick={() => openLifecycleModal(s, 'suspend')} style={{ ...btnBase, padding: '0.35rem 0.65rem', background: 'rgba(255,191,71,0.12)', color: '#ffbf47', border: '1px solid rgba(255,191,71,0.3)', fontSize: '0.65rem' }}>SUSPEND</button>}
+                  <button onClick={() => openLifecycleModal(s, 'revoke')} style={{ ...btnBase, padding: '0.35rem 0.65rem', background: 'rgba(180,60,60,0.12)', color: '#ff7d7d', border: '1px solid rgba(180,60,60,0.35)', fontSize: '0.65rem' }}>REVOKE</button>
+                </>
+              )}
             </div>
           </div>
-        ))}
+        )})}
       </div>
 
       {/* ── Detail Modal ── */}
@@ -232,7 +288,14 @@ export default function VulcanCommand() {
             ['Agreement Signed', selected.agreementSigned ? '✓ Yes' : '✗ No'],
             ['Status',       selected.status.toUpperCase()],
             ['Reviewed By',  selected.reviewedBy || '—'],
+            ['Reviewer Comment', selected.reviewerComment || '—'],
             ['YubiKey SN',   selected.yubiKeySerial || '—'],
+            ['Provisioning Notes', selected.provisioningNotes || '—'],
+            ['Access Expires', fmt(selected.accessExpiresAt)],
+            ['Revalidation Due', fmt(selected.revalidationDueAt)],
+            ['Training Status', selected.trainingExpired ? 'Expired / attention required' : 'Current'],
+            ['Revoked By', selected.revokedBy || '—'],
+            ['Revocation Reason', selected.revocationReason || '—'],
             ['Provisioned By', selected.provisionedBy || '—'],
             ['Submitted',    new Date(selected.createdAt).toLocaleString()],
           ].map(([k, v]) => (
@@ -257,6 +320,15 @@ export default function VulcanCommand() {
             You are about to <strong style={{ color: '#00C864' }}>APPROVE</strong> the SAAR submitted by <strong style={{ color: 'var(--text)' }}>{selected.firstName} {selected.lastName}</strong> for access to <strong style={{ color: 'var(--text)' }}>{selected.systemName}</strong>.
             This action will be logged and the applicant will be notified.
           </p>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={labelStyle}>REVIEWER COMMENT</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
+              value={reviewerComment}
+              onChange={e => setReviewerComment(e.target.value)}
+              placeholder="Approval notes, prerequisites verified, or access conditions..."
+            />
+          </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
             <button onClick={closeModal} style={{ ...btnBase, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)' }}>CANCEL</button>
             <button onClick={handleApprove} disabled={working} style={{ ...btnBase, background: '#00C864', color: '#0B0505', border: 'none', fontWeight: 'bold' }}>
@@ -273,6 +345,13 @@ export default function VulcanCommand() {
             Rejecting SAAR from <strong style={{ color: 'var(--text)' }}>{selected.firstName} {selected.lastName}</strong>. Provide a reason for the rejection.
           </p>
           <div style={{ marginBottom: '1.25rem' }}>
+            <label style={labelStyle}>REVIEWER COMMENT</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: '70px', resize: 'vertical', marginBottom: '0.85rem' }}
+              value={reviewerComment}
+              onChange={e => setReviewerComment(e.target.value)}
+              placeholder="Document adjudication notes, missing prerequisites, or follow-up guidance..."
+            />
             <label style={labelStyle}>REJECTION REASON</label>
             <textarea
               style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
@@ -312,6 +391,25 @@ export default function VulcanCommand() {
               autoFocus
             />
           </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1.5rem' }}>
+            <div>
+              <label style={labelStyle}>ACCESS EXPIRES</label>
+              <input type="date" style={inputStyle} value={accessExpiresAt} onChange={e => setAccessExpiresAt(e.target.value)} />
+            </div>
+            <div>
+              <label style={labelStyle}>REVALIDATION DUE</label>
+              <input type="date" style={inputStyle} value={revalidationDueAt} onChange={e => setRevalidationDueAt(e.target.value)} />
+            </div>
+          </div>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={labelStyle}>PROVISIONING NOTES</label>
+            <textarea
+              style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }}
+              value={provisioningNotes}
+              onChange={e => setProvisioningNotes(e.target.value)}
+              placeholder="Issued by, pickup details, account caveats, or follow-up instructions..."
+            />
+          </div>
           <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
             <button onClick={closeModal} style={{ ...btnBase, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)' }}>CANCEL</button>
             <button onClick={handleProvision} disabled={working} style={{ ...btnBase, background: 'var(--orange)', color: '#0B0505', border: 'none', fontWeight: 'bold', boxShadow: '0 0 15px rgba(255,69,0,0.3)' }}>
@@ -320,8 +418,59 @@ export default function VulcanCommand() {
           </div>
         </Modal>
       )}
+      {modal === 'revalidate' && selected && (
+        <Modal title="REVALIDATE ACCESS" onClose={closeModal}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.85rem', marginBottom: '1rem' }}>
+            <div>
+              <label style={labelStyle}>ACCESS EXPIRES</label>
+              <input type="date" style={inputStyle} value={accessExpiresAt} onChange={e => setAccessExpiresAt(e.target.value)} />
+            </div>
+            <div>
+              <label style={labelStyle}>REVALIDATION DUE</label>
+              <input type="date" style={inputStyle} value={revalidationDueAt} onChange={e => setRevalidationDueAt(e.target.value)} />
+            </div>
+          </div>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={labelStyle}>REVALIDATION NOTES</label>
+            <textarea style={{ ...inputStyle, minHeight: '90px', resize: 'vertical' }} value={lifecycleReason} onChange={e => setLifecycleReason(e.target.value)} placeholder="Document what was reviewed, approved, or renewed..." />
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <button onClick={closeModal} style={{ ...btnBase, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)' }}>CANCEL</button>
+            <button onClick={() => handleLifecycle('revalidate')} disabled={working} style={{ ...btnBase, background: '#00C864', color: '#0B0505', border: 'none', fontWeight: 'bold' }}>
+              {working ? 'REVALIDATING...' : 'CONFIRM REVALIDATION'}
+            </button>
+          </div>
+        </Modal>
+      )}
+      {modal === 'suspend' && selected && (
+        <Modal title="SUSPEND ACCESS" onClose={closeModal}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={labelStyle}>SUSPENSION NOTES</label>
+            <textarea style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} value={lifecycleReason} onChange={e => setLifecycleReason(e.target.value)} placeholder="Why is access being suspended? Training expired, pending review, or mission pause..." />
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <button onClick={closeModal} style={{ ...btnBase, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)' }}>CANCEL</button>
+            <button onClick={() => handleLifecycle('suspend')} disabled={working} style={{ ...btnBase, background: '#ffbf47', color: '#0B0505', border: 'none', fontWeight: 'bold' }}>
+              {working ? 'SUSPENDING...' : 'CONFIRM SUSPEND'}
+            </button>
+          </div>
+        </Modal>
+      )}
+      {modal === 'revoke' && selected && (
+        <Modal title="REVOKE ACCESS" onClose={closeModal}>
+          <div style={{ marginBottom: '1.25rem' }}>
+            <label style={labelStyle}>REVOCATION REASON</label>
+            <textarea style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} value={lifecycleReason} onChange={e => setLifecycleReason(e.target.value)} placeholder="Document why access is being revoked..." />
+          </div>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+            <button onClick={closeModal} style={{ ...btnBase, background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)' }}>CANCEL</button>
+            <button onClick={() => handleLifecycle('revoke')} disabled={working} style={{ ...btnBase, background: '#a33f3f', color: 'white', border: 'none', fontWeight: 'bold' }}>
+              {working ? 'REVOKING...' : 'CONFIRM REVOKE'}
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
     </div>
   );
 }
-

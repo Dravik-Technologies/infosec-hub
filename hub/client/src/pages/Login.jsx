@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Shield, Eye, EyeOff, Lock } from 'lucide-react';
 
@@ -119,6 +119,9 @@ export default function Login() {
         <div className="mt-6 space-y-2 text-center">
           <p className="text-xs text-scorva-muted font-mono">
             Single sign-on · All apps · One session
+          </p>
+          <p className="text-xs text-scorva-muted">
+            Need access first? <Link to="/request-access" className="text-scorva-accent hover:underline">Submit a request</Link>
           </p>
           <button
             onClick={() => navigate('/')}

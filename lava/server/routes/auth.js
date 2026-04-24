@@ -4,6 +4,7 @@ const router = require('express').Router();
 const bcrypt = require('bcryptjs');
 const axios  = require('axios');
 const { db } = require('../db');
+const { hasAppAccess } = require('../../../packages/db/src/appAccess');
 
 router.post('/login', async (req, res) => {
   try {
@@ -12,6 +13,7 @@ router.post('/login', async (req, res) => {
 
     const user = await db.user.findUnique({ where: { username } });
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!hasAppAccess(user, 'lava')) return res.status(403).json({ error: 'LAVA access has not been provisioned for this account' });
 
     const valid = await bcrypt.compare(password, user.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
@@ -40,7 +42,7 @@ router.post('/logout', (req, res) => {
 });
 
 router.get('/me', (req, res) => {
-  if (!req.session?.user) return res.status(401).json({ error: 'Not authenticated' });
+  if (!(req.session && req.session.user)) return res.status(401).json({ error: 'Not authenticated' });
   res.json(req.session.user);
 });
 
@@ -53,15 +55,25 @@ router.get('/sso', async (req, res) => {
     const hubUrl = process.env.HUB_URL || 'http://localhost:3010';
     const { data } = await axios.get(`${hubUrl}/api/sso/verify?token=${hub_token}`);
     if (!data.valid) return res.redirect('/?error=invalid_token');
+    if (data.user.requestedApp && data.user.requestedApp !== 'lava') {
+      return res.redirect('/?error=invalid_sso_target');
+    }
+
+    const localUser = await db.user.findUnique({
+      where: { username: String(data.user.username || '').toLowerCase().trim() },
+    });
+    if (!localUser || localUser.status !== 'Active' || !hasAppAccess(localUser, 'lava')) {
+      return res.redirect('/?error=lava_access_required');
+    }
 
     req.session.user = {
-      id:      data.user.id,
-      name:    data.user.name,
-      username: data.user.username,
-      email:   data.user.email,
-      role:    data.user.role,
-      siteId:  data.user.siteId,
-      siteIds: data.user.siteIds,
+      id:      localUser.id,
+      name:    localUser.name,
+      username: localUser.username,
+      email:   localUser.email,
+      role:    localUser.role,
+      siteId:  localUser.siteId,
+      siteIds: localUser.siteIds,
     };
 
     res.redirect('/');

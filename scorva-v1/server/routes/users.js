@@ -3,11 +3,13 @@
 const express = require('express');
 const bcrypt  = require('bcryptjs');
 const { db }  = require('../../../packages/db/src/index');
+const { ensureAppAccess } = require('../../../packages/db/src/appAccess');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
 function adminOnly(req, res, next) {
-  if ((req.user?.role || req.session?.user?.role) !== 'Corporate Admin') {
+  const role = (req.user && req.user.role) || (req.session && req.session.user && req.session.user.role);
+  if (role !== 'Corporate Admin') {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
@@ -44,13 +46,14 @@ function coerceBoolean(value, fallback = false) {
 }
 
 function normalizeUserPayload(payload) {
+  const dod8140 = pickFirstDefined(payload.dod_8140, payload.dod8140);
   return {
     trainingCompliant: coerceBoolean(
       pickFirstDefined(payload.training_compliant, payload.trainingCompliant),
       false
     ),
     trainingDue: pickFirstDefined(payload.training_due, payload.trainingDue) || null,
-    dod8140: pickFirstDefined(payload.dod_8140, payload.dod8140) ?? null,
+    dod8140: dod8140 === undefined ? null : dod8140,
   };
 }
 
@@ -94,7 +97,7 @@ router.post('/', adminOnly, async (req, res, next) => {
         siteId, siteIds, status: status || 'Active',
         trainingCompliant,
         trainingDue,
-        dod8140,
+        dod8140: ensureAppAccess(dod8140, 'scorva'),
       },
     });
     await audit(req.session.user.username, 'USER_CREATE', manualId, `Created user: ${username}`, siteId);
@@ -143,6 +146,7 @@ router.patch('/:id', adminOnly, async (req, res, next) => {
   try {
     const current = await db.user.findUnique({ where: { id: req.params.id } });
     if (!current) return res.status(404).json({ error: 'Not found' });
+    data.dod8140 = ensureAppAccess(('dod8140' in data ? data.dod8140 : current.dod8140), 'scorva');
 
     if (requestedId && requestedId !== req.params.id) {
       if (req.params.id === req.session.user.id) {

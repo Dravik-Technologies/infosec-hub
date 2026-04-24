@@ -2,6 +2,8 @@
 
 const router = require('express').Router();
 const { db } = require('../db');
+const { actor, writeAudit } = require('../audit');
+const { requireVulcan } = require('../authz');
 
 router.get('/', async (req, res) => {
   try {
@@ -36,6 +38,15 @@ router.post('/', async (req, res) => {
       },
     });
 
+    await writeAudit(
+      req,
+      'submit',
+      'system_request',
+      system.id,
+      `Submitted system request for ${system.systemName}`,
+      system.siteId
+    );
+
     res.status(201).json(system);
   } catch (err) {
     console.error('[LAVA/systems] create error', err);
@@ -56,16 +67,28 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.patch('/:id/status', async (req, res) => {
+router.patch('/:id/status', requireVulcan, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, reviewNotes } = req.body;
     if (!['pending', 'active', 'rejected', 'decommissioned'].includes(status)) {
       return res.status(400).json({ error: 'Invalid status value' });
     }
     const system = await db.lavaSystemRequest.update({
       where: { id: req.params.id },
-      data:  { status },
+      data:  {
+        status,
+        reviewNotes: reviewNotes ? reviewNotes.trim() : null,
+        reviewedBy: actor(req),
+      },
     });
+    await writeAudit(
+      req,
+      'status_change',
+      'system_request',
+      system.id,
+      `System ${system.systemName} moved to ${status}`,
+      system.siteId
+    );
     res.json(system);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update system status' });

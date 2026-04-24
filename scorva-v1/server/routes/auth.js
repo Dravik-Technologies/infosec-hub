@@ -3,6 +3,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../../../packages/db/src/index');
+const { hasAppAccess } = require('../../../packages/db/src/appAccess');
 const audit = require('../middleware/audit');
 const requireAuth = require('../middleware/requireAuth');
 const { signAccessToken } = require('../middleware/jwt');
@@ -33,6 +34,14 @@ function toAuthUser(u) {
   };
 }
 
+function toScorvaUser(u) {
+  return toAuthUser({
+    ...u,
+    siteId: u.siteId || u.siteID || u.site,
+    siteIds: u.siteIds || u.siteIDs || [],
+  });
+}
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -56,11 +65,14 @@ router.post('/login', async (req, res) => {
     if (!found || found.status !== 'Active') {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+    if (!hasAppAccess(found, 'scorva')) {
+      return res.status(403).json({ error: 'SCORVA access has not been provisioned for this account' });
+    }
 
     const valid = await bcrypt.compare(password, found.passwordHash);
     if (!valid) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const user  = toAuthUser(found);
+    const user  = toScorvaUser(found);
     const token = signAccessToken(user);
 
     await db.user.update({ where: { id: found.id }, data: { lastLogin: new Date() } });
@@ -81,19 +93,21 @@ router.get('/sso', async (req, res) => {
     console.log(`[SCORVA SSO] verifying token with hub at ${hubUrl}`);
     const r = await fetch(`${hubUrl}/api/sso/verify?token=${encodeURIComponent(String(hub_token))}`);
     const body = await r.json();
-    console.log(`[SCORVA SSO] hub response: status=${r.status} valid=${body.valid} user=${body.user?.username ?? 'none'}`);
+    const hubUsername = body && body.user && body.user.username ? body.user.username : 'none';
+    console.log(`[SCORVA SSO] hub response: status=${r.status} valid=${body.valid} user=${hubUsername}`);
     if (!r.ok || !body.valid) { console.log('[SCORVA SSO] verification failed'); return res.redirect('/'); }
+    if (body.user.requestedApp && body.user.requestedApp !== 'scorva') {
+      return res.redirect('/landing?reason=invalid_sso_target');
+    }
 
-    const user = toAuthUser({
-      id:       body.user.id,
-      name:     body.user.name,
-      username: body.user.username,
-      email:    body.user.email,
-      role:     body.user.role,
-      siteId:   body.user.siteId || body.user.siteID || body.user.site,
-      siteIds:  body.user.siteIds || body.user.siteIDs || [],
-      initials: body.user.initials,
+    const found = await db.user.findUnique({
+      where: { username: String(body.user.username || '').toLowerCase().trim() },
     });
+    if (!found || found.status !== 'Active' || !hasAppAccess(found, 'scorva')) {
+      return res.redirect('/landing?reason=scorva_access_required');
+    }
+
+    const user = toScorvaUser(found);
 
     const token = signAccessToken(user);
     req.session.user = user;

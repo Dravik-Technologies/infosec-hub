@@ -6,6 +6,7 @@ import lavaLogo from '../assets/lava-logo.png';
 export default function Login() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const hubRequestUrl = `${import.meta.env.VITE_HUB_URL || 'http://localhost:3010'}/request-access?app=lava`;
   const [form, setForm]       = useState({ username: '', password: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
@@ -157,6 +158,9 @@ export default function Login() {
             <p style={{ color: 'var(--muted)', fontSize: '0.75rem', letterSpacing: '0.08em' }}>
               Not a Vulcan administrator?{' '}
               <Link to="/apply" style={{ color: 'var(--orange)' }}>Request access here</Link>
+            </p>
+            <p style={{ color: 'var(--muted)', fontSize: '0.72rem', letterSpacing: '0.06em', marginTop: '0.75rem' }}>
+              Need HUB launch approval first? <a href={hubRequestUrl} style={{ color: 'var(--orange)' }}>Submit a HUB access request</a>
             </p>
           </div>
         </div>
