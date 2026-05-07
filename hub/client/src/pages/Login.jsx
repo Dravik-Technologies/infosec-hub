@@ -1,19 +1,45 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Shield, Eye, EyeOff, Lock } from 'lucide-react';
+
+const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
+const ENTRA_ERRORS = {
+  entra_init_failed: 'Microsoft sign-in could not be initialized.',
+  entra_not_configured: 'Microsoft Entra ID is not configured on the hub yet.',
+  entra_state_invalid: 'Microsoft sign-in session expired or state validation failed.',
+  entra_nonce_invalid: 'Microsoft sign-in validation failed. Please try again.',
+  entra_account_not_provisioned: 'Microsoft sign-in succeeded, but no HUB account is provisioned for this user yet.',
+  entra_hub_access_denied: 'Your Microsoft account authenticated successfully, but HUB access has not been granted.',
+  entra_callback_failed: 'Microsoft sign-in failed during callback processing.',
+};
 
 export default function Login() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm]       = useState({ username: '', password: '' });
   const [error, setError]     = useState('');
   const [loading, setLoading] = useState(false);
   const [showPw, setShowPw]   = useState(false);
+  const [entraEnabled, setEntraEnabled] = useState(false);
 
   useEffect(() => {
     if (user) navigate('/portal', { replace: true });
   }, [user, navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('error');
+    if (code && ENTRA_ERRORS[code]) setError(ENTRA_ERRORS[code]);
+  }, [location.search]);
+
+  useEffect(() => {
+    fetch(`${BASE}/auth/providers`, { credentials: 'include' })
+      .then(r => r.ok ? r.json() : { entra: false })
+      .then(data => setEntraEnabled(Boolean(data.entra)))
+      .catch(() => setEntraEnabled(false));
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -31,6 +57,10 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
+  }
+
+  function handleMicrosoftLogin() {
+    window.location.href = `${BASE}/auth/entra/login`;
   }
 
   return (
@@ -58,6 +88,27 @@ export default function Login() {
             <Lock size={13} className="text-scorva-accent" />
             <span className="text-xs font-mono text-scorva-muted tracking-widest uppercase">Secure Sign-In</span>
           </div>
+
+          {entraEnabled && (
+            <div className="mb-4">
+              <button
+                type="button"
+                onClick={handleMicrosoftLogin}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-scorva-border bg-white text-slate-900 px-4 py-2.5 text-sm font-medium hover:bg-slate-100 transition-colors"
+              >
+                <span className="inline-block w-4 h-4 rounded-sm bg-[linear-gradient(90deg,#f25022_0_50%,#7fba00_50_100%),linear-gradient(90deg,#00a4ef_0_50%,#ffb900_50_100%)] bg-[length:100%_50%,100%_50%] bg-[position:0_0,0_100%] bg-no-repeat" />
+                Sign in with Microsoft
+              </button>
+            </div>
+          )}
+
+          {entraEnabled && (
+            <div className="flex items-center gap-3 my-4">
+              <div className="h-px flex-1 bg-scorva-border" />
+              <span className="text-[10px] font-mono tracking-[0.3em] text-scorva-muted uppercase">or</span>
+              <div className="h-px flex-1 bg-scorva-border" />
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>

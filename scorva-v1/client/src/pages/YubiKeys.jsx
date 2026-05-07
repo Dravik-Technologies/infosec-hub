@@ -12,7 +12,7 @@ import { Plus, Pencil, Trash2 } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 
-const EMPTY = { serial: '', model: '', status: 'Unassigned', username: '', issued: '' };
+const EMPTY = { serial: '', model: '', status: 'Unassigned', username: '', issued: '', lost_destroyed_date: '' };
 
 function YKForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
@@ -39,6 +39,10 @@ function YKForm({ value, onChange }) {
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Issued Date</label>
         <input type="date" className="input-base" value={value.issued || ''} onChange={e => f('issued', e.target.value)} />
+      </div>
+      <div>
+        <label className="block text-xs text-scorva-muted mb-1">Lost / Destroyed Date</label>
+        <input type="date" className="input-base" value={value.lost_destroyed_date || ''} onChange={e => f('lost_destroyed_date', e.target.value)} />
       </div>
     </div>
   );
@@ -67,7 +71,15 @@ export default function YubiKeysPage() {
   });
 
   function openCreate() { setForm(EMPTY); setModal('create'); }
-  function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
+  function openEdit(row) {
+    setForm({
+      ...EMPTY,
+      ...row,
+      lost_destroyed_date: row.lost_destroyed_date || row.lostDestroyedDate || '',
+    });
+    setEditing(row.id);
+    setModal('edit');
+  }
   function handleSubmit(e) {
     e.preventDefault();
     if (modal === 'create') create.mutate(form);
@@ -100,6 +112,7 @@ export default function YubiKeysPage() {
     { key: 'status',   label: 'Status', render: v => <Badge label={v} /> },
     { key: 'username', label: 'Assigned To' },
     { key: 'issued',   label: 'Issued',   render: v => <span className="font-mono text-xs">{v || '—'}</span> },
+    { key: 'lost_destroyed_date', label: 'Lost / Destroyed', render: (v, row) => <span className="font-mono text-xs">{v || row.lostDestroyedDate || '—'}</span> },
     { key: 'last_auth',label: 'Last Auth', render: v => <span className="font-mono text-xs">{v || '—'}</span> },
     { key: '_actions', label: '', render: (_, row) => (
       <div className="flex gap-2" onClick={e => e.stopPropagation()}>

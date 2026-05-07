@@ -5,9 +5,20 @@ const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
+function serializeYubiKey(doc) {
+  if (!doc) return doc;
+  return {
+    ...doc,
+    last_auth: doc.lastAuth ?? doc.last_auth ?? null,
+    lost_destroyed_date: doc.lostDestroyedDate ?? doc.lost_destroyed_date ?? null,
+    site_id: doc.siteId ?? doc.site_id ?? null,
+  };
+}
+
 router.get('/', async (req, res, next) => {
   try {
-    res.json(await db.yubiKey.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } }));
+    const docs = await db.yubiKey.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } });
+    res.json(docs.map(serializeYubiKey));
   } catch (err) { next(err); }
 });
 
@@ -27,6 +38,7 @@ router.post('/bulk', async (req, res, next) => {
         status: row.status || 'Unassigned',
         username: row.username || null,
         issued: row.issued || null, lastAuth: row.last_auth || null, siteId,
+        lostDestroyedDate: row.lost_destroyed_date || row.lostDestroyedDate || null,
       };
       const existing = await db.yubiKey.findFirst({
         where: { serial, ...req.applyTenantFilter({}) }, select: { id: true },
@@ -53,7 +65,7 @@ router.post('/bulk-delete', async (req, res, next) => {
 });
 
 router.post('/', async (req, res, next) => {
-  const { serial, model, status, username, issued, last_auth } = req.body;
+  const { serial, model, status, username, issued, last_auth, lost_destroyed_date, lostDestroyedDate } = req.body;
   const siteId = req.resolveTenantSiteId(req.body);
   try {
     const last    = await db.yubiKey.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
@@ -66,10 +78,11 @@ router.post('/', async (req, res, next) => {
         status: status || 'Unassigned',
         username: username || null, siteId: siteId || null,
         issued: issued || null, lastAuth: last_auth || null,
+        lostDestroyedDate: lost_destroyed_date || lostDestroyedDate || null,
       },
     });
     await audit(req.session.user.username, 'YUBIKEY_ADD', id, `Added: ${serial}`, siteId);
-    res.status(201).json(doc);
+    res.status(201).json(serializeYubiKey(doc));
   } catch (err) { next(err); }
 });
 
@@ -77,6 +90,7 @@ router.patch('/:id', async (req, res, next) => {
   const FIELD_MAP = {
     serial: 'serial', model: 'model', status: 'status',
     username: 'username', issued: 'issued', last_auth: 'lastAuth',
+    lost_destroyed_date: 'lostDestroyedDate', lostDestroyedDate: 'lostDestroyedDate',
   };
   const data = {};
   for (const [k, pk] of Object.entries(FIELD_MAP)) {
@@ -92,7 +106,7 @@ router.patch('/:id', async (req, res, next) => {
     const doc = await db.yubiKey.update({ where: { id: req.params.id }, data });
     await audit(req.session.user.username, 'YUBIKEY_UPDATE', req.params.id,
       `Updated: ${Object.keys(data).join(', ')}`, doc.siteId);
-    res.json(doc);
+    res.json(serializeYubiKey(doc));
   } catch (err) { next(err); }
 });
 

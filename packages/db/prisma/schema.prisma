@@ -210,17 +210,18 @@ model Workstation {
 }
 
 model YubiKey {
-  id        String   @id
-  serial    String   @unique
-  model     String?
-  status    String   @default("Unassigned")
-  username  String?
-  siteId    String?  @map("site_id")
-  site      Site?    @relation(fields: [siteId], references: [id])
-  issued    String?
-  lastAuth  String?  @map("last_auth")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               String   @id
+  serial           String   @unique
+  model            String?
+  status           String   @default("Unassigned")
+  username         String?
+  siteId           String?  @map("site_id")
+  site             Site?    @relation(fields: [siteId], references: [id])
+  issued           String?
+  lastAuth         String?  @map("last_auth")
+  lostDestroyedDate String? @map("lost_destroyed_date")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("yubi_keys")
 }

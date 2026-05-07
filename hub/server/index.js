@@ -20,6 +20,8 @@ const app   = express();
 const PORT  = process.env.PORT || 3010;
 const isDev = process.env.NODE_ENV !== 'production';
 
+if (!isDev) app.set('trust proxy', 1);
+
 app.use(helmet({ contentSecurityPolicy: false, hsts: false }));
 
 if (isDev) {
@@ -36,7 +38,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure:   false,
+    secure:   !isDev,
     sameSite: 'lax',
     maxAge:   8 * 60 * 60 * 1000,
   },

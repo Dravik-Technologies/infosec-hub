@@ -2,9 +2,90 @@
 
 const express = require('express');
 const bcrypt  = require('bcryptjs');
+const crypto  = require('crypto');
+const { ConfidentialClientApplication } = require('@azure/msal-node');
 const { db }  = require('../../../packages/db/src/index');
 const { getAllowedApps, hasAppAccess } = require('../../../packages/db/src/appAccess');
 const router  = express.Router();
+
+const ENTRA_SCOPES = ['openid', 'profile', 'email'];
+
+function authorityHost() {
+  const configured = String(process.env.ENTRA_AUTHORITY_HOST || '').trim();
+  if (configured) return configured.replace(/\/+$/, '');
+
+  const redirect = String(process.env.ENTRA_REDIRECT_URI || '').trim().toLowerCase();
+  if (redirect.includes('.azurecontainerapps.us') || redirect.includes('.usgov')) {
+    return 'https://login.microsoftonline.us';
+  }
+
+  return 'https://login.microsoftonline.com';
+}
+
+function entraEnabled() {
+  return Boolean(
+    process.env.ENTRA_TENANT_ID
+    && process.env.ENTRA_CLIENT_ID
+    && process.env.ENTRA_CLIENT_SECRET
+    && process.env.ENTRA_REDIRECT_URI
+  );
+}
+
+function getMsalClient() {
+  return new ConfidentialClientApplication({
+    auth: {
+      clientId: process.env.ENTRA_CLIENT_ID,
+      authority: `${authorityHost()}/${process.env.ENTRA_TENANT_ID}`,
+      clientSecret: process.env.ENTRA_CLIENT_SECRET,
+    },
+    system: {
+      loggerOptions: {
+        piiLoggingEnabled: false,
+        loggerCallback(level, message) {
+          if (level <= 2) console.log(`[HUB ENTRA] ${message}`);
+        },
+      },
+    },
+  });
+}
+
+function redirectUri() {
+  return process.env.ENTRA_REDIRECT_URI || 'http://localhost:3010/auth/entra/callback';
+}
+
+function buildSessionUser(found, extras) {
+  const extra = extras || {};
+  return {
+    id:       found.id,
+    name:     found.name,
+    username: found.username,
+    email:    found.email,
+    role:     found.role,
+    siteId:   found.siteId,
+    siteIds:  found.siteIds,
+    site:     found.siteId,
+    initials: found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
+    allowedApps: getAllowedApps(found),
+    authProvider: extra.authProvider || 'local',
+    entraOid: extra.entraOid || null,
+    entraTenantId: extra.entraTenantId || null,
+  };
+}
+
+async function findProvisionedUserFromClaims(claims) {
+  const email = String(claims.preferred_username || claims.email || '').trim().toLowerCase();
+  const loginName = email.includes('@') ? email.split('@')[0] : email;
+  if (!email && !loginName) return null;
+
+  return db.user.findFirst({
+    where: {
+      OR: [
+        email ? { email } : undefined,
+        loginName ? { username: loginName } : undefined,
+      ].filter(Boolean),
+    },
+  });
+}
 
 function proxyLoginToScorva(username, password) {
   const scorvaBaseUrl = process.env.SCORVA_URL
@@ -33,6 +114,13 @@ function proxyLoginToScorva(username, password) {
     });
 }
 
+router.get('/providers', (_req, res) => {
+  res.json({
+    local: true,
+    entra: entraEnabled(),
+  });
+});
+
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -45,6 +133,9 @@ router.post('/login', async (req, res) => {
       email: 'admin@dev.local', role: 'Corporate Admin',
       siteId: 'MTSI-ALX', siteIds: ['MTSI-ALX', 'MTSI-HVL'],
       site: 'MTSI-ALX', initials: 'DA', allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava'],
+      authProvider: 'local',
+      entraOid: null,
+      entraTenantId: null,
     };
     return res.json({ user: req.session.user });
   }
@@ -65,18 +156,7 @@ router.post('/login', async (req, res) => {
       return res.status(403).json({ error: 'Hub access has not been granted for this account' });
     }
 
-    req.session.user = {
-      id:       found.id,
-      name:     found.name,
-      username: found.username,
-      email:    found.email,
-      role:     found.role,
-      siteId:   found.siteId,
-      siteIds:  found.siteIds,
-      site:     found.siteId,
-      initials: found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
-      allowedApps: getAllowedApps(found),
-    };
+    req.session.user = buildSessionUser(found, { authProvider: 'local' });
 
     db.user.update({ where: { id: found.id }, data: { lastLogin: new Date() } }).catch(() => {});
     return res.json({ user: req.session.user });
@@ -97,6 +177,9 @@ router.post('/login', async (req, res) => {
           site:     scorvaUser.siteId || scorvaUser.siteID || scorvaUser.site,
           initials: scorvaUser.initials ||
                     scorvaUser.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
+          authProvider: 'local',
+          entraOid: null,
+          entraTenantId: null,
         };
         return res.json({ user: req.session.user });
       } catch (proxyErr) {
@@ -108,6 +191,80 @@ router.post('/login', async (req, res) => {
     }
     console.error('[HUB] DB login error:', err.message);
     return res.status(500).json({ error: 'Server error' });
+  }
+});
+
+router.get('/entra/login', async (req, res) => {
+  if (!entraEnabled()) {
+    return res.status(503).json({ error: 'Microsoft Entra ID is not configured on the hub.' });
+  }
+
+  try {
+    const state = crypto.randomBytes(16).toString('hex');
+    const nonce = crypto.randomBytes(16).toString('hex');
+    req.session.entraAuth = { state, nonce };
+
+    const authUrl = await getMsalClient().getAuthCodeUrl({
+      scopes: ENTRA_SCOPES,
+      redirectUri: redirectUri(),
+      responseMode: 'query',
+      state,
+      nonce,
+    });
+
+    return res.redirect(authUrl);
+  } catch (err) {
+    console.error('[HUB] Entra login init error:', err.message);
+    return res.redirect('/login?error=entra_init_failed');
+  }
+});
+
+router.get('/entra/callback', async (req, res) => {
+  if (!entraEnabled()) {
+    return res.redirect('/login?error=entra_not_configured');
+  }
+
+  const state = req.query && req.query.state ? String(req.query.state) : '';
+  const code = req.query && req.query.code ? String(req.query.code) : '';
+  const stored = req.session && req.session.entraAuth ? req.session.entraAuth : null;
+
+  if (!code || !stored || !state || stored.state !== state) {
+    return res.redirect('/login?error=entra_state_invalid');
+  }
+
+  try {
+    const result = await getMsalClient().acquireTokenByCode({
+      code,
+      scopes: ENTRA_SCOPES,
+      redirectUri: redirectUri(),
+    });
+
+    const claims = result && result.idTokenClaims ? result.idTokenClaims : {};
+    if (stored.nonce && claims.nonce && claims.nonce !== stored.nonce) {
+      return res.redirect('/login?error=entra_nonce_invalid');
+    }
+
+    const found = await findProvisionedUserFromClaims(claims);
+    if (!found || found.status !== 'Active') {
+      return res.redirect('/login?error=entra_account_not_provisioned');
+    }
+    if (!hasAppAccess(found, 'hub')) {
+      return res.redirect('/login?error=entra_hub_access_denied');
+    }
+
+    req.session.user = buildSessionUser(found, {
+      authProvider: 'entra',
+      entraOid: claims.oid || null,
+      entraTenantId: claims.tid || null,
+    });
+    delete req.session.entraAuth;
+
+    db.user.update({ where: { id: found.id }, data: { lastLogin: new Date() } }).catch(() => {});
+
+    return req.session.save(() => res.redirect('/portal'));
+  } catch (err) {
+    console.error('[HUB] Entra callback error:', err.message);
+    return res.redirect('/login?error=entra_callback_failed');
   }
 });
 
