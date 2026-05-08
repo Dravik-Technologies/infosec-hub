@@ -5,6 +5,27 @@ const { db }  = require('../../../packages/db/src/index');
 const audit   = require('../middleware/audit');
 const router  = express.Router();
 
+async function attachLostDestroyedDates(docs) {
+  if (!docs) return docs;
+  const items = Array.isArray(docs) ? docs : [docs];
+  if (!items.length) return Array.isArray(docs) ? [] : docs;
+
+  const ids = items.map(doc => doc.id).filter(Boolean);
+  if (!ids.length) return docs;
+
+  const rows = await db.$queryRawUnsafe(
+    'SELECT id, lost_destroyed_date FROM yubi_keys WHERE id = ANY($1::text[])',
+    ids
+  );
+  const byId = new Map(rows.map(row => [row.id, row.lost_destroyed_date || null]));
+  const mapped = items.map(doc => ({
+    ...doc,
+    lostDestroyedDate: byId.get(doc.id) ?? null,
+  }));
+
+  return Array.isArray(docs) ? mapped : mapped[0];
+}
+
 function serializeYubiKey(doc) {
   if (!doc) return doc;
   return {
@@ -17,7 +38,9 @@ function serializeYubiKey(doc) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const docs = await db.yubiKey.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } });
+    const docs = await attachLostDestroyedDates(
+      await db.yubiKey.findMany({ where: req.applyTenantFilter({}), orderBy: { id: 'asc' } })
+    );
     res.json(docs.map(serializeYubiKey));
   } catch (err) { next(err); }
 });
@@ -38,12 +61,18 @@ router.post('/bulk', async (req, res, next) => {
         status: row.status || 'Unassigned',
         username: row.username || null,
         issued: row.issued || null, lastAuth: row.last_auth || null, siteId,
-        lostDestroyedDate: row.lost_destroyed_date || row.lostDestroyedDate || null,
       };
       const existing = await db.yubiKey.findFirst({
         where: { serial, ...req.applyTenantFilter({}) }, select: { id: true },
       });
-      await db.yubiKey.upsert({ where: { serial }, update: payload, create: payload });
+      const doc = await db.yubiKey.upsert({ where: { serial }, update: payload, create: payload });
+      if ('lost_destroyed_date' in row || 'lostDestroyedDate' in row) {
+        await db.$executeRawUnsafe(
+          'UPDATE yubi_keys SET lost_destroyed_date = $1 WHERE id = $2',
+          row.lost_destroyed_date || row.lostDestroyedDate || null,
+          doc.id
+        );
+      }
       if (existing) updated++; else inserted++;
     }
     res.json({ inserted, updated, skipped });
@@ -78,11 +107,15 @@ router.post('/', async (req, res, next) => {
         status: status || 'Unassigned',
         username: username || null, siteId: siteId || null,
         issued: issued || null, lastAuth: last_auth || null,
-        lostDestroyedDate: lost_destroyed_date || lostDestroyedDate || null,
       },
     });
+    await db.$executeRawUnsafe(
+      'UPDATE yubi_keys SET lost_destroyed_date = $1 WHERE id = $2',
+      lost_destroyed_date || lostDestroyedDate || null,
+      doc.id
+    );
     await audit(req.session.user.username, 'YUBIKEY_ADD', id, `Added: ${serial}`, siteId);
-    res.status(201).json(serializeYubiKey(doc));
+    res.status(201).json(serializeYubiKey(await attachLostDestroyedDates(doc)));
   } catch (err) { next(err); }
 });
 
@@ -90,23 +123,35 @@ router.patch('/:id', async (req, res, next) => {
   const FIELD_MAP = {
     serial: 'serial', model: 'model', status: 'status',
     username: 'username', issued: 'issued', last_auth: 'lastAuth',
-    lost_destroyed_date: 'lostDestroyedDate', lostDestroyedDate: 'lostDestroyedDate',
   };
   const data = {};
+  const lostDestroyedDate =
+    ('lost_destroyed_date' in req.body || 'lostDestroyedDate' in req.body)
+      ? (req.body.lost_destroyed_date || req.body.lostDestroyedDate || null)
+      : undefined;
   for (const [k, pk] of Object.entries(FIELD_MAP)) {
     if (k in req.body) data[pk] = req.body[k];
   }
-  if (!Object.keys(data).length) return res.status(400).json({ error: 'No fields to update' });
+  if (!Object.keys(data).length && lostDestroyedDate === undefined) return res.status(400).json({ error: 'No fields to update' });
   try {
     const existing = await db.yubiKey.findUnique({ where: { id: req.params.id } });
     if (!existing) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(existing)) return res.status(403).json({ error: 'Forbidden' });
     const siteId = req.resolveTenantSiteId(req.body);
     if (siteId) data.siteId = siteId;
-    const doc = await db.yubiKey.update({ where: { id: req.params.id }, data });
+    const doc = Object.keys(data).length
+      ? await db.yubiKey.update({ where: { id: req.params.id }, data })
+      : existing;
+    if (lostDestroyedDate !== undefined) {
+      await db.$executeRawUnsafe(
+        'UPDATE yubi_keys SET lost_destroyed_date = $1 WHERE id = $2',
+        lostDestroyedDate,
+        req.params.id
+      );
+    }
     await audit(req.session.user.username, 'YUBIKEY_UPDATE', req.params.id,
-      `Updated: ${Object.keys(data).join(', ')}`, doc.siteId);
-    res.json(serializeYubiKey(doc));
+      `Updated: ${[...Object.keys(data), ...(lostDestroyedDate !== undefined ? ['lost_destroyed_date'] : [])].join(', ')}`, doc.siteId);
+    res.json(serializeYubiKey(await attachLostDestroyedDates(doc)));
   } catch (err) { next(err); }
 });
 

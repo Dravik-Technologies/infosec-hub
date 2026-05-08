@@ -88,6 +88,11 @@ export default function YubiKeysPage() {
 
   const shownIds = useMemo(() => data.map(r => r.id), [data]);
   const allShownSelected = shownIds.length > 0 && shownIds.every(id => selectedIds.includes(id));
+  const mutationError =
+    create.error?.response?.data?.error ||
+    update.error?.response?.data?.error ||
+    create.error?.message ||
+    update.error?.message;
 
   const cols = [
     {
@@ -166,6 +171,11 @@ export default function YubiKeysPage() {
         <Modal title={modal === 'create' ? 'Add YubiKey' : 'Edit YubiKey'} onClose={() => setModal(null)}>
           <form onSubmit={handleSubmit} className="space-y-4">
             <YKForm value={form} onChange={setForm} />
+            {mutationError && (
+              <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+                {mutationError}
+              </div>
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
               <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending}>Save</button>
