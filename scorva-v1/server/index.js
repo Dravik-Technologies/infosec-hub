@@ -29,6 +29,7 @@ const trackersRouter = require('./routes/trackers');
 const notificationsRouter = require('./routes/notifications');
 const sitesRouter = require('./routes/sites');
 const threatsRouter = require('./routes/threats');
+const evidenceRouter       = require('./routes/evidence');
 const metricsRouter        = require('./routes/metrics');
 const reportsRouter        = require('./routes/reports');
 const securityEventsRouter = require('./routes/security-events');
@@ -89,6 +90,7 @@ app.use('/api/workstations', requireAuth, tenantHandler, missionSiteScope, works
 app.use('/api/yubikeys', requireAuth, tenantHandler, missionSiteScope, yubikeysRouter);
 app.use('/api/licenses', requireAuth, tenantHandler, missionSiteScope, licensesRouter);
 app.use('/api/audit', requireAuth, tenantHandler, missionSiteScope, auditRouter);
+app.use('/api/evidence', requireAuth, tenantHandler, evidenceRouter);
 app.use('/api/notifications', requireAuth, tenantHandler, notificationsRouter);
 app.use('/api/metrics', requireAuth, tenantHandler, metricsRouter);
 app.use('/api/reports', requireAuth, tenantHandler, reportsRouter);

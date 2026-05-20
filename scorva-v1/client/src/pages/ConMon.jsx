@@ -12,6 +12,7 @@ import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import ImportConMonModal from '../components/ImportConMonModal';
 import { Plus, Pencil, Trash2, CheckCircle, Upload } from 'lucide-react';
 import UserSelect from '../components/ui/UserSelect';
+import EvidencePanel from '../components/EvidencePanel';
 
 const STATUS_TABS = ['Pending', 'Overdue', 'Due Soon', 'Completed', 'All'];
 
@@ -560,6 +561,9 @@ export default function ConMonPage() {
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             <ControlForm value={form} onChange={setForm} />
+            {modal === 'edit' && editing && (
+              <EvidencePanel resourceType="conmon" resourceId={editing} />
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
               <button

@@ -132,6 +132,24 @@ export const api = {
     update: (id, d) => patch(`/api/security-events/${id}`, d),
     remove: id => del(`/api/security-events/${id}`),
   },
+  // Evidence artifacts
+  evidence: {
+    list: ({ resourceType, resourceId }) => http.get('/api/evidence', { params: { resourceType, resourceId } }).then(r => r.data),
+    upload: ({ resourceType, resourceId, file, artifactType, notes }) => {
+      const fd = new FormData();
+      fd.append('resourceType', resourceType);
+      fd.append('resourceId', resourceId);
+      fd.append('file', file);
+      if (artifactType) fd.append('artifactType', artifactType);
+      if (notes) fd.append('notes', notes);
+      return postForm('/api/evidence', fd);
+    },
+    download: id => http.get(`/api/evidence/${id}/download`, { responseType: 'blob' }).then(r => ({
+      blob: r.data,
+      filename: extractFilename(r, 'evidence.bin'),
+    })),
+    remove: id => del(`/api/evidence/${id}`),
+  },
   // ISSM Program View (cross-site aggregate)
   aggregate: { metrics: () => get('/api/aggregate/metrics') },
   // Excel report exports (return raw blob + suggested filename)

@@ -13,6 +13,7 @@ import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
+import EvidencePanel from '../components/EvidencePanel';
 
 const EMPTY = {
   title: '',
@@ -348,13 +349,16 @@ export default function POAMPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <POAMForm value={form} onChange={setForm} />
             {modal === 'edit' && (
-              <RiskWorkflowPanel
-                value={form}
-                onChange={setForm}
-                canReview={canReviewRisk}
-                onTransition={handleRiskTransition}
-                isTransitioning={transitionRisk.isPending}
-              />
+              <>
+                <RiskWorkflowPanel
+                  value={form}
+                  onChange={setForm}
+                  canReview={canReviewRisk}
+                  onTransition={handleRiskTransition}
+                  isTransitioning={transitionRisk.isPending}
+                />
+                {editing && <EvidencePanel resourceType="poam" resourceId={editing} />}
+              </>
             )}
             {mutationError && (
               <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">

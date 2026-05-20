@@ -9,6 +9,7 @@ import Badge from '../components/ui/Badge';
 import UserSelect from '../components/ui/UserSelect';
 import { Plus, Pencil, Trash2, LayoutGrid, ClipboardCheck } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
+import EvidencePanel from '../components/EvidencePanel';
 
 const EMPTY = {
   name: '',
@@ -205,6 +206,9 @@ export default function TrackersPage() {
               <label className="block text-xs text-scorva-muted mb-1">Description</label>
               <textarea className="input-base resize-none" rows={3} value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
             </div>
+            {modal === 'edit' && editing && (
+              <EvidencePanel resourceType="tracker" resourceId={editing} />
+            )}
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>
               <button type="submit" className="btn-primary" disabled={create.isPending || update.isPending}>Save</button>

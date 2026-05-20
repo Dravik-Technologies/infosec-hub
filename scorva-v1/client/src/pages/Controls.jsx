@@ -22,6 +22,7 @@ import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
 import ImportControlsModal from '../components/ImportControlsModal';
+import EvidencePanel from '../components/EvidencePanel';
 
 /* ── NIST families for dropdown ── */
 const NIST_FAMILIES = [
@@ -381,6 +382,9 @@ export default function ControlsPage() {
         <Modal title={modal === 'create' ? 'Add Control' : 'Edit Control'} onClose={() => setModal(null)} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">
             <ControlForm value={form} onChange={setForm} isNew={modal === 'create'} />
+            {modal === 'edit' && editing && (
+              <EvidencePanel resourceType="control" resourceId={editing} />
+            )}
             {mutationError && (
               <div className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
                 {mutationError}

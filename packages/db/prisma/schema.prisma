@@ -33,6 +33,7 @@ model Site {
   trackers        Tracker[]
   projectSystems  ProjectSystem[]
   securityEvents  SecurityEvent[]
+  evidenceArtifacts EvidenceArtifact[]
 
   @@map("sites")
 }
@@ -324,6 +325,26 @@ model Tracker {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("trackers")
+}
+
+model EvidenceArtifact {
+  id           String   @id @default(cuid())
+  resourceType String   @map("resource_type")
+  resourceId   String   @map("resource_id")
+  filename     String
+  mimeType     String   @map("mime_type")
+  size         Int
+  artifactType String?  @map("artifact_type")
+  notes        String?
+  uploadedBy   String?  @map("uploaded_by")
+  data         Bytes
+  siteId       String?  @map("site_id")
+  site         Site?    @relation(fields: [siteId], references: [id])
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@index([resourceType, resourceId])
+  @@index([siteId])
+  @@map("evidence_artifacts")
 }
 
 // ─── MASH models ───────────────────────────────────────────────────────────────
