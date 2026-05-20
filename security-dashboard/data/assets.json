@@ -1,0 +1,50 @@
+[
+  {
+    "id": "asset-001",
+    "category": "ped",
+    "type": "Phone",
+    "make": "Apple",
+    "model": "iPhone 14 Pro",
+    "serialNumber": "F2XYZ12345",
+    "siteId": "lincolnia-hq",
+    "siteName": "Chantilly",
+    "location": "Secure Area A",
+    "assignedTo": "J. Martinez",
+    "status": "active",
+    "approvalStatus": "approved",
+    "dateAdded": "2026-01-10",
+    "notes": "Authorized for use within SCIF. SAAR on file."
+  },
+  {
+    "id": "asset-002",
+    "category": "equipment",
+    "type": "Fax Machine",
+    "make": "Ricoh",
+    "model": "SP 3600SF",
+    "serialNumber": "RC9988776655",
+    "siteId": "lincolnia-hq",
+    "siteName": "Chantilly",
+    "location": "Room 105 — Admin",
+    "assignedTo": "",
+    "status": "active",
+    "approvalStatus": "approved",
+    "dateAdded": "2025-06-15",
+    "notes": "Classified fax machine. Authorized for SECRET transmission."
+  },
+  {
+    "id": "asset-003",
+    "category": "ped",
+    "type": "Laptop",
+    "make": "Dell",
+    "model": "Latitude 5540",
+    "serialNumber": "DL4432198765",
+    "siteId": "colorado-springs",
+    "siteName": "Colorado Springs",
+    "location": "SCIF Room 1",
+    "assignedTo": "A. Reeves",
+    "status": "active",
+    "approvalStatus": "approved",
+    "dateAdded": "2025-11-01",
+    "notes": "Government-furnished equipment. Secret-level processing."
+  }
+]

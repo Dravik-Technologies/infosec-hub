@@ -1,0 +1,93 @@
+[
+  {
+    "id": "dcsa-001",
+    "siteId": "lincolnia-hq",
+    "siteName": "Chantilly",
+    "inspectionDate": "2025-06-10",
+    "nextInspectionDate": "2026-09-15",
+    "inspector": "DSS Insp. R. Calloway",
+    "status": "completed",
+    "reportFileName": "DCSA-Chantilly-2025-06.pdf",
+    "fileSize": "5.2 MB",
+    "findings": 2,
+    "notes": "Two minor findings: Server Room B shielding gap and visitor badge log gap from March. Both corrective actions submitted within 30 days."
+  },
+  {
+    "id": "dcsa-002",
+    "siteId": "colorado-springs",
+    "siteName": "Colorado Springs",
+    "inspectionDate": "2024-11-15",
+    "nextInspectionDate": "2026-08-20",
+    "inspector": "DSS Insp. M. Okonkwo",
+    "status": "completed",
+    "reportFileName": "DCSA-ColoradoSprings-2024-11.pdf",
+    "fileSize": "3.8 MB",
+    "findings": 4,
+    "notes": "Four findings related to DAAPM visitor procedures and eLog implementation gap. Corrective action plan accepted by DCSA."
+  },
+  {
+    "id": "dcsa-003",
+    "siteId": "huntsville",
+    "siteName": "Huntsville",
+    "inspectionDate": "2025-09-05",
+    "nextInspectionDate": "",
+    "inspector": "DSS Insp. P. Nakamura",
+    "status": "completed",
+    "reportFileName": "DCSA-Huntsville-2025-09.pdf",
+    "fileSize": "4.0 MB",
+    "findings": 0,
+    "notes": "Outstanding inspection result — zero findings. Commended for best practices in TEMPEST compliance and personnel security."
+  },
+  {
+    "id": "dcsa-004",
+    "siteId": "niceville",
+    "siteName": "Niceville",
+    "inspectionDate": "2025-03-20",
+    "nextInspectionDate": "2026-07-25",
+    "inspector": "DSS Insp. C. Huang",
+    "status": "completed",
+    "reportFileName": "",
+    "fileSize": "",
+    "findings": 3,
+    "notes": "Three findings: TEMPEST EMI from overhead lighting, two personnel with overdue annual training, and an access roster discrepancy."
+  },
+  {
+    "id": "dcsa-005",
+    "siteId": "alexandria",
+    "siteName": "Alexandria",
+    "inspectionDate": "2025-08-12",
+    "nextInspectionDate": "2026-11-01",
+    "inspector": "DSS Insp. R. Calloway",
+    "status": "completed",
+    "reportFileName": "DCSA-Alexandria-2025-08.pdf",
+    "fileSize": "2.9 MB",
+    "findings": 1,
+    "notes": "One finding: DAAPM boundary diagram outdated. Updated diagrams submitted within 15 days."
+  },
+  {
+    "id": "dcsa-006",
+    "siteId": "las-vegas",
+    "siteName": "Las Vegas",
+    "inspectionDate": "2025-11-20",
+    "nextInspectionDate": "2026-12-10",
+    "inspector": "DSS Insp. M. Okonkwo",
+    "status": "completed",
+    "reportFileName": "DCSA-LasVegas-2025-11.pdf",
+    "fileSize": "6.1 MB",
+    "findings": 0,
+    "notes": "Exemplary compliance across all standards. SAP facility practices recognized as model for other sites."
+  },
+  {
+    "id": "dcsa-007",
+    "siteId": "dayton",
+    "siteName": "Dayton",
+    "inspectionDate": "",
+    "nextInspectionDate": "2026-06-15",
+    "inspector": "",
+    "status": "scheduled",
+    "reportFileName": "",
+    "fileSize": "",
+    "findings": null,
+    "notes": "First DCSA inspection scheduled. Site is new — initial inspection will establish baseline compliance rating."
+  }
+]

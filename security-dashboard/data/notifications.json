@@ -1,0 +1,55 @@
+{
+  "reminderDays": [90, 60, 30, 14, 7, 6, 5, 4, 3, 2, 1],
+  "overduePolicy": "daily-then-weekly",
+  "overdureDailyDays": 7,
+  "escalationDays": 30,
+  "preferences": {
+    "notifySiteFso": true,
+    "notifyAdminGroup": true,
+    "notifyLeadership": false,
+    "includeComplianceScore": true,
+    "weeklyDigest": true
+  },
+  "siteNotifications": [
+    {
+      "siteId": "lincolnia-hq",
+      "siteName": "Chantilly",
+      "fsoEmail": "j.martinez@mtsi-va.com",
+      "nextDue": "2027-01-15",
+      "daysUntilDue": 248,
+      "lastNotificationSent": "2026-04-15",
+      "nextNotificationDate": "2026-10-17",
+      "status": "current"
+    },
+    {
+      "siteId": "colorado-springs",
+      "siteName": "Colorado Springs",
+      "fsoEmail": "a.reeves@mtsi-va.com",
+      "nextDue": "2026-08-01",
+      "daysUntilDue": 81,
+      "lastNotificationSent": "2026-05-11",
+      "nextNotificationDate": "2026-05-12",
+      "status": "due-soon"
+    },
+    {
+      "siteId": "niceville",
+      "siteName": "Niceville",
+      "fsoEmail": "t.brooks@mtsi-va.com",
+      "nextDue": "2026-07-10",
+      "daysUntilDue": 59,
+      "lastNotificationSent": "2026-05-11",
+      "nextNotificationDate": "2026-05-13",
+      "status": "due-soon"
+    },
+    {
+      "siteId": "dayton",
+      "siteName": "Dayton",
+      "fsoEmail": "c.huang@mtsi-va.com",
+      "nextDue": "2026-03-01",
+      "daysUntilDue": -72,
+      "lastNotificationSent": "2026-05-11",
+      "nextNotificationDate": "2026-05-12",
+      "status": "overdue"
+    }
+  ]
+}

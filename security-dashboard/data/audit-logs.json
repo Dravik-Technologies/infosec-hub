@@ -1,0 +1,122 @@
+[
+  {
+    "id": "log-001",
+    "timestamp": "2026-05-12T08:45:00Z",
+    "user": "J. Martinez",
+    "userRole": "site_manager",
+    "action": "upload",
+    "resource": "self-inspection-report",
+    "siteId": "lincolnia-hq",
+    "siteName": "Chantilly",
+    "details": "Uploaded Self-Inspection Report: Chantilly-Self-Inspection-2026-01.pdf",
+    "ipAddress": "10.10.1.45"
+  },
+  {
+    "id": "log-002",
+    "timestamp": "2026-05-11T14:22:00Z",
+    "user": "Corporate Security",
+    "userRole": "global_fso",
+    "action": "approve",
+    "resource": "self-inspection-report",
+    "siteId": "huntsville",
+    "siteName": "Huntsville",
+    "details": "Accepted self-inspection report for Huntsville — zero findings confirmed",
+    "ipAddress": "10.10.0.10"
+  },
+  {
+    "id": "log-003",
+    "timestamp": "2026-05-10T09:15:00Z",
+    "user": "S. Kim",
+    "userRole": "site_manager",
+    "action": "upload",
+    "resource": "self-inspection-report",
+    "siteId": "huntsville",
+    "siteName": "Huntsville",
+    "details": "Uploaded revised Self-Inspection Report v2: Huntsville-Self-Inspection-2026-03.pdf",
+    "ipAddress": "10.10.3.22"
+  },
+  {
+    "id": "log-004",
+    "timestamp": "2026-05-09T16:00:00Z",
+    "user": "Corporate Security",
+    "userRole": "global_fso",
+    "action": "reject",
+    "resource": "self-inspection-report",
+    "siteId": "colorado-springs",
+    "siteName": "Colorado Springs",
+    "details": "Marked Colorado Springs self-inspection as Needs Correction — visitor log section incomplete",
+    "ipAddress": "10.10.0.10"
+  },
+  {
+    "id": "log-005",
+    "timestamp": "2026-05-08T11:30:00Z",
+    "user": "A. Reeves",
+    "userRole": "site_manager",
+    "action": "upload",
+    "resource": "self-inspection-report",
+    "siteId": "colorado-springs",
+    "siteName": "Colorado Springs",
+    "details": "Uploaded Self-Inspection Report: ColoradoSprings-Self-Inspection-2026-02.pdf",
+    "ipAddress": "10.10.2.87"
+  },
+  {
+    "id": "log-006",
+    "timestamp": "2026-05-07T08:00:00Z",
+    "user": "System",
+    "userRole": "system",
+    "action": "notification",
+    "resource": "reminder-email",
+    "siteId": "dayton",
+    "siteName": "Dayton",
+    "details": "Overdue reminder #72 sent to C. Huang and admin group for Dayton site",
+    "ipAddress": "system"
+  },
+  {
+    "id": "log-007",
+    "timestamp": "2026-05-06T13:45:00Z",
+    "user": "P. Washington",
+    "userRole": "site_manager",
+    "action": "upload",
+    "resource": "self-inspection-report",
+    "siteId": "las-vegas",
+    "siteName": "Las Vegas",
+    "details": "Uploaded Self-Inspection Report: LasVegas-Self-Inspection-2026-03.pdf",
+    "ipAddress": "10.10.6.11"
+  },
+  {
+    "id": "log-008",
+    "timestamp": "2026-05-05T10:20:00Z",
+    "user": "Corporate Security",
+    "userRole": "global_fso",
+    "action": "create",
+    "resource": "lessons-entry",
+    "siteId": "huntsville",
+    "siteName": "Huntsville",
+    "details": "Approved Lessons Learned entry: Quarterly Mini Self-Inspections by S. Kim",
+    "ipAddress": "10.10.0.10"
+  },
+  {
+    "id": "log-009",
+    "timestamp": "2026-05-04T09:00:00Z",
+    "user": "R. Okafor",
+    "userRole": "site_manager",
+    "action": "login",
+    "resource": "auth",
+    "siteId": "alexandria",
+    "siteName": "Alexandria",
+    "details": "User logged into Sentinel Security dashboard",
+    "ipAddress": "10.10.4.55"
+  },
+  {
+    "id": "log-010",
+    "timestamp": "2026-05-03T15:00:00Z",
+    "user": "Corporate Security",
+    "userRole": "global_fso",
+    "action": "edit",
+    "resource": "site-record",
+    "siteId": "dayton",
+    "siteName": "Dayton",
+    "details": "Updated site record: added next DCSA inspection date 2026-06-15",
+    "ipAddress": "10.10.0.10"
+  }
+]

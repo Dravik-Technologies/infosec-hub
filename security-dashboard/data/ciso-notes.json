@@ -1,0 +1,72 @@
+[
+  {
+    "id": "cn-001",
+    "type": "directive",
+    "title": "FY2026 Q2 Security Compliance Directive — All Sites",
+    "body": "Effective immediately, all sites must ensure their self-inspection reports are submitted and approved no later than 30 days after the inspection date. The current backlog at Dayton is unacceptable. All FSOs are directed to prioritize self-inspection completion and report submission above other administrative tasks until we achieve enterprise-wide green status.",
+    "siteId": "",
+    "siteName": "Enterprise-Wide",
+    "submittedBy": "CISO",
+    "submittedDate": "2026-05-01",
+    "visibility": "all-fsos",
+    "actionItems": [
+      "Submit self-inspection report within 30 days of inspection completion",
+      "Contact your assigned admin if you need assistance with documentation",
+      "All sites with outstanding reports must submit by June 1, 2026"
+    ],
+    "tags": ["directive", "compliance", "q2-2026", "urgent"]
+  },
+  {
+    "id": "cn-002",
+    "type": "strategic-priority",
+    "title": "Q3 2026 Strategic Security Priorities",
+    "body": "Our three strategic priorities for Q3 2026 are: (1) Achieve 100% current self-inspection status across all 8 sites. (2) Prepare all sites with scheduled DCSA inspections — Colorado Springs, Niceville, and Las Vegas — for outstanding results. (3) Implement the enterprise-wide documentation binder standard established by Las Vegas. All sites should have both physical and digital binders in place by September 1.",
+    "siteId": "",
+    "siteName": "Enterprise-Wide",
+    "submittedBy": "CISO",
+    "submittedDate": "2026-04-15",
+    "visibility": "all-fsos",
+    "actionItems": [
+      "Achieve current inspection status for all sites by August 1",
+      "Request documentation template from Corporate Security",
+      "Schedule quarterly mini-inspection (see Huntsville Best Practice)",
+      "Confirm DCSA pre-inspection preparation meetings are scheduled"
+    ],
+    "tags": ["strategic-priority", "q3-2026", "dcsa-prep"]
+  },
+  {
+    "id": "cn-003",
+    "type": "site-assessment",
+    "title": "Dayton Site — CISO Assessment & Support Plan",
+    "body": "The Dayton site is currently 72 days overdue on its self-inspection and has the lowest compliance score in the enterprise at 72%. This is a new site with limited FSO experience. I have personally reviewed the situation and have directed Corporate Security to provide direct hands-on support. This is not a performance issue — it is a capacity and experience gap that we will close together. The Dayton FSO (C. Huang) has my full support.",
+    "siteId": "dayton",
+    "siteName": "Dayton",
+    "submittedBy": "CISO",
+    "submittedDate": "2026-05-10",
+    "visibility": "all-fsos",
+    "actionItems": [
+      "Corporate Security assigned to assist Dayton through first full inspection cycle",
+      "Weekly check-in calls scheduled with Dayton FSO",
+      "Target: Dayton self-inspection submitted by June 15, 2026"
+    ],
+    "tags": ["site-assessment", "dayton", "support"]
+  },
+  {
+    "id": "cn-004",
+    "type": "directive",
+    "title": "Mandatory: Share Lessons Learned Across All Sites",
+    "body": "I am directing all FSOs to review the Las Vegas documentation binder approach and the Huntsville quarterly mini-inspection practice — both are in the Lessons Learned section. These are proven practices that every site should adopt. Knowledge sharing across our enterprise is a force multiplier. If your site has learned something valuable, you are expected to post it in Lessons Learned for your peers.",
+    "siteId": "",
+    "siteName": "Enterprise-Wide",
+    "submittedBy": "CISO",
+    "submittedDate": "2026-03-20",
+    "visibility": "all-fsos",
+    "actionItems": [
+      "Review all lessons learned entries in the Lessons Learned section",
+      "Adopt Las Vegas documentation binder approach at your site",
+      "Post at least one lesson learned or best practice from your site by Q3",
+      "Contact your admin if you need template documentation"
+    ],
+    "tags": ["directive", "lessons-learned", "knowledge-sharing"]
+  }
+]

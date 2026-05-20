@@ -1,0 +1,108 @@
+[
+  {
+    "id": "rpt-001",
+    "siteId": "lincolnia-hq",
+    "siteName": "Chantilly",
+    "type": "self-inspection",
+    "fileName": "Chantilly-Self-Inspection-2026-01.pdf",
+    "fileSize": "3.2 MB",
+    "uploadDate": "2026-01-20",
+    "uploadedBy": "J. Martinez",
+    "version": 1,
+    "previousVersions": [],
+    "notes": "FY2026 annual self-inspection report."
+  },
+  {
+    "id": "rpt-002",
+    "siteId": "lincolnia-hq",
+    "siteName": "Chantilly",
+    "type": "dcsa",
+    "fileName": "DCSA-Chantilly-2025-06.pdf",
+    "fileSize": "5.2 MB",
+    "uploadDate": "2025-07-05",
+    "uploadedBy": "J. Martinez",
+    "version": 1,
+    "previousVersions": [],
+    "notes": "DCSA inspection report — 2 findings documented."
+  },
+  {
+    "id": "rpt-003",
+    "siteId": "huntsville",
+    "siteName": "Huntsville",
+    "type": "self-inspection",
+    "fileName": "Huntsville-Self-Inspection-2026-03.pdf",
+    "fileSize": "2.8 MB",
+    "uploadDate": "2026-03-25",
+    "uploadedBy": "S. Kim",
+    "version": 2,
+    "previousVersions": [
+      {"version": 1, "date": "2026-03-23", "uploadedBy": "S. Kim", "fileName": "Huntsville-Self-Inspection-2026-03-draft.pdf"}
+    ],
+    "notes": "Final version after minor corrections. Zero findings."
+  },
+  {
+    "id": "rpt-004",
+    "siteId": "huntsville",
+    "siteName": "Huntsville",
+    "type": "dcsa",
+    "fileName": "DCSA-Huntsville-2025-09.pdf",
+    "fileSize": "4.0 MB",
+    "uploadDate": "2025-09-20",
+    "uploadedBy": "S. Kim",
+    "version": 1,
+    "previousVersions": [],
+    "notes": "Outstanding DCSA result — no findings."
+  },
+  {
+    "id": "rpt-005",
+    "siteId": "alexandria",
+    "siteName": "Alexandria",
+    "type": "self-inspection",
+    "fileName": "Alexandria-Self-Inspection-2026-02.pdf",
+    "fileSize": "2.1 MB",
+    "uploadDate": "2026-03-04",
+    "uploadedBy": "R. Okafor",
+    "version": 1,
+    "previousVersions": [],
+    "notes": "Annual self-inspection — one DAAPM finding."
+  },
+  {
+    "id": "rpt-006",
+    "siteId": "las-vegas",
+    "siteName": "Las Vegas",
+    "type": "self-inspection",
+    "fileName": "LasVegas-Self-Inspection-2026-03.pdf",
+    "fileSize": "4.1 MB",
+    "uploadDate": "2026-04-02",
+    "uploadedBy": "P. Washington",
+    "version": 1,
+    "previousVersions": [],
+    "notes": "Comprehensive annual self-inspection — zero findings."
+  },
+  {
+    "id": "rpt-007",
+    "siteId": "las-vegas",
+    "siteName": "Las Vegas",
+    "type": "dcsa",
+    "fileName": "DCSA-LasVegas-2025-11.pdf",
+    "fileSize": "6.1 MB",
+    "uploadDate": "2025-12-05",
+    "uploadedBy": "P. Washington",
+    "version": 1,
+    "previousVersions": [],
+    "notes": "Exemplary DCSA result."
+  },
+  {
+    "id": "rpt-008",
+    "siteId": "niceville",
+    "siteName": "Niceville",
+    "type": "self-inspection",
+    "fileName": "Niceville-Self-Inspection-2026-01.pdf",
+    "fileSize": "1.6 MB",
+    "uploadDate": "2026-01-18",
+    "uploadedBy": "T. Brooks",
+    "version": 1,
+    "previousVersions": [],
+    "notes": "Pending admin review. 3 findings documented."
+  }
+]

@@ -3,21 +3,15 @@
   "version": "2.3.0",
   "description": "MTSI Advanced Sentinel Hub — DoD Security Compliance Dashboard",
   "main": "server.js",
-  "prisma": {
-    "schema": "../packages/db/prisma/schema.prisma"
-  },
   "scripts": {
-    "generate": "prisma generate",
     "start": "node server.js",
     "dev": "node server.js",
     "build:client": "cd client && npm run build",
     "start:prod": "npm run build:client && node server.js"
   },
   "dependencies": {
-    "@prisma/client": "^7.7.0",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.3",
-    "prisma": "^5.22.0"
+    "jsonwebtoken": "^9.0.3"
   }
 }

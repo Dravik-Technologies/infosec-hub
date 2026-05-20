@@ -1,0 +1,230 @@
+[
+  {
+    "id": "tracker-001",
+    "name": "Annual Clearance Renewal Status",
+    "description": "Track personnel clearance renewal progress across the enterprise",
+    "template": "status",
+    "statusOptions": [
+      {
+        "label": "Current",
+        "color": "#10B981"
+      },
+      {
+        "label": "Renewal Pending",
+        "color": "#F59E0B"
+      },
+      {
+        "label": "Submitted",
+        "color": "#60A5FA"
+      },
+      {
+        "label": "Expired",
+        "color": "#EF4444"
+      }
+    ],
+    "items": [
+      {
+        "id": "i-001",
+        "name": "J. Martinez — Chantilly",
+        "status": "Current",
+        "notes": "Renewed Jan 2026"
+      },
+      {
+        "id": "i-002",
+        "name": "A. Reeves — Colorado Springs",
+        "status": "Renewal Pending",
+        "notes": "Due Aug 2026"
+      },
+      {
+        "id": "i-003",
+        "name": "S. Kim — Huntsville",
+        "status": "Current",
+        "notes": "Renewed Mar 2026"
+      },
+      {
+        "id": "i-004",
+        "name": "T. Brooks — Niceville",
+        "status": "Submitted",
+        "notes": "Submitted Apr 2026"
+      }
+    ],
+    "createdBy": "v.kilika",
+    "createdAt": "2026-05-01"
+  },
+  {
+    "id": "tracker-002",
+    "name": "Self-Inspection Report Completion",
+    "description": "Track how complete each site's inspection documentation package is",
+    "template": "progress",
+    "statusOptions": [],
+    "items": [
+      {
+        "id": "i-101",
+        "name": "Chantilly",
+        "progress": 100,
+        "notes": "All docs submitted"
+      },
+      {
+        "id": "i-102",
+        "name": "Huntsville",
+        "progress": 95,
+        "notes": "Minor gap in checklist"
+      },
+      {
+        "id": "i-103",
+        "name": "Las Vegas",
+        "progress": 98,
+        "notes": "Awaiting final sign-off"
+      },
+      {
+        "id": "i-104",
+        "name": "Colorado Springs",
+        "progress": 60,
+        "notes": "eLog procurement pending"
+      },
+      {
+        "id": "i-105",
+        "name": "Niceville",
+        "progress": 72,
+        "notes": "TEMPEST section incomplete"
+      },
+      {
+        "id": "i-106",
+        "name": "Dayton",
+        "progress": 25,
+        "notes": "Needs FSO support"
+      }
+    ],
+    "createdBy": "v.kilika",
+    "createdAt": "2026-05-01"
+  },
+  {
+    "id": "tracker-003",
+    "name": "Lessons Learned",
+    "description": "Key lessons from self-inspections and DCSA visits across all sites",
+    "template": "status",
+    "statusOptions": [
+      {
+        "label": "New",
+        "color": "#60A5FA"
+      },
+      {
+        "label": "Reviewed",
+        "color": "#F59E0B"
+      },
+      {
+        "label": "Shared",
+        "color": "#10B981"
+      }
+    ],
+    "items": [
+      {
+        "id": "ll-t-001",
+        "name": "Schedule TEMPEST recertification 90 days early — Chantilly",
+        "status": "Shared",
+        "notes": "Contractor availability caused 6-week delay"
+      },
+      {
+        "id": "ll-t-002",
+        "name": "eLog visitor tracking reduces DAAPM findings — Colorado Springs",
+        "status": "Shared",
+        "notes": "Paper logs were non-compliant"
+      },
+      {
+        "id": "ll-t-003",
+        "name": "LED lighting upgrade resolves EMI issues — Niceville",
+        "status": "Reviewed",
+        "notes": "4-month procurement — plan early"
+      }
+    ],
+    "createdBy": "v.kilika",
+    "createdAt": "2026-05-01"
+  },
+  {
+    "id": "tracker-004",
+    "name": "Best Practices",
+    "description": "Proven practices that work — share across all sites",
+    "template": "checklist",
+    "statusOptions": [],
+    "items": [
+      {
+        "id": "bp-t-001",
+        "name": "Quarterly 30-min mini self-inspections (Huntsville model)",
+        "done": true,
+        "notes": "Zero findings for 2 years using this approach"
+      },
+      {
+        "id": "bp-t-002",
+        "name": "Physical + digital documentation binder per site (Las Vegas)",
+        "done": true,
+        "notes": "All docs organized, always audit-ready"
+      },
+      {
+        "id": "bp-t-003",
+        "name": "Pre-inspection checklist walk-through 2 weeks before due date",
+        "done": true,
+        "notes": "Roll out to all sites by Q3"
+      },
+      {
+        "id": "bp-t-004",
+        "name": "Monthly FSO check-in calls with Corporate Security",
+        "done": false,
+        "notes": "Schedule recurring 30-min call"
+      }
+    ],
+    "createdBy": "v.kilika",
+    "createdAt": "2026-05-01"
+  },
+  {
+    "id": "tracker-005",
+    "name": "Corrective Actions",
+    "description": "Track open corrective actions from DCSA and self-inspection findings",
+    "template": "status",
+    "statusOptions": [
+      {
+        "label": "Open",
+        "color": "#EF4444"
+      },
+      {
+        "label": "In Progress",
+        "color": "#F59E0B"
+      },
+      {
+        "label": "Submitted",
+        "color": "#60A5FA"
+      },
+      {
+        "label": "Closed",
+        "color": "#10B981"
+      }
+    ],
+    "items": [
+      {
+        "id": "ca-t-001",
+        "name": "Chantilly — Server Room B shielding gap remediation",
+        "status": "In Progress",
+        "notes": "Emergency procurement underway"
+      },
+      {
+        "id": "ca-t-002",
+        "name": "Colorado Springs — eLog visitor management deployment",
+        "status": "In Progress",
+        "notes": "Procurement approved, Q3 target"
+      },
+      {
+        "id": "ca-t-003",
+        "name": "Niceville — LED lighting replacement (TEMPEST EMI fix)",
+        "status": "Submitted",
+        "notes": "Contractor engaged"
+      },
+      {
+        "id": "ca-t-004",
+        "name": "Dayton — First self-inspection documentation package",
+        "status": "Open",
+        "notes": "Corporate Security providing hands-on support"
+      }
+    ],
+    "createdBy": "v.kilika",
+    "createdAt": "2026-05-01"
+  }
+]

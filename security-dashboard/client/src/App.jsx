@@ -11,11 +11,15 @@ import BudgetSection from './pages/BudgetSection.jsx';
 import TimelineSection from './pages/TimelineSection.jsx';
 import ConstructionSection from './pages/ConstructionSection.jsx';
 import RisksSection from './pages/RisksSection.jsx';
+import SiteDetailPage from './pages/SiteDetailPage.jsx';
+import CustomTrackersSection from './pages/CustomTrackersSection.jsx';
 
 const EMPTY_DATA = {
   sites: [], risks: [], budget: {}, timeline: {}, compliance: {},
   activity: [], settings: {}, milestones: [], construction: [],
   employees: [], documents: [],
+  lessons: [], assets: [], trackers: [], cisoNotes: [],
+  selfInspections: [], dcsaInspections: [],
 };
 
 export default function App() {
@@ -47,29 +51,37 @@ export default function App() {
     return null;
   });
 
-  const [section, setSection] = useState('dashboard');
-  const [data,    setData]    = useState(EMPTY_DATA);
+  const [section,        setSection]        = useState('dashboard');
+  const [selectedSiteId, setSelectedSiteId] = useState(null);
+  const [data,           setData]           = useState(EMPTY_DATA);
   const [loaded,  setLoaded]  = useState(false);
   const [tick,    setTick]    = useState(0);
   const refresh = useCallback(() => setTick(t => t + 1), []);
 
   function handleLogin(user)  { setCurrentUser(user); }
-  function handleLogout()     { AUTH.clearAll(); setCurrentUser(null); setLoaded(false); setData(EMPTY_DATA); }
+  function handleLogout()     { AUTH.clearAll(); setCurrentUser(null); setLoaded(false); setData(EMPTY_DATA); setSelectedSiteId(null); }
 
   // Load all data on login
   useEffect(() => {
     if (!currentUser) return;
     (async () => {
-      const [sites, risks, budget, timeline, compliance, activity, settings, milestones, construction, employees, documents] = await Promise.all([
+      const [sites, risks, budget, timeline, compliance, activity, settings, milestones,
+             construction, employees, documents,
+             lessons, assets, trackers, cisoNotes, selfInspections, dcsaInspections] = await Promise.all([
         API.get('sites'), API.get('risks'), API.get('budget'), API.get('timeline'),
         API.get('compliance'), API.get('activity'), API.get('settings'), API.get('milestones'),
         API.get('construction'), API.get('employees'), API.get('documents'),
+        API.get('lessons'), API.get('assets'), API.get('trackers'), API.get('ciso-notes'),
+        API.get('self-inspections'), API.get('dcsa-inspections'),
       ]);
       setData({
         sites: sites || [], risks: risks || [], budget: budget || {}, timeline: timeline || {},
         compliance: compliance || {}, activity: activity || [], settings: settings || {},
         milestones: milestones || [], construction: construction || [],
         employees: employees || [], documents: documents || [],
+        lessons: lessons || [], assets: assets || [], trackers: trackers || [],
+        cisoNotes: cisoNotes || [], selfInspections: selfInspections || [],
+        dcsaInspections: dcsaInspections || [],
       });
       setLoaded(true);
     })();
@@ -141,9 +153,14 @@ export default function App() {
     </div>
   );
 
+  const sitesView = selectedSiteId
+    ? <SiteDetailPage siteId={selectedSiteId} data={data} currentUser={currentUser}
+                      onBack={() => setSelectedSiteId(null)} onRefresh={refresh} />
+    : <SitesSection   data={data} onOpenSite={id => { setSelectedSiteId(id); setSection('sites'); }} />;
+
   const sections = {
     dashboard:    <DashboardSection    data={data} onNavigate={setSection} />,
-    sites:        <SitesSection        data={data} />,
+    sites:        sitesView,
     employees:    <EmployeesSection    data={data} onRefresh={refresh} />,
     documents:    <DocumentsSection    data={data} onRefresh={refresh} />,
     compliance:   <ComplianceSection   data={data} onRefresh={refresh} />,
@@ -151,6 +168,7 @@ export default function App() {
     timeline:     <TimelineSection     data={data} />,
     construction: <ConstructionSection data={data} />,
     risks:        <RisksSection        data={data} onRefresh={refresh} />,
+    trackers:     <CustomTrackersSection data={data} currentUser={currentUser} onRefresh={refresh} />,
   };
 
   return (
