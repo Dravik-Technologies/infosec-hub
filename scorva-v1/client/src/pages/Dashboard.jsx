@@ -51,6 +51,8 @@ const MODULES = [
   { label: 'Controls',      desc: 'NIST 800-53 control library',       to: '/controls',     icon: BookOpen,      color: 'violet' },
   { label: 'POAM',          desc: 'Plan of action & milestones',       to: '/poam',         icon: AlertTriangle, color: 'orange' },
   { label: 'Tasks',         desc: 'Findings & remediation tasks',      to: '/tasks',        icon: CheckSquare,   color: 'emerald' },
+  { label: 'Security Events', desc: 'Operational security event queue', to: '/monitoring/events', icon: Zap,       color: 'rose' },
+  { label: 'Self-Inspection', desc: 'DCSA checklist library & campaigns', to: '/monitoring/self-inspection', icon: ClipboardList, color: 'purple' },
   { label: 'Users',         desc: 'Access management',                 to: '/users',        icon: Users,         color: 'blue' },
   { label: 'Devices',       desc: 'Endpoint compliance inventory',     to: '/workstations', icon: Monitor,       color: 'teal' },
   { label: 'YubiKeys',      desc: 'Hardware token management',         to: '/yubikeys',     icon: Key,           color: 'yellow' },
@@ -60,6 +62,7 @@ const MODULES = [
   { label: 'Audit Log',     desc: 'System-wide audit trail',           to: '/audit',        icon: ClipboardList, color: 'slate' },
   { label: 'Notifications', desc: 'Alerts & system messages',          to: '/notifications',icon: Bell,          color: 'rose' },
   { label: 'Sites',         desc: 'Site & location management',        to: '/sites',        icon: Building2,     color: 'sky' },
+  { label: 'Program View',  desc: 'Cross-site executive analytics',    to: '/admin/program-view', icon: TrendingUp, color: 'blue' },
 ];
 
 const COLOR_MAP = {

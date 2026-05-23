@@ -5,7 +5,7 @@ const bcrypt  = require('bcryptjs');
 const crypto  = require('crypto');
 const { ConfidentialClientApplication } = require('@azure/msal-node');
 const { db }  = require('../../../packages/db/src/index');
-const { getAllowedApps, hasAppAccess } = require('../../../packages/db/src/appAccess');
+const { getAllowedApps, hasAppAccess, getScorvaRole } = require('../../../packages/db/src/appAccess');
 const router  = express.Router();
 
 const ENTRA_SCOPES = ['openid', 'profile', 'email'];
@@ -56,18 +56,19 @@ function redirectUri() {
 function buildSessionUser(found, extras) {
   const extra = extras || {};
   return {
-    id:       found.id,
-    name:     found.name,
-    username: found.username,
-    email:    found.email,
-    role:     found.role,
-    siteId:   found.siteId,
-    siteIds:  found.siteIds,
-    site:     found.siteId,
-    initials: found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
+    id:          found.id,
+    name:        found.name,
+    username:    found.username,
+    email:       found.email,
+    role:        found.role,
+    siteId:      found.siteId,
+    siteIds:     Array.isArray(found.siteIds) ? found.siteIds : [],
+    site:        found.siteId,
+    scorvaRole:  getScorvaRole(found) || null,
+    initials:    found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
     allowedApps: getAllowedApps(found),
-    authProvider: extra.authProvider || 'local',
-    entraOid: extra.entraOid || null,
+    authProvider:  extra.authProvider || 'local',
+    entraOid:      extra.entraOid || null,
     entraTenantId: extra.entraTenantId || null,
   };
 }

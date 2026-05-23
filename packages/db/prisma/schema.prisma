@@ -33,7 +33,8 @@ model Site {
   trackers        Tracker[]
   projectSystems  ProjectSystem[]
   securityEvents  SecurityEvent[]
-  evidenceArtifacts EvidenceArtifact[]
+  evidenceArtifacts    EvidenceArtifact[]
+  inspectionCampaigns  InspectionCampaign[]
 
   @@map("sites")
 }
@@ -345,6 +346,126 @@ model EvidenceArtifact {
   @@index([resourceType, resourceId])
   @@index([siteId])
   @@map("evidence_artifacts")
+}
+
+model ChecklistTemplate {
+  id          String             @id @default(cuid())
+  name        String
+  source      String?
+  version     String?
+  description String?
+  isActive    Boolean            @default(true) @map("is_active")
+  sections    ChecklistSection[]
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  @@map("checklist_templates")
+}
+
+model ChecklistSection {
+  id          String            @id @default(cuid())
+  templateId  String            @map("template_id")
+  template    ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  sectionCode String?           @map("section_code")
+  title       String
+  description String?
+  sortOrder   Int               @default(0) @map("sort_order")
+  items       ChecklistItem[]
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  @@index([templateId])
+  @@map("checklist_sections")
+}
+
+model ChecklistItem {
+  id                String           @id @default(cuid())
+  sectionId         String           @map("section_id")
+  section           ChecklistSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  itemCode          String?          @map("item_code")
+  nispomRef         String?          @map("nispom_ref")
+  questionText      String           @map("question_text")
+  applicabilityNote String?          @map("applicability_note")
+  riskCategory      String?          @map("risk_category")
+  evidenceRequired  Boolean          @default(false) @map("evidence_required")
+  controlRef        String?          @map("control_ref")
+  sortOrder         Int              @default(0) @map("sort_order")
+  createdAt         DateTime         @default(now()) @map("created_at")
+
+  @@index([sectionId])
+  @@map("checklist_items")
+}
+
+// ─── Inspection Campaign models ───────────────────────────────────────────────
+
+model InspectionCampaign {
+  id              String                      @id @default(cuid())
+  siteId          String                      @map("site_id")
+  site            Site                        @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  templateId      String?                     @map("template_id")
+  templateName    String                      @map("template_name")
+  templateVersion String?                     @map("template_version")
+  name            String
+  status          String                      @default("Draft")
+  startDate       DateTime?                   @map("start_date")
+  targetDate      DateTime?                   @map("target_date")
+  completedAt     DateTime?                   @map("completed_at")
+  ownerName       String?                     @map("owner_name")
+  notes           String?
+  createdBy       String                      @map("created_by")
+  sections        InspectionCampaignSection[]
+  items           InspectionCampaignItem[]
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
+
+  @@index([siteId])
+  @@map("inspection_campaigns")
+}
+
+model InspectionCampaignSection {
+  id                String                   @id @default(cuid())
+  campaignId        String                   @map("campaign_id")
+  campaign          InspectionCampaign       @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  templateSectionId String?                  @map("template_section_id")
+  sectionCode       String?                  @map("section_code")
+  title             String
+  sortOrder         Int                      @default(0) @map("sort_order")
+  status            String                   @default("Not Started")
+  completedAt       DateTime?                @map("completed_at")
+  items             InspectionCampaignItem[]
+  createdAt         DateTime                 @default(now()) @map("created_at")
+  updatedAt         DateTime                 @updatedAt @map("updated_at")
+
+  @@index([campaignId])
+  @@map("inspection_campaign_sections")
+}
+
+model InspectionCampaignItem {
+  id                String                    @id @default(cuid())
+  campaignId        String                    @map("campaign_id")
+  campaign          InspectionCampaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  sectionId         String                    @map("section_id")
+  section           InspectionCampaignSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  templateItemId    String?                   @map("template_item_id")
+  itemCode          String?                   @map("item_code")
+  nispomRef         String?                   @map("nispom_ref")
+  questionText      String                    @map("question_text")
+  applicabilityNote String?                   @map("applicability_note")
+  riskCategory      String?                   @map("risk_category")
+  evidenceRequired  Boolean                   @default(false) @map("evidence_required")
+  controlRef        String?                   @map("control_ref")
+  sortOrder         Int                       @default(0) @map("sort_order")
+  status            String                    @default("Not Started")
+  workNotes         String?                   @map("work_notes")
+  updatedBy         String?                   @map("updated_by")
+  statusUpdatedAt   DateTime?                 @map("status_updated_at")
+  taskId            String?                   @map("task_id")
+  poamId            String?                   @map("poam_id")
+  createdAt         DateTime                  @default(now()) @map("created_at")
+  updatedAt         DateTime                  @updatedAt @map("updated_at")
+
+  @@index([campaignId])
+  @@index([sectionId])
+  @@map("inspection_campaign_items")
 }
 
 // ─── MASH models ───────────────────────────────────────────────────────────────

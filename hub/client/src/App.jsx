@@ -3,9 +3,10 @@ import { useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { Shield } from 'lucide-react';
 
-import Landing from './pages/Landing';
-import Login   from './pages/Login';
-import Portal  from './pages/Portal';
+import Landing     from './pages/Landing';
+import Login       from './pages/Login';
+import Portal      from './pages/Portal';
+import AccessAdmin from './pages/AccessAdmin';
 import RequestAccess from './pages/RequestAccess';
 
 function LoadingScreen() {
@@ -26,6 +27,15 @@ function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!user)   return <Navigate to="/login" replace />;
+  return children;
+}
+
+function AdminRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return <LoadingScreen />;
+  if (!user)   return <Navigate to="/login" replace />;
+  const canAdmin = user.role === 'Corporate Admin' || user.role === 'Access Admin';
+  if (!canAdmin) return <Navigate to="/portal" replace />;
   return children;
 }
 
@@ -51,6 +61,9 @@ export default function App() {
         {/* Protected */}
         <Route path="/portal" element={
           <ProtectedRoute><Portal /></ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <AdminRoute><AccessAdmin /></AdminRoute>
         } />
 
         {/* Fallback */}

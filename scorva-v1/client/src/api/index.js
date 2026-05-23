@@ -37,6 +37,7 @@ const get  = url        => http.get(url).then(r => r.data);
 const post = (url, d)   => http.post(url, d).then(r => r.data);
 const patch = (url, d)  => http.patch(url, d).then(r => r.data);
 const del  = url        => http.delete(url).then(r => r.data);
+const postWithConfig = (url, d, config = {}) => http.post(url, d, config).then(r => r.data);
 const postForm = (url, formData) => http.post(url, formData, {
   headers: { 'Content-Type': 'multipart/form-data' },
 }).then(r => r.data);
@@ -149,6 +150,22 @@ export const api = {
       filename: extractFilename(r, 'evidence.bin'),
     })),
     remove: id => del(`/api/evidence/${id}`),
+  },
+  checklist: {
+    templates:     () => get('/api/checklist/templates'),
+    template:      id => get(`/api/checklist/templates/${id}`),
+    items:         (p = {}) => http.get('/api/checklist/items', { params: p }).then(r => r.data),
+  },
+  campaigns: {
+    list:           (p = {}) => http.get('/api/checklist/campaigns', { params: p }).then(r => r.data),
+    create:         d        => postWithConfig('/api/checklist/campaigns', d, { timeout: 60000 }),
+    get:            id       => get(`/api/checklist/campaigns/${id}`),
+    update:         (id, d)  => patch(`/api/checklist/campaigns/${id}`, d),
+    items:          (p = {}) => http.get('/api/checklist/campaign-items', { params: p }).then(r => r.data),
+    updateItem:     (id, d)  => patch(`/api/checklist/campaign-items/${id}`, d),
+    updateSection:  (id, d)  => patch(`/api/checklist/campaign-sections/${id}`, d),
+    createItemTask: (id)     => post(`/api/checklist/campaign-items/${id}/task`, {}),
+    createItemPoam: (id)     => post(`/api/checklist/campaign-items/${id}/poam`, {}),
   },
   // ISSM Program View (cross-site aggregate)
   aggregate: { metrics: () => get('/api/aggregate/metrics') },

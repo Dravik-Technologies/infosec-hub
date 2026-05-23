@@ -2,6 +2,8 @@
 
 const ALL_APPS = ['hub', 'scorva', 'crater', 'mash', 'lava'];
 
+const SCORVA_ROLES = ['Viewer', 'ISSO', 'ISSM', 'Site Admin', 'Corporate Admin'];
+
 function normalizeApps(input) {
   const list = Array.isArray(input) ? input : [];
   return [...new Set(list.map(v => String(v || '').trim().toLowerCase()).filter(Boolean))];
@@ -60,11 +62,27 @@ function ensureAppAccess(dod8140, appId) {
   return mergeAllowedApps(dod8140, next);
 }
 
+function getScorvaRole(user) {
+  const { appFactory } = readAppFactoryMeta(user);
+  return appFactory.scorvaRole || null;
+}
+
+function mergeAppFactory(dod8140, patch) {
+  const base = (dod8140 && typeof dod8140 === 'object' && !Array.isArray(dod8140))
+    ? { ...dod8140 } : {};
+  const appFactory = (base.appFactory && typeof base.appFactory === 'object' && !Array.isArray(base.appFactory))
+    ? { ...base.appFactory } : {};
+  return { ...base, appFactory: { ...appFactory, ...patch } };
+}
+
 module.exports = {
   ALL_APPS,
+  SCORVA_ROLES,
   getAllowedApps,
   hasAppAccess,
   mergeAllowedApps,
+  mergeAppFactory,
   ensureAppAccess,
   normalizeApps,
+  getScorvaRole,
 };

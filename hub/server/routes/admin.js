@@ -3,13 +3,21 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../../../packages/db/src/index');
-const { ALL_APPS, getAllowedApps, mergeAllowedApps, normalizeApps } = require('../../../packages/db/src/appAccess');
+const { ALL_APPS, getAllowedApps, mergeAllowedApps, mergeAppFactory, normalizeApps, getScorvaRole } = require('../../../packages/db/src/appAccess');
 const { listAccessRequests, updateAccessRequest } = require('../../../packages/db/src/accessRequests');
 
 const router = express.Router();
 
+function corpAdminOnly(req, res, next) {
+  if (req.session?.user?.role !== 'Corporate Admin') {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  next();
+}
+
 function adminOnly(req, res, next) {
-  if ((req.session && req.session.user && req.session.user.role) !== 'Corporate Admin') {
+  const role = req.session?.user?.role;
+  if (role !== 'Corporate Admin' && role !== 'Access Admin') {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
@@ -17,15 +25,16 @@ function adminOnly(req, res, next) {
 
 function pickUser(row) {
   return {
-    id: row.id,
-    name: row.name,
-    title: row.title || '',
-    username: row.username,
-    email: row.email,
-    role: row.role,
-    status: row.status,
-    siteId: row.siteId || null,
-    siteIds: Array.isArray(row.siteIds) ? row.siteIds : [],
+    id:          row.id,
+    name:        row.name,
+    title:       row.title || '',
+    username:    row.username,
+    email:       row.email,
+    role:        row.role,
+    status:      row.status,
+    siteId:      row.siteId || null,
+    siteIds:     Array.isArray(row.siteIds) ? row.siteIds : [],
+    scorvaRole:  getScorvaRole(row) || null,
     allowedApps: getAllowedApps(row),
   };
 }
@@ -85,7 +94,7 @@ router.get('/access-requests', adminOnly, async (_req, res) => {
   }
 });
 
-router.post('/users', adminOnly, async (req, res) => {
+router.post('/users', corpAdminOnly, async (req, res) => {
   try {
     const { id, name, title, username, email, password, role, status, siteId, siteIds } = req.body || {};
     if (!id || !name || !username || !email || !password) {
@@ -107,7 +116,10 @@ router.post('/users', adminOnly, async (req, res) => {
         status: status || 'Active',
         siteId: mergedSiteIds[0] || null,
         siteIds: mergedSiteIds,
-        dod8140: mergeAllowedApps(null, normalizeApps(req.body.allowedApps || ['hub'])),
+        dod8140: mergeAppFactory(null, {
+          allowedApps: normalizeApps(req.body.allowedApps || ['hub']),
+          scorvaRole:  req.body.scorvaRole || null,
+        }),
       },
     });
     const fulfilled = await fulfillApprovedPendingRequests(doc, req.session.user.username);
@@ -134,17 +146,32 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
       req.body.siteId,
     ].filter(Boolean).map(String))];
 
-    if ('name' in req.body) data.name = req.body.name;
-    if ('title' in req.body) data.title = req.body.title || null;
-    if ('role' in req.body) data.role = req.body.role || current.role;
+    if ('name'   in req.body) data.name  = req.body.name;
+    if ('title'  in req.body) data.title = req.body.title || null;
+    if ('role'   in req.body) {
+      if (req.session?.user?.role !== 'Corporate Admin') {
+        return res.status(403).json({ error: 'Only Corporate Admin can change user roles' });
+      }
+      data.role = req.body.role || current.role;
+    }
     if ('status' in req.body) data.status = req.body.status || current.status;
     if ('siteId' in req.body || 'siteIds' in req.body) {
-      data.siteId = nextSiteIds[0] || null;
+      data.siteId  = nextSiteIds[0] || null;
       data.siteIds = nextSiteIds;
     }
+
+    // Merge all appFactory fields in one pass to avoid clobbering each other
+    const factoryPatch = {};
     if (Array.isArray(req.body.allowedApps)) {
-      data.dod8140 = mergeAllowedApps(current.dod8140, req.body.allowedApps);
+      factoryPatch.allowedApps = normalizeApps(req.body.allowedApps);
     }
+    if ('scorvaRole' in req.body) {
+      factoryPatch.scorvaRole = req.body.scorvaRole || null;
+    }
+    if (Object.keys(factoryPatch).length > 0) {
+      data.dod8140 = mergeAppFactory(current.dod8140, factoryPatch);
+    }
+
     if (req.body.password) {
       data.passwordHash = await bcrypt.hash(req.body.password, 12);
     }

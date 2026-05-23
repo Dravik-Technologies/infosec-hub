@@ -121,8 +121,8 @@ const APPS = [
   },
   {
     label: 'Monitoring',
-    sub: 'ConMon · Tasks · Trackers',
-    desc: 'Continuous monitoring tasks, remediation tracking, and custom compliance boards.',
+    sub: 'ConMon · Tasks · Trackers · Events · Self-Inspection',
+    desc: 'Continuous monitoring, remediation tracking, security events, and DCSA self-inspection campaigns.',
     to: '/monitoring',
     icon: Activity,
     color: 'cyan',
@@ -137,8 +137,8 @@ const APPS = [
   },
   {
     label: 'Administration',
-    sub: 'Users · Sites · Documents · Audit',
-    desc: 'User accounts, site management, official documents & records, audit log, and notifications.',
+    sub: 'Users · Sites · Documents · Audit · Notifications · Program View',
+    desc: 'Administrative controls, auditability, notifications, and leadership-level cross-site oversight.',
     to: '/admin',
     icon: Users,
     color: 'blue',

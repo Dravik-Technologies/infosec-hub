@@ -18,6 +18,18 @@ const RESOURCE_MAP = {
   conmon: { model: 'conMon', label: 'ConMon' },
   poam: { model: 'poam', label: 'POAM' },
   tracker: { model: 'tracker', label: 'Tracker' },
+  inspectioncampaignitem: {
+    model: 'inspectionCampaignItem',
+    label: 'Inspection Campaign Item',
+    load: async (id) => {
+      const item = await db.inspectionCampaignItem.findUnique({
+        where: { id },
+        include: { campaign: { select: { siteId: true } } },
+      });
+      if (!item) return null;
+      return { ...item, siteId: item.campaign?.siteId || null };
+    },
+  },
 };
 
 function actor(req) {
@@ -32,6 +44,7 @@ function normalizeResourceType(value) {
 async function loadResource(resourceType, resourceId) {
   const spec = RESOURCE_MAP[resourceType];
   if (!spec || !resourceId) return null;
+  if (spec.load) return spec.load(resourceId);
   const model = db[spec.model];
   if (!model?.findUnique) return null;
   return model.findUnique({ where: { id: resourceId } });

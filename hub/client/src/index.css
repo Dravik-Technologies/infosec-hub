@@ -86,4 +86,77 @@
       linear-gradient(90deg, rgb(var(--scorva-accent) / 0.04) 1px, transparent 1px);
     background-size: 40px 40px;
   }
+
+  .cyber-grid-dense {
+    background-image:
+      linear-gradient(rgb(var(--scorva-accent) / 0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(var(--scorva-accent) / 0.06) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .scanlines {
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent 0px,
+      transparent 3px,
+      rgb(var(--scorva-accent) / 0.018) 3px,
+      rgb(var(--scorva-accent) / 0.018) 4px
+    );
+  }
+
+  .glass {
+    background: rgb(var(--scorva-surface) / 0.55);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+  }
+
+  .glow-border {
+    box-shadow:
+      0 0 0 1px rgb(var(--scorva-accent) / 0.25),
+      0 0 20px rgb(var(--scorva-accent) / 0.06),
+      inset 0 0 20px rgb(var(--scorva-accent) / 0.02);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 24px rgb(var(--scorva-accent) / 0.45);
+  }
+
+  @keyframes pulse-ring {
+    0%   { box-shadow: 0 0 0 0    rgb(var(--scorva-accent) / 0.5); }
+    70%  { box-shadow: 0 0 0 14px rgb(var(--scorva-accent) / 0);   }
+    100% { box-shadow: 0 0 0 0    rgb(var(--scorva-accent) / 0);   }
+  }
+  .animate-pulse-ring {
+    animation: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  @keyframes scan-line {
+    0%   { transform: translateY(-100%); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateY(100vh); opacity: 0; }
+  }
+  .animate-scan {
+    animation: scan-line 8s linear infinite;
+  }
+
+  .glow-border-strong {
+    box-shadow:
+      0 0 0 1px rgb(var(--scorva-accent) / 0.4),
+      0 0 32px rgb(var(--scorva-accent) / 0.14),
+      0 0 64px rgb(var(--scorva-accent) / 0.06),
+      inset 0 0 24px rgb(var(--scorva-accent) / 0.03);
+  }
+
+  .glass-dark {
+    background: rgb(var(--scorva-bg) / 0.8);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  .text-glow-strong {
+    text-shadow:
+      0 0 20px rgb(var(--scorva-accent) / 0.7),
+      0 0 40px rgb(var(--scorva-accent) / 0.3);
+  }
 }
