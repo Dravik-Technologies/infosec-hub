@@ -4,11 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import {
   Shield, ShieldCheck, FileText, BarChart3, Flame,
-  Sun, Moon, LogOut, ArrowRight, Settings2,
+  Sun, Moon, LogOut, ArrowRight, Settings2, Command,
   Search, Tag, ChevronRight, Loader2, MapPin,
 } from 'lucide-react';
 
-const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame };
+const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame, Command };
 
 const APPS = [
   {
@@ -27,10 +27,10 @@ const APPS = [
   },
   {
     id: 'mash', name: 'MASH', tagline: 'MTSI Advanced Sentinel Hub',
-    desc: 'DoD security compliance dashboard with live threat intelligence feeds, audit log analysis, and posture monitoring.',
+    desc: 'Security Managers Workspace shell for the upcoming facility, personnel, and activities-security rebuild that will feed NEXUS.',
     url: 'http://localhost:8080', ssoPath: '/auth/sso',
-    color: 'gold', icon: 'BarChart3', team: 'Security Operations', status: 'live',
-    tags: ['Dashboard', 'Threat Intel', 'Compliance', 'DoD'],
+    color: 'gold', icon: 'BarChart3', team: 'Security Operations', status: 'transition',
+    tags: ['Facility Security', 'Personnel Security', 'Activities Security'],
   },
   {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',
@@ -38,6 +38,13 @@ const APPS = [
     url: 'http://localhost:3002', ssoPath: '/auth/sso',
     color: 'orange', icon: 'Flame', team: 'Network Administration', status: 'live',
     tags: ['SAAR', 'DD Form 2875', 'Access Control', 'Hardware', 'YubiKey'],
+  },
+  {
+    id: 'nexus', name: 'NEXUS', tagline: 'Program Mission Command',
+    desc: 'Executive command surface for program management, program security, and SCORVA-fed IT and cybersecurity rollups.',
+    url: 'http://localhost:8090', ssoPath: '/auth/sso',
+    color: 'cyan', icon: 'Command', team: 'Program Management', status: 'live',
+    tags: ['Real Estate', 'Construction', 'Accreditation', 'Budget', 'Cyber Rollup'],
   },
 ];
 
@@ -73,6 +80,14 @@ const COLOR_MAP = {
     launch:  'bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/20 hover:border-orange-500/50',
     top:     'bg-orange-500',
     glow:    'hover:shadow-[0_4px_32px_rgb(249_115_22/0.12)]',
+  },
+  cyan: {
+    border:  'border-cyan-500/20 hover:border-cyan-500/50',
+    icon:    'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
+    badge:   'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
+    launch:  'bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 hover:border-cyan-500/50',
+    top:     'bg-cyan-500',
+    glow:    'hover:shadow-[0_4px_32px_rgb(6_182_212/0.12)]',
   },
 };
 
@@ -201,9 +216,9 @@ export default function Portal() {
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-scorva-accent/10 border border-scorva-accent/20 text-[10px] font-mono text-scorva-accent">
                     HUB: {user?.role}
                   </span>
-                  {user?.scorvaRole && (
+                  {user?.securityRole && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-500/10 border border-teal-500/20 text-[10px] font-mono text-teal-500 dark:text-teal-400">
-                      SCORVA: {user.scorvaRole}
+                      {user.securityRole}
                     </span>
                   )}
                   {siteLabel && (

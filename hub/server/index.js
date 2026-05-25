@@ -79,14 +79,20 @@ const APPS = [
   },
   {
     id: 'mash', name: 'MASH', tagline: 'MTSI Advanced Sentinel Hub',
-    desc: 'DoD security compliance dashboard with live threat intelligence, audit log analysis, and posture monitoring.',
+    desc: 'Security Managers Workspace shell for the upcoming facility, personnel, and activities-security rebuild that will feed NEXUS.',
     url: process.env.MASH_URL || 'http://localhost:8080', ssoPath: '/auth/sso', color: 'gold', icon: 'BarChart3',
-    team: 'Security Operations', status: 'live', tags: ['Dashboard', 'Threat Intel', 'Compliance', 'DoD'],
+    team: 'Security Operations', status: 'transition', tags: ['Facility Security', 'Personnel Security', 'Activities Security'],
   },
   {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',
     desc: 'Magmatic onboarding portal with digitized DD Form 2875 SAAR workflow, Vulcan approval command, and hardware asset provisioning.',
     url: process.env.LAVA_URL || 'http://localhost:3002', ssoPath: '/auth/sso', color: 'orange', icon: 'Flame',
     team: 'Network Administration', status: 'live', tags: ['SAAR', 'DD Form 2875', 'Access Control', 'Hardware', 'YubiKey'],
+  },
+  {
+    id: 'nexus', name: 'NEXUS', tagline: 'Program Mission Command',
+    desc: 'Executive command surface for program management, non-IT security posture, and SCORVA-fed IT and cybersecurity rollups.',
+    url: process.env.NEXUS_URL || 'http://localhost:8090', ssoPath: '/auth/sso', color: 'cyan', icon: 'Command',
+    team: 'Program Management', status: 'live', tags: ['Real Estate', 'Construction', 'Accreditation', 'Budget', 'Cyber Rollup'],
   },
 ];

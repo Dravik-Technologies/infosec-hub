@@ -1,0 +1,66 @@
+[
+  {
+    "id": "insp-001",
+    "siteId": "site-001",
+    "title": "FY2025 Annual Self-Inspection — Lincolnia HQ",
+    "year": 2025,
+    "status": "In Progress",
+    "startDate": "2025-01-20",
+    "dueDate": "2025-07-20",
+    "completedDate": null,
+    "inspector": "J. Carter",
+    "standard": "DCSA Self-Inspection Handbook",
+    "scope": ["Physical Security", "Personnel Security", "Information Security", "Document Control", "Media Control"],
+    "findings": ["find-001", "find-002"],
+    "evidence": [
+      { "id": "ev-001", "title": "Access Control Audit Log — Q1", "type": "PDF", "uploadedBy": "J. Carter", "date": "2025-03-01" },
+      { "id": "ev-002", "title": "IDS Test Record — Jan 2025", "type": "PDF", "uploadedBy": "J. Carter", "date": "2025-01-25" }
+    ],
+    "progress": 62,
+    "kmaBriefed": false,
+    "reportPackage": null,
+    "notes": "Physical security and information security sections complete. Personnel and document control in progress."
+  },
+  {
+    "id": "insp-002",
+    "siteId": "site-002",
+    "title": "FY2025 Annual Self-Inspection — Crystal City SCIFs",
+    "year": 2025,
+    "status": "Planned",
+    "startDate": "2025-08-01",
+    "dueDate": "2026-02-01",
+    "completedDate": null,
+    "inspector": "M. Torres",
+    "standard": "DCSA Self-Inspection Handbook",
+    "scope": ["Physical Security", "Personnel Security", "Information Security", "Document Control", "Media Control"],
+    "findings": ["find-003"],
+    "evidence": [],
+    "progress": 0,
+    "kmaBriefed": false,
+    "reportPackage": null,
+    "notes": "Cannot begin until reaccreditation package is submitted (June 2025)."
+  },
+  {
+    "id": "insp-003",
+    "siteId": "site-001",
+    "title": "FY2024 Annual Self-Inspection — Lincolnia HQ (Completed)",
+    "year": 2024,
+    "status": "Completed",
+    "startDate": "2024-01-15",
+    "dueDate": "2024-07-15",
+    "completedDate": "2024-06-28",
+    "inspector": "J. Carter",
+    "standard": "DCSA Self-Inspection Handbook",
+    "scope": ["Physical Security", "Personnel Security", "Information Security", "Document Control", "Media Control"],
+    "findings": ["find-004"],
+    "evidence": [
+      { "id": "ev-010", "title": "FY2024 Self-Inspection Final Report", "type": "PDF", "uploadedBy": "J. Carter", "date": "2024-06-28" },
+      { "id": "ev-011", "title": "KMP Briefing Slides — June 2024", "type": "PPTX", "uploadedBy": "J. Carter", "date": "2024-06-25" }
+    ],
+    "progress": 100,
+    "kmaBriefed": true,
+    "kmaBriefDate": "2024-06-25",
+    "reportPackage": "FY2024-SI-HQ-FINAL.pdf",
+    "notes": "Completed on schedule. One finding (training gap) remediated by August 2024."
+  }
+]

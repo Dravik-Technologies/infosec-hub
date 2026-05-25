@@ -1,15 +1,14 @@
 'use strict';
 
 /**
- * siteScope middleware
+ * @deprecated siteScope reads from req.session and does not support the
+ * canSeeAllSites flag or multi-site users. It is retained only for any
+ * remaining legacy session-auth routes that have not yet migrated to JWT.
  *
- * Sets req.siteFilter after requireAuth has verified the session:
- *   - Corporate Admin with no site selected  → null  (sees everything)
- *   - Corporate Admin with a site selected   → that site ID
- *   - Any other role                         → user's assigned site (forced)
+ * New routes should use tenantHandler (multi-site) or missionSiteScope
+ * (strict single-site), both of which use req.user populated by requireAuth.
  *
- * Route handlers use req.siteFilter like:
- *   const filter = req.siteFilter ? { site: req.siteFilter } : {};
+ * TODO(Phase B): audit all usages of this middleware and migrate to tenantHandler.
  */
 module.exports = function siteScope(req, res, next) {
   const user = req.session.user;

@@ -1,0 +1,14 @@
+{
+  "app": {
+    "name": "NEXUS",
+    "subtitle": "Program Mission Command",
+    "classification": "CUI//SP-PROGRAM",
+    "version": "1.0.0",
+    "environment": "PRODUCTION",
+    "organization": "MTSI"
+  },
+  "hero": {
+    "title": "Program command across facilities, security, and cyber delivery.",
+    "summary": "NEXUS gives program managers one command surface for infrastructure, accreditation, executive security posture, and SCORVA-fed IT/cyber readiness."
+  }
+}

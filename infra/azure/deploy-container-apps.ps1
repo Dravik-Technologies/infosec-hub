@@ -12,6 +12,7 @@ param(
   [Parameter(Mandatory = $true)][string]$CraterJwtSecret,
   [Parameter(Mandatory = $true)][string]$LavaSessionSecret,
   [Parameter(Mandatory = $true)][string]$MashJwtSecret,
+  [Parameter(Mandatory = $true)][string]$NexusJwtSecret,
   [string]$PostgresHostSuffix = "postgres.database.usgovcloudapi.net",
   [string]$ImageTag = "latest",
   [string]$AppPrefix = "saf",
@@ -117,6 +118,7 @@ $hubName = Get-AppName "hub"
 $scorvaName = Get-AppName "scorva"
 $lavaName = Get-AppName "lava"
 $mashName = Get-AppName "mash"
+$nexusName = Get-AppName "nexus"
 $mashImageRepo = if ([string]::IsNullOrWhiteSpace($MashImageName)) { $mashName } else { $MashImageName }
 $dataFabricName = Get-AppName "data-fabric"
 $craterApiName = Get-AppName "crater-api"
@@ -135,6 +137,7 @@ $hubFqdn = Ensure-ContainerApp `
     SESSION_SECRET = "secretref:hubsess"
     SSO_TOKEN_TTL = "60"
     SCORVA_URL = "http://127.0.0.1:3000"
+    NEXUS_URL = "http://127.0.0.1:8090"
   }
 
 $hubUrl = "https://$hubFqdn"
@@ -170,6 +173,39 @@ $null = Ensure-ContainerApp `
     SESSION_SECRET = "secretref:hubsess"
     SSO_TOKEN_TTL = "60"
     SCORVA_URL = $scorvaUrl
+    NEXUS_URL = "http://127.0.0.1:8090"
+  }
+
+$nexusFqdn = Ensure-ContainerApp `
+  -Name $nexusName `
+  -Image "$AcrLoginServer/nexus:$ImageTag" `
+  -TargetPort 8090 `
+  -Ingress "external" `
+  -Secrets @{ dburl = $databaseUrl; nxjwt = $NexusJwtSecret } `
+  -EnvVars @{
+    PORT = "8090"
+    NODE_ENV = "production"
+    DATABASE_URL = "secretref:dburl"
+    JWT_SECRET = "secretref:nxjwt"
+    HUB_URL = $hubUrl
+  }
+
+$nexusUrl = "https://$nexusFqdn"
+
+$null = Ensure-ContainerApp `
+  -Name $hubName `
+  -Image "$AcrLoginServer/hub:$ImageTag" `
+  -TargetPort 3010 `
+  -Ingress "external" `
+  -Secrets @{ dburl = $databaseUrl; hubsess = $HubSessionSecret } `
+  -EnvVars @{
+    PORT = "3010"
+    NODE_ENV = "production"
+    DATABASE_URL = "secretref:dburl"
+    SESSION_SECRET = "secretref:hubsess"
+    SSO_TOKEN_TTL = "60"
+    SCORVA_URL = $scorvaUrl
+    NEXUS_URL = $nexusUrl
   }
 
 $craterApiFqdn = Ensure-ContainerApp `
@@ -244,6 +280,7 @@ Write-Host ""
 Write-Host "Deployment complete."
 Write-Host "Hub URL:          $hubUrl"
 Write-Host "SCORVA URL:       $scorvaUrl"
+Write-Host "NEXUS URL:        $nexusUrl"
 Write-Host "Crater API FQDN:  $craterApiFqdn"
 Write-Host "MASH image:       $AcrLoginServer/${mashImageRepo}:$ImageTag"
 Write-Host "Run Hub logs:     az containerapp logs show -n $hubName -g $ResourceGroup --follow"

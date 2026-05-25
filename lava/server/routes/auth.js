@@ -6,6 +6,22 @@ const axios  = require('axios');
 const { db } = require('../db');
 const { hasAppAccess } = require('../../../packages/db/src/appAccess');
 
+function buildSessionUser(localUser, hubUser) {
+  const isCorporateAdmin = localUser.role === 'Corporate Admin';
+  return {
+    id:             localUser.id,
+    name:           localUser.name,
+    username:       localUser.username,
+    email:          localUser.email,
+    role:           localUser.role,
+    securityRole:   (hubUser && hubUser.securityRole) || null,
+    siteId:         localUser.siteId,
+    siteIds:        localUser.siteIds,
+    canSeeAllSites: Boolean(hubUser && hubUser.canSeeAllSites) || isCorporateAdmin,
+    title:          localUser.title || null,
+  };
+}
+
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -20,15 +36,7 @@ router.post('/login', async (req, res) => {
 
     if (user.status !== 'Active') return res.status(403).json({ error: 'Account inactive' });
 
-    req.session.user = {
-      id:      user.id,
-      name:    user.name,
-      username: user.username,
-      email:   user.email,
-      role:    user.role,
-      siteId:  user.siteId,
-      siteIds: user.siteIds,
-    };
+    req.session.user = buildSessionUser(user, null);
 
     res.json({ user: req.session.user });
   } catch (err) {
@@ -66,15 +74,8 @@ router.get('/sso', async (req, res) => {
       return res.redirect('/?error=lava_access_required');
     }
 
-    req.session.user = {
-      id:      localUser.id,
-      name:    localUser.name,
-      username: localUser.username,
-      email:   localUser.email,
-      role:    localUser.role,
-      siteId:  localUser.siteId,
-      siteIds: localUser.siteIds,
-    };
+    // Enrich session with HUB-provided securityRole and canSeeAllSites
+    req.session.user = buildSessionUser(localUser, data.user);
 
     res.redirect('/');
   } catch (err) {

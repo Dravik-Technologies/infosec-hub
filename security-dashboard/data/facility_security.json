@@ -1,0 +1,181 @@
+[
+  {
+    "id": "fac-001",
+    "siteId": "site-001",
+    "name": "Lincolnia HQ",
+    "location": "Alexandria, VA 22312",
+    "facilityType": "SCIF",
+    "fclLevel": "SECRET",
+    "fclStatus": "Active",
+    "fclExpires": "2027-03-15",
+    "fclPackage": "FCL-2024-001",
+    "kmp": [
+      { "name": "James Carter", "role": "FSO", "clearance": "TS/SCI", "phone": "703-555-0101" },
+      { "name": "Andrea Walsh", "role": "AFSO", "clearance": "SECRET", "phone": "703-555-0102" }
+    ],
+    "accreditation": {
+      "type": "SCIF",
+      "standard": "ICD 705",
+      "status": "Active",
+      "accreditingAuthority": "DCSA",
+      "accreditedDate": "2023-09-01",
+      "expires": "2026-09-01",
+      "milestones": [
+        { "id": "m-001", "title": "Annual Self-Inspection Due", "date": "2025-09-01", "status": "upcoming" },
+        { "id": "m-002", "title": "TEMPEST Re-assessment", "date": "2025-06-15", "status": "upcoming" },
+        { "id": "m-003", "title": "Reaccreditation Package Initiation", "date": "2026-03-01", "status": "planned" }
+      ]
+    },
+    "openStorage": {
+      "authorized": true,
+      "maxClassification": "SECRET",
+      "status": "Active",
+      "lastReview": "2025-01-15"
+    },
+    "alarmIDS": {
+      "provider": "Honeywell ProWatch",
+      "systemId": "IDS-HQ-001",
+      "lastTest": "2025-04-10",
+      "nextTest": "2025-07-10",
+      "status": "Operational",
+      "zones": 8,
+      "zonesOnline": 8
+    },
+    "accessControl": {
+      "method": "Badge + PIN",
+      "system": "Lenel OnGuard",
+      "lastAudit": "2025-03-01",
+      "totalActive": 47
+    },
+    "dcsaInspection": {
+      "lastDate": "2023-11-15",
+      "rating": "Satisfactory",
+      "nextExpected": "2026-11-15",
+      "findings": 0
+    },
+    "internalInspection": {
+      "lastDate": "2025-01-20",
+      "nextScheduled": "2025-07-20",
+      "inspector": "J. Carter",
+      "status": "Current"
+    },
+    "construction": {
+      "active": false
+    },
+    "waivers": [],
+    "vulnerabilities": [],
+    "openIssues": [],
+    "complianceScore": 96,
+    "notes": "Primary classified workspace. Hosts programs ALPHA and DELTA."
+  },
+  {
+    "id": "fac-002",
+    "siteId": "site-002",
+    "name": "Crystal City SCIFs",
+    "location": "Arlington, VA 22202",
+    "facilityType": "SAPF",
+    "fclLevel": "TOP SECRET",
+    "fclStatus": "Active",
+    "fclExpires": "2026-08-20",
+    "fclPackage": "FCL-2024-002",
+    "kmp": [
+      { "name": "Maria Torres", "role": "AFSO", "clearance": "TS/SCI", "phone": "703-555-0201" },
+      { "name": "Kevin Lee", "role": "Security Mgr", "clearance": "TS/SCI", "phone": "703-555-0202" }
+    ],
+    "accreditation": {
+      "type": "SAPF",
+      "standard": "DCID 6/9",
+      "status": "Active - Expiring",
+      "accreditingAuthority": "DoD SAPCO",
+      "accreditedDate": "2022-03-15",
+      "expires": "2025-09-15",
+      "milestones": [
+        { "id": "m-010", "title": "Reaccreditation Package Submit", "date": "2025-06-15", "status": "pending" },
+        { "id": "m-011", "title": "Physical Security Survey", "date": "2025-05-30", "status": "upcoming" },
+        { "id": "m-012", "title": "Final Review Board", "date": "2025-08-01", "status": "planned" }
+      ]
+    },
+    "openStorage": {
+      "authorized": true,
+      "maxClassification": "TOP SECRET",
+      "status": "Active",
+      "lastReview": "2025-02-10"
+    },
+    "alarmIDS": {
+      "provider": "Lenel S2",
+      "systemId": "IDS-CC-001",
+      "lastTest": "2025-03-20",
+      "nextTest": "2025-06-20",
+      "status": "Degraded",
+      "zones": 6,
+      "zonesOnline": 5,
+      "notes": "Zone 3 motion sensor offline — work order submitted 2025-04-28"
+    },
+    "accessControl": {
+      "method": "Biometric + Badge",
+      "system": "Lenel OnGuard",
+      "lastAudit": "2025-02-15",
+      "totalActive": 22
+    },
+    "dcsaInspection": {
+      "lastDate": "2024-06-10",
+      "rating": "Satisfactory with Comments",
+      "nextExpected": "2027-06-10",
+      "findings": 2
+    },
+    "internalInspection": {
+      "lastDate": "2025-02-01",
+      "nextScheduled": "2025-08-01",
+      "inspector": "M. Torres",
+      "status": "Current"
+    },
+    "construction": {
+      "active": true,
+      "project": "Room 4B Expansion",
+      "phase": "Pre-construction security review",
+      "ssoRequired": true,
+      "approvalStatus": "Pending SSO concurrence"
+    },
+    "waivers": [
+      {
+        "id": "WAV-001",
+        "type": "Physical Security",
+        "description": "Perimeter wall height variance — 7.5ft vs 8ft standard",
+        "approvedBy": "DCSA Regional Office",
+        "approvedDate": "2024-12-01",
+        "expires": "2025-12-31",
+        "status": "Active"
+      }
+    ],
+    "vulnerabilities": [
+      {
+        "id": "VUL-001",
+        "title": "Zone 3 IDS gap during sensor replacement",
+        "severity": "High",
+        "openDate": "2025-04-28",
+        "mitigation": "Manual guard posted during off-hours, work order WO-2025-0412 submitted",
+        "status": "Mitigated — Pending Repair"
+      }
+    ],
+    "openIssues": [
+      {
+        "id": "ISS-001",
+        "title": "Zone 3 motion sensor replacement",
+        "severity": "High",
+        "owner": "M. Torres",
+        "dueDate": "2025-06-01",
+        "status": "In Progress"
+      },
+      {
+        "id": "ISS-002",
+        "title": "FCL renewal package — initiate 90 days out",
+        "severity": "Medium",
+        "owner": "K. Lee",
+        "dueDate": "2026-05-20",
+        "status": "Planned"
+      }
+    ],
+    "complianceScore": 78,
+    "notes": "Reaccreditation package due June 2025. Expiration risk if delayed."
+  }
+]

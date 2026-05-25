@@ -9,6 +9,7 @@ const APPS = [
   { id: 'crater', label: 'CRATER' },
   { id: 'mash', label: 'MASH' },
   { id: 'lava', label: 'LAVA' },
+  { id: 'nexus', label: 'NEXUS' },
 ];
 
 export default function RequestAccess() {

@@ -8,7 +8,9 @@ function normalizeSites(...values) {
 module.exports = function tenantHandler(req, res, next) {
   const role = req.user?.role;
   const selectedSite = (req.headers['x-selected-site'] || '').toString().trim() || null;
-  const isCorporateAdmin = role === 'Corporate Admin';
+  // Honor canSeeAllSites from HUB token (Corporate Security Admin + MTSI-ALX)
+  // and fall back to role check for legacy tokens that predate the flag
+  const isCorporateAdmin = Boolean(req.user?.canSeeAllSites) || role === 'Corporate Admin';
 
   const tokenSiteIds = normalizeSites(req.user?.siteIds, req.user?.siteIDs, req.user?.siteId, req.user?.siteID);
   if (!isCorporateAdmin && !tokenSiteIds.length) {

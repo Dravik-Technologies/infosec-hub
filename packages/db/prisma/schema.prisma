@@ -35,6 +35,13 @@ model Site {
   securityEvents  SecurityEvent[]
   evidenceArtifacts    EvidenceArtifact[]
   inspectionCampaigns  InspectionCampaign[]
+  mashFacilities      MashFacilitySecurity[]
+  mashPersonnel       MashPersonnelSecurity[]
+  mashActivities      MashActivitiesSecurity[]
+  mashDocuments       MashDocumentControl[]
+  mashMedia           MashMediaControl[]
+  mashSelfInspections MashSelfInspectionOp[]
+  mashFindings        MashSecurityFinding[]
 
   @@map("sites")
 }
@@ -82,6 +89,7 @@ model Control {
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("controls")
 }
 
@@ -107,6 +115,7 @@ model Task {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("tasks")
 }
 
@@ -143,6 +152,7 @@ model Poam {
   createdAt           DateTime @default(now()) @map("created_at")
   updatedAt           DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("poams")
 }
 
@@ -161,6 +171,7 @@ model AtoPackage {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("ato_packages")
 }
 
@@ -208,6 +219,7 @@ model Workstation {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("workstations")
 }
 
@@ -225,6 +237,7 @@ model YubiKey {
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("yubi_keys")
 }
 
@@ -242,6 +255,7 @@ model License {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("licenses")
 }
 
@@ -261,6 +275,7 @@ model Agreement {
   createdAt  DateTime @default(now()) @map("created_at")
   updatedAt  DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("agreements")
 }
 
@@ -273,6 +288,7 @@ model AuditLog {
   siteId    String   @map("site_id")
   timestamp DateTime @default(now())
 
+  @@index([siteId])
   @@map("audit_logs")
 }
 
@@ -286,6 +302,7 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@index([siteId])
   @@map("notifications")
 }
 
@@ -302,6 +319,7 @@ model SecurityEvent {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("security_events")
 }
 
@@ -325,6 +343,7 @@ model Tracker {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
+  @@index([siteId])
   @@map("trackers")
 }
 
@@ -782,4 +801,220 @@ model DataFabricSession {
 
   @@index([expiresAt])
   @@map("data_fabric_sessions")
+}
+
+// ─── MASH relational operational domains (Phase C) ────────────────────────────
+
+model MashFacilitySecurity {
+  id                 String   @id @default(cuid())
+  siteId             String   @map("site_id")
+  site               Site     @relation(fields: [siteId], references: [id])
+  name               String
+  location           String?
+  facilityType       String?  @map("facility_type")
+  fclLevel           String?  @map("fcl_level")
+  fclStatus          String?  @map("fcl_status")
+  fclExpires         String?  @map("fcl_expires")
+  fclPackage         String?  @map("fcl_package")
+  complianceScore    Int?     @map("compliance_score")
+  status             String   @default("Active")
+  notes              String?
+  kmp                Json?    @default("[]")
+  accreditation      Json?    @default("{}")
+  openStorage        Json?    @default("{}") @map("open_storage")
+  alarmIDS           Json?    @default("{}") @map("alarm_ids")
+  accessControl      Json?    @default("{}") @map("access_control")
+  dcsaInspection     Json?    @default("{}") @map("dcsa_inspection")
+  internalInspection Json?    @default("{}") @map("internal_inspection")
+  construction       Json?    @default("{}")
+  waivers            Json?    @default("[]")
+  vulnerabilities    Json?    @default("[]")
+  openIssues         Json?    @default("[]") @map("open_issues")
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  createdBy          String?  @map("created_by")
+  updatedBy          String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_facility_security")
+}
+
+model MashPersonnelSecurity {
+  id                  String   @id @default(cuid())
+  siteId              String   @map("site_id")
+  site                Site     @relation(fields: [siteId], references: [id])
+  username            String?
+  name                String
+  position            String?
+  org                 String?
+  clearanceLevel      String?  @map("clearance_level")
+  clearanceStatus     String?  @map("clearance_status")
+  clearanceGrantDate  String?  @map("clearance_grant_date")
+  clearancePRD        String?  @map("clearance_prd")
+  indocDate           String?  @map("indoc_date")
+  debriefDate         String?  @map("debrief_date")
+  cvStatus            String?  @map("cv_status")
+  nbisEappStatus      String?  @map("nbis_eapp_status")
+  notes               String?
+  caveatAccess        Json?    @default("[]") @map("caveat_access")
+  formalAccess        Json?    @default("[]") @map("formal_access")
+  training            Json?    @default("{}")
+  visitAccessRequests Json?    @default("[]") @map("visit_access_requests")
+  adverseInfo         Json?    @default("[]") @map("adverse_info")
+  foreignContacts     Json?    @default("[]") @map("foreign_contacts")
+  foreignTravel       Json?    @default("[]") @map("foreign_travel")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+  createdBy           String?  @map("created_by")
+  updatedBy           String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_personnel_security")
+}
+
+model MashActivitiesSecurity {
+  id                String   @id @default(cuid())
+  siteId            String   @map("site_id")
+  site              Site     @relation(fields: [siteId], references: [id])
+  category          String?
+  title             String
+  date              String?
+  time              String?
+  location          String?
+  classification    String?
+  status            String   @default("Planned")
+  owner             String?
+  visitorCount      Int?     @map("visitor_count")
+  clearanceVerified Boolean? @map("clearance_verified")
+  briefingRequired  Boolean? @map("briefing_required")
+  notes             String?
+  participants      Json?    @default("[]")
+  evidenceLinks     Json?    @default("[]") @map("evidence_links")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  createdBy         String?  @map("created_by")
+  updatedBy         String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_activities_security")
+}
+
+model MashDocumentControl {
+  id                   String   @id @default(cuid())
+  siteId               String   @map("site_id")
+  site                 Site     @relation(fields: [siteId], references: [id])
+  docNumber            String?  @map("doc_number")
+  title                String
+  classification       String?
+  program              String?
+  category             String?
+  copyCount            Int?     @map("copy_count")
+  accountable          Boolean  @default(false)
+  custodian            String?
+  currentLocation      String?  @map("current_location")
+  version              String?
+  date                 String?
+  lastInventory        String?  @map("last_inventory")
+  nextInventory        String?  @map("next_inventory")
+  reproductionControls String?  @map("reproduction_controls")
+  status               String   @default("Active")
+  notes                String?
+  receipts             Json?    @default("[]")
+  dispatches           Json?    @default("[]")
+  destructions         Json?    @default("[]")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+  createdBy            String?  @map("created_by")
+  updatedBy            String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_document_control")
+}
+
+model MashMediaControl {
+  id           String   @id @default(cuid())
+  siteId       String   @map("site_id")
+  site         Site     @relation(fields: [siteId], references: [id])
+  mediaId      String?  @map("media_id")
+  type         String?
+  label        String?
+  classification String?
+  program      String?
+  capacityGB   Int?     @map("capacity_gb")
+  make         String?
+  model        String?
+  serialNumber String?  @map("serial_number")
+  status       String   @default("Unassigned")
+  assignedTo   String?  @map("assigned_to")
+  assignedDate String?  @map("assigned_date")
+  returnDue    String?  @map("return_due")
+  system       String?
+  lastScan     String?  @map("last_scan")
+  lastApproval String?  @map("last_approval")
+  approvedBy   String?  @map("approved_by")
+  notes        String?
+  flags        Json?    @default("[]")
+  history      Json?    @default("[]")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  createdBy    String?  @map("created_by")
+  updatedBy    String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_media_control")
+}
+
+model MashSelfInspectionOp {
+  id            String   @id @default(cuid())
+  siteId        String   @map("site_id")
+  site          Site     @relation(fields: [siteId], references: [id])
+  title         String
+  year          Int?
+  status        String   @default("Planned")
+  startDate     String?  @map("start_date")
+  dueDate       String?  @map("due_date")
+  completedDate String?  @map("completed_date")
+  inspector     String?
+  standard      String?
+  progress      Int?     @default(0)
+  kmaBriefed    Boolean? @default(false) @map("kma_briefed")
+  reportPackage String?  @map("report_package")
+  notes         String?
+  scope         Json?    @default("[]")
+  findings      Json?    @default("[]")
+  evidence      Json?    @default("[]")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdBy     String?  @map("created_by")
+  updatedBy     String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_self_inspection_ops")
+}
+
+model MashSecurityFinding {
+  id            String   @id @default(cuid())
+  siteId        String   @map("site_id")
+  site          Site     @relation(fields: [siteId], references: [id])
+  findingNumber String?  @map("finding_number")
+  area          String?
+  requirement   String?
+  finding       String?
+  severity      String   @default("Medium")
+  status        String   @default("Open")
+  owner         String?
+  openDate      String?  @map("open_date")
+  dueDate       String?  @map("due_date")
+  closedDate    String?  @map("closed_date")
+  corrective    String?
+  notes         String?
+  inspectionId  String?  @map("inspection_id")
+  evidence      Json?    @default("[]")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  createdBy     String?  @map("created_by")
+  updatedBy     String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_security_findings")
 }

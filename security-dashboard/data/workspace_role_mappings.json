@@ -1,0 +1,5 @@
+{
+  "jcarter": { "role": "facility_security_mgr", "displayTitle": "Facility Security Officer", "siteIds": ["site-001"] },
+  "mtorres": { "role": "personnel_security_mgr", "displayTitle": "Alternate FSO", "siteIds": ["site-002"] },
+  "admin": { "role": "corporate_security_admin", "displayTitle": "Corporate Security Admin", "siteIds": [] }
+}

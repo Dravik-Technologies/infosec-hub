@@ -4,7 +4,7 @@ const router      = require('express').Router();
 const { db }      = require('../db');
 const requireAuth = require('../middleware/requireAuth');
 const { writeAudit, actor } = require('../audit');
-const { requireVulcan } = require('../authz');
+const { requireVulcan, isSiteAllowed } = require('../authz');
 const { provisionScorvaFromSaar } = require('../../../packages/db/src/scorvaProvisioning');
 
 const DAY_MS = 1000 * 60 * 60 * 24;
@@ -42,6 +42,19 @@ const serializeSaar = (saar) => {
     pendingAgeDays: saar.createdAt ? ageInDays(saar.createdAt) : 0,
   });
 };
+
+// Returns a Prisma `where` clause scoped to the viewer's site access.
+// Corporate Admin / canSeeAllSites users get no site restriction.
+function buildSiteFilter(viewer) {
+  if (!viewer) return null;
+  if (viewer.role === 'Corporate Admin' || viewer.canSeeAllSites) return null;
+
+  const siteIds = Array.isArray(viewer.siteIds) ? viewer.siteIds.filter(Boolean) : [];
+  if (viewer.siteId && !siteIds.includes(viewer.siteId)) siteIds.push(viewer.siteId);
+
+  if (siteIds.length === 0) return { id: { in: [] } }; // no sites — return nothing
+  return { siteId: { in: siteIds } };
+}
 
 // ── Submit SAAR (public — no auth required) ──────────────────────────────────
 router.post('/', async (req, res) => {
@@ -91,6 +104,7 @@ router.post('/', async (req, res) => {
         derivativeTrainingDate: derivativeTrainingDate ? new Date(derivativeTrainingDate) : null,
         agreementSigned:        Boolean(agreementSigned),
         agreementSignedAt:      agreementSigned ? new Date(agreementSignedAt || Date.now()) : null,
+        submittedBy:            email || null,
         status:                 'pending',
       },
     });
@@ -115,8 +129,13 @@ router.post('/', async (req, res) => {
 router.get('/', requireAuth, requireVulcan, async (req, res) => {
   try {
     const { status } = req.query;
+    const siteFilter = buildSiteFilter(req.session.user);
+
+    let where = siteFilter || {};
+    if (status) where = { ...where, status };
+
     const saars = await db.lavaSaar.findMany({
-      where:   status ? { status } : {},
+      where,
       orderBy: { createdAt: 'desc' },
     });
     res.json(saars.map(serializeSaar));
@@ -131,6 +150,9 @@ router.get('/:id', requireAuth, requireVulcan, async (req, res) => {
   try {
     const saar = await db.lavaSaar.findUnique({ where: { id: req.params.id } });
     if (!saar) return res.status(404).json({ error: 'SAAR not found' });
+    if (!isSiteAllowed(req.session.user, saar.siteId)) {
+      return res.status(403).json({ error: 'Access denied — SAAR is outside your site scope' });
+    }
     res.json(serializeSaar(saar));
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch SAAR' });
@@ -143,6 +165,12 @@ router.patch('/:id/status', requireAuth, requireVulcan, async (req, res) => {
     const { status, rejectionReason, reviewerComment } = req.body;
     if (!['approved', 'rejected'].includes(status)) {
       return res.status(400).json({ error: 'Status must be "approved" or "rejected"' });
+    }
+
+    const existing = await db.lavaSaar.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: 'SAAR not found' });
+    if (!isSiteAllowed(req.session.user, existing.siteId)) {
+      return res.status(403).json({ error: 'Access denied — SAAR is outside your site scope' });
     }
 
     const saar = await db.lavaSaar.update({
@@ -178,6 +206,12 @@ router.patch('/:id/provision', requireAuth, requireVulcan, async (req, res) => {
   try {
     const { yubiKeySerial, tokenType, provisioningNotes, accessExpiresAt, revalidationDueAt } = req.body;
     if (!yubiKeySerial) return res.status(400).json({ error: 'YubiKey/Token serial number is required for provisioning' });
+
+    const existing = await db.lavaSaar.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: 'SAAR not found' });
+    if (!isSiteAllowed(req.session.user, existing.siteId)) {
+      return res.status(403).json({ error: 'Access denied — SAAR is outside your site scope' });
+    }
 
     const saar = await db.lavaSaar.update({
       where: { id: req.params.id },
@@ -228,6 +262,9 @@ router.patch('/:id/lifecycle', requireAuth, requireVulcan, async (req, res) => {
 
     const current = await db.lavaSaar.findUnique({ where: { id: req.params.id } });
     if (!current) return res.status(404).json({ error: 'SAAR not found' });
+    if (!isSiteAllowed(req.session.user, current.siteId)) {
+      return res.status(403).json({ error: 'Access denied — SAAR is outside your site scope' });
+    }
 
     const updates = {};
     if (action === 'revalidate') {
@@ -276,21 +313,24 @@ router.patch('/:id/lifecycle', requireAuth, requireVulcan, async (req, res) => {
 // ── SAAR stats for dashboard ─────────────────────────────────────────────────
 router.get('/meta/stats', requireAuth, requireVulcan, async (req, res) => {
   try {
+    const siteFilter = buildSiteFilter(req.session.user);
+    const baseWhere = siteFilter || {};
+
     const [pending, approved, rejected, provisioned, suspended, revoked, total, pendingSaars, approvedWait, lifecycleSaars] = await Promise.all([
-      db.lavaSaar.count({ where: { status: 'pending'     } }),
-      db.lavaSaar.count({ where: { status: 'approved'    } }),
-      db.lavaSaar.count({ where: { status: 'rejected'    } }),
-      db.lavaSaar.count({ where: { status: 'provisioned' } }),
-      db.lavaSaar.count({ where: { status: 'suspended'   } }),
-      db.lavaSaar.count({ where: { status: 'revoked'     } }),
-      db.lavaSaar.count(),
+      db.lavaSaar.count({ where: { ...baseWhere, status: 'pending'     } }),
+      db.lavaSaar.count({ where: { ...baseWhere, status: 'approved'    } }),
+      db.lavaSaar.count({ where: { ...baseWhere, status: 'rejected'    } }),
+      db.lavaSaar.count({ where: { ...baseWhere, status: 'provisioned' } }),
+      db.lavaSaar.count({ where: { ...baseWhere, status: 'suspended'   } }),
+      db.lavaSaar.count({ where: { ...baseWhere, status: 'revoked'     } }),
+      db.lavaSaar.count({ where: baseWhere }),
       db.lavaSaar.findMany({
-        where: { status: 'pending' },
+        where: { ...baseWhere, status: 'pending' },
         select: { createdAt: true },
       }),
-      db.lavaSaar.count({ where: { status: 'approved' } }),
+      db.lavaSaar.count({ where: { ...baseWhere, status: 'approved' } }),
       db.lavaSaar.findMany({
-        where: { status: { in: ['provisioned', 'suspended'] } },
+        where: { ...baseWhere, status: { in: ['provisioned', 'suspended'] } },
         select: { annualTrainingDate: true, derivativeTrainingDate: true, revalidationDueAt: true },
       }),
     ]);

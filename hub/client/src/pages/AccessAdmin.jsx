@@ -5,13 +5,10 @@ import { useTheme } from '../context/ThemeContext';
 import {
   Shield, Users, Sun, Moon, LogOut, ArrowLeft,
   RefreshCw, UserPlus, ClipboardList, ChevronDown, ChevronUp,
-  MapPin, Tag,
+  MapPin,
 } from 'lucide-react';
 
-const BASE              = import.meta.env.DEV ? 'http://localhost:3010' : '';
-const MANAGEABLE_APPS   = ['hub', 'scorva', 'crater', 'mash', 'lava'];
-const HUB_ROLES         = ['Viewer', 'Access Admin', 'Corporate Admin'];
-const SCORVA_ROLES      = ['', 'Viewer', 'ISSO', 'ISSM', 'Site Admin', 'Corporate Admin'];
+const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
 
 const STATUS_BADGE = {
   pending:              'bg-yellow-500/10 text-yellow-500 border-yellow-500/30',
@@ -57,17 +54,32 @@ export default function AccessAdmin() {
   const [message,      setMessage]      = useState('');
   const [error,        setError]        = useState('');
   const [expandedUser, setExpandedUser] = useState(null);
-  const [createForm,   setCreateForm]   = useState({
-    id: '', name: '', username: '', email: '', password: '',
-    role: 'Viewer', scorvaRole: '', siteId: '', siteIds: [],
-    allowedApps: ['hub'],
+
+  const [meta, setMeta] = useState({
+    platformRoles: [], securityRoles: [], securityRoleTitles: {},
+    securityRoleApps: {}, allApps: [], sites: [],
   });
+
+  const blankCreate = {
+    id: '', name: '', username: '', email: '', password: '',
+    role: 'Viewer', securityRole: '', siteId: '', siteIds: [],
+  };
+  const [createForm, setCreateForm] = useState(blankCreate);
 
   useEffect(() => {
     if (!canAdmin) { navigate('/portal', { replace: true }); return; }
+    loadMeta();
     loadUsers();
     loadRequests();
   }, [canAdmin]);
+
+  async function loadMeta() {
+    try {
+      const res  = await fetch(`${BASE}/api/admin/identity-meta`, { credentials: 'include' });
+      const data = await res.json();
+      if (res.ok) setMeta(data);
+    } catch {}
+  }
 
   async function loadUsers() {
     setUsersLoading(true); setError('');
@@ -95,11 +107,10 @@ export default function AccessAdmin() {
     setError(''); setMessage('');
     try {
       const payload = {
-        status:      entry.status,
-        allowedApps: entry.allowedApps,
-        scorvaRole:  entry.scorvaRole || null,
-        siteId:      entry.siteId || null,
-        siteIds:     Array.isArray(entry.siteIds) ? entry.siteIds.filter(Boolean) : [],
+        status:       entry.status,
+        securityRole: entry.securityRole || null,
+        siteId:       entry.siteId || null,
+        siteIds:      Array.isArray(entry.siteIds) ? entry.siteIds.filter(Boolean) : [],
       };
       if (isCorpAdmin) payload.role = entry.role;
       const res  = await fetch(`${BASE}/api/admin/users/${encodeURIComponent(entry.id)}`, {
@@ -120,9 +131,9 @@ export default function AccessAdmin() {
     try {
       const payload = {
         ...createForm,
-        siteId:  createForm.siteId || null,
-        siteIds: createForm.siteId ? [createForm.siteId] : [],
-        scorvaRole: createForm.scorvaRole || null,
+        siteId:       createForm.siteId || null,
+        siteIds:      createForm.siteId ? [...new Set([createForm.siteId, ...createForm.siteIds].filter(Boolean))] : createForm.siteIds,
+        securityRole: createForm.securityRole || null,
       };
       const res  = await fetch(`${BASE}/api/admin/users`, {
         method: 'POST', credentials: 'include',
@@ -138,7 +149,7 @@ export default function AccessAdmin() {
           return match || r;
         }));
       }
-      setCreateForm({ id: '', name: '', username: '', email: '', password: '', role: 'Viewer', scorvaRole: '', siteId: '', siteIds: [], allowedApps: ['hub'] });
+      setCreateForm(blankCreate);
       setMessage(`Created ${data.user.username}.`);
     } catch (err) { setError(err.message); }
   }
@@ -159,30 +170,36 @@ export default function AccessAdmin() {
     } catch (err) { setError(err.message); }
   }
 
-  function toggleUserApp(userId, appId) {
+  function patchUser(userId, patch) {
+    setUsers(cur => cur.map(u => u.id !== userId ? u : { ...u, ...patch }));
+  }
+
+  function toggleSiteAccess(userId, siteId, checked) {
     setUsers(cur => cur.map(u => {
       if (u.id !== userId) return u;
-      const allowedApps = u.allowedApps.includes(appId)
-        ? u.allowedApps.filter(a => a !== appId)
-        : u.allowedApps.concat(appId);
-      return { ...u, allowedApps };
+      const next = checked
+        ? [...new Set([...(u.siteIds || []), siteId])]
+        : (u.siteIds || []).filter(s => s !== siteId);
+      return { ...u, siteIds: next };
     }));
   }
 
-  function patchUser(userId, patch) {
-    setUsers(cur => cur.map(u => u.id === userId ? { ...u, ...patch } : u));
-  }
-
-  function toggleCreateApp(appId) {
-    setCreateForm(f => ({
-      ...f,
-      allowedApps: f.allowedApps.includes(appId)
-        ? f.allowedApps.filter(a => a !== appId)
-        : f.allowedApps.concat(appId),
-    }));
+  function toggleCreateSite(siteId, checked) {
+    setCreateForm(f => {
+      const next = checked
+        ? [...new Set([...(f.siteIds || []), siteId])]
+        : (f.siteIds || []).filter(s => s !== siteId);
+      return { ...f, siteIds: next };
+    });
   }
 
   const pendingCount = requests.filter(r => r.status === 'pending').length;
+
+  const { platformRoles, securityRoles, securityRoleTitles, sites } = meta;
+
+  function derivedTitle(securityRole) {
+    return securityRoleTitles[securityRole] || securityRole || '—';
+  }
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg">
@@ -231,7 +248,8 @@ export default function AccessAdmin() {
               <span className="text-[10px] font-mono text-scorva-accent uppercase tracking-[0.35em]">Administration</span>
             </div>
             <h1 className="text-2xl font-black text-scorva-text font-mono tracking-wide text-glow">Identity Control Plane</h1>
-            <p className="text-sm text-scorva-muted mt-1 mb-5">Manage access requests, users, site assignments, and app-specific roles from a single control surface.</p>
+            <p className="text-sm text-scorva-muted mt-1 mb-5">Manage access requests, users, site assignments, and security roles from a single control surface.</p>
+
             {/* Identity model legend */}
             <div className="glass border border-scorva-border rounded-xl p-4 glow-border-strong">
               <div className="flex items-center gap-2 mb-3">
@@ -240,12 +258,12 @@ export default function AccessAdmin() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                 {[
-                  { label: 'HUB Role',     desc: 'Platform access level',   color: 'text-scorva-accent border-scorva-accent/20 bg-scorva-accent/10' },
-                  { label: 'Status',       desc: 'Account active state',    color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' },
-                  { label: 'Allowed Apps', desc: 'Launch permissions',      color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
-                  { label: 'Primary Site', desc: 'Default site context',    color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
-                  { label: 'Site List',    desc: 'All assigned sites',      color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
-                  { label: 'SCORVA Role',  desc: 'SCORVA access level',     color: 'text-teal-400 border-teal-500/20 bg-teal-500/10' },
+                  { label: 'Platform Role',   desc: 'HUB admin authority',           color: 'text-scorva-accent border-scorva-accent/20 bg-scorva-accent/10' },
+                  { label: 'Security Role',   desc: 'Operational role & title',      color: 'text-teal-400 border-teal-500/20 bg-teal-500/10' },
+                  { label: 'Status',          desc: 'Account active state',          color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' },
+                  { label: 'Allowed Apps',    desc: 'Derived from Security Role',    color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
+                  { label: 'Primary Site',    desc: 'Default site context',          color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
+                  { label: 'Site Access',     desc: 'All assigned sites',            color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
                 ].map(({ label, desc, color }) => (
                   <div key={label} className={`rounded-lg border px-2.5 py-2 ${color}`}>
                     <div className="text-[9px] font-mono font-semibold tracking-widest uppercase">{label}</div>
@@ -253,6 +271,9 @@ export default function AccessAdmin() {
                   </div>
                 ))}
               </div>
+              <p className="text-[9px] text-scorva-muted font-mono mt-2.5">
+                Security Role drives displayed title and app access. Site scope determines data visibility. Users at MTSI-ALX with Corporate Security Admin role can see all sites.
+              </p>
             </div>
           </div>
 
@@ -308,7 +329,7 @@ export default function AccessAdmin() {
             <div className="card p-5">
               <SectionHeader
                 title="Access Requests"
-                subtitle="Requests from app landing pages. Approval grants HUB access plus the requested app."
+                subtitle="Requests from app landing pages. Approval records the review decision. For users with a Security Role, app access is role-derived — update the Security Role if the requested app isn't covered."
                 action={
                   <button onClick={loadRequests} disabled={reqLoading} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors disabled:opacity-60">
                     <RefreshCw size={12} className={reqLoading ? 'animate-spin' : ''} /> Refresh
@@ -377,7 +398,7 @@ export default function AccessAdmin() {
               <div className="card p-5">
                 <SectionHeader
                   title="Users"
-                  subtitle={`Manage identity, HUB permissions, site assignments, and SCORVA role mapping${isCorpAdmin ? ' — including HUB role' : ''}.`}
+                  subtitle={`Manage identity, platform role, security role, and site assignments${isCorpAdmin ? ' — including platform role changes' : ''}.`}
                   action={
                     <button onClick={loadUsers} disabled={usersLoading} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors disabled:opacity-60">
                       <RefreshCw size={12} className={usersLoading ? 'animate-spin' : ''} /> Refresh
@@ -409,27 +430,23 @@ export default function AccessAdmin() {
                               <div className="text-[10px] font-mono text-scorva-muted truncate">@{entry.username}</div>
                             </div>
 
-                            {/* Identity badges — all 6 fields */}
+                            {/* Identity badges */}
                             <div className="flex-1 hidden sm:flex items-center gap-1.5 flex-wrap min-w-0">
-                              {/* Status */}
                               <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${entry.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
                                 {entry.status}
                               </span>
-                              {/* HUB Role */}
                               <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-accent/10 text-scorva-accent border-scorva-accent/20 shrink-0">
                                 {entry.role}
                               </span>
-                              {/* SCORVA Role */}
-                              {entry.scorvaRole ? (
+                              {entry.securityRole ? (
                                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-teal-500/10 text-teal-400 border-teal-500/20 shrink-0">
-                                  {entry.scorvaRole}
+                                  {entry.securityRole}
                                 </span>
                               ) : (
                                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">
-                                  No SCORVA Role
+                                  No Security Role
                                 </span>
                               )}
-                              {/* Primary Site */}
                               {entry.siteId ? (
                                 <span className="inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-muted border-scorva-border shrink-0">
                                   <MapPin size={8} /> {entry.siteId}
@@ -439,16 +456,17 @@ export default function AccessAdmin() {
                                   No Site
                                 </span>
                               )}
-                              {/* Apps (non-hub) */}
                               {entry.allowedApps.filter(a => a !== 'hub').map(a => (
                                 <span key={a} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-scorva-hover border border-scorva-border text-scorva-muted shrink-0">{a}</span>
                               ))}
                               {!entry.allowedApps.filter(a => a !== 'hub').length && (
                                 <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">hub only</span>
                               )}
+                              {entry.canSeeAllSites && (
+                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shrink-0">All Sites</span>
+                              )}
                             </div>
 
-                            {/* Expand chevron */}
                             <div className="shrink-0 ml-auto">
                               {isExpanded ? <ChevronUp size={14} className="text-scorva-muted" /> : <ChevronDown size={14} className="text-scorva-muted" />}
                             </div>
@@ -459,22 +477,22 @@ export default function AccessAdmin() {
                             <div className="px-4 pb-5 pt-3 border-t border-scorva-accent/15 bg-scorva-bg/60">
                               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
-                                {/* HUB Permissions */}
+                                {/* Platform Permissions */}
                                 <div className="space-y-3">
                                   <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
                                     <div className="w-2 h-px bg-scorva-accent" />
-                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">HUB Permissions</span>
+                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Platform</span>
                                   </div>
                                   {isCorpAdmin ? (
                                     <div>
-                                      <FieldLabel>HUB Role</FieldLabel>
+                                      <FieldLabel>Platform Role</FieldLabel>
                                       <select className="input-base text-xs" value={entry.role} onChange={e => patchUser(entry.id, { role: e.target.value })}>
-                                        {HUB_ROLES.map(r => <option key={r}>{r}</option>)}
+                                        {platformRoles.map(r => <option key={r}>{r}</option>)}
                                       </select>
                                     </div>
                                   ) : (
                                     <div>
-                                      <FieldLabel>HUB Role</FieldLabel>
+                                      <FieldLabel>Platform Role</FieldLabel>
                                       <p className="text-xs text-scorva-text font-mono">{entry.role}</p>
                                     </div>
                                   )}
@@ -487,76 +505,92 @@ export default function AccessAdmin() {
                                   </div>
                                 </div>
 
-                                {/* App Access */}
+                                {/* Security Role */}
+                                <div className="space-y-3">
+                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                                    <div className="w-2 h-px bg-teal-400" />
+                                    <span className="text-[9px] font-mono text-teal-400 uppercase tracking-[0.3em] font-medium">Security Role</span>
+                                  </div>
+                                  <div>
+                                    <FieldLabel>Security Role</FieldLabel>
+                                    <select
+                                      className="input-base text-xs"
+                                      value={entry.securityRole || ''}
+                                      onChange={e => patchUser(entry.id, { securityRole: e.target.value || null })}
+                                    >
+                                      <option value="">— None —</option>
+                                      {securityRoles.map(r => <option key={r} value={r}>{r}</option>)}
+                                    </select>
+                                  </div>
+                                  {entry.securityRole && (
+                                    <div>
+                                      <FieldLabel>Derived Title</FieldLabel>
+                                      <p className="text-xs text-teal-400 font-mono">{derivedTitle(entry.securityRole)}</p>
+                                    </div>
+                                  )}
+                                  <div className="pt-2">
+                                    <button onClick={() => saveUser(entry)} className="btn-primary text-xs glow-border">
+                                      Save Changes
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Site Access */}
+                                <div className="space-y-3">
+                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                                    <div className="w-2 h-px bg-scorva-accent" />
+                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Site Access</span>
+                                  </div>
+                                  <div>
+                                    <FieldLabel>Primary Site</FieldLabel>
+                                    <select
+                                      className="input-base text-xs font-mono"
+                                      value={entry.siteId || ''}
+                                      onChange={e => {
+                                        const val = e.target.value;
+                                        patchUser(entry.id, {
+                                          siteId: val || null,
+                                          siteIds: val ? [...new Set([val, ...(entry.siteIds || [])])] : entry.siteIds,
+                                        });
+                                      }}
+                                    >
+                                      <option value="">— None —</option>
+                                      {sites.map(s => <option key={s.id} value={s.id}>{s.id} — {s.label}</option>)}
+                                    </select>
+                                  </div>
+                                  <div>
+                                    <FieldLabel>Site Access</FieldLabel>
+                                    <div className="space-y-1.5 mt-1">
+                                      {sites.map(s => (
+                                        <label key={s.id} className="flex items-center gap-2 cursor-pointer hover:text-scorva-text transition-colors">
+                                          <input
+                                            type="checkbox"
+                                            checked={(entry.siteIds || []).includes(s.id)}
+                                            onChange={e => toggleSiteAccess(entry.id, s.id, e.target.checked)}
+                                            className="rounded"
+                                          />
+                                          <span className="text-xs font-mono text-scorva-muted">{s.id}</span>
+                                          <span className="text-[10px] text-scorva-border">{s.label}</span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                    {entry.canSeeAllSites && (
+                                      <p className="text-[9px] text-yellow-400 font-mono mt-1.5">⬡ All-site visibility active</p>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* App Access — read-only */}
                                 <div className="space-y-3">
                                   <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
                                     <div className="w-2 h-px bg-scorva-accent" />
                                     <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">App Access</span>
                                   </div>
-                                  <div className="flex flex-wrap gap-2">
-                                    {MANAGEABLE_APPS.map(appId => (
-                                      <label key={appId} className="flex items-center gap-1.5 text-scorva-muted cursor-pointer hover:text-scorva-text transition-colors">
-                                        <input
-                                          type="checkbox"
-                                          checked={entry.allowedApps.includes(appId)}
-                                          onChange={() => toggleUserApp(entry.id, appId)}
-                                          className="rounded"
-                                        />
-                                        <span className="font-mono text-xs">{appId}</span>
-                                      </label>
+                                  <p className="text-[9px] text-scorva-muted font-mono">Derived from Security Role. Not editable.</p>
+                                  <div className="flex flex-wrap gap-1.5">
+                                    {(entry.allowedApps || []).map(appId => (
+                                      <span key={appId} className="text-[10px] font-mono px-2 py-0.5 rounded border bg-scorva-hover border-scorva-border text-scorva-muted">{appId}</span>
                                     ))}
-                                  </div>
-                                </div>
-
-                                {/* Site Mapping */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
-                                    <div className="w-2 h-px bg-scorva-accent" />
-                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Site Mapping</span>
-                                  </div>
-                                  <div>
-                                    <FieldLabel>Primary Site</FieldLabel>
-                                    <input
-                                      className="input-base text-xs font-mono"
-                                      placeholder="e.g. MTSI-ALX"
-                                      value={entry.siteId || ''}
-                                      onChange={e => patchUser(entry.id, { siteId: e.target.value })}
-                                    />
-                                  </div>
-                                  <div>
-                                    <FieldLabel>Additional Sites (comma-separated)</FieldLabel>
-                                    <input
-                                      className="input-base text-xs font-mono"
-                                      placeholder="MTSI-HVL, MTSI-DEN"
-                                      value={(entry.siteIds || []).join(', ')}
-                                      onChange={e => {
-                                        const vals = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
-                                        patchUser(entry.id, { siteIds: vals });
-                                      }}
-                                    />
-                                  </div>
-                                </div>
-
-                                {/* SCORVA Role */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
-                                    <div className="w-2 h-px bg-scorva-accent" />
-                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">SCORVA Mapping</span>
-                                  </div>
-                                  <div>
-                                    <FieldLabel>SCORVA Role</FieldLabel>
-                                    <select
-                                      className="input-base text-xs"
-                                      value={entry.scorvaRole || ''}
-                                      onChange={e => patchUser(entry.id, { scorvaRole: e.target.value || null })}
-                                    >
-                                      {SCORVA_ROLES.map(r => <option key={r} value={r}>{r || '— None —'}</option>)}
-                                    </select>
-                                  </div>
-                                  <div className="pt-2">
-                                    <button onClick={() => saveUser(entry)} className="btn-primary text-xs glow-border">
-                                      Save Changes
-                                    </button>
                                   </div>
                                 </div>
 
@@ -577,10 +611,11 @@ export default function AccessAdmin() {
             <div className="card p-5">
               <SectionHeader
                 title="Create User"
-                subtitle="Provision a new HUB account with full identity context."
+                subtitle="Provision a new HUB account. Security Role drives title and app access."
               />
 
               <form onSubmit={createUser} className="space-y-6 max-w-3xl">
+
                 {/* Identity */}
                 <div>
                   <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
@@ -611,60 +646,74 @@ export default function AccessAdmin() {
                   </div>
                 </div>
 
-                {/* HUB Permissions */}
+                {/* Platform + Security Role */}
                 <div>
                   <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
                     <div className="w-2 h-px bg-scorva-accent" />
-                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">HUB Permissions</span>
+                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Roles</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <FieldLabel>HUB Role</FieldLabel>
+                      <FieldLabel>Platform Role</FieldLabel>
                       <select className="input-base text-xs" value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}>
-                        {HUB_ROLES.map(r => <option key={r}>{r}</option>)}
+                        {platformRoles.map(r => <option key={r}>{r}</option>)}
                       </select>
                     </div>
-                  </div>
-                  <div className="mt-3">
-                    <FieldLabel>App Access</FieldLabel>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {MANAGEABLE_APPS.map(appId => (
-                        <button
-                          key={appId} type="button" onClick={() => toggleCreateApp(appId)}
-                          className={`text-[11px] font-mono px-2.5 py-1 rounded-md border transition-colors ${
-                            createForm.allowedApps.includes(appId)
-                              ? 'bg-scorva-accent text-white dark:text-scorva-bg border-scorva-accent'
-                              : 'bg-scorva-card border-scorva-border text-scorva-muted hover:border-scorva-accent/40'
-                          }`}
-                        >{appId}</button>
-                      ))}
+                    <div>
+                      <FieldLabel>Security Role</FieldLabel>
+                      <select className="input-base text-xs" value={createForm.securityRole} onChange={e => setCreateForm(f => ({ ...f, securityRole: e.target.value }))}>
+                        <option value="">— None —</option>
+                        {securityRoles.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
                     </div>
+                    {createForm.securityRole && (
+                      <div className="sm:col-span-2">
+                        <FieldLabel>Derived Title</FieldLabel>
+                        <p className="text-xs text-teal-400 font-mono">{derivedTitle(createForm.securityRole)}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                {/* Site Mapping */}
+                {/* Site Access */}
                 <div>
                   <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
                     <div className="w-2 h-px bg-scorva-accent" />
-                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Site Mapping</span>
+                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Site Access</span>
                   </div>
-                  <div>
-                    <FieldLabel>Primary Site</FieldLabel>
-                    <input className="input-base text-xs font-mono max-w-xs" placeholder="e.g. MTSI-ALX" value={createForm.siteId} onChange={e => setCreateForm(f => ({ ...f, siteId: e.target.value }))} />
-                  </div>
-                </div>
-
-                {/* SCORVA Mapping */}
-                <div>
-                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
-                    <div className="w-2 h-px bg-scorva-accent" />
-                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">SCORVA Mapping</span>
-                  </div>
-                  <div className="max-w-xs">
-                    <FieldLabel>SCORVA Role</FieldLabel>
-                    <select className="input-base text-xs" value={createForm.scorvaRole} onChange={e => setCreateForm(f => ({ ...f, scorvaRole: e.target.value }))}>
-                      {SCORVA_ROLES.map(r => <option key={r} value={r}>{r || '— None —'}</option>)}
-                    </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <FieldLabel>Primary Site</FieldLabel>
+                      <select
+                        className="input-base text-xs font-mono"
+                        value={createForm.siteId}
+                        onChange={e => setCreateForm(f => ({
+                          ...f,
+                          siteId: e.target.value,
+                          siteIds: e.target.value ? [...new Set([e.target.value, ...f.siteIds].filter(Boolean))] : f.siteIds,
+                        }))}
+                      >
+                        <option value="">— None —</option>
+                        {sites.map(s => <option key={s.id} value={s.id}>{s.id} — {s.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <FieldLabel>Site Access</FieldLabel>
+                      <div className="space-y-1.5 mt-1">
+                        {sites.map(s => (
+                          <label key={s.id} className="flex items-center gap-2 cursor-pointer hover:text-scorva-text transition-colors">
+                            <input
+                              type="checkbox"
+                              checked={createForm.siteIds.includes(s.id)}
+                              onChange={e => toggleCreateSite(s.id, e.target.checked)}
+                              className="rounded"
+                            />
+                            <span className="text-xs font-mono text-scorva-muted">{s.id}</span>
+                            <span className="text-[10px] text-scorva-border">{s.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -676,6 +725,7 @@ export default function AccessAdmin() {
               </form>
             </div>
           )}
+
         </div>
       </main>
     </div>

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "find-001",
+    "inspectionId": "insp-001",
+    "siteId": "site-001",
+    "findingNumber": "FY25-HQ-001",
+    "area": "Personnel Security",
+    "requirement": "NISPOM 32 CFR 117.12(c) — Annual security training",
+    "finding": "Two cleared personnel (T. Martin, R. Bennett) are overdue for annual security briefing and insider threat training.",
+    "severity": "Medium",
+    "status": "Open",
+    "owner": "J. Carter",
+    "openDate": "2025-01-20",
+    "dueDate": "2025-06-30",
+    "closedDate": null,
+    "corrective": "Schedule group training session. T. Martin access suspended until completion.",
+    "evidence": [],
+    "notes": "Training session scheduled June 12, 2025."
+  },
+  {
+    "id": "find-002",
+    "inspectionId": "insp-001",
+    "siteId": "site-001",
+    "findingNumber": "FY25-HQ-002",
+    "area": "Media Control",
+    "requirement": "NISPOM 32 CFR 117.19 — Removable media accountability and periodic inspection",
+    "finding": "HQ-USB-002 assigned to R. Bennett has not been scanned in 115 days. Quarterly scan requirement exceeded.",
+    "severity": "Low",
+    "status": "Open",
+    "owner": "J. Carter",
+    "openDate": "2025-05-22",
+    "dueDate": "2025-06-15",
+    "closedDate": null,
+    "corrective": "Notify R. Bennett. Schedule scan at next SCIF visit.",
+    "evidence": [],
+    "notes": ""
+  },
+  {
+    "id": "find-003",
+    "inspectionId": "insp-002",
+    "siteId": "site-002",
+    "findingNumber": "FY25-CC-001",
+    "area": "Physical Security",
+    "requirement": "NISPOM 32 CFR 117.14(a) — IDS operational requirements",
+    "finding": "Zone 3 motion sensor offline since April 28, 2025. Alarm coverage gap exists during sensor replacement.",
+    "severity": "High",
+    "status": "Mitigated — Pending Repair",
+    "owner": "M. Torres",
+    "openDate": "2025-04-28",
+    "dueDate": "2025-06-01",
+    "closedDate": null,
+    "corrective": "Manual guard posted during off-hours. Work order WO-2025-0412 submitted. NSA-approved replacement part on order.",
+    "evidence": [
+      { "id": "ev-f001", "title": "Work Order WO-2025-0412", "type": "PDF", "uploadedBy": "M. Torres", "date": "2025-04-28" }
+    ],
+    "notes": "Mitigation accepted by ISSM. Verify repair completion by 2025-06-01."
+  },
+  {
+    "id": "find-004",
+    "inspectionId": "insp-003",
+    "siteId": "site-001",
+    "findingNumber": "FY24-HQ-001",
+    "area": "Personnel Security",
+    "requirement": "NISPOM 32 CFR 117.12(c) — Annual security training",
+    "finding": "Three contractors overdue for annual security refresher.",
+    "severity": "Low",
+    "status": "Closed",
+    "owner": "J. Carter",
+    "openDate": "2024-01-20",
+    "dueDate": "2024-08-31",
+    "closedDate": "2024-08-15",
+    "corrective": "Group training session conducted August 2024. All three contractors completed requirement.",
+    "evidence": [
+      { "id": "ev-f010", "title": "Training Completion Certificates", "type": "PDF", "uploadedBy": "J. Carter", "date": "2024-08-15" }
+    ],
+    "notes": "Closed on schedule."
+  }
+]

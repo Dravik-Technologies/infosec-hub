@@ -67,8 +67,7 @@ async function syncTrackerTask(doc, username) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const where = req.siteFilter ? { siteId: req.siteFilter } : {};
-    const docs = await db.tracker.findMany({ where, orderBy: { createdAt: 'asc' } });
+    const docs = await db.tracker.findMany({ where: req.applyTenantFilter({}), orderBy: { createdAt: 'asc' } });
     res.json(docs.map(serializeTracker));
   } catch (err) { next(err); }
 });
@@ -77,13 +76,13 @@ router.get('/:id', async (req, res, next) => {
   try {
     const doc = await db.tracker.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.siteId !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     res.json(serializeTracker(doc));
   } catch (err) { next(err); }
 });
 
 router.post('/', async (req, res, next) => {
-  const siteId = req.siteFilter ?? (req.body.siteId || req.body.siteID || null);
+  const siteId = req.resolveTenantSiteId(req.body);
   try {
     const payload = normalizeTrackerBody(req.body);
     const doc = await db.tracker.create({
@@ -109,9 +108,10 @@ router.patch('/:id', async (req, res, next) => {
   try {
     const doc = await db.tracker.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.siteId !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     const normalized = normalizeTrackerBody({ ...doc, ...req.body });
-    if (req.siteFilter) normalized.siteId = req.siteFilter;
+    const resolvedSiteId = req.resolveTenantSiteId(req.body);
+    if (resolvedSiteId) normalized.siteId = resolvedSiteId;
     const updated = await db.tracker.update({ where: { id: req.params.id }, data: normalized });
     if (updated.status === 'Completed') {
       await completeTasksForSource('tracker', updated.id, `Tracker completed: ${updated.name}`);
@@ -127,7 +127,7 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const doc = await db.tracker.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
-    if (req.siteFilter && doc.siteId !== req.siteFilter) return res.status(403).json({ error: 'Forbidden' });
+    if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
     await db.tracker.delete({ where: { id: req.params.id } });
     await audit(actor(req), 'TRACKER_DELETE', req.params.id, 'Deleted', doc.siteId);
     res.json({ deleted: req.params.id });

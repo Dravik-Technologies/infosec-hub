@@ -1,0 +1,103 @@
+[
+  {
+    "id": "doc-001",
+    "siteId": "site-001",
+    "docNumber": "ALPHA-2025-001",
+    "title": "Program ALPHA System Security Plan",
+    "classification": "SECRET // NOFORN",
+    "program": "ALPHA",
+    "category": "Security Plan",
+    "copyCount": 3,
+    "accountable": true,
+    "custodian": "J. Carter",
+    "currentLocation": "Vault A — Shelf 3",
+    "version": "2.1",
+    "date": "2025-01-10",
+    "lastInventory": "2025-04-01",
+    "nextInventory": "2025-07-01",
+    "reproductionControls": "No reproduction without FSO approval",
+    "receipts": [
+      { "date": "2025-01-10", "from": "DCSA", "by": "J. Carter", "copyNum": 1 },
+      { "date": "2025-01-10", "from": "DCSA", "by": "J. Carter", "copyNum": 2 },
+      { "date": "2025-01-10", "from": "DCSA", "by": "J. Carter", "copyNum": 3 }
+    ],
+    "dispatches": [],
+    "destructions": [],
+    "status": "Active"
+  },
+  {
+    "id": "doc-002",
+    "siteId": "site-001",
+    "docNumber": "HQ-2024-007",
+    "title": "SCIF Construction Security Plan — Building A Expansion",
+    "classification": "SECRET",
+    "program": "Facilities",
+    "category": "Construction Plan",
+    "copyCount": 2,
+    "accountable": true,
+    "custodian": "J. Carter",
+    "currentLocation": "Vault A — Shelf 1",
+    "version": "1.0",
+    "date": "2024-08-15",
+    "lastInventory": "2025-04-01",
+    "nextInventory": "2025-07-01",
+    "reproductionControls": "No reproduction",
+    "receipts": [
+      { "date": "2024-08-15", "from": "Engineering", "by": "J. Carter", "copyNum": 1 },
+      { "date": "2024-08-15", "from": "Engineering", "by": "J. Carter", "copyNum": 2 }
+    ],
+    "dispatches": [
+      { "date": "2024-10-01", "to": "Contracting Officer — DCSA Region", "by": "J. Carter", "copyNum": 2, "method": "Certified Mail", "receiptConfirmed": true }
+    ],
+    "destructions": [],
+    "status": "Active"
+  },
+  {
+    "id": "doc-003",
+    "siteId": "site-002",
+    "docNumber": "CC-2024-003",
+    "title": "SAPF Accreditation Package — Crystal City",
+    "classification": "TOP SECRET // SCI",
+    "program": "Facilities",
+    "category": "Accreditation Package",
+    "copyCount": 1,
+    "accountable": true,
+    "custodian": "M. Torres",
+    "currentLocation": "Vault B — Secure Drawer",
+    "version": "3.0",
+    "date": "2022-03-15",
+    "lastInventory": "2025-02-15",
+    "nextInventory": "2025-08-15",
+    "reproductionControls": "No reproduction — SCI material",
+    "receipts": [
+      { "date": "2022-03-15", "from": "DoD SAPCO", "by": "M. Torres", "copyNum": 1 }
+    ],
+    "dispatches": [],
+    "destructions": [],
+    "status": "Active — Renewal in Progress"
+  },
+  {
+    "id": "doc-004",
+    "siteId": "site-001",
+    "docNumber": "ALPHA-2023-009",
+    "title": "Technical Design Reference — ALPHA v1.0",
+    "classification": "SECRET // NOFORN",
+    "program": "ALPHA",
+    "category": "Technical Document",
+    "copyCount": 1,
+    "accountable": true,
+    "custodian": "R. Bennett",
+    "currentLocation": "Vault A — Shelf 4",
+    "version": "1.0",
+    "date": "2023-05-20",
+    "lastInventory": "2025-01-20",
+    "nextInventory": "2025-07-20",
+    "reproductionControls": "No reproduction without originator approval",
+    "receipts": [
+      { "date": "2023-05-20", "from": "System Engineering", "by": "R. Bennett", "copyNum": 1 }
+    ],
+    "dispatches": [],
+    "destructions": [],
+    "status": "Superseded — Pending Destruction Review"
+  }
+]

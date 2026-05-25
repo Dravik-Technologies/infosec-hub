@@ -1,0 +1,36 @@
+{
+  "portfolio": {
+    "name": "MTSI Secure Infrastructure Portfolio",
+    "fiscalYear": "FY26",
+    "budgetTotal": 12450000,
+    "budgetObligated": 8120000,
+    "budgetRemaining": 4330000,
+    "kpis": [
+      { "id": "real-estate", "label": "Real Estate Actions", "value": 12, "trend": "+2 this month" },
+      { "id": "active-projects", "label": "Active Construction Projects", "value": 7, "trend": "3 on critical path" },
+      { "id": "accreditations", "label": "Accreditations in Flight", "value": 9, "trend": "Secret / SCIF / SAPF" },
+      { "id": "budget-health", "label": "Budget Health", "value": 65, "suffix": "%", "trend": "On plan" }
+    ]
+  },
+  "realEstate": [
+    { "id": "re-01", "site": "MTSI Alexandria", "type": "Lease Renewal", "status": "Negotiation", "dueDate": "2026-06-15", "owner": "Facilities PMO" },
+    { "id": "re-02", "site": "Colorado Springs", "type": "Expansion Option", "status": "Approved", "dueDate": "2026-07-01", "owner": "Program Real Estate" },
+    { "id": "re-03", "site": "San Diego Annex", "type": "Site Acquisition", "status": "Market Survey", "dueDate": "2026-08-10", "owner": "Corporate Strategy" }
+  ],
+  "construction": [
+    { "id": "pm-01", "name": "Alexandria SCIF Refresh", "type": "Renovation", "status": "Execution", "progress": 72, "budget": 980000, "schedule": "On Track", "accreditation": "SCIF" },
+    { "id": "pm-02", "name": "Colorado Springs SAPF Buildout", "type": "New Construction", "status": "Design Freeze", "progress": 38, "budget": 2240000, "schedule": "At Risk", "accreditation": "SAPF" },
+    { "id": "pm-03", "name": "Huntsville Secret Area Upgrade", "type": "Renovation", "status": "Procurement", "progress": 54, "budget": 610000, "schedule": "On Track", "accreditation": "Secret" }
+  ],
+  "accreditations": [
+    { "id": "acc-01", "name": "Alexandria Zone 3", "level": "SCIF", "status": "Inspection Scheduled", "targetDate": "2026-06-28" },
+    { "id": "acc-02", "name": "Colorado Springs SAPF", "level": "SAPF", "status": "Design Review", "targetDate": "2026-09-12" },
+    { "id": "acc-03", "name": "Huntsville Secret Open Storage", "level": "Secret", "status": "Package Assembly", "targetDate": "2026-07-21" }
+  ],
+  "milestones": [
+    { "id": "ms-01", "title": "Q3 Budget Rebaseline", "date": "2026-06-05", "status": "Upcoming" },
+    { "id": "ms-02", "title": "Alexandria SCIF Acceptance", "date": "2026-06-28", "status": "Critical" },
+    { "id": "ms-03", "title": "Colorado Springs Design Lock", "date": "2026-07-17", "status": "Upcoming" },
+    { "id": "ms-04", "title": "Program Executive Review", "date": "2026-07-31", "status": "Planned" }
+  ]
+}

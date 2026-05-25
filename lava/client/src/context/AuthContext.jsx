@@ -3,6 +3,18 @@ import axios from 'axios';
 
 const AuthContext = createContext(null);
 
+// Mirrors server authz.js: platform admin roles + IT/InfoSec security roles + legacy Vulcan
+const PLATFORM_ADMIN_ROLES = new Set(['Corporate Admin', 'Site Admin', 'Admin']);
+const OPERATOR_SECURITY_ROLES = new Set(['Information Technology', 'Information Security']);
+const LEGACY_VULCAN_ROLES = new Set(['Vulcan']);
+
+function computeIsVulcan(user) {
+  if (!user) return false;
+  return PLATFORM_ADMIN_ROLES.has(user.role)
+    || OPERATOR_SECURITY_ROLES.has(user.securityRole)
+    || LEGACY_VULCAN_ROLES.has(user.role);
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null);
   const [loading, setLoading] = useState(true);
@@ -25,7 +37,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const isVulcan = user && ['Corporate Admin', 'Site Admin', 'Admin', 'Vulcan'].includes(user.role);
+  const isVulcan = computeIsVulcan(user);
 
   return (
     <AuthContext.Provider value={{ user, loading, login, logout, isVulcan }}>

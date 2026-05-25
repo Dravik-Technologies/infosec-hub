@@ -65,8 +65,10 @@ export default function SystemRequest() {
     try {
       const { data } = await axios.get('/api/systems', { withCredentials: true });
       setSystems(data);
-    } catch (err) { console.error(err); }
-    finally { setLoading(false); }
+    } catch (err) {
+      console.error(err);
+      showToast(err?.response?.data?.error || 'Failed to load systems');
+    } finally { setLoading(false); }
   };
 
   const loadAssets = async (systemId) => {
@@ -152,7 +154,7 @@ export default function SystemRequest() {
       await axios.delete(`/api/hardware/${assetId}`, { withCredentials: true });
       setAssets(prev => prev.filter(a => a.id !== assetId));
       showToast('Asset removed.');
-    } catch { showToast('Failed to remove asset'); }
+    } catch (err) { showToast(err?.response?.data?.error || 'Failed to remove asset'); }
   };
 
   const openEditAsset = (asset) => {

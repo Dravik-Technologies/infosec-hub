@@ -5,7 +5,7 @@ const bcrypt  = require('bcryptjs');
 const crypto  = require('crypto');
 const { ConfidentialClientApplication } = require('@azure/msal-node');
 const { db }  = require('../../../packages/db/src/index');
-const { getAllowedApps, hasAppAccess, getScorvaRole } = require('../../../packages/db/src/appAccess');
+const { getAllowedApps, hasAppAccess, getSecurityRole, getTitleFromSecurityRole, canSeeAllSites } = require('../../../packages/db/src/appAccess');
 const router  = express.Router();
 
 const ENTRA_SCOPES = ['openid', 'profile', 'email'];
@@ -55,21 +55,24 @@ function redirectUri() {
 
 function buildSessionUser(found, extras) {
   const extra = extras || {};
+  const securityRole = getSecurityRole(found) || null;
   return {
-    id:          found.id,
-    name:        found.name,
-    username:    found.username,
-    email:       found.email,
-    role:        found.role,
-    siteId:      found.siteId,
-    siteIds:     Array.isArray(found.siteIds) ? found.siteIds : [],
-    site:        found.siteId,
-    scorvaRole:  getScorvaRole(found) || null,
-    initials:    found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
-    allowedApps: getAllowedApps(found),
-    authProvider:  extra.authProvider || 'local',
-    entraOid:      extra.entraOid || null,
-    entraTenantId: extra.entraTenantId || null,
+    id:             found.id,
+    name:           found.name,
+    username:       found.username,
+    email:          found.email,
+    role:           found.role,
+    siteId:         found.siteId,
+    siteIds:        Array.isArray(found.siteIds) ? found.siteIds : [],
+    site:           found.siteId,
+    securityRole:   securityRole,
+    title:          getTitleFromSecurityRole(securityRole) || found.title || null,
+    canSeeAllSites: canSeeAllSites(found),
+    initials:       found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
+    allowedApps:    getAllowedApps(found),
+    authProvider:   extra.authProvider || 'local',
+    entraOid:       extra.entraOid || null,
+    entraTenantId:  extra.entraTenantId || null,
   };
 }
 
@@ -133,7 +136,7 @@ router.post('/login', async (req, res) => {
       id: 'dev-admin', name: 'Dev Admin', username: 'admin',
       email: 'admin@dev.local', role: 'Corporate Admin',
       siteId: 'MTSI-ALX', siteIds: ['MTSI-ALX', 'MTSI-HVL'],
-      site: 'MTSI-ALX', initials: 'DA', allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava'],
+      site: 'MTSI-ALX', initials: 'DA', allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'],
       authProvider: 'local',
       entraOid: null,
       entraTenantId: null,

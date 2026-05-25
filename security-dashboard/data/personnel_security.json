@@ -1,26 +1,158 @@
 [
   {
-    "id": "per-001",
-    "person": "Contractor Group A",
-    "siteId": "lincolnia-hq",
-    "site": "MTSI Lorton",
-    "type": "Periodic Reinvestigation",
-    "status": "open",
-    "riskLevel": "medium",
-    "owner": "PerSec",
-    "dueDate": "2026-04-30",
-    "summary": "Three contractor PR packages submitted and awaiting adjudication."
+    "id": "pers-001",
+    "username": "jcarter",
+    "name": "James Carter",
+    "siteId": "site-001",
+    "position": "Facility Security Officer",
+    "org": "Security Division",
+    "clearanceLevel": "TS/SCI",
+    "clearanceStatus": "Active",
+    "clearanceGrantDate": "2018-04-12",
+    "clearancePRD": "2028-04-12",
+    "caveatAccess": ["SI", "TK"],
+    "formalAccess": [{ "program": "ALPHA", "indocDate": "2019-06-01", "status": "Active" }],
+    "indocDate": "2018-05-01",
+    "debriefDate": null,
+    "training": {
+      "annualBriefing": { "completed": "2025-01-15", "due": "2026-01-15", "status": "Current" },
+      "insiderThreat": { "completed": "2024-11-01", "due": "2025-11-01", "status": "Current", "course": "CDSE INT101" },
+      "counterIntelligence": { "completed": "2024-03-10", "due": "2025-03-10", "status": "Overdue" },
+      "cybersecurity": { "completed": "2025-02-20", "due": "2026-02-20", "status": "Current" }
+    },
+    "visitAccessRequests": [
+      { "id": "VAR-001", "visitorName": "Sarah Mitchell", "clearance": "SECRET", "purpose": "Program Review", "visitDate": "2025-06-10", "status": "Approved" }
+    ],
+    "adverseInfo": [],
+    "foreignContacts": [],
+    "foreignTravel": [],
+    "cvStatus": "Enrolled",
+    "nbisEappStatus": "N/A",
+    "notes": "FSO Lincolnia HQ. CI training overdue — action needed."
   },
   {
-    "id": "per-002",
-    "person": "Two cleared personnel",
-    "siteId": "maryland-warehouse",
-    "site": "MTSI Niceville",
-    "type": "Annual Security Training",
-    "status": "overdue",
-    "riskLevel": "high",
-    "owner": "PerSec",
-    "dueDate": "2026-05-01",
-    "summary": "Access suspension risk if completion slips past grace period."
+    "id": "pers-002",
+    "username": "mtorres",
+    "name": "Maria Torres",
+    "siteId": "site-002",
+    "position": "Alternate FSO",
+    "org": "Security Division",
+    "clearanceLevel": "TS/SCI",
+    "clearanceStatus": "Active",
+    "clearanceGrantDate": "2020-07-22",
+    "clearancePRD": "2030-07-22",
+    "caveatAccess": ["SI", "TK", "G"],
+    "formalAccess": [
+      { "program": "BETA", "indocDate": "2021-01-15", "status": "Active" },
+      { "program": "GAMMA", "indocDate": "2022-03-01", "status": "Active" }
+    ],
+    "indocDate": "2020-08-10",
+    "debriefDate": null,
+    "training": {
+      "annualBriefing": { "completed": "2025-03-01", "due": "2026-03-01", "status": "Current" },
+      "insiderThreat": { "completed": "2025-01-15", "due": "2026-01-15", "status": "Current", "course": "CDSE INT101" },
+      "counterIntelligence": { "completed": "2025-02-01", "due": "2026-02-01", "status": "Current" },
+      "cybersecurity": { "completed": "2024-11-05", "due": "2025-11-05", "status": "Due Soon" }
+    },
+    "visitAccessRequests": [],
+    "adverseInfo": [
+      { "id": "AI-001", "type": "Financial", "reportedDate": "2025-01-20", "disposition": "Reviewed — no security concern", "status": "Closed" }
+    ],
+    "foreignContacts": [
+      { "id": "FC-001", "country": "Mexico", "relationship": "Family (Immediate)", "reportedDate": "2024-06-01", "status": "Documented" }
+    ],
+    "foreignTravel": [],
+    "cvStatus": "Enrolled",
+    "nbisEappStatus": "N/A",
+    "notes": "AFSO Crystal City. Reaccreditation action items outstanding."
+  },
+  {
+    "id": "pers-003",
+    "username": "rbennett",
+    "name": "Robert Bennett",
+    "siteId": "site-001",
+    "position": "Program Manager",
+    "org": "Program Office",
+    "clearanceLevel": "SECRET",
+    "clearanceStatus": "Active",
+    "clearanceGrantDate": "2021-09-30",
+    "clearancePRD": "2031-09-30",
+    "caveatAccess": [],
+    "formalAccess": [],
+    "indocDate": "2021-10-15",
+    "debriefDate": null,
+    "training": {
+      "annualBriefing": { "completed": "2024-10-01", "due": "2025-10-01", "status": "Due Soon" },
+      "insiderThreat": { "completed": "2023-12-15", "due": "2024-12-15", "status": "Overdue" },
+      "counterIntelligence": null,
+      "cybersecurity": { "completed": "2025-04-01", "due": "2026-04-01", "status": "Current" }
+    },
+    "visitAccessRequests": [],
+    "adverseInfo": [],
+    "foreignContacts": [],
+    "foreignTravel": [
+      { "id": "FT-001", "country": "United Kingdom", "dates": "2025-03-10 to 2025-03-17", "purpose": "Technical Conference", "preBriefed": true, "debriefed": false, "status": "Debrief Pending" }
+    ],
+    "cvStatus": "Enrolled",
+    "nbisEappStatus": "N/A",
+    "notes": "Foreign travel debrief overdue. Insider threat training overdue."
+  },
+  {
+    "id": "pers-004",
+    "username": "dkim",
+    "name": "Diana Kim",
+    "siteId": "site-002",
+    "position": "Systems Engineer",
+    "org": "Engineering",
+    "clearanceLevel": "TS",
+    "clearanceStatus": "Active",
+    "clearanceGrantDate": "2022-06-01",
+    "clearancePRD": "2032-06-01",
+    "caveatAccess": [],
+    "formalAccess": [],
+    "indocDate": "2022-07-01",
+    "debriefDate": null,
+    "training": {
+      "annualBriefing": { "completed": "2025-04-15", "due": "2026-04-15", "status": "Current" },
+      "insiderThreat": { "completed": "2025-02-10", "due": "2026-02-10", "status": "Current", "course": "CDSE INT101" },
+      "counterIntelligence": { "completed": "2024-08-20", "due": "2025-08-20", "status": "Current" },
+      "cybersecurity": { "completed": "2025-03-01", "due": "2026-03-01", "status": "Current" }
+    },
+    "visitAccessRequests": [],
+    "adverseInfo": [],
+    "foreignContacts": [],
+    "foreignTravel": [],
+    "cvStatus": "Enrolled",
+    "nbisEappStatus": "N/A",
+    "notes": ""
+  },
+  {
+    "id": "pers-005",
+    "username": "tmartin",
+    "name": "Thomas Martin",
+    "siteId": "site-001",
+    "position": "Contractor — Systems Analyst",
+    "org": "Apex Tech LLC",
+    "clearanceLevel": "SECRET",
+    "clearanceStatus": "Active",
+    "clearanceGrantDate": "2023-02-14",
+    "clearancePRD": "2033-02-14",
+    "caveatAccess": [],
+    "formalAccess": [],
+    "indocDate": "2023-03-01",
+    "debriefDate": null,
+    "training": {
+      "annualBriefing": { "completed": "2024-03-01", "due": "2025-03-01", "status": "Overdue" },
+      "insiderThreat": { "completed": "2024-01-10", "due": "2025-01-10", "status": "Overdue" },
+      "counterIntelligence": null,
+      "cybersecurity": { "completed": "2024-04-01", "due": "2025-04-01", "status": "Overdue" }
+    },
+    "visitAccessRequests": [],
+    "adverseInfo": [],
+    "foreignContacts": [],
+    "foreignTravel": [],
+    "cvStatus": "Enrolled",
+    "nbisEappStatus": "Initiated",
+    "notes": "Three training items overdue. Access suspension risk if not resolved."
   }
 ]

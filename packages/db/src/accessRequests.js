@@ -11,6 +11,7 @@ const APP_LABELS = {
   crater: 'CRATER',
   mash: 'MASH',
   lava: 'LAVA',
+  nexus: 'NEXUS',
 };
 
 function normalizeText(value) {

@@ -1,0 +1,25 @@
+{
+  "orgName": "MTSI Program Security",
+  "orgAcronym": "PSO",
+  "sites": [
+    { "id": "site-001", "name": "Lincolnia HQ", "location": "Alexandria, VA", "active": true },
+    { "id": "site-002", "name": "Crystal City SCIFs", "location": "Arlington, VA", "active": true }
+  ],
+  "trainingThresholdDays": 30,
+  "clearanceExpiryWarnDays": 180,
+  "mediaReturnWarnDays": 7,
+  "modules": {
+    "facility": true,
+    "personnel": true,
+    "activities": true,
+    "documents": true,
+    "media": true,
+    "inspections": true
+  },
+  "complianceStandards": ["NISPOM / 32 CFR Part 117", "ICD 705", "DCID 6/9", "DCSA Self-Inspection Handbook"],
+  "insiderThreatProgram": {
+    "itp_coordinator": "J. Carter",
+    "annual_training_course": "CDSE INT101",
+    "reporting_mechanism": "Hotline + FSO direct"
+  }
+}

@@ -5,6 +5,7 @@ const multer = require('multer');
 const XLSX   = require('xlsx');
 const { db } = require('../db');
 const { writeAudit, actor } = require('../audit');
+const { requireVulcan, isSiteAllowed } = require('../authz');
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -103,15 +104,25 @@ router.get('/template', (_req, res) => {
 });
 
 // ── Upload & Bulk-Import Hardware from Excel ─────────────────────────────────
-router.post('/upload/:systemId', upload.single('file'), async (req, res) => {
+router.post('/upload/:systemId', requireVulcan, upload.single('file'), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
   try {
+    const parentSystem = await db.lavaSystemRequest.findUnique({ where: { id: req.params.systemId } });
+    if (!parentSystem) return res.status(404).json({ error: 'System not found' });
+    if (!isSiteAllowed(req.session.user, parentSystem.siteId)) {
+      return res.status(403).json({ error: 'Access denied — system is outside your site scope' });
+    }
+
     const wb   = XLSX.read(req.file.buffer, { type: 'buffer' });
     const ws   = wb.Sheets[wb.SheetNames[0]];
     const rows = XLSX.utils.sheet_to_json(ws);
 
     if (!rows.length) return res.status(400).json({ error: 'Spreadsheet is empty or has no data rows' });
+
+    // Inherit siteId from the parent system, not the uploader's primary site.
+    // The parent system has already been scope-validated above.
+    const assetSiteId = parentSystem.siteId;
 
     const assets = rows.map((row) => ({
       systemRequestId: req.params.systemId,
@@ -125,6 +136,7 @@ router.post('/upload/:systemId', upload.single('file'), async (req, res) => {
       assignedUser:    normalize(row['Assigned User']),
       location:        normalize(row['Location']),
       notes:           normalize(row['Notes']),
+      siteId:          assetSiteId,
     }));
 
     await findConflicts(req.params.systemId, assets);
@@ -143,7 +155,7 @@ router.post('/upload/:systemId', upload.single('file'), async (req, res) => {
       'hardware_asset',
       req.params.systemId,
       `Imported ${assets.length} hardware asset(s)`,
-      req.session && req.session.user ? req.session.user.siteId : null
+      assetSiteId
     );
     res.json({ imported: assets.length, message: `${assets.length} asset(s) imported into LAVA hardware registry.` });
   } catch (err) {
@@ -156,6 +168,15 @@ router.post('/upload/:systemId', upload.single('file'), async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const { systemId } = req.query;
+
+    if (systemId) {
+      const parentSystem = await db.lavaSystemRequest.findUnique({ where: { id: systemId } });
+      if (!parentSystem) return res.status(404).json({ error: 'System not found' });
+      if (!isSiteAllowed(req.session.user, parentSystem.siteId)) {
+        return res.status(403).json({ error: 'Access denied — system is outside your site scope' });
+      }
+    }
+
     const assets = await db.lavaAsset.findMany({
       where:   systemId ? { systemRequestId: systemId } : {},
       include: {
@@ -170,10 +191,13 @@ router.get('/', async (req, res) => {
   }
 });
 
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', requireVulcan, async (req, res) => {
   try {
     const existing = await db.lavaAsset.findUnique({ where: { id: req.params.id } });
     if (!existing) return res.status(404).json({ error: 'Asset not found' });
+    if (!isSiteAllowed(req.session.user, existing.siteId)) {
+      return res.status(403).json({ error: 'Access denied — asset is outside your site scope' });
+    }
 
     const payload = {
       assetTag: normalize(req.body.assetTag !== undefined ? req.body.assetTag : req.body.asset_tag),
@@ -217,16 +241,22 @@ router.patch('/:id', async (req, res) => {
 });
 
 // ── Delete Asset ─────────────────────────────────────────────────────────────
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', requireVulcan, async (req, res) => {
   try {
-    const asset = await db.lavaAsset.delete({ where: { id: req.params.id } });
+    const existing = await db.lavaAsset.findUnique({ where: { id: req.params.id } });
+    if (!existing) return res.status(404).json({ error: 'Asset not found' });
+    if (!isSiteAllowed(req.session.user, existing.siteId)) {
+      return res.status(403).json({ error: 'Access denied — asset is outside your site scope' });
+    }
+
+    await db.lavaAsset.delete({ where: { id: req.params.id } });
     await writeAudit(
       req,
       'delete',
       'hardware_asset',
-      asset.id,
-      `Deleted asset ${asset.assetTag || asset.serialNumber || asset.id}`,
-      asset.siteId
+      existing.id,
+      `Deleted asset ${existing.assetTag || existing.serialNumber || existing.id}`,
+      existing.siteId
     );
     res.json({ ok: true });
   } catch (err) {

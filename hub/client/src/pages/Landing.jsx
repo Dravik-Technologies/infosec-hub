@@ -4,10 +4,10 @@ import { useTheme } from '../context/ThemeContext';
 import { useEffect } from 'react';
 import {
   Shield, ShieldCheck, FileText, BarChart3, Flame,
-  ArrowRight, Lock, Sun, Moon, Zap, Globe, Users, Activity, Terminal,
+  ArrowRight, Lock, Sun, Moon, Zap, Globe, Users, Activity, Terminal, Command,
 } from 'lucide-react';
 
-const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame };
+const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame, Command };
 
 const APPS = [
   {
@@ -24,15 +24,21 @@ const APPS = [
   },
   {
     id: 'mash', name: 'MASH', tagline: 'MTSI Advanced Sentinel Hub',
-    desc: 'DoD security compliance dashboard with live threat intelligence feeds, audit log analysis, and posture monitoring.',
+    desc: 'Security Managers Workspace shell for the future facility, personnel, and activities-security rebuild that will feed NEXUS.',
     color: 'gold', icon: 'BarChart3', team: 'Security Operations',
-    tags: ['Dashboard', 'Threat Intel', 'DoD'],
+    tags: ['Facility Security', 'Personnel Security', 'Activities Security'],
   },
   {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',
     desc: 'Magmatic onboarding portal with digitized DD Form 2875 SAAR workflow, Vulcan approval command, and hardware asset provisioning.',
     color: 'orange', icon: 'Flame', team: 'Network Administration',
     tags: ['SAAR', 'DD Form 2875', 'YubiKey'],
+  },
+  {
+    id: 'nexus', name: 'NEXUS', tagline: 'Program Mission Command',
+    desc: 'Executive command surface for program management, non-IT security posture, and SCORVA-fed IT and cybersecurity readiness.',
+    color: 'cyan', icon: 'Command', team: 'Program Management',
+    tags: ['Real Estate', 'Construction', 'Accreditation'],
   },
 ];
 
@@ -64,6 +70,13 @@ const COLOR_MAP = {
     icon:  'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20',
     top:   'bg-orange-500',
     glow:  'group-hover:shadow-[0_0_32px_rgb(249_115_22/0.12)]',
+  },
+  cyan: {
+    card:  'hover:border-cyan-500/50',
+    badge: 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20',
+    icon:  'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20',
+    top:   'bg-cyan-500',
+    glow:  'group-hover:shadow-[0_0_32px_rgb(6_182_212/0.12)]',
   },
 };
 

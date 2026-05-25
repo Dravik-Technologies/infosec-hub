@@ -6,7 +6,9 @@ function normalizeSites(...values) {
 }
 
 module.exports = function missionSiteScope(req, res, next) {
-  const isCorporateAdmin = req.user?.role === 'Corporate Admin';
+  // Honor canSeeAllSites from HUB token (Corporate Security Admin + MTSI-ALX)
+  // and fall back to role check for legacy tokens that predate the flag
+  const isCorporateAdmin = Boolean(req.user?.canSeeAllSites) || req.user?.role === 'Corporate Admin';
   const selectedHeaderSite = (req.headers['x-selected-site'] || '').toString().trim() || null;
   const tokenSiteIds = normalizeSites(req.user?.siteIds, req.user?.siteIDs, req.user?.siteId, req.user?.siteID, req.user?.site);
   const activeSiteId = isCorporateAdmin

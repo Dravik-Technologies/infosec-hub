@@ -1,0 +1,28 @@
+{
+  "facilitySecurity": {
+    "summary": {
+      "nominal": 5,
+      "guarded": 2,
+      "elevated": 1
+    },
+    "sites": [
+      { "id": "fs-01", "site": "MTSI Alexandria", "status": "Nominal", "issue": "Zone 5 badge reader replacement closes 2026-06-01", "lastReview": "2026-05-14" },
+      { "id": "fs-02", "site": "Colorado Springs", "status": "Guarded", "issue": "Visitor processing backlog impacts secure-area escorting", "lastReview": "2026-05-18" },
+      { "id": "fs-03", "site": "Huntsville", "status": "Nominal", "issue": "No open facility blockers", "lastReview": "2026-05-11" }
+    ]
+  },
+  "personnelSecurity": {
+    "training": { "current": 182, "overdue": 14, "dueSoon": 21 },
+    "visitAccessRequests": { "open": 11, "priority": 3, "processedThisWeek": 26 },
+    "clearanceStatus": { "active": 236, "pendingAdjudication": 9, "reinvestigationsDue": 17 }
+  },
+  "activitiesSecurity": {
+    "headline": "Activities Security is being structured now so the future security-managers app can feed NEXUS cleanly.",
+    "categories": [
+      { "id": "act-01", "name": "Inspections", "open": 4, "note": "Site-led self-inspection follow-up and coordination tasks." },
+      { "id": "act-02", "name": "Events & Briefings", "open": 6, "note": "Initial briefings, annual refreshers, and command event support." },
+      { "id": "act-03", "name": "Access Coordination", "open": 8, "note": "Escort support, visitor packages, and temporary access windows." },
+      { "id": "act-04", "name": "Open Issues", "open": 5, "note": "Cross-functional issues requiring facility / personnel / activity security coordination." }
+    ]
+  }
+}
