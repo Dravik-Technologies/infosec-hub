@@ -1,7 +1,7 @@
 'use strict';
 
 // Platform admin roles — full LAVA admin/operator access
-const PLATFORM_ADMIN_ROLES = new Set(['Corporate Admin', 'Site Admin', 'Admin']);
+const PLATFORM_ADMIN_ROLES = new Set(['Corporate Admin', 'Hub Admin', 'Site Admin', 'Admin']);
 
 // Security roles that grant LAVA operator access
 const OPERATOR_SECURITY_ROLES = new Set(['Information Technology', 'Information Security']);
@@ -24,7 +24,7 @@ function requireVulcan(req, res, next) {
 
 function isCorporateAdmin(req) {
   const user = req.session && req.session.user;
-  return Boolean(user && user.role === 'Corporate Admin');
+  return Boolean(user && (user.role === 'Corporate Admin' || user.role === 'Hub Admin'));
 }
 
 function requireCorporateAdmin(req, res, next) {
@@ -38,7 +38,7 @@ function requireCorporateAdmin(req, res, next) {
 // Otherwise the record's siteId must be in the viewer's allowed site list.
 function isSiteAllowed(viewer, recordSiteId) {
   if (!viewer) return false;
-  if (viewer.role === 'Corporate Admin' || viewer.canSeeAllSites) return true;
+  if (viewer.role === 'Corporate Admin' || viewer.role === 'Hub Admin' || viewer.canSeeAllSites) return true;
   if (recordSiteId === null || recordSiteId === undefined) return true;
   const siteIds = Array.isArray(viewer.siteIds) ? viewer.siteIds.filter(Boolean) : [];
   if (viewer.siteId && !siteIds.includes(viewer.siteId)) siteIds.push(viewer.siteId);

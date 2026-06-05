@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -43,8 +43,9 @@ export default function AccessAdmin() {
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
 
-  const isCorpAdmin = user?.role === 'Corporate Admin';
-  const canAdmin    = isCorpAdmin || user?.role === 'Access Admin';
+  const currentHubRole = user?.hubRole || user?.role;
+  const isHubAdmin = currentHubRole === 'Hub Admin';
+  const canAdmin   = isHubAdmin;
 
   const [tab,          setTab]          = useState('requests');
   const [users,        setUsers]        = useState([]);
@@ -54,6 +55,8 @@ export default function AccessAdmin() {
   const [message,      setMessage]      = useState('');
   const [error,        setError]        = useState('');
   const [expandedUser, setExpandedUser] = useState(null);
+  const [expandedSites, setExpandedSites] = useState({});
+  const [expandedRoles, setExpandedRoles] = useState({});
 
   const [meta, setMeta] = useState({
     platformRoles: [], securityRoles: [], securityRoleTitles: {},
@@ -62,7 +65,7 @@ export default function AccessAdmin() {
 
   const blankCreate = {
     id: '', name: '', username: '', email: '', password: '',
-    role: 'Viewer', securityRole: '', siteId: '', siteIds: [],
+    role: 'Hub Viewer', securityRole: '', siteId: '', siteIds: [], allowedApps: ['hub'],
   };
   const [createForm, setCreateForm] = useState(blankCreate);
 
@@ -111,8 +114,9 @@ export default function AccessAdmin() {
         securityRole: entry.securityRole || null,
         siteId:       entry.siteId || null,
         siteIds:      Array.isArray(entry.siteIds) ? entry.siteIds.filter(Boolean) : [],
+        allowedApps:  Array.isArray(entry.allowedApps) ? entry.allowedApps.filter(Boolean) : [],
       };
-      if (isCorpAdmin) payload.role = entry.role;
+      if (isHubAdmin) payload.role = entry.role;
       const res  = await fetch(`${BASE}/api/admin/users/${encodeURIComponent(entry.id)}`, {
         method: 'PATCH', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -134,6 +138,7 @@ export default function AccessAdmin() {
         siteId:       createForm.siteId || null,
         siteIds:      createForm.siteId ? [...new Set([createForm.siteId, ...createForm.siteIds].filter(Boolean))] : createForm.siteIds,
         securityRole: createForm.securityRole || null,
+        allowedApps:  Array.isArray(createForm.allowedApps) ? createForm.allowedApps.filter(Boolean) : [],
       };
       const res  = await fetch(`${BASE}/api/admin/users`, {
         method: 'POST', credentials: 'include',
@@ -193,13 +198,75 @@ export default function AccessAdmin() {
     });
   }
 
+  function toggleUserApp(userId, appId, checked) {
+    setUsers(cur => cur.map(u => {
+      if (u.id !== userId) return u;
+      const next = checked
+        ? [...new Set([...(u.allowedApps || []), appId])]
+        : (u.allowedApps || []).filter(a => a !== appId);
+      return { ...u, allowedApps: next.includes('hub') ? next : ['hub', ...next] };
+    }));
+  }
+
+  function toggleCreateApp(appId, checked) {
+    setCreateForm(f => {
+      const next = checked
+        ? [...new Set([...(f.allowedApps || []), appId])]
+        : (f.allowedApps || []).filter(a => a !== appId);
+      return { ...f, allowedApps: next.includes('hub') ? next : ['hub', ...next] };
+    });
+  }
+
   const pendingCount = requests.filter(r => r.status === 'pending').length;
 
-  const { platformRoles, securityRoles, securityRoleTitles, sites } = meta;
+  const { platformRoles, securityRoles, securityRoleTitles, securityRoleApps, sites, allApps } = meta;
 
   function derivedTitle(securityRole) {
-    return securityRoleTitles[securityRole] || securityRole || '—';
+    return securityRoleTitles[securityRole] || securityRole || '';
   }
+
+  function suggestedApps(securityRole) {
+    const apps = securityRoleApps[securityRole] || ['hub'];
+    return apps.includes('hub') ? apps : ['hub', ...apps];
+  }
+
+  function applyRoleDefaultsToUser(entry) {
+    patchUser(entry.id, {
+      allowedApps: suggestedApps(entry.securityRole),
+    });
+  }
+
+  function applyRoleDefaultsToCreate() {
+    setCreateForm(f => ({
+      ...f,
+      allowedApps: suggestedApps(f.securityRole),
+    }));
+  }
+
+  const groupedUsers = useMemo(() => {
+    const siteLabelById = Object.fromEntries(sites.map(s => [s.id, s.label]));
+    const groups = new Map();
+    for (const entry of users) {
+      const siteKey = entry.siteId || 'UNASSIGNED';
+      const siteLabel = entry.siteId ? `${entry.siteId} — ${siteLabelById[entry.siteId] || entry.siteId}` : 'Unassigned Users';
+      if (!groups.has(siteKey)) {
+        groups.set(siteKey, { siteKey, siteLabel, roles: new Map(), count: 0 });
+      }
+      const siteGroup = groups.get(siteKey);
+      const roleKey = entry.role || 'Hub Viewer';
+      if (!siteGroup.roles.has(roleKey)) siteGroup.roles.set(roleKey, []);
+      siteGroup.roles.get(roleKey).push(entry);
+      siteGroup.count += 1;
+    }
+    return [...groups.values()]
+      .sort((a, b) => a.siteLabel.localeCompare(b.siteLabel))
+      .map(group => ({
+        ...group,
+        roles: [...group.roles.entries()]
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([roleKey, members]) => ({ roleKey, members })),
+      }));
+  }, [users, sites]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg">
@@ -216,7 +283,7 @@ export default function AccessAdmin() {
               <Shield size={13} className="text-scorva-accent" />
             </div>
             <div>
-              <div className="text-xs font-black font-mono tracking-[0.2em] text-scorva-accent uppercase leading-none text-glow">Access Admin</div>
+              <div className="text-xs font-black font-mono tracking-[0.2em] text-scorva-accent uppercase leading-none text-glow">Hub Admin Console</div>
               <div className="text-[10px] text-scorva-muted font-mono leading-none mt-0.5">MTSI Hub</div>
             </div>
           </div>
@@ -228,7 +295,7 @@ export default function AccessAdmin() {
           <div className="flex items-center gap-2 pl-2 ml-1 border-l border-scorva-border">
             <div className="hidden sm:flex flex-col leading-none">
               <span className="text-xs font-semibold text-scorva-text">{user?.name}</span>
-              <span className="text-[10px] text-scorva-muted font-mono">{user?.role}</span>
+              <span className="text-[10px] text-scorva-muted font-mono">{currentHubRole}</span>
             </div>
             <button onClick={logout} className="p-1.5 rounded-md text-scorva-muted hover:text-red-500 hover:bg-scorva-hover transition-colors">
               <LogOut size={15} />
@@ -247,8 +314,8 @@ export default function AccessAdmin() {
               <div className="w-5 h-[2px] bg-scorva-accent" />
               <span className="text-[10px] font-mono text-scorva-accent uppercase tracking-[0.35em]">Administration</span>
             </div>
-            <h1 className="text-2xl font-black text-scorva-text font-mono tracking-wide text-glow">Identity Control Plane</h1>
-            <p className="text-sm text-scorva-muted mt-1 mb-5">Manage access requests, users, site assignments, and security roles from a single control surface.</p>
+                <h1 className="text-2xl font-black text-scorva-text font-mono tracking-wide text-glow">Identity Control Plane</h1>
+            <p className="text-sm text-scorva-muted mt-1 mb-5">Manage access requests, users, site assignments, and job roles from a single control surface.</p>
 
             {/* Identity model legend */}
             <div className="glass border border-scorva-border rounded-xl p-4 glow-border-strong">
@@ -258,12 +325,12 @@ export default function AccessAdmin() {
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                 {[
-                  { label: 'Platform Role',   desc: 'HUB admin authority',           color: 'text-scorva-accent border-scorva-accent/20 bg-scorva-accent/10' },
-                  { label: 'Security Role',   desc: 'Operational role & title',      color: 'text-teal-400 border-teal-500/20 bg-teal-500/10' },
+                  { label: 'HUB Role',        desc: 'Hub admin authority',           color: 'text-scorva-accent border-scorva-accent/20 bg-scorva-accent/10' },
+                  { label: 'Job Role',        desc: 'Operational role & title',      color: 'text-teal-400 border-teal-500/20 bg-teal-500/10' },
                   { label: 'Status',          desc: 'Account active state',          color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10' },
-                  { label: 'Allowed Apps',    desc: 'Derived from Security Role',    color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
+                  { label: 'Allowed Apps',    desc: 'Explicit user app grants',      color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
                   { label: 'Primary Site',    desc: 'Default site context',          color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
-                  { label: 'Site Access',     desc: 'All assigned sites',            color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
+                  { label: 'Site Access',     desc: 'All assigned site memberships', color: 'text-scorva-muted border-scorva-border bg-scorva-hover' },
                 ].map(({ label, desc, color }) => (
                   <div key={label} className={`rounded-lg border px-2.5 py-2 ${color}`}>
                     <div className="text-[9px] font-mono font-semibold tracking-widest uppercase">{label}</div>
@@ -272,7 +339,7 @@ export default function AccessAdmin() {
                 ))}
               </div>
               <p className="text-[9px] text-scorva-muted font-mono mt-2.5">
-                Security Role drives displayed title and app access. Site scope determines data visibility. Users at MTSI-ALX with Corporate Security Admin role can see all sites.
+                HUB Role controls admin authority. Job Role describes the mission function. App access is explicitly granted per user. Only Hub Admin can see all sites.
               </p>
             </div>
           </div>
@@ -300,7 +367,7 @@ export default function AccessAdmin() {
                 </button>
               );
             })}
-            {isCorpAdmin && (
+            {isHubAdmin && (
               <button
                 onClick={() => setTab('create')}
                 className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold font-mono transition-colors border-b-2 -mb-px tracking-wide ${
@@ -329,7 +396,7 @@ export default function AccessAdmin() {
             <div className="card p-5">
               <SectionHeader
                 title="Access Requests"
-                subtitle="Requests from app landing pages. Approval records the review decision. For users with a Security Role, app access is role-derived — update the Security Role if the requested app isn't covered."
+                subtitle="Requests from app landing pages. Approval grants the requested application directly to the selected user account."
                 action={
                   <button onClick={loadRequests} disabled={reqLoading} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors disabled:opacity-60">
                     <RefreshCw size={12} className={reqLoading ? 'animate-spin' : ''} /> Refresh
@@ -398,7 +465,7 @@ export default function AccessAdmin() {
               <div className="card p-5">
                 <SectionHeader
                   title="Users"
-                  subtitle={`Manage identity, platform role, security role, and site assignments${isCorpAdmin ? ' — including platform role changes' : ''}.`}
+                  subtitle="Manage HUB role, job role, app access, and site assignments in a site-first hierarchy."
                   action={
                     <button onClick={loadUsers} disabled={usersLoading} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors disabled:opacity-60">
                       <RefreshCw size={12} className={usersLoading ? 'animate-spin' : ''} /> Refresh
@@ -409,192 +476,226 @@ export default function AccessAdmin() {
                 {usersLoading ? (
                   <p className="text-xs font-mono text-scorva-muted py-4">Loading users…</p>
                 ) : (
-                  <div className="space-y-2">
-                    {users.map(entry => {
-                      const isExpanded = expandedUser === entry.id;
+                  <div className="space-y-3">
+                    {groupedUsers.map(siteGroup => {
+                      const siteOpen = expandedSites[siteGroup.siteKey] ?? true;
                       return (
-                        <div key={entry.id} className="border border-scorva-border rounded-xl overflow-hidden hover:border-scorva-accent/20 transition-colors">
-                          {/* Summary row */}
+                        <div key={siteGroup.siteKey} className="border border-scorva-border rounded-xl overflow-hidden">
                           <button
-                            onClick={() => setExpandedUser(isExpanded ? null : entry.id)}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-scorva-hover/40 transition-colors"
+                            onClick={() => setExpandedSites(cur => ({ ...cur, [siteGroup.siteKey]: !siteOpen }))}
+                            className="w-full flex items-center justify-between px-4 py-3 bg-scorva-hover/30 hover:bg-scorva-hover/50 transition-colors"
                           >
-                            {/* Avatar */}
-                            <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-scorva-accent/10 border border-scorva-accent/20 text-xs font-black text-scorva-accent font-mono shrink-0">
-                              {entry.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase()}
-                            </div>
-
-                            {/* Name + email */}
-                            <div className="w-36 shrink-0 min-w-0">
-                              <div className="text-sm font-semibold text-scorva-text truncate">{entry.name}</div>
-                              <div className="text-[10px] font-mono text-scorva-muted truncate">@{entry.username}</div>
-                            </div>
-
-                            {/* Identity badges */}
-                            <div className="flex-1 hidden sm:flex items-center gap-1.5 flex-wrap min-w-0">
-                              <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${entry.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                {entry.status}
+                            <div className="flex items-center gap-3 min-w-0">
+                              <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded border bg-scorva-accent/10 text-scorva-accent border-scorva-accent/20">
+                                <MapPin size={10} /> {siteGroup.siteLabel}
                               </span>
-                              <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-accent/10 text-scorva-accent border-scorva-accent/20 shrink-0">
-                                {entry.role}
-                              </span>
-                              {entry.securityRole ? (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-teal-500/10 text-teal-400 border-teal-500/20 shrink-0">
-                                  {entry.securityRole}
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">
-                                  No Security Role
-                                </span>
-                              )}
-                              {entry.siteId ? (
-                                <span className="inline-flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-muted border-scorva-border shrink-0">
-                                  <MapPin size={8} /> {entry.siteId}
-                                </span>
-                              ) : (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">
-                                  No Site
-                                </span>
-                              )}
-                              {entry.allowedApps.filter(a => a !== 'hub').map(a => (
-                                <span key={a} className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-scorva-hover border border-scorva-border text-scorva-muted shrink-0">{a}</span>
-                              ))}
-                              {!entry.allowedApps.filter(a => a !== 'hub').length && (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">hub only</span>
-                              )}
-                              {entry.canSeeAllSites && (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shrink-0">All Sites</span>
-                              )}
+                              <span className="text-[10px] font-mono text-scorva-muted">{siteGroup.count} users</span>
                             </div>
-
-                            <div className="shrink-0 ml-auto">
-                              {isExpanded ? <ChevronUp size={14} className="text-scorva-muted" /> : <ChevronDown size={14} className="text-scorva-muted" />}
-                            </div>
+                            {siteOpen ? <ChevronUp size={14} className="text-scorva-muted" /> : <ChevronDown size={14} className="text-scorva-muted" />}
                           </button>
 
-                          {/* Expanded edit form */}
-                          {isExpanded && (
-                            <div className="px-4 pb-5 pt-3 border-t border-scorva-accent/15 bg-scorva-bg/60">
-                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-
-                                {/* Platform Permissions */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
-                                    <div className="w-2 h-px bg-scorva-accent" />
-                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Platform</span>
-                                  </div>
-                                  {isCorpAdmin ? (
-                                    <div>
-                                      <FieldLabel>Platform Role</FieldLabel>
-                                      <select className="input-base text-xs" value={entry.role} onChange={e => patchUser(entry.id, { role: e.target.value })}>
-                                        {platformRoles.map(r => <option key={r}>{r}</option>)}
-                                      </select>
-                                    </div>
-                                  ) : (
-                                    <div>
-                                      <FieldLabel>Platform Role</FieldLabel>
-                                      <p className="text-xs text-scorva-text font-mono">{entry.role}</p>
-                                    </div>
-                                  )}
-                                  <div>
-                                    <FieldLabel>Status</FieldLabel>
-                                    <select className="input-base text-xs" value={entry.status} onChange={e => patchUser(entry.id, { status: e.target.value })}>
-                                      <option>Active</option>
-                                      <option>Inactive</option>
-                                    </select>
-                                  </div>
-                                </div>
-
-                                {/* Security Role */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
-                                    <div className="w-2 h-px bg-teal-400" />
-                                    <span className="text-[9px] font-mono text-teal-400 uppercase tracking-[0.3em] font-medium">Security Role</span>
-                                  </div>
-                                  <div>
-                                    <FieldLabel>Security Role</FieldLabel>
-                                    <select
-                                      className="input-base text-xs"
-                                      value={entry.securityRole || ''}
-                                      onChange={e => patchUser(entry.id, { securityRole: e.target.value || null })}
+                          {siteOpen && (
+                            <div className="p-3 space-y-3">
+                              {siteGroup.roles.map(roleGroup => {
+                                const rolePath = `${siteGroup.siteKey}:${roleGroup.roleKey}`;
+                                const roleOpen = expandedRoles[rolePath] ?? true;
+                                return (
+                                  <div key={rolePath} className="border border-scorva-border/70 rounded-xl overflow-hidden">
+                                    <button
+                                      onClick={() => setExpandedRoles(cur => ({ ...cur, [rolePath]: !roleOpen }))}
+                                      className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-scorva-hover/30 transition-colors"
                                     >
-                                      <option value="">— None —</option>
-                                      {securityRoles.map(r => <option key={r} value={r}>{r}</option>)}
-                                    </select>
-                                  </div>
-                                  {entry.securityRole && (
-                                    <div>
-                                      <FieldLabel>Derived Title</FieldLabel>
-                                      <p className="text-xs text-teal-400 font-mono">{derivedTitle(entry.securityRole)}</p>
-                                    </div>
-                                  )}
-                                  <div className="pt-2">
-                                    <button onClick={() => saveUser(entry)} className="btn-primary text-xs glow-border">
-                                      Save Changes
+                                      <div className="flex items-center gap-3">
+                                        <span className="text-[10px] font-mono px-2 py-0.5 rounded border bg-scorva-hover text-scorva-text border-scorva-border">
+                                          {roleGroup.roleKey}
+                                        </span>
+                                        <span className="text-[10px] font-mono text-scorva-muted">{roleGroup.members.length} users</span>
+                                      </div>
+                                      {roleOpen ? <ChevronUp size={14} className="text-scorva-muted" /> : <ChevronDown size={14} className="text-scorva-muted" />}
                                     </button>
-                                  </div>
-                                </div>
 
-                                {/* Site Access */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
-                                    <div className="w-2 h-px bg-scorva-accent" />
-                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Site Access</span>
-                                  </div>
-                                  <div>
-                                    <FieldLabel>Primary Site</FieldLabel>
-                                    <select
-                                      className="input-base text-xs font-mono"
-                                      value={entry.siteId || ''}
-                                      onChange={e => {
-                                        const val = e.target.value;
-                                        patchUser(entry.id, {
-                                          siteId: val || null,
-                                          siteIds: val ? [...new Set([val, ...(entry.siteIds || [])])] : entry.siteIds,
-                                        });
-                                      }}
-                                    >
-                                      <option value="">— None —</option>
-                                      {sites.map(s => <option key={s.id} value={s.id}>{s.id} — {s.label}</option>)}
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <FieldLabel>Site Access</FieldLabel>
-                                    <div className="space-y-1.5 mt-1">
-                                      {sites.map(s => (
-                                        <label key={s.id} className="flex items-center gap-2 cursor-pointer hover:text-scorva-text transition-colors">
-                                          <input
-                                            type="checkbox"
-                                            checked={(entry.siteIds || []).includes(s.id)}
-                                            onChange={e => toggleSiteAccess(entry.id, s.id, e.target.checked)}
-                                            className="rounded"
-                                          />
-                                          <span className="text-xs font-mono text-scorva-muted">{s.id}</span>
-                                          <span className="text-[10px] text-scorva-border">{s.label}</span>
-                                        </label>
-                                      ))}
-                                    </div>
-                                    {entry.canSeeAllSites && (
-                                      <p className="text-[9px] text-yellow-400 font-mono mt-1.5">⬡ All-site visibility active</p>
+                                    {roleOpen && (
+                                      <div className="space-y-2 p-2">
+                                        {roleGroup.members.map(entry => {
+                                          const isExpanded = expandedUser === entry.id;
+                                          return (
+                                            <div key={entry.id} className="border border-scorva-border rounded-xl overflow-hidden hover:border-scorva-accent/20 transition-colors">
+                                              <button
+                                                onClick={() => setExpandedUser(isExpanded ? null : entry.id)}
+                                                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-scorva-hover/40 transition-colors"
+                                              >
+                                                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-scorva-accent/10 border border-scorva-accent/20 text-xs font-black text-scorva-accent font-mono shrink-0">
+                                                  {entry.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase()}
+                                                </div>
+                                                <div className="w-44 shrink-0 min-w-0">
+                                                  <div className="text-sm font-semibold text-scorva-text truncate">{entry.name}</div>
+                                                  <div className="text-[10px] font-mono text-scorva-muted truncate">@{entry.username}</div>
+                                                  {entry.title && <div className="text-[10px] text-teal-400 truncate">{entry.title}</div>}
+                                                </div>
+                                                <div className="flex-1 hidden sm:flex items-center gap-1.5 flex-wrap min-w-0">
+                                                  <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${entry.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                    {entry.status}
+                                                  </span>
+                                                  {entry.securityRole ? (
+                                                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-teal-500/10 text-teal-400 border-teal-500/20 shrink-0">
+                                                      {entry.securityRole}
+                                                    </span>
+                                                  ) : (
+                                                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">
+                                                      No Job Role
+                                                    </span>
+                                                  )}
+                                                  {(entry.allowedApps || []).map(appId => (
+                                                    <span key={appId} className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${appId === 'hub' ? 'bg-scorva-accent/10 text-scorva-accent border-scorva-accent/20' : 'bg-scorva-hover border-scorva-border text-scorva-muted'}`}>
+                                                      {appId}
+                                                    </span>
+                                                  ))}
+                                                  {entry.canSeeAllSites && (
+                                                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shrink-0">All Sites</span>
+                                                  )}
+                                                </div>
+                                                <div className="shrink-0 ml-auto">
+                                                  {isExpanded ? <ChevronUp size={14} className="text-scorva-muted" /> : <ChevronDown size={14} className="text-scorva-muted" />}
+                                                </div>
+                                              </button>
+
+                                              {isExpanded && (
+                                                <div className="px-4 pb-5 pt-3 border-t border-scorva-accent/15 bg-scorva-bg/60">
+                                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                                    <div className="space-y-3">
+                                                      <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                                                        <div className="w-2 h-px bg-scorva-accent" />
+                                                        <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Hub Access</span>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>HUB Role</FieldLabel>
+                                                        <select className="input-base text-xs" value={entry.role} onChange={e => patchUser(entry.id, { role: e.target.value })}>
+                                                          {platformRoles.map(r => <option key={r}>{r}</option>)}
+                                                        </select>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>Status</FieldLabel>
+                                                        <select className="input-base text-xs" value={entry.status} onChange={e => patchUser(entry.id, { status: e.target.value })}>
+                                                          <option>Active</option>
+                                                          <option>Inactive</option>
+                                                        </select>
+                                                      </div>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                      <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                                                        <div className="w-2 h-px bg-teal-400" />
+                                                        <span className="text-[9px] font-mono text-teal-400 uppercase tracking-[0.3em] font-medium">Job Role</span>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>Job Role</FieldLabel>
+                                                        <select
+                                                          className="input-base text-xs"
+                                                          value={entry.securityRole || ''}
+                                                          onChange={e => patchUser(entry.id, {
+                                                            securityRole: e.target.value || null,
+                                                            defaultAllowedApps: suggestedApps(e.target.value || null),
+                                                          })}
+                                                        >
+                                                          <option value="">— None —</option>
+                                                          {securityRoles.map(r => <option key={r} value={r}>{r}</option>)}
+                                                        </select>
+                                                      </div>
+                                                      <button onClick={() => applyRoleDefaultsToUser(entry)} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-400 hover:bg-teal-500/20 transition-colors">
+                                                        Apply Suggested Apps
+                                                      </button>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                      <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                                                        <div className="w-2 h-px bg-scorva-accent" />
+                                                        <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Site Access</span>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>Primary Site</FieldLabel>
+                                                        <select
+                                                          className="input-base text-xs font-mono"
+                                                          value={entry.siteId || ''}
+                                                          onChange={e => {
+                                                            const val = e.target.value;
+                                                            patchUser(entry.id, {
+                                                              siteId: val || null,
+                                                              siteIds: val ? [...new Set([val, ...(entry.siteIds || [])])] : entry.siteIds,
+                                                            });
+                                                          }}
+                                                        >
+                                                          <option value="">— None —</option>
+                                                          {sites.map(s => <option key={s.id} value={s.id}>{s.id} — {s.label}</option>)}
+                                                        </select>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>Site Membership</FieldLabel>
+                                                        <div className="space-y-1.5 mt-1 max-h-32 overflow-y-auto pr-1">
+                                                          {sites.map(s => (
+                                                            <label key={s.id} className="flex items-center gap-2 cursor-pointer hover:text-scorva-text transition-colors">
+                                                              <input
+                                                                type="checkbox"
+                                                                checked={(entry.siteIds || []).includes(s.id)}
+                                                                onChange={e => toggleSiteAccess(entry.id, s.id, e.target.checked)}
+                                                                className="rounded"
+                                                              />
+                                                              <span className="text-xs font-mono text-scorva-muted">{s.id}</span>
+                                                              <span className="text-[10px] text-scorva-border">{s.label}</span>
+                                                            </label>
+                                                          ))}
+                                                        </div>
+                                                      </div>
+                                                    </div>
+
+                                                    <div className="space-y-3">
+                                                      <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                                                        <div className="w-2 h-px bg-scorva-accent" />
+                                                        <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">App Access</span>
+                                                      </div>
+                                                      <p className="text-[9px] text-scorva-muted font-mono">Highlight the apps this user can access. HUB stays enabled.</p>
+                                                      <div className="flex flex-wrap gap-1.5">
+                                                        {allApps.map(appId => {
+                                                          const selected = (entry.allowedApps || []).includes(appId);
+                                                          const suggested = (entry.defaultAllowedApps || []).includes(appId);
+                                                          return (
+                                                            <label
+                                                              key={appId}
+                                                              className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-mono cursor-pointer transition-colors ${
+                                                                selected
+                                                                  ? 'bg-scorva-accent/10 text-scorva-accent border-scorva-accent/30'
+                                                                  : suggested
+                                                                    ? 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+                                                                    : 'bg-scorva-hover text-scorva-muted border-scorva-border'
+                                                              }`}
+                                                            >
+                                                              <input
+                                                                type="checkbox"
+                                                                checked={selected}
+                                                                disabled={appId === 'hub'}
+                                                                onChange={e => toggleUserApp(entry.id, appId, e.target.checked)}
+                                                              />
+                                                              {appId}
+                                                            </label>
+                                                          );
+                                                        })}
+                                                      </div>
+                                                      <div className="pt-2">
+                                                        <button onClick={() => saveUser(entry)} className="btn-primary text-xs glow-border">
+                                                          Save Changes
+                                                        </button>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
                                     )}
                                   </div>
-                                </div>
-
-                                {/* App Access — read-only */}
-                                <div className="space-y-3">
-                                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
-                                    <div className="w-2 h-px bg-scorva-accent" />
-                                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">App Access</span>
-                                  </div>
-                                  <p className="text-[9px] text-scorva-muted font-mono">Derived from Security Role. Not editable.</p>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {(entry.allowedApps || []).map(appId => (
-                                      <span key={appId} className="text-[10px] font-mono px-2 py-0.5 rounded border bg-scorva-hover border-scorva-border text-scorva-muted">{appId}</span>
-                                    ))}
-                                  </div>
-                                </div>
-
-                              </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -606,12 +707,12 @@ export default function AccessAdmin() {
             </div>
           )}
 
-          {/* ── Create User (Corp Admin only) ── */}
-          {tab === 'create' && isCorpAdmin && (
+          {/* ── Create User (Hub Admin only) ── */}
+          {tab === 'create' && isHubAdmin && (
             <div className="card p-5">
               <SectionHeader
                 title="Create User"
-                subtitle="Provision a new HUB account. Security Role drives title and app access."
+                subtitle="Provision a new HUB account, assign sites, job role, and explicit application access."
               />
 
               <form onSubmit={createUser} className="space-y-6 max-w-3xl">
@@ -646,7 +747,7 @@ export default function AccessAdmin() {
                   </div>
                 </div>
 
-                {/* Platform + Security Role */}
+                {/* Platform + Job Role */}
                 <div>
                   <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
                     <div className="w-2 h-px bg-scorva-accent" />
@@ -654,24 +755,26 @@ export default function AccessAdmin() {
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <FieldLabel>Platform Role</FieldLabel>
+                      <FieldLabel>HUB Role</FieldLabel>
                       <select className="input-base text-xs" value={createForm.role} onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}>
                         {platformRoles.map(r => <option key={r}>{r}</option>)}
                       </select>
                     </div>
                     <div>
-                      <FieldLabel>Security Role</FieldLabel>
+                      <FieldLabel>Job Role</FieldLabel>
                       <select className="input-base text-xs" value={createForm.securityRole} onChange={e => setCreateForm(f => ({ ...f, securityRole: e.target.value }))}>
                         <option value="">— None —</option>
                         {securityRoles.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
                     </div>
-                    {createForm.securityRole && (
-                      <div className="sm:col-span-2">
-                        <FieldLabel>Derived Title</FieldLabel>
-                        <p className="text-xs text-teal-400 font-mono">{derivedTitle(createForm.securityRole)}</p>
-                      </div>
-                    )}
+                    <div className="sm:col-span-2 flex items-center gap-2">
+                      <button type="button" onClick={applyRoleDefaultsToCreate} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-teal-500/10 border border-teal-500/30 text-teal-400 hover:bg-teal-500/20 transition-colors">
+                        Apply Suggested Apps
+                      </button>
+                      {createForm.securityRole && (
+                        <span className="text-[10px] font-mono text-scorva-muted">Display title: {derivedTitle(createForm.securityRole)}</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -698,7 +801,7 @@ export default function AccessAdmin() {
                       </select>
                     </div>
                     <div>
-                      <FieldLabel>Site Access</FieldLabel>
+                      <FieldLabel>Site Membership</FieldLabel>
                       <div className="space-y-1.5 mt-1">
                         {sites.map(s => (
                           <label key={s.id} className="flex items-center gap-2 cursor-pointer hover:text-scorva-text transition-colors">
@@ -714,6 +817,39 @@ export default function AccessAdmin() {
                         ))}
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                    <div className="w-2 h-px bg-scorva-accent" />
+                    <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">App Access</span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {allApps.map(appId => {
+                      const selected = createForm.allowedApps.includes(appId);
+                      const suggested = suggestedApps(createForm.securityRole).includes(appId);
+                      return (
+                        <label
+                          key={appId}
+                          className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border text-[10px] font-mono cursor-pointer transition-colors ${
+                            selected
+                              ? 'bg-scorva-accent/10 text-scorva-accent border-scorva-accent/30'
+                              : suggested
+                                ? 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+                                : 'bg-scorva-hover text-scorva-muted border-scorva-border'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selected}
+                            disabled={appId === 'hub'}
+                            onChange={e => toggleCreateApp(appId, e.target.checked)}
+                          />
+                          {appId}
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
 

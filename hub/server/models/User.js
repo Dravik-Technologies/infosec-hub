@@ -10,7 +10,7 @@ const schema = new Schema({
   username:      { type: String, required: true, unique: true },
   email:         { type: String, required: true, unique: true },
   password_hash: { type: String, required: true, select: false },
-  role:          { type: String, default: 'Viewer' },
+  role:          { type: String, default: 'Hub Viewer' },
   site:          String,
   status:        { type: String, default: 'Active' },
   last_login:    String,

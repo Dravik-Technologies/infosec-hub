@@ -6,6 +6,10 @@ import { User } from '../models/User'
 const router = Router()
 
 router.post('/register', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(403).json({ error: 'Local registration is disabled in production. Use HUB SSO to access CRATER.' })
+    return
+  }
   try {
     const { username, email, password } = req.body
     if (!username || !email || !password) {
@@ -31,6 +35,10 @@ router.post('/register', async (req, res) => {
 })
 
 router.post('/login', async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(403).json({ error: 'Local login is disabled in production. Use HUB SSO to access CRATER.' })
+    return
+  }
   try {
     const { email, password } = req.body
     if (!email || !password) {
@@ -73,8 +81,32 @@ router.get('/sso', async (req, res) => {
       console.log('[CRATER SSO] verification failed — redirecting to login')
       res.status(401).json({ error: 'Invalid SSO token' }); return
     }
+
+    if (body.user.requestedApp && body.user.requestedApp !== 'crater') {
+      res.status(403).json({ error: 'Token was not issued for CRATER' }); return
+    }
+    const allowedApps: string[] = Array.isArray(body.user.allowedApps) ? body.user.allowedApps : []
+    if (!allowedApps.includes('crater')) {
+      res.status(403).json({ error: 'CRATER access has not been granted for this account' }); return
+    }
+
+    const siteIds: string[] = Array.isArray(body.user.siteIds) ? body.user.siteIds.filter(Boolean) : []
+    const primarySiteId: string | null = body.user.primarySiteId || body.user.siteId || siteIds[0] || null
+    const hubRole: string = body.user.hubRole || body.user.role || 'Hub Viewer'
+
     const token = jwt.sign(
-      { userId: body.user.id, username: body.user.username },
+      {
+        userId: body.user.id,
+        username: body.user.username,
+        hubRole,
+        jobRole: body.user.jobRole || body.user.securityRole || null,
+        primarySiteId,
+        siteIds,
+        allowedApps,
+        // Legacy aliases — kept for tokens decoded by older middleware
+        role: body.user.role || hubRole,
+        siteId: primarySiteId,
+      },
       process.env.JWT_SECRET ?? 'secret',
       { expiresIn: '8h' }
     )

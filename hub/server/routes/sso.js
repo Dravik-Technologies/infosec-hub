@@ -21,13 +21,38 @@
 const express     = require('express');
 const crypto      = require('crypto');
 const requireAuth = require('../middleware/requireAuth');
-const { hasAppAccess } = require('../../../packages/db/src/appAccess');
+const { hasAppAccess, getLegacyPlatformRole } = require('../../../packages/db/src/appAccess');
 const router      = express.Router();
 
 const TTL_MS = (parseInt(process.env.SSO_TOKEN_TTL, 10) || 60) * 1000;
 
 // In-memory token store: { [token]: { user, expires } }
 const tokenStore = new Map();
+
+function buildLaunchUser(sessionUser, appId) {
+  const hubRole = sessionUser.hubRole || sessionUser.role;
+  const jobRole = sessionUser.jobRole || sessionUser.securityRole || null;
+  const primarySiteId = sessionUser.primarySiteId || sessionUser.siteId || sessionUser.site || null;
+  const siteIds = Array.isArray(sessionUser.siteIds) ? sessionUser.siteIds : [];
+  const allowedApps = Array.isArray(sessionUser.allowedApps) ? sessionUser.allowedApps : [];
+
+  return {
+    ...sessionUser,
+    authVersion: sessionUser.authVersion || 3,
+    hubRole,
+    jobRole,
+    primarySiteId,
+    siteIds,
+    allowedApps,
+    requestedApp: appId,
+
+    // Legacy compatibility fields for apps not yet migrated to the new contract.
+    role: getLegacyPlatformRole(hubRole),
+    siteId: primarySiteId,
+    site: primarySiteId,
+    securityRole: jobRole,
+  };
+}
 
 // Purge expired tokens every 5 minutes
 setInterval(() => {
@@ -52,7 +77,11 @@ router.post('/token', (req, res, next) => {
   }
   const token   = crypto.randomBytes(32).toString('hex');
   const expires = Date.now() + TTL_MS;
-  tokenStore.set(token, { user: { ...req.session.user, requestedApp: appId }, appId, expires });
+  tokenStore.set(token, {
+    user: buildLaunchUser(req.session.user, appId),
+    appId,
+    expires,
+  });
   console.log(`[HUB SSO] token issued for ${req.session.user.username} -> ${appId}`);
   res.json({ token, expires, appId });
 });

@@ -10,5 +10,10 @@
   "hero": {
     "title": "Program command across facilities, security, and cyber delivery.",
     "summary": "NEXUS gives program managers one command surface for infrastructure, accreditation, executive security posture, and SCORVA-fed IT/cyber readiness."
+  },
+  "permissions": {
+    "adminHubRoles": ["Hub Admin"],
+    "adminJobRoles": ["Program Manager"],
+    "adminUsers": []
   }
 }

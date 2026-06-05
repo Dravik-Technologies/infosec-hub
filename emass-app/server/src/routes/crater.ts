@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import type { Request } from 'express'
 import { prisma } from '../lib/prisma'
 import { requireAuth } from '../middleware/auth'
 import { TECHNICAL_LIBRARY } from '../lib/technicalSeed'
@@ -50,6 +51,20 @@ async function ensureLibrarySeeded() {
   }
 }
 
+/**
+ * Verify the caller may access a given siteId.
+ * Hub Admins and Corporate Admins (canSeeAllSites) are unrestricted.
+ * For all others, the siteId must be in their allowed siteIds list.
+ * Returns false for legacy local-auth tokens that carry no HUB claims.
+ */
+function assertSiteAccess(req: Request, siteId: string | null | undefined): boolean {
+  const u = req.craterUser
+  if (!u) return false  // no HUB claims — legacy local-auth token; cannot verify scope
+  if (u.canSeeAllSites) return true
+  if (siteId == null) return true  // null siteId = enterprise-wide record
+  return u.siteIds.includes(siteId)
+}
+
 // ── POST /api/crater/hydrate ──────────────────────────────────────────────────
 // Creates a ProjectSystem and auto-fills ProjectControls from StandardLibrary.
 router.post('/hydrate', requireAuth, async (req, res) => {
@@ -66,6 +81,11 @@ router.post('/hydrate', requireAuth, async (req, res) => {
 
     if (!name || !baseline || !Array.isArray(controlIds) || !siteId) {
       res.status(400).json({ error: 'name, baseline, controlIds[], and siteId are required' })
+      return
+    }
+
+    if (!assertSiteAccess(req, siteId)) {
+      res.status(403).json({ error: 'Access denied — siteId is outside your allowed site scope' })
       return
     }
 
@@ -144,6 +164,10 @@ router.get('/systems/:externalId/controls', requireAuth, async (req, res) => {
       res.status(404).json({ error: 'Project system not found. Run categorization first.' })
       return
     }
+    if (!assertSiteAccess(req, system.siteId)) {
+      res.status(403).json({ error: 'Access denied — system is outside your allowed site scope' })
+      return
+    }
     const controls = await prisma.projectControl.findMany({
       where: { projectSystemId: system.id },
       orderBy: { controlId: 'asc' },
@@ -176,6 +200,10 @@ router.put('/systems/:externalId/controls/:controlId', requireAuth, async (req, 
       res.status(404).json({ error: 'Project system not found' })
       return
     }
+    if (!assertSiteAccess(req, system.siteId)) {
+      res.status(403).json({ error: 'Access denied — system is outside your allowed site scope' })
+      return
+    }
 
     const updated = await prisma.projectControl.update({
       where: { projectSystemId_controlId: { projectSystemId: system.id, controlId } },
@@ -202,6 +230,10 @@ router.get('/assets', requireAuth, async (req, res) => {
     const siteId = req.query.siteId as string
     if (!siteId) {
       res.status(400).json({ error: 'siteId query parameter is required' })
+      return
+    }
+    if (!assertSiteAccess(req, siteId)) {
+      res.status(403).json({ error: 'Access denied — siteId is outside your allowed site scope' })
       return
     }
     const assets = await prisma.workstation.findMany({

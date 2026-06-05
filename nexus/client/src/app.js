@@ -83,13 +83,14 @@ export const fmtDate = value => {
 };
 
 export const pctClass = value => {
-  if (value >= 80) return 'is-good';
-  if (value >= 60) return 'is-watch';
-  return 'is-risk';
+  if (value >= 80) return 'good';
+  if (value >= 60) return 'watch';
+  return 'risk';
 };
 
 export function isAdminRole(user) {
-  return user?.role === 'Corporate Admin'
-    || user?.role === 'Program Manager'
-    || user?.securityRole === 'Program Manager';
+  return Boolean(user?.nexusAdmin)
+    || user?.hubRole === 'Hub Admin'
+    || user?.role === 'Hub Admin'
+    || user?.role === 'Corporate Admin';
 }

@@ -100,9 +100,12 @@ export default function Portal() {
   const [launching, setLaunching] = useState(null);
   const [apps,      setApps]      = useState(APPS);
 
+  const hubRole = user?.hubRole || user?.role;
+  const jobRole = user?.jobRole || user?.securityRole;
+  const primarySiteId = user?.primarySiteId || user?.siteId || user?.site;
   const teams    = ['All', ...new Set(apps.map(a => a.team))];
-  const canAdmin = user?.role === 'Corporate Admin' || user?.role === 'Access Admin';
-  const siteLabel = user?.siteId || (Array.isArray(user?.siteIds) && user.siteIds.length > 1
+  const canAdmin = hubRole === 'Hub Admin';
+  const siteLabel = primarySiteId || (Array.isArray(user?.siteIds) && user.siteIds.length > 1
     ? `${user.siteIds.length} sites` : null);
 
   useEffect(() => {
@@ -171,7 +174,7 @@ export default function Portal() {
             <div className="hidden sm:flex flex-col leading-none gap-0.5">
               <span className="text-xs font-semibold text-scorva-text">{user?.name}</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] text-scorva-muted font-mono">{user?.role}</span>
+                <span className="text-[10px] text-scorva-muted font-mono">{hubRole}</span>
                 {siteLabel && (
                   <>
                     <span className="text-scorva-border">·</span>
@@ -214,11 +217,11 @@ export default function Portal() {
                 {/* Identity context strip */}
                 <div className="flex flex-wrap gap-1.5">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-scorva-accent/10 border border-scorva-accent/20 text-[10px] font-mono text-scorva-accent">
-                    HUB: {user?.role}
+                    HUB: {hubRole}
                   </span>
-                  {user?.securityRole && (
+                  {jobRole && (
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-teal-500/10 border border-teal-500/20 text-[10px] font-mono text-teal-500 dark:text-teal-400">
-                      {user.securityRole}
+                      {jobRole}
                     </span>
                   )}
                   {siteLabel && (

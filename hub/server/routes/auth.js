@@ -5,7 +5,14 @@ const bcrypt  = require('bcryptjs');
 const crypto  = require('crypto');
 const { ConfidentialClientApplication } = require('@azure/msal-node');
 const { db }  = require('../../../packages/db/src/index');
-const { getAllowedApps, hasAppAccess, getSecurityRole, getTitleFromSecurityRole, canSeeAllSites } = require('../../../packages/db/src/appAccess');
+const {
+  getAllowedApps,
+  hasAppAccess,
+  getSecurityRole,
+  getTitleFromSecurityRole,
+  canSeeAllSites,
+  normalizePlatformRole,
+} = require('../../../packages/db/src/appAccess');
 const router  = express.Router();
 
 const ENTRA_SCOPES = ['openid', 'profile', 'email'];
@@ -56,20 +63,28 @@ function redirectUri() {
 function buildSessionUser(found, extras) {
   const extra = extras || {};
   const securityRole = getSecurityRole(found) || null;
+  const hubRole = normalizePlatformRole(found.role);
+  const siteIds = Array.isArray(found.siteIds) ? found.siteIds : [];
+  const primarySiteId = found.siteId || null;
+  const allowedApps = getAllowedApps(found);
   return {
+    authVersion:    3,
     id:             found.id,
     name:           found.name,
     username:       found.username,
     email:          found.email,
-    role:           found.role,
-    siteId:         found.siteId,
-    siteIds:        Array.isArray(found.siteIds) ? found.siteIds : [],
-    site:           found.siteId,
+    hubRole:        hubRole,
+    jobRole:        securityRole,
+    primarySiteId:  primarySiteId,
+    siteIds:        siteIds,
+    allowedApps:    allowedApps,
+    role:           hubRole,
+    siteId:         primarySiteId,
+    site:           primarySiteId,
     securityRole:   securityRole,
-    title:          getTitleFromSecurityRole(securityRole) || found.title || null,
+    title:          found.title || getTitleFromSecurityRole(securityRole) || null,
     canSeeAllSites: canSeeAllSites(found),
     initials:       found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
-    allowedApps:    getAllowedApps(found),
     authProvider:   extra.authProvider || 'local',
     entraOid:       extra.entraOid || null,
     entraTenantId:  extra.entraTenantId || null,
@@ -133,10 +148,14 @@ router.post('/login', async (req, res) => {
 
   if (process.env.NODE_ENV !== 'production' && username === 'admin' && password === 'admin') {
     req.session.user = {
+      authVersion: 3,
       id: 'dev-admin', name: 'Dev Admin', username: 'admin',
-      email: 'admin@dev.local', role: 'Corporate Admin',
+      email: 'admin@dev.local', hubRole: 'Hub Admin', role: 'Hub Admin',
+      jobRole: null,
+      primarySiteId: 'MTSI-ALX',
       siteId: 'MTSI-ALX', siteIds: ['MTSI-ALX', 'MTSI-HVL'],
       site: 'MTSI-ALX', initials: 'DA', allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'],
+      securityRole: null, title: 'Hub Administrator', canSeeAllSites: true,
       authProvider: 'local',
       entraOid: null,
       entraTenantId: null,
@@ -171,14 +190,23 @@ router.post('/login', async (req, res) => {
         console.log('[HUB] DB offline — proxying login to SCORVA');
         const scorvaUser = await proxyLoginToScorva(username, password);
         req.session.user = {
+          authVersion: 3,
           id:       scorvaUser.id || scorvaUser._id,
           name:     scorvaUser.name,
           username: scorvaUser.username,
           email:    scorvaUser.email,
-          role:     scorvaUser.role,
-          siteId:   scorvaUser.siteId || scorvaUser.siteID || scorvaUser.site,
-          siteIds:  scorvaUser.siteIds || scorvaUser.siteIDs || [],
-          site:     scorvaUser.siteId || scorvaUser.siteID || scorvaUser.site,
+          hubRole:  normalizePlatformRole(scorvaUser.role),
+          role:     normalizePlatformRole(scorvaUser.role),
+          jobRole:  scorvaUser.jobRole || scorvaUser.securityRole || null,
+          primarySiteId: scorvaUser.primarySiteId || scorvaUser.siteId || scorvaUser.siteID || scorvaUser.site || null,
+          siteId:   scorvaUser.primarySiteId || scorvaUser.siteId || scorvaUser.siteID || scorvaUser.site || null,
+          siteIds:  Array.isArray(scorvaUser.siteIds || scorvaUser.siteIDs) ? (scorvaUser.siteIds || scorvaUser.siteIDs) : [],
+          site:     scorvaUser.primarySiteId || scorvaUser.siteId || scorvaUser.siteID || scorvaUser.site || null,
+          allowedApps: Array.isArray(scorvaUser.allowedApps) && scorvaUser.allowedApps.length
+            ? scorvaUser.allowedApps
+            : ['hub', 'scorva'],
+          securityRole: scorvaUser.securityRole || scorvaUser.jobRole || null,
+          canSeeAllSites: Boolean(scorvaUser.canSeeAllSites),
           initials: scorvaUser.initials ||
                     scorvaUser.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
           authProvider: 'local',

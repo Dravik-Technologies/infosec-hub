@@ -10,9 +10,12 @@ const {
   SECURITY_ROLE_TITLES,
   SECURITY_ROLE_APPS,
   getAllowedApps,
+  getStoredAllowedApps,
   mergeAllowedApps,
   mergeAppFactory,
   normalizeApps,
+  normalizePlatformRole,
+  isHubAdmin,
   getSecurityRole,
   getTitleFromSecurityRole,
   canSeeAllSites,
@@ -24,15 +27,14 @@ const router = express.Router();
 /* ── Auth guards ── */
 
 function corpAdminOnly(req, res, next) {
-  if (req.session?.user?.role !== 'Corporate Admin') {
+  if (!isHubAdmin(req.session?.user)) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
 }
 
 function adminOnly(req, res, next) {
-  const role = req.session?.user?.role;
-  if (role !== 'Corporate Admin' && role !== 'Access Admin') {
+  if (!isHubAdmin(req.session?.user)) {
     return res.status(403).json({ error: 'Forbidden' });
   }
   next();
@@ -41,12 +43,13 @@ function adminOnly(req, res, next) {
 /* ── Identity field validation ── */
 
 async function getValidationError(body) {
+  const requestedJobRole = 'jobRole' in body ? body.jobRole : body.securityRole;
   // Validate platform role if provided
   if ('role' in body && body.role && !PLATFORM_ROLES.includes(body.role)) {
     return `Invalid platform role. Must be one of: ${PLATFORM_ROLES.join(', ')}`;
   }
   // Validate security role if provided (null/empty allowed = clear the role)
-  if ('securityRole' in body && body.securityRole && !SECURITY_ROLES.includes(body.securityRole)) {
+  if (requestedJobRole && !SECURITY_ROLES.includes(requestedJobRole)) {
     return `Invalid security role. Must be one of: ${SECURITY_ROLES.join(', ')}`;
   }
   // Validate site IDs against the database
@@ -73,18 +76,30 @@ async function getValidationError(body) {
 
 function pickUser(row) {
   const securityRole = getSecurityRole(row) || null;
+  const defaultApps = SECURITY_ROLE_APPS[securityRole] || ['hub'];
+  const derivedTitle = getTitleFromSecurityRole(securityRole) || '';
+  const hubRole = normalizePlatformRole(row.role);
+  const primarySiteId = row.siteId || null;
+  const siteIds = Array.isArray(row.siteIds) ? row.siteIds : [];
+  const allowedApps = getAllowedApps(row);
   return {
+    authVersion:    3,
     id:             row.id,
     name:           row.name,
-    title:          getTitleFromSecurityRole(securityRole) || row.title || '',
+    title:          derivedTitle,
     username:       row.username,
     email:          row.email,
-    role:           row.role,
+    hubRole:        hubRole,
+    role:           hubRole,
     status:         row.status,
-    siteId:         row.siteId || null,
-    siteIds:        Array.isArray(row.siteIds) ? row.siteIds : [],
+    primarySiteId:  primarySiteId,
+    siteId:         primarySiteId,
+    siteIds:        siteIds,
+    jobRole:        securityRole,
     securityRole:   securityRole,
-    allowedApps:    getAllowedApps(row),
+    allowedApps:    allowedApps,
+    storedAllowedApps: getStoredAllowedApps(row),
+    defaultAllowedApps: defaultApps,
     canSeeAllSites: canSeeAllSites(row),
   };
 }
@@ -103,34 +118,22 @@ async function fulfillApprovedPendingRequests(user, actorUsername) {
 
   if (!matches.length) return { user, fulfilledRequests: [] };
 
-  const securityRole = getSecurityRole(user);
   let updatedUser = user;
-
-  if (!securityRole) {
-    // Legacy path: no securityRole — write allowedApps explicitly
-    const desiredApps = normalizeApps(
-      matches.reduce((apps, entry) => apps.concat(['hub', entry.appId]), getAllowedApps(user))
-    );
-    updatedUser = await db.user.update({
-      where: { id: user.id },
-      data: { dod8140: mergeAllowedApps(user.dod8140, desiredApps) },
-    });
-  }
-  // If user has securityRole, app access is role-derived — no dod8140 write needed
+  const desiredApps = normalizeApps(
+    matches.reduce((apps, entry) => apps.concat(['hub', entry.appId]), getAllowedApps(user))
+  );
+  updatedUser = await db.user.update({
+    where: { id: user.id },
+    data: { dod8140: mergeAllowedApps(user.dod8140, desiredApps) },
+  });
 
   const fulfilledRequests = [];
   for (const request of matches) {
-    const roleCoversApp = securityRole
-      ? getAllowedApps(updatedUser).includes(request.appId)
-      : true;
-    const defaultNote = securityRole && !roleCoversApp
-      ? `Approved — note: ${request.appId} is not in the user's Security Role (${securityRole}). Update their Security Role to grant access.`
-      : 'Approved request fulfilled after user account creation.';
     const updatedRequest = await updateAccessRequest(request.id, {
       status: 'approved',
       reviewedAt: new Date().toISOString(),
       reviewedBy: actorUsername || request.reviewedBy,
-      reviewNotes: request.reviewNotes || defaultNote,
+      reviewNotes: request.reviewNotes || 'Approved request fulfilled after user account creation.',
       matchedUserId: updatedUser.id,
     });
     if (updatedRequest) fulfilledRequests.push(updatedRequest);
@@ -195,9 +198,9 @@ router.post('/users', corpAdminOnly, async (req, res) => {
     const normalizedEmail    = String(email).toLowerCase().trim();
     const mergedSiteIds      = [...new Set([...(Array.isArray(siteIds) ? siteIds : []), siteId].filter(Boolean).map(String))];
 
-    const securityRole = req.body.securityRole || null;
+    const securityRole = req.body.jobRole || req.body.securityRole || null;
+    const explicitAllowedApps = normalizeApps(req.body.allowedApps);
     const derivedTitle = getTitleFromSecurityRole(securityRole) || null;
-
     const passwordHash = await bcrypt.hash(password, 12);
     let doc = await db.user.create({
       data: {
@@ -207,12 +210,14 @@ router.post('/users', corpAdminOnly, async (req, res) => {
         username:     normalizedUsername,
         email:        normalizedEmail,
         passwordHash,
-        role:         role || 'Viewer',
+        role:         normalizePlatformRole(role || 'Hub Viewer'),
         status:       status || 'Active',
         siteId:       mergedSiteIds[0] || null,
         siteIds:      mergedSiteIds,
-        // Only store securityRole — allowedApps is derived at runtime by getAllowedApps()
-        dod8140: mergeAppFactory(null, { securityRole }),
+        dod8140: mergeAppFactory(
+          mergeAllowedApps(null, explicitAllowedApps.length ? explicitAllowedApps : ['hub']),
+          { securityRole }
+        ),
       },
     });
 
@@ -245,10 +250,10 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
 
     if ('name'   in req.body) data.name   = req.body.name;
     if ('role'   in req.body) {
-      if (req.session?.user?.role !== 'Corporate Admin') {
-        return res.status(403).json({ error: 'Only Corporate Admin can change platform roles' });
+      if (!isHubAdmin(req.session?.user)) {
+        return res.status(403).json({ error: 'Only Hub Admin can change platform roles' });
       }
-      data.role = req.body.role || current.role;
+      data.role = normalizePlatformRole(req.body.role || current.role);
     }
     if ('status' in req.body) data.status = req.body.status || current.status;
     if ('siteId' in req.body || 'siteIds' in req.body) {
@@ -256,15 +261,19 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
       data.siteIds = nextSiteIds;
     }
 
-    // Only securityRole is stored — never explicit allowedApps (derived at runtime)
-    if ('securityRole' in req.body) {
-      const newSecRole = req.body.securityRole || null;
-      data.title   = getTitleFromSecurityRole(newSecRole) || null;
-      data.dod8140 = mergeAppFactory(current.dod8140, {
+    let nextDod8140 = current.dod8140;
+    if ('securityRole' in req.body || 'jobRole' in req.body) {
+      const newSecRole = req.body.jobRole || req.body.securityRole || null;
+      data.title = getTitleFromSecurityRole(newSecRole) || null;
+      nextDod8140 = mergeAppFactory(nextDod8140, {
         securityRole: newSecRole,
         scorvaRole:   null, // clear legacy field when securityRole is updated
       });
     }
+    if ('allowedApps' in req.body) {
+      nextDod8140 = mergeAllowedApps(nextDod8140, req.body.allowedApps);
+    }
+    if (nextDod8140 !== current.dod8140) data.dod8140 = nextDod8140;
 
     if (req.body.password) {
       data.passwordHash = await bcrypt.hash(req.body.password, 12);
@@ -325,25 +334,15 @@ router.patch('/access-requests/:id', adminOnly, async (req, res) => {
       });
     }
 
-    const matchSecurityRole = getSecurityRole(matchingUser);
-    const roleCoversApp = matchSecurityRole
-      ? getAllowedApps(matchingUser).includes(current.appId)
-      : false;
-
-    let updatedUser = matchingUser;
-    if (!matchSecurityRole) {
-      // Legacy path: no securityRole — write allowedApps explicitly
-      updatedUser = await db.user.update({
-        where: { id: matchingUser.id },
-        data: {
-          dod8140: mergeAllowedApps(
-            matchingUser.dod8140,
-            normalizeApps(getAllowedApps(matchingUser).concat(['hub', current.appId]))
-          ),
-        },
-      });
-    }
-    // If user has securityRole, app access is role-derived — no dod8140 write needed
+    const updatedUser = await db.user.update({
+      where: { id: matchingUser.id },
+      data: {
+        dod8140: mergeAllowedApps(
+          matchingUser.dod8140,
+          normalizeApps(getAllowedApps(matchingUser).concat(['hub', current.appId]))
+        ),
+      },
+    });
 
     const approved = await updateAccessRequest(current.id, {
       status: 'approved',
@@ -353,14 +352,7 @@ router.patch('/access-requests/:id', adminOnly, async (req, res) => {
       matchedUserId: updatedUser.id,
     });
 
-    let message;
-    if (matchSecurityRole) {
-      message = roleCoversApp
-        ? `Request approved. ${updatedUser.username} already has ${current.appLabel} access via their Security Role (${matchSecurityRole}).`
-        : `Request approved — but ${current.appLabel} is not in ${updatedUser.username}'s Security Role (${matchSecurityRole}). Update their Security Role to grant access.`;
-    } else {
-      message = `Granted HUB and ${current.appLabel} access to ${updatedUser.username}.`;
-    }
+    const message = `Granted HUB and ${current.appLabel} access to ${updatedUser.username}.`;
 
     return res.json({ ok: true, request: approved, user: pickUser(updatedUser), message });
   } catch (err) {

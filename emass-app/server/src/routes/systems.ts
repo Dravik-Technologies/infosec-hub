@@ -20,7 +20,9 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const { id, createdAt: _ca, updatedAt: _ua, ...rest } = req.body
-    const system = await InfoSystem.create({ _id: id, ...rest, userId: req.userId })
+    // Stamp siteId from HUB claims when available; null for legacy local-auth tokens.
+    const siteId = req.craterUser?.primarySiteId ?? null
+    const system = await InfoSystem.create({ _id: id, ...rest, userId: req.userId, siteId })
     res.status(201).json(system)
   } catch (err: any) {
     res.status(400).json({ error: err.message })

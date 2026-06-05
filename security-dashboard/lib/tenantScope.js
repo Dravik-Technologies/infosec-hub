@@ -12,7 +12,7 @@
  *
  * canSeeAllSites is true when HUB has determined:
  *   user.siteIds includes MTSI-ALX  AND
- *   (platformRole === 'Corporate Admin' OR securityRole === 'Corporate Security Admin')
+ *   (platformRole === 'Hub Admin' OR platformRole === 'Corporate Admin' OR securityRole === 'Corporate Security Admin')
  *
  * MASH JWT is issued by this server at /api/auth/login (proxied from HUB).
  * The payload is { ...hubUser, wsRole }, so siteId, siteIds, canSeeAllSites,
@@ -66,7 +66,7 @@ function getUserSiteScope(user) {
     user.siteIds, user.siteIDs, user.siteId, user.siteID, user.site
   );
   const siteId = user.siteId || user.siteID || user.site || siteIds[0] || null;
-  const canSeeAllSites = Boolean(user.canSeeAllSites) || user.role === 'Corporate Admin';
+  const canSeeAllSites = Boolean(user.canSeeAllSites) || user.role === 'Corporate Admin' || user.role === 'Hub Admin';
   const securityRole = user.securityRole || null;
   return { siteId, siteIds, canSeeAllSites, securityRole };
 }

@@ -11,15 +11,13 @@ RUN npm config set fetch-retry-mintimeout 20000 && \
 
 # ── 1. Install packages/db deps and generate Prisma client ───────
 COPY packages/db/package*.json packages/db/
-RUN --mount=type=cache,target=/root/.npm \
-    cd packages/db && npm ci
+RUN cd packages/db && npm ci
 COPY packages/db/ packages/db/
 RUN cd packages/db && npx prisma generate
 
 # ── 2. Install server deps and compile TypeScript ─────────────────
 COPY emass-app/server/package*.json emass-app/server/
-RUN --mount=type=cache,target=/root/.npm \
-    cd emass-app/server && npm ci
+RUN cd emass-app/server && npm ci
 COPY emass-app/server/ emass-app/server/
 RUN cd emass-app/server && npm run build
 

@@ -484,9 +484,9 @@ export default function AdminPage({ pmData, onSave }) {
       <div className="page-header" style={ADMIN_CONTENT_STYLE}>
         <div className="page-header-left">
           <h1>Admin Console</h1>
-          <p>Program Management data — editable by Corporate Admin and Program Manager.</p>
+          <p>Program Management data — editable by users granted NEXUS admin permission.</p>
         </div>
-        <span className="page-badge">PM Editor</span>
+        <span className="page-badge">NEXUS Admin</span>
       </div>
 
       <div style={{ ...ADMIN_CONTENT_STYLE, display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '1rem' }}>

@@ -53,7 +53,7 @@ model User {
   username         String    @unique
   email            String    @unique
   passwordHash     String    @map("password_hash")
-  role             String    @default("Viewer")
+  role             String    @default("Hub Viewer")
   siteId           String?   @map("site_id")
   site             Site?     @relation(fields: [siteId], references: [id])
   siteIds          String[]  @default([]) @map("site_ids")

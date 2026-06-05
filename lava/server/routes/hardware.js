@@ -168,17 +168,30 @@ router.post('/upload/:systemId', requireVulcan, upload.single('file'), async (re
 router.get('/', async (req, res) => {
   try {
     const { systemId } = req.query;
+    const viewer = req.session.user;
 
     if (systemId) {
       const parentSystem = await db.lavaSystemRequest.findUnique({ where: { id: systemId } });
       if (!parentSystem) return res.status(404).json({ error: 'System not found' });
-      if (!isSiteAllowed(req.session.user, parentSystem.siteId)) {
+      if (!isSiteAllowed(viewer, parentSystem.siteId)) {
         return res.status(403).json({ error: 'Access denied — system is outside your site scope' });
       }
     }
 
+    let baseWhere = systemId ? { systemRequestId: systemId } : {};
+    if (!systemId) {
+      const isCorporateAdmin = !viewer || viewer.role === 'Corporate Admin' || viewer.canSeeAllSites;
+      if (!isCorporateAdmin) {
+        const siteIds = Array.isArray(viewer.siteIds) ? viewer.siteIds.filter(Boolean) : [];
+        if (viewer.siteId && !siteIds.includes(viewer.siteId)) siteIds.push(viewer.siteId);
+        baseWhere = siteIds.length
+          ? { OR: [{ siteId: { in: siteIds } }, { siteId: null }] }
+          : { siteId: null };
+      }
+    }
+
     const assets = await db.lavaAsset.findMany({
-      where:   systemId ? { systemRequestId: systemId } : {},
+      where:   baseWhere,
       include: {
         systemRequest: { select: { systemName: true } },
         assignmentHistory: { orderBy: { assignedAt: 'desc' } },

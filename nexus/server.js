@@ -22,6 +22,11 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const COLLECTIONS = ['program_management', 'program_security', 'nexus_settings'];
 const PM_ARRAY_SECTIONS = new Set(['realEstate', 'construction', 'accreditations', 'milestones']);
+const DEFAULT_PERMISSIONS = {
+  adminHubRoles: ['Hub Admin'],
+  adminJobRoles: ['Program Manager'],
+  adminUsers: [],
+};
 
 function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
@@ -38,6 +43,34 @@ function parseJsonField(val) {
   if (val && typeof val === 'object') return val;
   if (typeof val === 'string') { try { return JSON.parse(val); } catch { return null; } }
   return null;
+}
+
+function asStringArray(value) {
+  return Array.isArray(value) ? value.filter(Boolean).map(String) : [];
+}
+
+function mergePermissions(settings) {
+  const configured = settings && typeof settings === 'object' ? settings.permissions || {} : {};
+  return {
+    adminHubRoles: asStringArray(configured.adminHubRoles).length
+      ? asStringArray(configured.adminHubRoles)
+      : DEFAULT_PERMISSIONS.adminHubRoles,
+    adminJobRoles: asStringArray(configured.adminJobRoles).length
+      ? asStringArray(configured.adminJobRoles)
+      : DEFAULT_PERMISSIONS.adminJobRoles,
+    adminUsers: asStringArray(configured.adminUsers),
+  };
+}
+
+function isNexusAdminUser(user, permissions) {
+  if (!user) return false;
+  const hubRole = user.hubRole || user.role || '';
+  const jobRole = user.jobRole || user.securityRole || '';
+  const username = String(user.username || '').toLowerCase();
+  const adminUsers = (permissions.adminUsers || []).map(v => String(v).toLowerCase());
+  return adminUsers.includes(username)
+    || (permissions.adminHubRoles || []).includes(hubRole)
+    || (permissions.adminJobRoles || []).includes(jobRole);
 }
 
 async function seedDefaults() {
@@ -82,23 +115,40 @@ function verifyHubToken(token) {
   });
 }
 
-function mapHubUser(hubUser) {
+function mapHubUser(hubUser, settings) {
+  const primarySiteId = hubUser.primarySiteId || hubUser.siteId || hubUser.site || null;
   const siteIds = Array.isArray(hubUser.siteIds) ? hubUser.siteIds.filter(Boolean) : [];
-  if (hubUser.siteId && !siteIds.includes(hubUser.siteId)) siteIds.unshift(hubUser.siteId);
-  const isCorporateAdmin = (hubUser.role || '') === 'Corporate Admin';
+  if (primarySiteId && !siteIds.includes(primarySiteId)) siteIds.unshift(primarySiteId);
+  const hubRole = hubUser.hubRole || hubUser.role || 'Hub Viewer';
+  const jobRole = hubUser.jobRole || hubUser.securityRole || null;
+  const isCorporateAdmin = ['Corporate Admin', 'Hub Admin'].includes(hubRole);
+  const resolvedPrimarySiteId = primarySiteId || siteIds[0] || null;
+  const permissions = mergePermissions(settings);
   return {
     sub: hubUser.id || hubUser._id || hubUser.username,
     username: hubUser.username,
     name: hubUser.name || hubUser.username,
     title: hubUser.title || 'Program Stakeholder',
-    role: hubUser.role || 'Viewer',
-    siteId: hubUser.siteId || siteIds[0] || null,
+    hubRole,
+    jobRole,
+    primarySiteId: resolvedPrimarySiteId,
     siteIds,
-    canSeeAllSites: Boolean(hubUser.canSeeAllSites) || isCorporateAdmin,
-    securityRole: hubUser.securityRole || null,
     allowedApps: getAllowedApps(hubUser),
+    nexusAdmin: isNexusAdminUser({
+      ...hubUser,
+      hubRole,
+      jobRole,
+      primarySiteId: resolvedPrimarySiteId,
+      siteIds,
+    }, permissions),
+    authVersion: 3,
+
+    // Legacy compatibility aliases during transition.
+    role: hubRole,
+    siteId: resolvedPrimarySiteId,
+    canSeeAllSites: Boolean(hubUser.canSeeAllSites) || isCorporateAdmin,
+    securityRole: jobRole,
     scorvaRole: getScorvaRole(hubUser) || null,
-    authVersion: 2,
   };
 }
 
@@ -115,13 +165,13 @@ function requireAuth(req, res, next) {
   }
 }
 
-function requireAdminRole(req, res, next) {
-  const role = req.user?.role;
-  const securityRole = req.user?.securityRole;
-  if (role !== 'Corporate Admin' && role !== 'Program Manager' && securityRole !== 'Program Manager') {
-    return res.status(403).json({ error: 'Admin access required — Corporate Admin or Program Manager only' });
-  }
-  next();
+async function requireAdminRole(req, res, next) {
+  if (req.user?.nexusAdmin) return next();
+  try {
+    const settings = await readSharedCollection('nexus_settings');
+    if (isNexusAdminUser(req.user, mergePermissions(settings))) return next();
+  } catch {}
+  return res.status(403).json({ error: 'NEXUS admin access required' });
 }
 
 async function readSharedCollection(name) {
@@ -132,7 +182,7 @@ async function readSharedCollection(name) {
 // ── MASH-backed Program Security rollup ───────────────────────────────────────
 
 async function buildSecurityRollup(viewer) {
-  const canSeeAll = !viewer || viewer.role === 'Corporate Admin' || Boolean(viewer.canSeeAllSites);
+  const canSeeAll = !viewer || viewer.role === 'Corporate Admin' || viewer.role === 'Hub Admin' || Boolean(viewer.canSeeAllSites);
   const siteFilter = (!canSeeAll && Array.isArray(viewer?.siteIds) && viewer.siteIds.length)
     ? { siteId: { in: viewer.siteIds } }
     : {};
@@ -259,7 +309,7 @@ async function buildSecurityRollup(viewer) {
 // ── SCORVA-backed IT/Cybersecurity rollup ──────────────────────────────────────
 
 async function buildCyberRollup(viewer) {
-  const canSeeAll = !viewer || viewer.role === 'Corporate Admin' || Boolean(viewer.canSeeAllSites);
+  const canSeeAll = !viewer || viewer.role === 'Corporate Admin' || viewer.role === 'Hub Admin' || Boolean(viewer.canSeeAllSites);
   const siteFilter = (!canSeeAll && Array.isArray(viewer?.siteIds) && viewer.siteIds.length)
     ? { siteId: { in: viewer.siteIds } }
     : {};
@@ -415,7 +465,12 @@ app.post('/api/auth/login', async (req, res) => {
   }
   try {
     const hubUser = await proxyLoginToHub(username, password);
-    const payload = mapHubUser(hubUser);
+    const apps = Array.isArray(hubUser.allowedApps) ? hubUser.allowedApps : [];
+    if (!apps.includes('nexus')) {
+      return res.status(403).json({ error: 'NEXUS access has not been granted for this account' });
+    }
+    const settings = await readSharedCollection('nexus_settings');
+    const payload = mapHubUser(hubUser, settings);
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.json({ token, user: payload });
   } catch (err) {
@@ -432,7 +487,12 @@ app.get('/auth/sso', async (req, res) => {
     if (hubUser.requestedApp && hubUser.requestedApp !== 'nexus') {
       return res.redirect('/?sso_error=invalid_target');
     }
-    const payload = { ...mapHubUser(hubUser), via: 'sso' };
+    const apps = Array.isArray(hubUser.allowedApps) ? hubUser.allowedApps : [];
+    if (!apps.includes('nexus')) {
+      return res.redirect('/?sso_error=nexus_access_denied');
+    }
+    const settings = await readSharedCollection('nexus_settings');
+    const payload = { ...mapHubUser(hubUser, settings), via: 'sso' };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.redirect(`/?nexus_token=${token}`);
   } catch (err) {
@@ -514,7 +574,7 @@ app.get('/api/cyber-rollup', async (req, res) => {
   }
 });
 
-// ── Admin write routes (Corporate Admin or Program Manager only) ───────────────
+// ── Admin write routes (NEXUS-local admin permission) ─────────────────────────
 
 // PUT /api/program-management — replace full PM collection
 app.put('/api/program-management', requireAdminRole, async (req, res) => {

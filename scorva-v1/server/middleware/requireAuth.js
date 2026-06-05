@@ -30,13 +30,19 @@ module.exports = function requireAuth(req, res, next) {
       // Merge lowercase (HUB) and uppercase (legacy SCORVA) site field variants
       const siteIDs = normalizeSiteList(claims.siteIDs, claims.siteIds, claims.siteID, claims.siteId);
       const siteID  = claims.siteID || claims.siteId || siteIDs[0] || null;
+      const hubRole = claims.hubRole || claims.role || 'Hub Viewer';
+      const jobRole = claims.jobRole || claims.securityRole || null;
       req.user = {
+        authVersion:   claims.authVersion || 2,
         id:            claims.sub || claims.id,
         username:      claims.username,
         email:         claims.email,
         name:          claims.name,
         initials:      claims.initials,
-        role:          claims.role,
+        hubRole:       hubRole,
+        jobRole:       jobRole,
+        primarySiteId: claims.primarySiteId || claims.siteId || claims.siteID || siteID,
+        role:          claims.role || hubRole,
         // Uppercase aliases kept for backward compat with existing middleware
         siteID,
         siteIDs,
@@ -45,8 +51,9 @@ module.exports = function requireAuth(req, res, next) {
         siteId:        siteID,
         siteIds:       siteIDs,
         // Tenant control fields
-        canSeeAllSites: Boolean(claims.canSeeAllSites) || claims.role === 'Corporate Admin',
-        securityRole:   claims.securityRole || null,
+        canSeeAllSites: Boolean(claims.canSeeAllSites) || claims.role === 'Corporate Admin' || hubRole === 'Hub Admin',
+        securityRole:   jobRole,
+        allowedApps:    Array.isArray(claims.allowedApps) ? claims.allowedApps : [],
       };
       if (!req.session) req.session = {};
       req.session.user = req.user;
@@ -66,13 +73,17 @@ module.exports = function requireAuth(req, res, next) {
       || req.session.user.site || sessionSiteIDs[0] || null;
     req.user = {
       ...req.session.user,
+      authVersion:     req.session.user.authVersion || 2,
+      hubRole:         req.session.user.hubRole || req.session.user.role || 'Hub Viewer',
+      jobRole:         req.session.user.jobRole || req.session.user.securityRole || null,
+      primarySiteId:   req.session.user.primarySiteId || sessionSiteID,
       siteID:         sessionSiteID,
       siteIDs:        sessionSiteIDs,
       siteId:         sessionSiteID,
       siteIds:        sessionSiteIDs,
       site:           sessionSiteID,
-      canSeeAllSites: Boolean(req.session.user.canSeeAllSites) || req.session.user.role === 'Corporate Admin',
-      securityRole:   req.session.user.securityRole || null,
+      canSeeAllSites: Boolean(req.session.user.canSeeAllSites) || req.session.user.role === 'Corporate Admin' || req.session.user.hubRole === 'Hub Admin',
+      securityRole:   req.session.user.jobRole || req.session.user.securityRole || null,
     };
     return next();
   }

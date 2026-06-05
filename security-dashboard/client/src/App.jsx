@@ -11,13 +11,13 @@ import InspectionsPage from './pages/InspectionsPage.jsx';
 
 const THEME_KEY = 'mash-theme';
 const SECTIONS = [
-  { id: 'overview',     label: 'Overview',     dot: '#64748b' },
-  { id: 'facility',     label: 'Facility',     dot: '#0f766e' },
-  { id: 'personnel',    label: 'Personnel',    dot: '#6d28d9' },
-  { id: 'activities',   label: 'Activities',   dot: '#0369a1' },
-  { id: 'documents',    label: 'Documents',    dot: '#9a3412' },
-  { id: 'media',        label: 'Media',        dot: '#7e22ce' },
-  { id: 'inspections',  label: 'Inspections',  dot: '#166534' },
+  { id: 'overview',     label: 'Overview',     dot: '#64748b', accent: 'var(--primary)', heading: 'Program security posture', brief: 'Cross-domain watchfloor for compliance, readiness, and urgent action.' },
+  { id: 'facility',     label: 'Facility',     dot: '#0f766e', accent: 'var(--facility)', heading: 'Facility assurance', brief: 'Accreditation, IDS posture, and SCIF control visibility.' },
+  { id: 'personnel',    label: 'Personnel',    dot: '#6d28d9', accent: 'var(--personnel)', heading: 'Personnel control', brief: 'Clearance health, training status, and reporting requirements.' },
+  { id: 'activities',   label: 'Activities',   dot: '#0369a1', accent: 'var(--activities)', heading: 'Operational tempo', brief: 'Meetings, inspections, travel, and security action tracking.' },
+  { id: 'documents',    label: 'Documents',    dot: '#9a3412', accent: 'var(--docs)', heading: 'Controlled documents', brief: 'Inventory accountability, lifecycle actions, and custodianship.' },
+  { id: 'media',        label: 'Media',        dot: '#7e22ce', accent: 'var(--media)', heading: 'Media accountability', brief: 'Issue, return, destruction, and removable media chain-of-custody.' },
+  { id: 'inspections',  label: 'Inspections',  dot: '#166534', accent: 'var(--inspections)', heading: 'Inspection readiness', brief: 'Findings, campaigns, and evidence-driven compliance execution.' },
 ];
 
 const ROLE_NAV = {
@@ -44,6 +44,7 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
   const visibleSections = SECTIONS.filter(s =>
     allowedNav === 'all' || allowedNav.includes(s.id)
   );
+  const activeSection = SECTIONS.find(s => s.id === section) || SECTIONS[0];
   const roleLabel = {
     corporate_security_admin: 'Corp Security Admin',
     facility_security_mgr: 'Facility Sec Mgr',
@@ -55,17 +56,29 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
   }[wsRole] || wsRole;
 
   return (
-    <header className="ws-header">
+    <header className="ws-header" style={{ '--section-accent': activeSection.accent }}>
       <div className="ws-header-top">
         <div className="ws-brand">
-          <div className="ws-brand-mark">S</div>
+          <div className="ws-brand-mark">
+            <span>S</span>
+          </div>
           <div>
             <div className="ws-brand-name">Security Managers Workspace</div>
             <div className="ws-brand-sub">NISPOM / DCSA / ICD 705</div>
           </div>
         </div>
 
+        <div className="ws-header-brief">
+          <div className="ws-brief-label">Active Mission Layer</div>
+          <div className="ws-brief-title">{activeSection.heading}</div>
+          <div className="ws-brief-sub">{activeSection.brief}</div>
+        </div>
+
         <div className="ws-identity">
+          <div className="ws-status-pill">
+            <span className="ws-status-dot" />
+            <span>Secure session</span>
+          </div>
           <button
             type="button"
             className="ws-theme-toggle"
@@ -133,6 +146,7 @@ export default function App() {
   const [section, setSection] = useState('overview');
   const [siteId, setSiteId] = useState('');
   const [sites, setSites] = useState([]);
+  const activeSection = SECTIONS.find(s => s.id === section) || SECTIONS[0];
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -155,7 +169,10 @@ export default function App() {
   const pageProps = { user, siteId };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="ws-shell" data-section={section}>
+      <div className="ws-shell-glow ws-shell-glow-a" aria-hidden="true" />
+      <div className="ws-shell-glow ws-shell-glow-b" aria-hidden="true" />
+      <div className="ws-grid-overlay" aria-hidden="true" />
       <Header
         user={user}
         sites={sites}
@@ -167,7 +184,7 @@ export default function App() {
         theme={theme}
         onToggleTheme={handleToggleTheme}
       />
-      <main className="ws-main">
+      <main className="ws-main" style={{ '--section-accent': activeSection.accent }}>
         {section === 'overview'    && <OverviewPage     {...pageProps} />}
         {section === 'facility'    && <FacilityPage     {...pageProps} />}
         {section === 'personnel'   && <PersonnelPage    {...pageProps} />}

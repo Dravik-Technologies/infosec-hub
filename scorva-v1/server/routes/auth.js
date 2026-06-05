@@ -3,7 +3,14 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../../../packages/db/src/index');
-const { hasAppAccess } = require('../../../packages/db/src/appAccess');
+const {
+  hasAppAccess,
+  getAllowedApps,
+  getSecurityRole,
+  canSeeAllSites,
+  getLegacyPlatformRole,
+  normalizePlatformRole,
+} = require('../../../packages/db/src/appAccess');
 const audit = require('../middleware/audit');
 const requireAuth = require('../middleware/requireAuth');
 const { signAccessToken } = require('../middleware/jwt');
@@ -19,18 +26,28 @@ function toAuthUser(u) {
     : [u.siteId].filter(Boolean);
   const siteId = u.siteId || siteIds[0] || null;
 
+  const hubRole = normalizePlatformRole(u.hubRole || u.role);
+  const jobRole = u.jobRole || u.securityRole || getSecurityRole(u) || null;
+
   return {
+    authVersion: 3,
     id:       u.id,
     name:     u.name,
     username: u.username,
     email:    u.email || null,
-    role:     u.role,
+    hubRole,
+    jobRole,
+    primarySiteId: siteId,
+    role:     getLegacyPlatformRole(hubRole),
     siteID:   siteId,   // keep legacy key for frontend / JWT consumers
     siteIDs:  siteIds,
     siteId,
     siteIds,
     site:     siteId,
     initials: u.initials || initials,
+    securityRole: jobRole,
+    allowedApps: Array.isArray(u.allowedApps) ? u.allowedApps : getAllowedApps(u),
+    canSeeAllSites: Boolean(u.canSeeAllSites) || canSeeAllSites({ ...u, role: hubRole }),
   };
 }
 
@@ -51,8 +68,10 @@ router.post('/login', async (req, res) => {
   if (process.env.NODE_ENV !== 'production' && username === 'admin' && password === 'admin') {
     const user = toAuthUser({
       id: 'dev-admin', name: 'Dev Admin', username: 'admin',
-      email: 'admin@dev.local', role: 'Corporate Admin',
+      email: 'admin@dev.local', hubRole: 'Hub Admin', role: 'Corporate Admin',
       siteId: 'MTSI-ALX', siteIds: ['MTSI-ALX', 'MTSI-HVL'], initials: 'DA',
+      allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'],
+      canSeeAllSites: true,
     });
     return res.json({ token: signAccessToken(user), user });
   }
@@ -122,7 +141,7 @@ router.get('/sso', async (req, res) => {
 });
 
 router.post('/select-site', requireAuth, (req, res) => {
-  if (req.user.role !== 'Corporate Admin') {
+  if (!req.user.canSeeAllSites && req.user.role !== 'Corporate Admin' && req.user.hubRole !== 'Hub Admin') {
     return res.status(403).json({ error: 'Forbidden' });
   }
   const selectedSite = req.body.siteId || req.body.siteID || null;

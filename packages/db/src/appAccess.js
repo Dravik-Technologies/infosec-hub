@@ -3,7 +3,13 @@
 const ALL_APPS = ['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'];
 
 /* ── Platform roles (HUB admin authority only) ── */
-const PLATFORM_ROLES = ['Viewer', 'Access Admin', 'Corporate Admin'];
+const PLATFORM_ROLES = ['Hub Viewer', 'Hub User', 'Hub Admin'];
+const LEGACY_PLATFORM_ROLE_MAP = {
+  'Viewer': 'Hub Viewer',
+  'Access Admin': 'Hub Admin',
+  'Corporate Admin': 'Hub Admin',
+  'Site Admin': 'Hub User',
+};
 
 /* ── Security roles (operational, centralized) ── */
 const SECURITY_ROLES = [
@@ -64,6 +70,35 @@ function normalizeApps(input) {
   return [...new Set(list.map(v => String(v || '').trim().toLowerCase()).filter(Boolean))];
 }
 
+function ensureHubAccess(apps) {
+  const normalized = normalizeApps(apps);
+  return normalized.includes('hub') ? normalized : ['hub', ...normalized];
+}
+
+function normalizePlatformRole(role) {
+  const normalized = String(role || '').trim();
+  if (PLATFORM_ROLES.includes(normalized)) return normalized;
+  return LEGACY_PLATFORM_ROLE_MAP[normalized] || 'Hub Viewer';
+}
+
+function getLegacyPlatformRole(role) {
+  switch (normalizePlatformRole(role)) {
+    case 'Hub Admin':
+      return 'Corporate Admin';
+    case 'Hub User':
+      return 'Site Admin';
+    default:
+      return 'Viewer';
+  }
+}
+
+function isHubAdmin(userOrRole) {
+  const role = typeof userOrRole === 'string'
+    ? userOrRole
+    : userOrRole && userOrRole.role;
+  return normalizePlatformRole(role) === 'Hub Admin';
+}
+
 function readAppFactoryMeta(userOrMeta) {
   const meta = userOrMeta && typeof userOrMeta === 'object' && !Array.isArray(userOrMeta)
     ? userOrMeta
@@ -91,19 +126,24 @@ function getTitleFromSecurityRole(securityRole) {
 
 function defaultAllowedAppsForRole(securityRole) {
   if (!securityRole) return null;
-  return SECURITY_ROLE_APPS[securityRole] || null;
+  return ensureHubAccess(SECURITY_ROLE_APPS[securityRole] || []);
+}
+
+function getStoredAllowedApps(user) {
+  const { appFactory } = readAppFactoryMeta(user);
+  return normalizeApps(appFactory.allowedApps);
 }
 
 function getAllowedApps(user) {
-  const platformRole = String((user && user.role) || '').toLowerCase();
-  if (platformRole === 'corporate admin') return [...ALL_APPS];
-  // Security role is authoritative when set — stored allowedApps are ignored
+  if (isHubAdmin(user)) return [...ALL_APPS];
+
+  const explicit = getStoredAllowedApps(user);
+  if (explicit.length) return ensureHubAccess(explicit);
+
   const secRole = getSecurityRole(user);
-  if (secRole) return SECURITY_ROLE_APPS[secRole] || ['hub'];
-  // Migration fallback: honor explicitly stored allowedApps for users without securityRole
-  const { appFactory } = readAppFactoryMeta(user);
-  const explicit = normalizeApps(appFactory.allowedApps);
-  if (explicit.length) return explicit;
+  const defaults = defaultAllowedAppsForRole(secRole);
+  if (defaults && defaults.length) return defaults;
+
   return ['hub'];
 }
 
@@ -115,14 +155,7 @@ function hasAppAccess(user, appId) {
 /* ── All-site visibility: user must belong to the corp site AND hold an admin-level role ── */
 function canSeeAllSites(user) {
   if (!user) return false;
-  const siteIds = Array.isArray(user.siteIds) ? user.siteIds : [];
-  if (!siteIds.includes(CORP_SITE_ID) && user.siteId !== CORP_SITE_ID) return false;
-  const platformRole = String(user.role || '').toLowerCase();
-  const secRole = getSecurityRole(user) || user.securityRole || '';
-  return (
-    platformRole === 'corporate admin' ||
-    secRole === 'Corporate Security Admin'
-  );
+  return isHubAdmin(user);
 }
 
 /* ── dod8140 mutation helpers ── */
@@ -138,13 +171,13 @@ function mergeAllowedApps(dod8140, allowedApps) {
     ...base,
     appFactory: {
       ...appFactory,
-      allowedApps: normalizeApps(allowedApps),
+      allowedApps: ensureHubAccess(allowedApps),
     },
   };
 }
 
 function ensureAppAccess(dod8140, appId) {
-  const current = getAllowedApps({ dod8140, role: null });
+  const current = getStoredAllowedApps({ dod8140 });
   const next = current.includes(appId) ? current : current.concat(appId);
   return mergeAllowedApps(dod8140, next);
 }
@@ -176,6 +209,7 @@ function getScorvaRole(user) {
 module.exports = {
   ALL_APPS,
   PLATFORM_ROLES,
+  LEGACY_PLATFORM_ROLE_MAP,
   SECURITY_ROLES,
   SECURITY_ROLE_TITLES,
   SECURITY_ROLE_APPS,
@@ -188,9 +222,13 @@ module.exports = {
   mergeAppFactory,
   ensureAppAccess,
   normalizeApps,
+  normalizePlatformRole,
+  getLegacyPlatformRole,
+  isHubAdmin,
   getSecurityRole,
   getTitleFromSecurityRole,
   defaultAllowedAppsForRole,
+  getStoredAllowedApps,
   canSeeAllSites,
   getScorvaRole,
 };

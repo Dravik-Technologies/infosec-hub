@@ -55,9 +55,56 @@ export default function OverviewPage({ siteId }) {
 
   const totalAlerts = overdueActivities.length + overdueTraining.length + overdueMedia.length +
     idsIssues.length + debriefPending.length;
+  const readinessScore = Math.max(0, Math.min(100, Math.round(
+    100 - (overdueActivities.length * 7) - (overdueTraining.length * 5) - (idsIssues.length * 8) - (overdueMedia.length * 4)
+  )));
+  const activeSiteLabel = siteId ? 'Site view active' : 'All-site overview active';
+  const heroTags = [
+    `${summary.facilities || 0} facilities monitored`,
+    `${summary.personnel || 0} cleared personnel`,
+    `${activities.scheduled ?? 0} scheduled actions`,
+  ];
 
   return (
     <div className="ws-page">
+      <section className="ws-hero">
+        <div className="ws-hero-grid">
+          <div>
+            <div className="ws-hero-kicker">Security program overview</div>
+            <div className="ws-hero-title">Security program visibility across facilities, personnel, media, and inspections.</div>
+            <div className="ws-hero-copy">
+              Track compliance, overdue actions, and site-level security status in one workspace with a clearer operational summary at the top.
+            </div>
+            <div className="ws-hero-tags">
+              <span className="ws-hero-tag">{activeSiteLabel}</span>
+              {heroTags.map(tag => <span key={tag} className="ws-hero-tag">{tag}</span>)}
+            </div>
+          </div>
+
+          <div className="ws-hero-side">
+            <div className="ws-signal-card">
+              <div className="ws-signal-label">Readiness score</div>
+              <div className="ws-signal-value">{readinessScore}%</div>
+              <div className="ws-signal-copy">
+                Derived from current overdue activities, training gaps, IDS issues, and media exceptions.
+              </div>
+              <div className="ws-signal-meter">
+                <span style={{ width: `${readinessScore}%` }} />
+              </div>
+            </div>
+            <div className="ws-signal-card">
+              <div className="ws-signal-label">Open action items</div>
+              <div className="ws-signal-value">{totalAlerts}</div>
+              <div className="ws-signal-copy">
+                {totalAlerts > 0
+                  ? 'Items currently require review, follow-up, or corrective action.'
+                  : 'No immediate action items are currently open.'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <div className="ws-page-header">
         <div>
           <div className="ws-page-title">Security Overview</div>

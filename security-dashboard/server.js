@@ -135,7 +135,7 @@ function auth(req, res, next) {
       ...payload,
       siteId,
       siteIds,
-      canSeeAllSites: Boolean(payload.canSeeAllSites) || payload.role === 'Corporate Admin',
+      canSeeAllSites: Boolean(payload.canSeeAllSites) || payload.role === 'Corporate Admin' || payload.role === 'Hub Admin',
       securityRole:   payload.securityRole || null,
     };
     next();
@@ -151,13 +151,18 @@ app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) return res.status(400).json({ error: 'username and password required' });
   try {
-    const resp = await fetch(`${hubUrl()}/api/auth/login`, {
+    const resp = await fetch(`${hubUrl()}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password }),
     });
     const data = await resp.json();
     if (!resp.ok) return res.status(resp.status).json({ error: data.error || 'Login failed' });
+
+    const apps = Array.isArray(data.user?.allowedApps) ? data.user.allowedApps : [];
+    if (!apps.includes('mash')) {
+      return res.status(403).json({ error: 'MASH access has not been granted for this account' });
+    }
 
     const wsRole = await resolveWorkspaceRole(username, data.user.securityRole);
     const payload = { ...data.user, wsRole };
@@ -176,6 +181,14 @@ app.get('/auth/sso', async (req, res) => {
     const resp = await fetch(`${hubUrl()}/api/sso/verify?token=${encodeURIComponent(token)}`);
     const data = await resp.json();
     if (!resp.ok || !data.user) return res.redirect('/?error=invalid_sso');
+
+    if (data.user.requestedApp && data.user.requestedApp !== 'mash') {
+      return res.redirect('/?error=invalid_sso_target');
+    }
+    const apps = Array.isArray(data.user.allowedApps) ? data.user.allowedApps : [];
+    if (!apps.includes('mash')) {
+      return res.redirect('/?error=mash_access_denied');
+    }
 
     const wsRole = await resolveWorkspaceRole(data.user.username, data.user.securityRole);
     const payload = { ...data.user, wsRole };

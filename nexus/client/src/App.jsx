@@ -32,16 +32,7 @@ function DataSourceBanner({ sources }) {
   if (sources.cyber === 'error') warnings.push('Cyber data: rollup failed — check SCORVA connectivity');
   if (warnings.length === 0) return null;
   return (
-    <div style={{
-      background: 'var(--amber-bg, #fffbeb)',
-      borderBottom: '1px solid var(--amber-border, #fde68a)',
-      padding: '0.4rem 1.25rem',
-      fontSize: '0.75rem',
-      color: 'var(--amber, #b45309)',
-      display: 'flex',
-      gap: '1rem',
-      flexWrap: 'wrap',
-    }}>
+    <div className="data-source-banner">
       {warnings.map((w, i) => <span key={i}>⚠ {w}</span>)}
     </div>
   );
@@ -147,7 +138,7 @@ export default function App() {
       if (!isAdminRole(currentUser)) {
         return (
           <div style={{ padding: '2rem', color: 'var(--muted)' }}>
-            Admin console requires Corporate Admin or Program Manager role.
+            Admin console requires NEXUS admin permission.
           </div>
         );
       }
@@ -161,15 +152,24 @@ export default function App() {
   if (!loaded) {
     return (
       <div className="loading-shell">
-        <div className="loading-mark">NEXUS</div>
-        <p>Loading program command surfaces…</p>
-        {error && <div className="error-banner">{error}</div>}
+        <div className="nexus-boot">
+          <div className="boot-ring-wrap">
+            <div className="boot-ring" />
+            <div className="boot-ring-pulse" />
+          </div>
+          <div className="boot-wordmark">NEXUS</div>
+          <div className="boot-sub">Loading program command surfaces…</div>
+          {error && <div className="error-banner" style={{ marginTop: '0.5rem', maxWidth: '28rem' }}>{error}</div>}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="nexus-shell">
+      <div className="nexus-shell-glow nexus-shell-glow-a" aria-hidden="true" />
+      <div className="nexus-shell-glow nexus-shell-glow-b" aria-hidden="true" />
+      <div className="nexus-grid-overlay" aria-hidden="true" />
       <AppHeader
         view={view}
         onNavigate={navigate}

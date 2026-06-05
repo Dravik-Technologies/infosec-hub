@@ -2,6 +2,8 @@ import { Schema, model, Document } from 'mongoose'
 
 export interface IInfoSystem extends Document<string> {
   userId: string
+  /** HUB site identifier stamped at creation for future multi-user site-scope queries. */
+  siteId?: string | null
   name: string
   abbreviation: string
   systemType: string
@@ -29,6 +31,7 @@ const infoSystemSchema = new Schema<IInfoSystem>(
   {
     _id: { type: String },
     userId: { type: String, required: true, index: true },
+    siteId: { type: String, default: null, index: true },
     name: { type: String, required: true },
     abbreviation: String,
     systemType: String,

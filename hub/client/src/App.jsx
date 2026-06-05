@@ -34,7 +34,7 @@ function AdminRoute({ children }) {
   const { user, loading } = useAuth();
   if (loading) return <LoadingScreen />;
   if (!user)   return <Navigate to="/login" replace />;
-  const canAdmin = user.role === 'Corporate Admin' || user.role === 'Access Admin';
+  const canAdmin = (user.hubRole || user.role) === 'Hub Admin';
   if (!canAdmin) return <Navigate to="/portal" replace />;
   return children;
 }

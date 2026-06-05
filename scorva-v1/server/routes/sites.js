@@ -6,7 +6,7 @@ const audit   = require('../middleware/audit');
 const router  = express.Router();
 
 function requireCorporateAdmin(req, res, next) {
-  if (req.user?.role !== 'Corporate Admin') {
+  if (req.user?.role !== 'Corporate Admin' && req.user?.role !== 'Hub Admin' && !req.user?.canSeeAllSites) {
     return res.status(403).json({ error: 'Forbidden — Corporate Admin only' });
   }
   next();
@@ -16,7 +16,7 @@ function requireCorporateAdmin(req, res, next) {
 // Corporate Admins see all sites. Site-scoped users see only their assigned sites.
 router.get('/', async (req, res, next) => {
   try {
-    const isCorporateAdmin = req.user?.role === 'Corporate Admin' || req.user?.canSeeAllSites;
+    const isCorporateAdmin = req.user?.role === 'Corporate Admin' || req.user?.role === 'Hub Admin' || req.user?.canSeeAllSites;
     if (isCorporateAdmin) {
       res.json(await db.site.findMany({ orderBy: { id: 'asc' } }));
     } else {
