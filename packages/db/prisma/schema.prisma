@@ -19,26 +19,27 @@ model Site {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users           User[]
-  controls        Control[]
-  tasks           Task[]
-  poams           Poam[]
-  atoPackages     AtoPackage[]
-  conmons         ConMon[]
-  workstations    Workstation[]
-  yubiKeys        YubiKey[]
-  licenses        License[]
-  agreements      Agreement[]
-  notifications   Notification[]
-  trackers        Tracker[]
-  projectSystems  ProjectSystem[]
-  securityEvents  SecurityEvent[]
-  evidenceArtifacts    EvidenceArtifact[]
-  inspectionCampaigns  InspectionCampaign[]
+  users               User[]
+  controls            Control[]
+  tasks               Task[]
+  poams               Poam[]
+  atoPackages         AtoPackage[]
+  conmons             ConMon[]
+  workstations        Workstation[]
+  yubiKeys            YubiKey[]
+  licenses            License[]
+  agreements          Agreement[]
+  notifications       Notification[]
+  trackers            Tracker[]
+  projectSystems      ProjectSystem[]
+  securityEvents      SecurityEvent[]
+  evidenceArtifacts   EvidenceArtifact[]
+  inspectionCampaigns InspectionCampaign[]
   mashFacilities      MashFacilitySecurity[]
   mashPersonnel       MashPersonnelSecurity[]
   mashActivities      MashActivitiesSecurity[]
   mashDocuments       MashDocumentControl[]
+  mashDd254Registers  MashDd254Register[]
   mashMedia           MashMediaControl[]
   mashSelfInspections MashSelfInspectionOp[]
   mashFindings        MashSecurityFinding[]
@@ -47,47 +48,47 @@ model Site {
 }
 
 model User {
-  id               String    @id
-  name             String
-  title            String?
-  username         String    @unique
-  email            String    @unique
-  passwordHash     String    @map("password_hash")
-  role             String    @default("Hub Viewer")
-  siteId           String?   @map("site_id")
-  site             Site?     @relation(fields: [siteId], references: [id])
-  siteIds          String[]  @default([]) @map("site_ids")
-  status           String    @default("Active")
-  yubikey          String?
-  workstation      String?
-  lastLogin        DateTime? @map("last_login")
-  trainingCompliant Boolean  @default(false) @map("training_compliant")
-  trainingDue      String?   @map("training_due")
-  dod8140          Json?     @map("dod_8140")
-  createdAt        DateTime  @default(now()) @map("created_at")
-  updatedAt        DateTime  @updatedAt @map("updated_at")
+  id                String    @id
+  name              String
+  title             String?
+  username          String    @unique
+  email             String    @unique
+  passwordHash      String    @map("password_hash")
+  role              String    @default("Hub Viewer")
+  siteId            String?   @map("site_id")
+  site              Site?     @relation(fields: [siteId], references: [id])
+  siteIds           String[]  @default([]) @map("site_ids")
+  status            String    @default("Active")
+  yubikey           String?
+  workstation       String?
+  lastLogin         DateTime? @map("last_login")
+  trainingCompliant Boolean   @default(false) @map("training_compliant")
+  trainingDue       String?   @map("training_due")
+  dod8140           Json?     @map("dod_8140")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
 
   @@map("users")
 }
 
 model Control {
-  id                    String   @id
-  title                 String
-  family                String?
-  status                String   @default("Not Implemented")
-  baseline              String?
-  lastReview            String?  @map("last_review")
-  findings              Int      @default(0)
-  notes                 String?
-  description           String?
-  implementationGuidance String? @map("implementation_guidance")
-  siteId                String   @map("site_id")
-  site                  Site     @relation(fields: [siteId], references: [id])
-  conmonStatus          String?  @map("conmon_status")
-  conmonGroup           String?  @map("conmon_group")
-  conmonFrequency       String?  @map("conmon_frequency")
-  createdAt             DateTime @default(now()) @map("created_at")
-  updatedAt             DateTime @updatedAt @map("updated_at")
+  id                     String   @id
+  title                  String
+  family                 String?
+  status                 String   @default("Not Implemented")
+  baseline               String?
+  lastReview             String?  @map("last_review")
+  findings               Int      @default(0)
+  notes                  String?
+  description            String?
+  implementationGuidance String?  @map("implementation_guidance")
+  siteId                 String   @map("site_id")
+  site                   Site     @relation(fields: [siteId], references: [id])
+  conmonStatus           String?  @map("conmon_status")
+  conmonGroup            String?  @map("conmon_group")
+  conmonFrequency        String?  @map("conmon_frequency")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
 
   @@index([siteId])
   @@map("controls")
@@ -120,37 +121,37 @@ model Task {
 }
 
 model Poam {
-  id                  String   @id
+  id                  String    @id
   title               String
-  controlId           String?  @map("control_id")
+  controlId           String?   @map("control_id")
   weakness            String?
   severity            String?
-  status              String   @default("Open")
-  siteId              String   @map("site_id")
-  site                Site     @relation(fields: [siteId], references: [id])
-  sourceType          String?  @map("source_type")
-  sourceId            String?  @map("source_id")
-  responsibleParty    String?  @map("responsible_party")
-  pointOfContact      String?  @map("point_of_contact")
+  status              String    @default("Open")
+  siteId              String    @map("site_id")
+  site                Site      @relation(fields: [siteId], references: [id])
+  sourceType          String?   @map("source_type")
+  sourceId            String?   @map("source_id")
+  responsibleParty    String?   @map("responsible_party")
+  pointOfContact      String?   @map("point_of_contact")
   resources           String?
-  scheduledCompletion String?  @map("scheduled_completion")
-  milestones          Json?    @default("[]")
-  identifiedDate      String?  @map("identified_date")
-  atoId               String?  @map("ato_id")
-  poamType            String?  @map("poam_type")
+  scheduledCompletion String?   @map("scheduled_completion")
+  milestones          Json?     @default("[]")
+  identifiedDate      String?   @map("identified_date")
+  atoId               String?   @map("ato_id")
+  poamType            String?   @map("poam_type")
   comments            String?
-  completedDate       String?  @map("completed_date")
-  closedDate          String?  @map("closed_date")
-  riskDecision        String?  @map("risk_decision")
-  riskRationale       String?  @map("risk_rationale")
-  riskWorkflowState   String   @default("Draft") @map("risk_workflow_state")
+  completedDate       String?   @map("completed_date")
+  closedDate          String?   @map("closed_date")
+  riskDecision        String?   @map("risk_decision")
+  riskRationale       String?   @map("risk_rationale")
+  riskWorkflowState   String    @default("Draft") @map("risk_workflow_state")
   riskSubmittedAt     DateTime? @map("risk_submitted_at")
-  riskSubmittedBy     String?  @map("risk_submitted_by")
+  riskSubmittedBy     String?   @map("risk_submitted_by")
   riskReviewedAt      DateTime? @map("risk_reviewed_at")
-  riskReviewedBy      String?  @map("risk_reviewed_by")
-  riskReviewNotes     String?  @map("risk_review_notes")
-  createdAt           DateTime @default(now()) @map("created_at")
-  updatedAt           DateTime @updatedAt @map("updated_at")
+  riskReviewedBy      String?   @map("risk_reviewed_by")
+  riskReviewNotes     String?   @map("risk_review_notes")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
 
   @@index([siteId])
   @@map("poams")
@@ -224,18 +225,18 @@ model Workstation {
 }
 
 model YubiKey {
-  id               String   @id
-  serial           String   @unique
-  model            String?
-  status           String   @default("Unassigned")
-  username         String?
-  siteId           String?  @map("site_id")
-  site             Site?    @relation(fields: [siteId], references: [id])
-  issued           String?
-  lastAuth         String?  @map("last_auth")
-  lostDestroyedDate String? @map("lost_destroyed_date")
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  id                String   @id
+  serial            String   @unique
+  model             String?
+  status            String   @default("Unassigned")
+  username          String?
+  siteId            String?  @map("site_id")
+  site              Site?    @relation(fields: [siteId], references: [id])
+  issued            String?
+  lastAuth          String?  @map("last_auth")
+  lostDestroyedDate String?  @map("lost_destroyed_date")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
 
   @@index([siteId])
   @@map("yubi_keys")
@@ -324,24 +325,24 @@ model SecurityEvent {
 }
 
 model Tracker {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  category    String?
-  frequency   String?
-  owner       String?
-  nextDue     String?  @map("next_due")
-  lastCompleted String? @map("last_completed")
-  status      String   @default("Active")
-  controlId   String?  @map("control_id")
-  columns     Json?    @default("[]")
-  rows        Json?    @default("[]")
-  subtrackers Json?    @default("[]")
-  siteId      String?  @map("site_id")
-  site        Site?    @relation(fields: [siteId], references: [id])
-  createdBy   String?  @map("created_by")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  category      String?
+  frequency     String?
+  owner         String?
+  nextDue       String?  @map("next_due")
+  lastCompleted String?  @map("last_completed")
+  status        String   @default("Active")
+  controlId     String?  @map("control_id")
+  columns       Json?    @default("[]")
+  rows          Json?    @default("[]")
+  subtrackers   Json?    @default("[]")
+  siteId        String?  @map("site_id")
+  site          Site?    @relation(fields: [siteId], references: [id])
+  createdBy     String?  @map("created_by")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
 
   @@index([siteId])
   @@map("trackers")
@@ -490,34 +491,34 @@ model InspectionCampaignItem {
 // ─── MASH models ───────────────────────────────────────────────────────────────
 
 model MashSite {
-  id             String   @id @default(cuid())
-  siteId         String   @unique @map("site_id")
+  id             String  @id @default(cuid())
+  siteId         String  @unique @map("site_id")
   name           String
   location       String?
-  status         String   @default("Active")
-  scifZones      Int?     @map("scif_zones")
-  nextInspection String?  @map("next_inspection")
+  status         String  @default("Active")
+  scifZones      Int?    @map("scif_zones")
+  nextInspection String? @map("next_inspection")
 
-  employees      Employee[]
-  inspections    InspectionItem[]
-  contracts      Contract[]
-  mashDocuments  MashDocument[]
+  employees     Employee[]
+  inspections   InspectionItem[]
+  contracts     Contract[]
+  mashDocuments MashDocument[]
 
   @@map("mash_sites")
 }
 
 model Employee {
-  id                 String    @id @default(cuid())
+  id                 String   @id @default(cuid())
   name               String
-  mashSiteId         String    @map("mash_site_id")
-  mashSite           MashSite  @relation(fields: [mashSiteId], references: [siteId])
+  mashSiteId         String   @map("mash_site_id")
+  mashSite           MashSite @relation(fields: [mashSiteId], references: [siteId])
   position           String?
-  clearanceLevel     String    @map("clearance_level")
-  clearanceGranted   String?   @map("clearance_granted")
-  reinvestigationDue String?   @map("reinvestigation_due")
-  trainingDueDate    String?   @map("training_due_date")
-  annualBriefingDue  String?   @map("annual_briefing_due")
-  status             String    @default("active")
+  clearanceLevel     String   @map("clearance_level")
+  clearanceGranted   String?  @map("clearance_granted")
+  reinvestigationDue String?  @map("reinvestigation_due")
+  trainingDueDate    String?  @map("training_due_date")
+  annualBriefingDue  String?  @map("annual_briefing_due")
+  status             String   @default("active")
   notes              String?
 
   @@map("employees")
@@ -536,16 +537,16 @@ model InspectionItem {
 }
 
 model Contract {
-  id           String    @id @default(cuid())
-  contractId   String    @map("contract_id")
-  mashSiteId   String    @map("mash_site_id")
-  mashSite     MashSite  @relation(fields: [mashSiteId], references: [siteId])
+  id           String        @id @default(cuid())
+  contractId   String        @map("contract_id")
+  mashSiteId   String        @map("mash_site_id")
+  mashSite     MashSite      @relation(fields: [mashSiteId], references: [siteId])
   vendor       String?
   scope        String?
-  totalValue   Float     @default(0) @map("total_value")
-  amountSpent  Float     @default(0) @map("amount_spent")
+  totalValue   Float         @default(0) @map("total_value")
+  amountSpent  Float         @default(0) @map("amount_spent")
   expiration   String?
-  status       String    @default("Active")
+  status       String        @default("Active")
   transactions Transaction[]
 
   @@map("contracts")
@@ -586,27 +587,27 @@ model Transaction {
 // ─── CRATER models (RMF Automation Engine) ─────────────────────────────────────
 
 model ProjectSystem {
-  id                    String         @id @default(cuid())
-  externalId            String?        @unique @map("external_id")
+  id                    String           @id @default(cuid())
+  externalId            String?          @unique @map("external_id")
   name                  String
   abbreviation          String
-  systemType            String         @default("Major Application") @map("system_type")
+  systemType            String           @default("Major Application") @map("system_type")
   organization          String
   description           String?
-  classificationMarking String?        @map("classification_marking")
-  systemOwner           String?        @map("system_owner")
+  classificationMarking String?          @map("classification_marking")
+  systemOwner           String?          @map("system_owner")
   isso                  String?
   issm                  String?
-  confidentiality       String         @default("Low")
-  integrity             String         @default("Low")
-  availability          String         @default("Low")
-  baseline              String         @default("LOW")
-  atoStatus             String         @default("Pre-ATO") @map("ato_status")
-  siteId                String         @map("site_id")
-  site                  Site           @relation(fields: [siteId], references: [id])
+  confidentiality       String           @default("Low")
+  integrity             String           @default("Low")
+  availability          String           @default("Low")
+  baseline              String           @default("LOW")
+  atoStatus             String           @default("Pre-ATO") @map("ato_status")
+  siteId                String           @map("site_id")
+  site                  Site             @relation(fields: [siteId], references: [id])
   controls              ProjectControl[]
-  createdAt             DateTime       @default(now()) @map("created_at")
-  updatedAt             DateTime       @updatedAt @map("updated_at")
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
 
   @@map("project_systems")
 }
@@ -706,22 +707,22 @@ model LavaSaar {
 }
 
 model LavaSystemRequest {
-  id             String      @id @default(cuid())
-  systemName     String      @map("system_name")
-  systemOwner    String      @map("system_owner")
-  ownerEmail     String      @map("owner_email")
-  ownerPhone     String?     @map("owner_phone")
-  classification String      @default("UNCLASSIFIED")
+  id             String   @id @default(cuid())
+  systemName     String   @map("system_name")
+  systemOwner    String   @map("system_owner")
+  ownerEmail     String   @map("owner_email")
+  ownerPhone     String?  @map("owner_phone")
+  classification String   @default("UNCLASSIFIED")
   purpose        String
-  networkType    String?     @map("network_type")
-  status         String      @default("pending")
-  reviewedBy     String?     @map("reviewed_by")
-  reviewNotes    String?     @map("review_notes")
-  siteId         String?     @map("site_id")
-  createdAt      DateTime    @default(now()) @map("created_at")
-  updatedAt      DateTime    @updatedAt @map("updated_at")
+  networkType    String?  @map("network_type")
+  status         String   @default("pending")
+  reviewedBy     String?  @map("reviewed_by")
+  reviewNotes    String?  @map("review_notes")
+  siteId         String?  @map("site_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
-  assets         LavaAsset[]
+  assets LavaAsset[]
 
   @@map("lava_system_requests")
 }
@@ -750,15 +751,15 @@ model LavaAsset {
 }
 
 model LavaAssetAssignmentHistory {
-  id             String    @id @default(cuid())
-  assetId        String    @map("asset_id")
-  asset          LavaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  assignedUser   String?   @map("assigned_user")
-  previousUser   String?   @map("previous_user")
-  assignedBy     String?   @map("assigned_by")
-  notes          String?
-  assignedAt     DateTime  @default(now()) @map("assigned_at")
-  returnedAt     DateTime? @map("returned_at")
+  id           String    @id @default(cuid())
+  assetId      String    @map("asset_id")
+  asset        LavaAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assignedUser String?   @map("assigned_user")
+  previousUser String?   @map("previous_user")
+  assignedBy   String?   @map("assigned_by")
+  notes        String?
+  assignedAt   DateTime  @default(now()) @map("assigned_at")
+  returnedAt   DateTime? @map("returned_at")
 
   @@map("lava_asset_assignment_history")
 }
@@ -801,6 +802,27 @@ model DataFabricSession {
 
   @@index([expiresAt])
   @@map("data_fabric_sessions")
+}
+
+model NexusSnapshot {
+  id                String   @id @default(cuid())
+  snapshotAt        DateTime @default(now()) @map("snapshot_at")
+  siteId            String?  @map("site_id")
+  cyberScore        Int?     @map("cyber_score")
+  securityScore     Int?     @map("security_score")
+  programScore      Int?     @map("program_score")
+  openPoams         Int?     @map("open_poams")
+  authorizedAtos    Int?     @map("authorized_atos")
+  expiredAtos       Int?     @map("expired_atos")
+  openFindings      Int?     @map("open_findings")
+  nominalFacilities Int?     @map("nominal_facilities")
+  overdueTraining   Int?     @map("overdue_training")
+  pendingSaars      Int?     @map("pending_saars")
+  meta              Json?    @default("{}")
+
+  @@index([snapshotAt])
+  @@index([siteId, snapshotAt])
+  @@map("nexus_snapshots")
 }
 
 // ─── MASH relational operational domains (Phase C) ────────────────────────────
@@ -931,34 +953,65 @@ model MashDocumentControl {
   @@map("mash_document_control")
 }
 
+model MashDd254Register {
+  id                          String   @id @default(cuid())
+  siteId                      String   @map("site_id")
+  site                        Site     @relation(fields: [siteId], references: [id])
+  contractNumber              String?  @map("contract_number")
+  programName                 String?  @map("program_name")
+  customer                    String?
+  primeOrSub                  String?  @map("prime_or_sub")
+  dd254Status                 String   @default("Draft") @map("dd254_status")
+  revision                    String?
+  effectiveDate               String?  @map("effective_date")
+  expirationDate              String?  @map("expiration_date")
+  reviewDueDate               String?  @map("review_due_date")
+  classificationLevel         String?  @map("classification_level")
+  hasSci                      Boolean  @default(false) @map("has_sci")
+  hasSap                      Boolean  @default(false) @map("has_sap")
+  cuiRequired                 Boolean  @default(false) @map("cui_required")
+  governmentActivity          String?  @map("government_activity")
+  owner                       String?
+  securityRequirementsSummary String?  @map("security_requirements_summary")
+  documentLink                String?  @map("document_link")
+  notes                       String?
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+  createdBy                   String?  @map("created_by")
+  updatedBy                   String?  @map("updated_by")
+
+  @@index([siteId])
+  @@map("mash_dd254_register")
+}
+
 model MashMediaControl {
-  id           String   @id @default(cuid())
-  siteId       String   @map("site_id")
-  site         Site     @relation(fields: [siteId], references: [id])
-  mediaId      String?  @map("media_id")
-  type         String?
-  label        String?
+  id             String   @id @default(cuid())
+  siteId         String   @map("site_id")
+  site           Site     @relation(fields: [siteId], references: [id])
+  mediaId        String?  @map("media_id")
+  type           String?
+  label          String?
   classification String?
-  program      String?
-  capacityGB   Int?     @map("capacity_gb")
-  make         String?
-  model        String?
-  serialNumber String?  @map("serial_number")
-  status       String   @default("Unassigned")
-  assignedTo   String?  @map("assigned_to")
-  assignedDate String?  @map("assigned_date")
-  returnDue    String?  @map("return_due")
-  system       String?
-  lastScan     String?  @map("last_scan")
-  lastApproval String?  @map("last_approval")
-  approvedBy   String?  @map("approved_by")
-  notes        String?
-  flags        Json?    @default("[]")
-  history      Json?    @default("[]")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  createdBy    String?  @map("created_by")
-  updatedBy    String?  @map("updated_by")
+  program        String?
+  capacityGB     Int?     @map("capacity_gb")
+  make           String?
+  model          String?
+  serialNumber   String?  @map("serial_number")
+  status         String   @default("Unassigned")
+  assignedTo     String?  @map("assigned_to")
+  assignedDate   String?  @map("assigned_date")
+  returnDue      String?  @map("return_due")
+  system         String?
+  lastScan       String?  @map("last_scan")
+  lastApproval   String?  @map("last_approval")
+  approvedBy     String?  @map("approved_by")
+  notes          String?
+  flags          Json?    @default("[]")
+  history        Json?    @default("[]")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  createdBy      String?  @map("created_by")
+  updatedBy      String?  @map("updated_by")
 
   @@index([siteId])
   @@map("mash_media_control")

@@ -67,54 +67,19 @@ export default function OverviewPage({ siteId }) {
 
   return (
     <div className="ws-page">
-      <section className="ws-hero">
-        <div className="ws-hero-grid">
-          <div>
-            <div className="ws-hero-kicker">Security program overview</div>
-            <div className="ws-hero-title">Security program visibility across facilities, personnel, media, and inspections.</div>
-            <div className="ws-hero-copy">
-              Track compliance, overdue actions, and site-level security status in one workspace with a clearer operational summary at the top.
-            </div>
-            <div className="ws-hero-tags">
-              <span className="ws-hero-tag">{activeSiteLabel}</span>
-              {heroTags.map(tag => <span key={tag} className="ws-hero-tag">{tag}</span>)}
-            </div>
-          </div>
-
-          <div className="ws-hero-side">
-            <div className="ws-signal-card">
-              <div className="ws-signal-label">Readiness score</div>
-              <div className="ws-signal-value">{readinessScore}%</div>
-              <div className="ws-signal-copy">
-                Derived from current overdue activities, training gaps, IDS issues, and media exceptions.
-              </div>
-              <div className="ws-signal-meter">
-                <span style={{ width: `${readinessScore}%` }} />
-              </div>
-            </div>
-            <div className="ws-signal-card">
-              <div className="ws-signal-label">Open action items</div>
-              <div className="ws-signal-value">{totalAlerts}</div>
-              <div className="ws-signal-copy">
-                {totalAlerts > 0
-                  ? 'Items currently require review, follow-up, or corrective action.'
-                  : 'No immediate action items are currently open.'}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <div className="ws-page-header">
         <div>
-          <div className="ws-page-title">Security Overview</div>
-          <div className="ws-page-sub">Actionable summary across all security program areas{siteId ? ' — filtered by site' : ''}.</div>
+          <div className="ws-page-title">Overview</div>
         </div>
-        <span className="ws-count-badge">{totalAlerts} action items</span>
+        <div className="ws-hero-tags">
+          <span className="ws-hero-tag">{activeSiteLabel}</span>
+          {heroTags.map(tag => <span key={tag} className="ws-hero-tag">{tag}</span>)}
+          <span className="ws-count-badge">{totalAlerts} action items</span>
+        </div>
       </div>
 
-      {/* KPI strip */}
       <section className="ws-kpi-strip">
+        <KPI label="Readiness" value={`${readinessScore}%`} hint="Current score" tone={readinessScore >= 85 ? 'good' : readinessScore >= 70 ? 'watch' : 'risk'} />
         <KPI label="Facilities" value={summary.facilities} hint="Tracked in program" />
         <KPI label="Cleared Personnel" value={summary.personnel} hint="Active roster" />
         <KPI
@@ -282,6 +247,16 @@ export default function OverviewPage({ siteId }) {
                     <td>Document Exceptions</td>
                     <td><strong>{documents.exceptions ?? 0}</strong></td>
                     <td>{(documents.exceptions ?? 0) > 0 ? <span className="badge badge-red">Review required</span> : <span className="badge badge-green">None</span>}</td>
+                  </tr>
+                  <tr>
+                    <td>DD254 Register</td>
+                    <td><strong>{documents.dd254Total ?? 0}</strong></td>
+                    <td><span className="badge badge-gray">{documents.dd254Actionable ?? 0} actionable</span></td>
+                  </tr>
+                  <tr>
+                    <td>DD254 Expiring / Review Due</td>
+                    <td><strong>{(documents.dd254Expiring ?? 0) + (documents.dd254ReviewDue ?? 0)}</strong></td>
+                    <td>{((documents.dd254Expiring ?? 0) + (documents.dd254ReviewDue ?? 0)) > 0 ? <span className="badge badge-amber">Action needed</span> : <span className="badge badge-green">Current</span>}</td>
                   </tr>
                   <tr>
                     <td>Media Items</td>

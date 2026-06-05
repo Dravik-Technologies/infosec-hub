@@ -8,7 +8,7 @@ import Badge          from '../components/ui/Badge';
 import Modal          from '../components/ui/Modal';
 import ConfirmDialog  from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2, CheckCircle, XCircle, Shield } from 'lucide-react';
+import { Plus, Pencil, Trash2, CheckCircle, XCircle, Shield, Users2, Building2 } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
@@ -30,6 +30,13 @@ const EMPTY = {
   training_compliant: false, training_due: '',
   dod_8140: { baseline: '', cert_name: '', cert_expiry: '', status: 'Pending' },
 };
+
+function getUserRowClass(row) {
+  if ((row.status || '').toLowerCase() === 'inactive') return 'row-medium';
+  const trained = row.training_compliant || row.trainingCompliant;
+  if (!trained) return 'row-low';
+  return '';
+}
 
 function normalizeUserForForm(row) {
   return {
@@ -379,10 +386,20 @@ export default function UsersPage() {
   const trainedCount    = activeUsers.filter(r => r.training_compliant ?? r.trainingCompliant).length;
   const notTrainedCount = activeUsers.length - trainedCount;
   const trainingPct     = activeUsers.length ? Math.round((trainedCount / activeUsers.length) * 100) : 0;
+  const representedSites = new Set(
+    data.flatMap(r => {
+      if (Array.isArray(r.siteIDs) && r.siteIDs.length) return r.siteIDs;
+      if (Array.isArray(r.siteIds) && r.siteIds.length) return r.siteIds;
+      return r.site ? [r.site] : [];
+    }).filter(Boolean)
+  ).size;
 
   return (
     <div>
-      <PageHeader title="Users" description="Account & access management"
+      <PageHeader
+        breadcrumbs={[{ label: 'Assets' }, { label: 'Users' }]}
+        title="Users"
+        description="Account & access management"
         action={isAdmin && <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} /> Add User</button>}
       />
 
@@ -429,7 +446,32 @@ export default function UsersPage() {
         </div>
       </StatusDashboard>
 
-      <Table columns={cols} data={data} onRowClick={row => setDetail(row)} />
+      <div className="sc-workbar mb-4">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill">Access Directory</span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <Users2 size={12} />
+            {data.length} accounts
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <Building2 size={12} />
+            {representedSites} sites represented
+          </span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          {notTrainedCount > 0 ? `${notTrainedCount} training gap${notTrainedCount > 1 ? 's' : ''} require follow-up.` : 'Training posture is currently clean.'}
+        </div>
+      </div>
+
+      <div className="sc-surface-block">
+        <Table
+          columns={cols}
+          data={data}
+          onRowClick={row => setDetail(row)}
+          getRowClass={getUserRowClass}
+          emptyText="No users found."
+        />
+      </div>
 
       {/* ── Detail Modal ── */}
       {detail && (

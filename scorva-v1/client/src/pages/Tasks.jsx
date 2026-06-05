@@ -19,6 +19,14 @@ function parseCtrlStr(str) {
   return (str || '').split(/[,\n]/).map(s => s.trim()).filter(Boolean);
 }
 
+function getTaskRowClass(row) {
+  const p = (row.priority || '').toLowerCase();
+  if (p === 'critical') return 'row-critical';
+  if (p === 'high')     return 'row-high';
+  if (p === 'medium')   return 'row-medium';
+  return '';
+}
+
 function sourceLabel(task) {
   const source = task.source || '';
   if (!source) return 'Manual';
@@ -239,7 +247,8 @@ export default function TasksPage() {
   return (
     <div>
       <PageHeader
-        title="My Taskers"
+        breadcrumbs={[{ label: 'Authorization', to: '/ato' }, { label: 'Tasks' }]}
+        title="Taskers"
         description={`${active.length} active · ${completed.length} completed`}
         action={
           <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}>
@@ -296,7 +305,8 @@ export default function TasksPage() {
         columns={activeTab === 'active' ? activeCols : completedCols}
         data={shown}
         onRowClick={openEdit}
-        emptyText={activeTab === 'active' ? 'No active tasks — you\'re all caught up!' : 'No completed tasks yet.'}
+        getRowClass={activeTab === 'active' ? getTaskRowClass : undefined}
+        emptyText={activeTab === 'active' ? "No active tasks — you're all caught up!" : 'No completed tasks yet.'}
       />
 
       {/* ── Create / Edit Modal ── */}

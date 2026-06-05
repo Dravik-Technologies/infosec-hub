@@ -8,7 +8,7 @@ import Badge          from '../components/ui/Badge';
 import Modal          from '../components/ui/Modal';
 import ConfirmDialog  from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, ShieldCheck, LaptopMinimal } from 'lucide-react';
 import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
@@ -24,6 +24,14 @@ const EMPTY = {
 };
 
 /* ── TACLANE key expiry indicator ── */
+function getWsRowClass(row) {
+  const s = (row.status || '').toLowerCase();
+  if (s === 'lost') return 'row-critical';
+  if (s === 'awaiting destruction') return 'row-high';
+  if (s === 'decommissioned') return 'row-medium';
+  return '';
+}
+
 function ExpiryCell({ dateStr }) {
   if (!dateStr) return <span className="text-xs text-scorva-muted">—</span>;
   const days = Math.floor((new Date(dateStr) - new Date()) / 86_400_000);
@@ -210,7 +218,10 @@ export default function WorkstationsPage() {
 
   return (
     <div>
-      <PageHeader title="Devices" description="Endpoint inventory & compliance"
+      <PageHeader
+        breadcrumbs={[{ label: 'Assets' }, { label: 'Devices' }]}
+        title="Devices"
+        description="Endpoint inventory & compliance"
         action={<div className="flex gap-2">
           {selectedIds.length > 0 && (
             <button className="btn-secondary flex items-center gap-1.5 text-red-300 border-red-500/40" onClick={() => removeMany.mutate(selectedIds)} disabled={removeMany.isPending}>
@@ -242,28 +253,47 @@ export default function WorkstationsPage() {
         </div>
       </StatusDashboard>
 
-      {/* ── Search + Filters ── */}
-      <div className="flex flex-wrap gap-2 mb-4 mt-2">
-        <div className="relative flex-1 min-w-[180px]">
-          <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-scorva-muted pointer-events-none" />
-          <input
-            className="input-base pl-7 text-xs"
-            placeholder="Search hostname or asset tag…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <LaptopMinimal size={12} />
+            Endpoint registry
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <ShieldCheck size={12} />
+            {systems.length} linked systems
+          </span>
         </div>
-        <select className="input-base text-xs w-36" value={ftType} onChange={e => setFtType(e.target.value)}>
-          <option value="">All Types</option>
-          {TYPES.map(t => <option key={t}>{t}</option>)}
-        </select>
-        <select className="input-base text-xs w-44" value={ftStatus} onChange={e => setFtStatus(e.target.value)}>
-          <option value="">All Statuses</option>
-          {STATUSES.map(s => <option key={s}>{s}</option>)}
-        </select>
+        <div className="flex flex-wrap gap-2 flex-1 justify-end">
+          <div className="relative flex-1 min-w-[180px] max-w-[22rem]">
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-scorva-muted pointer-events-none" />
+            <input
+              className="input-base pl-7 text-xs"
+              placeholder="Search hostname or asset tag…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+          </div>
+          <select className="input-base text-xs w-36" value={ftType} onChange={e => setFtType(e.target.value)}>
+            <option value="">All Types</option>
+            {TYPES.map(t => <option key={t}>{t}</option>)}
+          </select>
+          <select className="input-base text-xs w-44" value={ftStatus} onChange={e => setFtStatus(e.target.value)}>
+            <option value="">All Statuses</option>
+            {STATUSES.map(s => <option key={s}>{s}</option>)}
+          </select>
+        </div>
       </div>
 
-      <Table columns={cols} data={shown} onRowClick={openEdit} />
+      <div className="sc-surface-block">
+        <Table
+          columns={cols}
+          data={shown}
+          onRowClick={openEdit}
+          getRowClass={getWsRowClass}
+          emptyText="No devices found."
+        />
+      </div>
 
       {modal && (
         <Modal title={modal === 'create' ? 'Add Device' : 'Edit Device'} onClose={() => setModal(null)}>

@@ -36,11 +36,9 @@ export default function DonutChart({
   let cumFraction = 0;
 
   return (
-    <div className="flex items-center gap-5">
-      {/* ── Donut SVG ── */}
+    <div className="sc-donut-wrap flex items-center gap-5">
       <div className="shrink-0">
         <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          {/* Track ring */}
           <circle
             cx={cx} cy={cy} r={r}
             fill="none"
@@ -73,7 +71,6 @@ export default function DonutChart({
             </g>
           )}
 
-          {/* Center label */}
           {label && (
             <text
               x={cx} y={cy - (sublabel ? size * 0.07 : 0)}
@@ -97,10 +94,9 @@ export default function DonutChart({
         </svg>
       </div>
 
-      {/* ── Legend ── */}
       <div className="flex flex-col gap-1.5 min-w-0">
         {segments.map((seg, i) => (
-          <div key={i} className="flex items-center gap-2 text-xs min-w-0">
+          <div key={i} className="sc-donut-legend-row flex items-center gap-2 text-xs min-w-0">
             <span
               className="w-2 h-2 rounded-full shrink-0"
               style={{ background: FILL[seg.color] ?? FILL.muted }}

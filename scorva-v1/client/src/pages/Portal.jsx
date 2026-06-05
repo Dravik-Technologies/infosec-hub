@@ -267,12 +267,13 @@ export default function Portal() {
   const critHighCount = systemLogs.filter(l => l.severity === 'critical' || l.severity === 'high').length;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg">
+    <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg relative">
+      <div className="sc-landing-grid absolute inset-0 pointer-events-none opacity-50" />
 
       {/* ── Portal Header ── */}
-      <header className="flex items-center justify-between h-14 px-4 bg-scorva-surface border-b border-scorva-border shrink-0">
+      <header className="sc-app-header justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-scorva-accent/10 border border-scorva-accent/20">
+          <div className="sc-app-header-mark">
             <Shield size={15} className="text-scorva-accent" />
           </div>
           <div>
@@ -304,15 +305,16 @@ export default function Portal() {
       </header>
 
       {/* ── Body ── */}
-      <main className="flex-1 overflow-y-auto p-6 space-y-6">
+      <main className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
 
         {/* ── Title + INFOCON ── */}
+        <div className="sc-command-hero">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Globe size={18} className="text-scorva-accent shrink-0" />
             <div>
               <h1 className="text-base font-bold text-scorva-text font-mono tracking-widest uppercase">Cyber Command Center</h1>
-              <p className="text-[10px] text-scorva-muted font-mono">NIST SP 800-53 Rev 5 · Compliance Posture</p>
+              <p className="text-[10px] text-scorva-muted font-mono">NIST SP 800-53 Rev 5 · command surface</p>
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -326,6 +328,7 @@ export default function Portal() {
               <span className="text-[9px] font-mono text-scorva-muted">{ic.sub}</span>
             </div>
           </div>
+        </div>
         </div>
 
         {/* ── Alert banner ── */}
@@ -406,7 +409,7 @@ export default function Portal() {
               <button
                 key={to}
                 onClick={() => navigate(to)}
-                className={`card p-5 text-left hover:shadow-md transition-all group flex flex-col gap-3 border-2 ${APP_COLOR_MAP[color]}`}
+                className={`sc-portal-app-card p-5 text-left transition-all group flex flex-col gap-3 border-2 ${APP_COLOR_MAP[color]}`}
               >
                 <div className="flex items-start justify-between">
                   <div className={`inline-flex p-2.5 rounded-xl border ${APP_COLOR_MAP[color]}`}>
@@ -428,7 +431,7 @@ export default function Portal() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
           {/* Live CVE Feed */}
-          <div className="card flex flex-col" style={{ maxHeight: '340px' }}>
+          <div className="sc-portal-feed-card flex flex-col" style={{ maxHeight: '340px' }}>
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-scorva-border shrink-0">
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
@@ -494,7 +497,7 @@ export default function Portal() {
           </div>
 
           {/* System Audit Log */}
-          <div className="card flex flex-col" style={{ maxHeight: '340px' }}>
+          <div className="sc-portal-feed-card flex flex-col" style={{ maxHeight: '340px' }}>
             {/* Header */}
             <div className="flex items-center justify-between px-3 py-2.5 border-b border-scorva-border shrink-0 gap-2 flex-wrap">
               <div className="flex items-center gap-2 min-w-0">
@@ -628,7 +631,7 @@ function SectionLabel({ children }) {
 
 function ChartCard({ icon: Icon, label, sublabel, accent = false, warn = false, children }) {
   return (
-    <div className={`card p-4 flex flex-col gap-3 ${accent ? 'border-scorva-accent/30' : warn ? 'border-orange-500/25' : ''}`}>
+    <div className={`sc-chart-card p-4 flex flex-col gap-3 ${accent ? 'border-scorva-accent/30' : warn ? 'border-orange-500/25' : ''}`}>
       <div className="flex items-center gap-2">
         <div className={`p-1.5 rounded-lg shrink-0 ${accent ? 'bg-scorva-accent/15 text-scorva-accent' : warn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted'}`}>
           <Icon size={13} />

@@ -3,7 +3,7 @@ import { api } from '../api';
 import PageHeader    from '../components/ui/PageHeader';
 import Badge         from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { CheckCheck, Trash2, Bell } from 'lucide-react';
+import { CheckCheck, Trash2, Bell, ActivitySquare } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 
 export default function NotificationsPage() {
@@ -20,6 +20,18 @@ export default function NotificationsPage() {
   if (isLoading) return <LoadingSpinner />;
   return (
     <div>
+      <PageHeader
+        title="Notifications"
+        description={`${unread} unread`}
+        action={
+          unread > 0 && (
+            <button className="btn-secondary" onClick={() => markAll.mutate()}>
+              <CheckCheck size={14} />
+              Mark all read
+            </button>
+          )
+        }
+      />
       <StatusDashboard>
         <div className="flex flex-wrap gap-6 items-center">
           <div className="flex flex-wrap gap-2">
@@ -45,18 +57,22 @@ export default function NotificationsPage() {
           )}
         </div>
       </StatusDashboard>
-      <PageHeader
-        title="Notifications"
-        description={`${unread} unread`}
-        action={
-          unread > 0 && (
-            <button className="btn-secondary" onClick={() => markAll.mutate()}>
-              <CheckCheck size={14} />
-              Mark all read
-            </button>
-          )
-        }
-      />
+
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <Bell size={12} />
+            Event inbox
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <ActivitySquare size={12} />
+            {unread} unread / {read} cleared
+          </span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          Review unread items first, then clear noise to keep the queue operationally useful.
+        </div>
+      </div>
 
       {data.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-scorva-muted">
@@ -64,11 +80,11 @@ export default function NotificationsPage() {
           <p className="text-sm">No notifications</p>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {data.map(n => (
             <div
               key={n.id}
-              className={`card p-4 flex items-start gap-4 ${!n.read ? 'border-scorva-accent/30' : ''}`}
+              className={`sc-notification-card p-4 flex items-start gap-4 ${!n.read ? 'border-scorva-accent/30' : ''}`}
             >
               <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${!n.read ? 'bg-scorva-accent' : 'bg-scorva-border'}`} />
               <div className="flex-1 min-w-0">

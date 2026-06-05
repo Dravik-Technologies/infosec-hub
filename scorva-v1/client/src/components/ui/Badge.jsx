@@ -76,7 +76,7 @@ export default function Badge({ label, variant }) {
   const cls = VARIANTS[label] || VARIANTS[variant] ||
     'bg-scorva-border/50 text-scorva-muted border-scorva-border';
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border ${cls}`}>
+    <span className={`sc-badge inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium border ${cls}`}>
       {label}
     </span>
   );

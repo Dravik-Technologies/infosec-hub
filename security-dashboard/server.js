@@ -38,7 +38,7 @@ const SINGLETON = new Set([
 
 const WORKSPACE_COLLECTIONS = [
   'facility_security', 'personnel_security', 'activities_security',
-  'document_control', 'media_control', 'self_inspection_ops', 'security_findings',
+  'document_control', 'dd254_register', 'media_control', 'self_inspection_ops', 'security_findings',
   'security_workspace_settings', 'workspace_role_mappings',
 ];
 
@@ -66,8 +66,8 @@ const WORKSPACE_ROLES = {
   },
   document_control_mgr: {
     display: 'Document Control Manager',
-    nav: ['overview', 'documents'],
-    write: ['document_control'],
+    nav: ['overview', 'documents', 'dd254'],
+    write: ['document_control', 'dd254_register'],
   },
   media_control_mgr: {
     display: 'Media Control Manager',
@@ -206,6 +206,7 @@ const SECURITY_ROLE_TO_WS_ROLE = {
   'Personnel Security':       'personnel_security_mgr',
   'Activities Security':      'activities_security_mgr',
   'Document Control':         'document_control_mgr',
+  'DD254 / Contract Security':'document_control_mgr',
   'Media Control':            'media_control_mgr',
 };
 
@@ -245,27 +246,28 @@ function siteFilter(items, siteId) {
 app.get('/api/workspace/overview', auth, async (req, res) => {
   try {
     const scope = resolveTenantScope(req);
-    let fac, per, act, doc, med, fin, ins;
+    let fac, per, act, doc, dd254s, med, fin, ins;
 
     if (dbOk()) {
       ({ facilities: fac, personnel: per, activities: act, docs: doc,
-         media: med, findings: fin, inspections: ins } = await mashDb.aggregateOverview(scope));
+         dd254s, media: med, findings: fin, inspections: ins } = await mashDb.aggregateOverview(scope));
     } else {
       // JSON fallback (no-DB dev mode)
       const { canSeeAllSites, siteIds } = getUserSiteScope(req.user);
       const requestedSiteId = req.query.siteId || null;
       const sid = requestedSiteId || (!canSeeAllSites ? (siteIds[0] || null) : null);
-      const [f, p, a, d, m, fi, i] = await Promise.all([
+      const [f, p, a, d, dd, m, fi, i] = await Promise.all([
         readCollectionSafe('facility_security'),
         readCollectionSafe('personnel_security'),
         readCollectionSafe('activities_security'),
         readCollectionSafe('document_control'),
+        readCollectionSafe('dd254_register'),
         readCollectionSafe('media_control'),
         readCollectionSafe('security_findings'),
         readCollectionSafe('self_inspection_ops'),
       ]);
       fac = siteFilter(f, sid); per = siteFilter(p, sid); act = siteFilter(a, sid);
-      doc = siteFilter(d, sid); med = siteFilter(m, sid); fin = siteFilter(fi, sid);
+      doc = siteFilter(d, sid); dd254s = siteFilter(dd, sid); med = siteFilter(m, sid); fin = siteFilter(fi, sid);
       ins = siteFilter(i, sid);
     }
 
@@ -293,6 +295,19 @@ app.get('/api/workspace/overview', auth, async (req, res) => {
 
     const overdueMedia = med.filter(m => m.status === 'Overdue Return' || (m.flags || []).length > 0);
     const pendingDestruction = med.filter(m => m.status === 'Pending Destruction');
+    const dd254Expiring = (dd254s || []).filter(item => {
+      if (!item.expirationDate) return false;
+      const dt = new Date(item.expirationDate);
+      return dt <= warnDate;
+    });
+    const dd254ReviewDue = (dd254s || []).filter(item => {
+      if (!item.reviewDueDate) return false;
+      const dt = new Date(item.reviewDueDate);
+      return dt <= warnDate;
+    });
+    const dd254Actionable = (dd254s || []).filter(item =>
+      ['draft', 'pending review', 'revision required', 'expired'].includes(String(item.dd254Status || '').toLowerCase())
+    );
 
     const overdueActivities = act.filter(a => a.status === 'Overdue');
     const upcomingActivities = act.filter(a => {
@@ -344,6 +359,10 @@ app.get('/api/workspace/overview', auth, async (req, res) => {
           if (!d.nextInventory) return false;
           return new Date(d.nextInventory) <= warnDate;
         }).length,
+        dd254Total: (dd254s || []).length,
+        dd254Expiring: dd254Expiring.length,
+        dd254ReviewDue: dd254ReviewDue.length,
+        dd254Actionable: dd254Actionable.length,
       },
       media: {
         total: med.length,

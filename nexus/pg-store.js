@@ -15,14 +15,24 @@ function dbOk() {
 async function readCollection(name) {
   const client = getDb();
   if (!client) return null;
-  const row = await client.mashCollection.findUnique({ where: { name } });
-  return row ? row.data : null;
+  const row = await client.dataFabricDocument.findUnique({ where: { name } });
+  if (row) return row.data;
+
+  // Transitional lazy migration from the legacy MASH-owned blob store.
+  const legacyRow = await client.mashCollection.findUnique({ where: { name } });
+  if (!legacyRow) return null;
+  await client.dataFabricDocument.upsert({
+    where: { name },
+    create: { name, data: legacyRow.data },
+    update: { data: legacyRow.data },
+  });
+  return legacyRow.data;
 }
 
 async function writeCollection(name, data) {
   const client = getDb();
   if (!client) throw new Error('DATABASE_URL is not configured');
-  await client.mashCollection.upsert({
+  await client.dataFabricDocument.upsert({
     where: { name },
     create: { name, data },
     update: { data },

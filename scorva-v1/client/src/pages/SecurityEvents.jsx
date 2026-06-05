@@ -11,7 +11,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Zap } from 'lucide-react';
 
 const EVENT_TYPES = ['IDS Alert', 'Login Failure', 'Scan Finding', 'Policy Violation', 'Malware', 'Data Exfil', 'Other'];
 const SEVERITIES  = ['Critical', 'High', 'Medium', 'Low'];
@@ -21,6 +21,15 @@ const EMPTY = {
   type: 'Other', severity: 'Medium', source: '', asset_id: '',
   description: '', status: 'New',
 };
+
+function getEventRowClass(row) {
+  const sev = (row.severity || '').toLowerCase();
+  if (sev === 'critical') return 'row-critical';
+  if (sev === 'high')     return 'row-high';
+  if (sev === 'medium')   return 'row-medium';
+  if (sev === 'low')      return 'row-low';
+  return '';
+}
 
 function EventForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
@@ -126,6 +135,7 @@ export default function SecurityEventsPage() {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: 'Monitoring' }, { label: 'Security Events' }]}
         title="Security Events"
         description="Track and correlate security incidents across assets"
         action={
@@ -167,8 +177,21 @@ export default function SecurityEventsPage() {
         </div>
       </StatusDashboard>
 
-      <div className="mt-6">
-        <Table columns={cols} data={data} />
+      <div className="sc-workbar mt-6 mb-4">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill">{data.length} logged events</span>
+          <span className="sc-workbar-pill">{critical + high} priority</span>
+        </div>
+      </div>
+
+      <div className="sc-surface-block">
+        <Table
+          columns={cols}
+          data={data}
+          getRowClass={getEventRowClass}
+          emptyText="No security events logged"
+          emptyIcon={Zap}
+        />
 
         {modal && (
           <Modal

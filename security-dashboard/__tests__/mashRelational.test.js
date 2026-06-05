@@ -5,6 +5,7 @@ const mockFacility   = { findMany: jest.fn(), findUnique: jest.fn(), create: jes
 const mockPersonnel  = { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), upsert: jest.fn() };
 const mockActivities = { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), upsert: jest.fn() };
 const mockDocuments  = { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), upsert: jest.fn() };
+const mockDd254      = { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), upsert: jest.fn() };
 const mockMedia      = { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), upsert: jest.fn() };
 const mockInspection = { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), upsert: jest.fn() };
 const mockFinding    = { findMany: jest.fn(), findUnique: jest.fn(), create: jest.fn(), update: jest.fn(), delete: jest.fn(), upsert: jest.fn() };
@@ -15,6 +16,7 @@ jest.mock('../../packages/db/src', () => ({
     mashPersonnelSecurity:  mockPersonnel,
     mashActivitiesSecurity: mockActivities,
     mashDocumentControl:    mockDocuments,
+    mashDd254Register:      mockDd254,
     mashMediaControl:       mockMedia,
     mashSelfInspectionOp:   mockInspection,
     mashSecurityFinding:    mockFinding,
@@ -32,10 +34,10 @@ beforeEach(() => {
 
 // ── RELATIONAL_DOMAINS ────────────────────────────────────────────────────────
 describe('RELATIONAL_DOMAINS', () => {
-  test('contains all 7 domains', () => {
+  test('contains all 8 domains', () => {
     const expected = [
       'facility_security', 'personnel_security', 'activities_security',
-      'document_control', 'media_control', 'self_inspection_ops', 'security_findings',
+      'document_control', 'dd254_register', 'media_control', 'self_inspection_ops', 'security_findings',
     ];
     expected.forEach(d => expect(mashDb.RELATIONAL_DOMAINS.has(d)).toBe(true));
   });
@@ -94,6 +96,15 @@ describe('findMany', () => {
     await mashDb.findMany('document_control', { mode: 'multi', siteIds: ['s1', 's2'] });
     expect(mockDocuments.findMany).toHaveBeenCalledWith({
       where: { siteId: { in: ['s1', 's2'] } },
+      orderBy: { createdAt: 'asc' },
+    });
+  });
+
+  test('dd254_register routes to mashDd254Register', async () => {
+    mockDd254.findMany.mockResolvedValue([]);
+    await mashDb.findMany('dd254_register', { mode: 'single', siteId: 'site-001' });
+    expect(mockDd254.findMany).toHaveBeenCalledWith({
+      where: { siteId: 'site-001' },
       orderBy: { createdAt: 'asc' },
     });
   });
@@ -163,7 +174,7 @@ describe('remove', () => {
 
 // ── aggregateOverview ─────────────────────────────────────────────────────────
 describe('aggregateOverview', () => {
-  test('returns all 7 collections keyed correctly', async () => {
+  test('returns all 8 collections keyed correctly', async () => {
     const scope = { mode: 'single', siteId: 'site-001' };
     const where = { siteId: 'site-001' };
 
@@ -171,6 +182,7 @@ describe('aggregateOverview', () => {
     mockPersonnel.findMany.mockResolvedValue([{ id: 'p1' }, { id: 'p2' }]);
     mockActivities.findMany.mockResolvedValue([]);
     mockDocuments.findMany.mockResolvedValue([{ id: 'd1' }]);
+    mockDd254.findMany.mockResolvedValue([{ id: 'dd1' }]);
     mockMedia.findMany.mockResolvedValue([]);
     mockFinding.findMany.mockResolvedValue([{ id: 'fi1' }]);
     mockInspection.findMany.mockResolvedValue([{ id: 'i1' }]);
@@ -182,28 +194,30 @@ describe('aggregateOverview', () => {
       personnel:   [{ id: 'p1' }, { id: 'p2' }],
       activities:  [],
       docs:        [{ id: 'd1' }],
+      dd254s:      [{ id: 'dd1' }],
       media:       [],
       findings:    [{ id: 'fi1' }],
       inspections: [{ id: 'i1' }],
     });
 
-    // All 7 models queried with the same where clause
+    // All 8 models queried with the same where clause
     expect(mockFacility.findMany).toHaveBeenCalledWith({ where });
     expect(mockPersonnel.findMany).toHaveBeenCalledWith({ where });
     expect(mockActivities.findMany).toHaveBeenCalledWith({ where });
     expect(mockDocuments.findMany).toHaveBeenCalledWith({ where });
+    expect(mockDd254.findMany).toHaveBeenCalledWith({ where });
     expect(mockMedia.findMany).toHaveBeenCalledWith({ where });
     expect(mockFinding.findMany).toHaveBeenCalledWith({ where });
     expect(mockInspection.findMany).toHaveBeenCalledWith({ where });
   });
 
   test('mode=all passes empty where to all models', async () => {
-    [mockFacility, mockPersonnel, mockActivities, mockDocuments, mockMedia, mockFinding, mockInspection]
+    [mockFacility, mockPersonnel, mockActivities, mockDocuments, mockDd254, mockMedia, mockFinding, mockInspection]
       .forEach(m => m.findMany.mockResolvedValue([]));
 
     await mashDb.aggregateOverview({ mode: 'all' });
 
-    [mockFacility, mockPersonnel, mockActivities, mockDocuments, mockMedia, mockFinding, mockInspection]
+    [mockFacility, mockPersonnel, mockActivities, mockDocuments, mockDd254, mockMedia, mockFinding, mockInspection]
       .forEach(m => expect(m.findMany).toHaveBeenCalledWith({ where: {} }));
   });
 });

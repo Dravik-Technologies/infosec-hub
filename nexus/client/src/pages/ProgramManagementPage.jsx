@@ -27,52 +27,46 @@ function milestoneDotClass(status) {
   return '';
 }
 
-export default function ProgramManagementPage({ data }) {
+function priorityBadge(priority) {
+  const p = (priority || '').toLowerCase();
+  if (/critical|high/.test(p)) return 'badge-red';
+  if (/medium|watch/.test(p)) return 'badge-amber';
+  if (/low/.test(p)) return 'badge-blue';
+  return 'badge-gray';
+}
+
+export default function ProgramManagementPage({ data, trend }) {
   const portfolio     = data?.portfolio     || {};
   const kpis          = portfolio.kpis      || [];
   const realEstate    = data?.realEstate    || [];
   const construction  = data?.construction  || [];
   const accreditations = data?.accreditations || [];
   const milestones    = data?.milestones    || [];
+  const risks         = data?.risks         || [];
+  const executiveActions = data?.executiveActions || [];
 
   const fy = String(portfolio.fiscalYear || '26').replace('FY', '');
   const budgetM = portfolio.budgetRemaining
     ? `$${Math.round(portfolio.budgetRemaining / 100000) / 10}M`
     : null;
+  const openRisks = risks.filter(item => !['closed', 'accepted'].includes(String(item.status || '').toLowerCase()));
+  const highPriorityActions = executiveActions.filter(item =>
+    !['closed', 'complete', 'completed'].includes(String(item.status || '').toLowerCase())
+    && ['critical', 'high'].includes(String(item.priority || '').toLowerCase())
+  );
 
-  const hasData = kpis.length > 0 || construction.length > 0 || accreditations.length > 0 || realEstate.length > 0 || milestones.length > 0;
+  const hasData = kpis.length > 0 || construction.length > 0 || accreditations.length > 0 || realEstate.length > 0 || milestones.length > 0 || risks.length > 0 || executiveActions.length > 0;
 
   return (
     <div className="page-shell">
-      <section className="ops-hero">
-        <div className="ops-hero-main">
-          <div className="ops-hero-kicker">Portfolio operating picture</div>
-          <div className="ops-hero-title">Capital execution, accreditations, and milestone pressure in one command view.</div>
-          <div className="ops-hero-copy">
-            Surface the portfolio signals that matter first, then drop into the workstreams, actions, and schedule friction underneath.
-          </div>
-        </div>
-        <div className="ops-hero-side">
-          <div className="signal-mini">
-            <label>Budget remaining</label>
-            <strong>{budgetM || '—'}</strong>
-            <span>FY{fy} authority</span>
-          </div>
-          <div className="signal-mini">
-            <label>Tracked workstreams</label>
-            <strong>{construction.length + accreditations.length + milestones.length}</strong>
-            <span>{construction.length} build · {milestones.length} milestones</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Page header */}
       <div className="page-header">
         <div className="page-header-left">
           <h1>Program Management</h1>
-          <p>Real estate, construction, accreditations, and milestone health across the portfolio.</p>
         </div>
-        <span className="page-badge">FY{fy}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          {budgetM && <span className="page-badge gray">{budgetM}</span>}
+          <span className="page-badge">FY{fy}</span>
+        </div>
       </div>
 
       {/* KPI strip */}
@@ -85,6 +79,7 @@ export default function ProgramManagementPage({ data }) {
             suffix={item.suffix}
             hint={item.trend}
             tone={item.id === 'budget-health' ? pctClass(item.value) : 'default'}
+            trend={item.id === 'budget-health' ? trend?.program?.budgetHealth : null}
           />
         ))}
         {budgetM && kpis.length === 0 && (
@@ -110,6 +105,14 @@ export default function ProgramManagementPage({ data }) {
             <label>Milestones</label>
             <strong>{milestones.length}</strong>
           </div>
+          <div className="ops-summary-cell">
+            <label>Open Risks</label>
+            <strong>{openRisks.length}</strong>
+          </div>
+          <div className="ops-summary-cell">
+            <label>Exec Actions</label>
+            <strong>{executiveActions.length}</strong>
+          </div>
         </div>
       )}
 
@@ -121,11 +124,76 @@ export default function ProgramManagementPage({ data }) {
               <div className="empty-state-icon">📊</div>
               <p>No portfolio data loaded.</p>
               <p style={{ fontSize: '0.78rem', opacity: 0.7 }}>
-                Open the Admin console to add construction projects, accreditations, real estate actions, and milestones.
+                Open the Admin console to add program data, risks, and executive actions.
               </p>
             </div>
           </div>
         </div>
+      )}
+
+      {(openRisks.length > 0 || executiveActions.length > 0) && (
+        <section className="split-grid">
+          <div className="card">
+            <div className="card-header">
+              <h3>Open Risks</h3>
+              <span>{openRisks.length} active</span>
+            </div>
+            <div className="card-body">
+              {openRisks.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">⚠️</div>
+                  <p>No open risks tracked.</p>
+                </div>
+              ) : (
+                <div className="data-list">
+                  {openRisks.map(item => (
+                    <div key={item.id} className="data-row">
+                      <div className="data-row-main">
+                        <strong>{item.title}</strong>
+                        <p>{item.source || 'General'}{item.owner ? ` · ${item.owner}` : ''}</p>
+                      </div>
+                      <div className="data-row-meta">
+                        {item.severity && <span className={`badge ${priorityBadge(item.severity)}`}>{item.severity}</span>}
+                        <small>{fmtDate(item.dueDate)}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="card-header">
+              <h3>Executive Actions</h3>
+              <span>{highPriorityActions.length} high priority</span>
+            </div>
+            <div className="card-body">
+              {executiveActions.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">🧭</div>
+                  <p>No executive actions tracked.</p>
+                </div>
+              ) : (
+                <div className="timeline-list">
+                  {executiveActions.map(item => (
+                    <div key={item.id} className="timeline-row">
+                      <div className={`timeline-dot ${['critical', 'high'].includes(String(item.priority || '').toLowerCase()) ? 'dot-red' : ['medium'].includes(String(item.priority || '').toLowerCase()) ? 'dot-amber' : ''}`} />
+                      <div className="timeline-row-main">
+                        <strong>{item.title}</strong>
+                        <p>{item.owner}{item.linkedTo ? ` · ${item.linkedTo}` : ''}</p>
+                      </div>
+                      <div className="data-row-meta">
+                        {item.status && <span className={`badge ${statusBadge(item.status)}`}>{item.status}</span>}
+                        <small>{fmtDate(item.dueDate)}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Construction + Accreditations */}

@@ -8,7 +8,7 @@ import Badge         from '../components/ui/Badge';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Files, FileCheck2 } from 'lucide-react';
 import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
@@ -54,6 +54,13 @@ const DOC_TYPES = {
 const CATEGORIES = Object.keys(DOC_TYPES);
 const ALL_TYPES  = Object.values(DOC_TYPES).flat();
 const STATUSES   = ['Active', 'Pending', 'Expired', 'Superseded', 'Terminated'];
+
+function getAgreementRowClass(row) {
+  const s = (row.status || '').toLowerCase();
+  if (s === 'expired' || s === 'terminated') return 'row-critical';
+  if (s === 'pending' || s === 'superseded') return 'row-medium';
+  return '';
+}
 
 function categoryForType(type) {
   for (const [cat, types] of Object.entries(DOC_TYPES)) {
@@ -269,6 +276,7 @@ export default function AgreementsPage() {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: 'Records' }, { label: 'Documents' }]}
         title="Documents & Records"
         description="Memorandums, appointment letters, agreements & more"
         action={<button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} /> New Document</button>}
@@ -305,15 +313,31 @@ export default function AgreementsPage() {
       </StatusDashboard>
 
       {/* ── Category Tabs ── */}
-      <div className="flex gap-0.5 border-b border-scorva-border mb-4 mt-1">
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <Files size={12} />
+            Records register
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <FileCheck2 size={12} />
+            {shown.length} in current view
+          </span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          Track agreements, appointments, and memorandums with expiring records surfaced quickly.
+        </div>
+      </div>
+
+      <div className="sc-tab-rail mb-4 mt-1">
         {TABS.map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2 text-xs font-medium border-b-2 -mb-px transition-colors ${
+            className={`sc-tab-pill ${
               activeTab === tab
-                ? 'border-scorva-accent text-scorva-accent'
-                : 'border-transparent text-scorva-muted hover:text-scorva-text'
+                ? 'sc-tab-pill-active'
+                : 'text-scorva-muted hover:text-scorva-text'
             }`}
           >
             {tab}
@@ -324,7 +348,15 @@ export default function AgreementsPage() {
         ))}
       </div>
 
-      <Table columns={cols} data={shown} onRowClick={row => setDetail(row)} />
+      <div className="sc-surface-block">
+        <Table
+          columns={cols}
+          data={shown}
+          onRowClick={row => setDetail(row)}
+          getRowClass={getAgreementRowClass}
+          emptyText="No documents found."
+        />
+      </div>
 
       {/* ── Detail Modal ── */}
       {detail && (

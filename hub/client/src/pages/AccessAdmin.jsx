@@ -413,7 +413,7 @@ export default function AccessAdmin() {
                   <table className="w-full text-xs">
                     <thead>
                       <tr className="text-left border-b border-scorva-border">
-                        {['Requestor', 'App', 'Justification', 'Status', 'Review'].map(h => (
+                        {['Requestor', 'Info', 'App', 'Justification', 'Status', 'Review'].map(h => (
                           <th key={h} className="py-2 pr-4 text-[10px] font-mono text-scorva-muted uppercase tracking-widest font-medium">{h}</th>
                         ))}
                       </tr>
@@ -425,6 +425,11 @@ export default function AccessAdmin() {
                             <div className="text-scorva-text font-semibold">{entry.name}</div>
                             <div className="text-scorva-muted font-mono text-[10px]">{entry.username}</div>
                             <div className="text-scorva-muted text-[10px]">{entry.email}</div>
+                          </td>
+                          <td className="py-3 pr-4">
+                            {entry.position && <div className="text-scorva-text text-[10px] font-medium">{entry.position}</div>}
+                            {entry.organization && <div className="text-scorva-muted text-[10px]">{entry.organization}</div>}
+                            {entry.phone && <div className="text-scorva-muted text-[10px] font-mono">{entry.phone}</div>}
                           </td>
                           <td className="py-3 pr-4">
                             <div className="text-scorva-text font-semibold">{entry.appLabel}</div>
@@ -445,6 +450,23 @@ export default function AccessAdmin() {
                             <div className="flex flex-wrap gap-2">
                               <button onClick={() => reviewRequest(entry.id, 'approved')} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors">Approve</button>
                               <button onClick={() => reviewRequest(entry.id, 'denied')} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-colors">Deny</button>
+                              {entry.status === 'pending' && (
+                                <button onClick={() => {
+                                  setCreateForm({
+                                    id: `${entry.firstName.toLowerCase()}.${entry.lastName.toLowerCase()}`,
+                                    name: entry.name,
+                                    username: entry.username,
+                                    email: entry.email,
+                                    password: '',
+                                    role: 'Hub Viewer',
+                                    securityRole: '',
+                                    siteId: '',
+                                    siteIds: [],
+                                    allowedApps: ['hub', entry.appId],
+                                  });
+                                  setTab('create');
+                                }} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-scorva-accent/10 border border-scorva-accent/30 text-scorva-accent hover:bg-scorva-accent/20 transition-colors">Auto-Fill Create</button>
+                              )}
                               {entry.status !== 'pending' && (
                                 <button onClick={() => reviewRequest(entry.id, 'pending')} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors">Re-open</button>
                               )}

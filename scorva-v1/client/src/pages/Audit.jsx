@@ -4,7 +4,7 @@ import { api } from '../api';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Search } from 'lucide-react';
+import { Search, ScanSearch, History } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 
 export default function AuditPage() {
@@ -46,7 +46,18 @@ export default function AuditPage() {
       </StatusDashboard>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-4">
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <History size={12} />
+            Audit trail
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <ScanSearch size={12} />
+            {rows.length} rows loaded
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-3">
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-scorva-muted" />
           <input
@@ -69,9 +80,12 @@ export default function AuditPage() {
         >
           {[50, 100, 250, 500].map(n => <option key={n} value={n}>{n} rows</option>)}
         </select>
+        </div>
       </div>
 
-      <Table columns={cols} data={rows} emptyText="No audit entries found." />
+      <div className="sc-surface-block">
+        <Table columns={cols} data={rows} emptyText="No audit entries found." />
+      </div>
 
       {/* Pagination */}
       {total > filters.limit && (

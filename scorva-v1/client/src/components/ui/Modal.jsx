@@ -12,13 +12,15 @@ export default function Modal({ title, onClose, children, size = 'md' }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className={`w-full ${widths[size]} bg-scorva-card border border-scorva-border rounded-xl shadow-2xl flex flex-col max-h-[90vh]`}>
-        {/* Header */}
+      <div className={`w-full ${widths[size]} sc-modal-shell flex flex-col max-h-[90vh]`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-scorva-border shrink-0">
-          <h2 className="text-sm font-semibold text-scorva-text">{title}</h2>
+          <div>
+            <div className="text-[10px] font-mono uppercase tracking-[0.18em] text-scorva-muted mb-1">SCORVA Panel</div>
+            <h2 className="text-sm font-semibold text-scorva-text">{title}</h2>
+          </div>
           <button
             onClick={onClose}
             className="p-1 rounded-md text-scorva-muted hover:text-scorva-text hover:bg-scorva-hover transition-colors"
@@ -26,7 +28,6 @@ export default function Modal({ title, onClose, children, size = 'md' }) {
             <X size={16} />
           </button>
         </div>
-        {/* Body */}
         <div className="overflow-y-auto flex-1 p-5">
           {children}
         </div>

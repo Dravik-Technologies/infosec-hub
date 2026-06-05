@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Activity, CheckSquare, LayoutGrid, Zap, ClipboardList } from 'lucide-react';
-import AppHeader          from '../../components/layout/AppHeader';
+import AppLayout          from '../../components/layout/AppLayout';
 import ConMonPage         from '../ConMon';
 import TasksPage          from '../Tasks';
 import TrackersPage       from '../Trackers';
@@ -17,10 +17,8 @@ const TABS = [
 
 export default function MonitoringApp() {
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg">
-      <AppHeader appName="Monitoring & Operations" appIcon={Activity} tabs={TABS} />
-      <main className="flex-1 overflow-y-auto p-6">
-        <Routes>
+    <AppLayout appName="Monitoring & Operations" appIcon={Activity} tabs={TABS}>
+      <Routes>
           <Route index                   element={<ConMonPage />} />
           <Route path="tasks"            element={<TasksPage />} />
           <Route path="trackers"         element={<TrackersPage />} />
@@ -28,7 +26,6 @@ export default function MonitoringApp() {
           <Route path="self-inspection"  element={<ChecklistLibrary />} />
           <Route path="*"                element={<Navigate to="/monitoring" replace />} />
         </Routes>
-      </main>
-    </div>
+    </AppLayout>
   );
 }

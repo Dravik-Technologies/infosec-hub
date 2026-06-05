@@ -23,6 +23,13 @@ function toFormState(row = {}) {
   };
 }
 
+function getAtoRowClass(row) {
+  const s = (row.status || '').toLowerCase();
+  if (s === 'expired' || s === 'denied') return 'row-critical';
+  if (s.includes('pending')) return 'row-medium';
+  return '';
+}
+
 function ATOForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
   return (
@@ -139,7 +146,12 @@ export default function ATOPage() {
 
   return (
     <div>
-      <PageHeader title="ATO" description="Authority to Operate packages" action={<button className="btn-primary" onClick={openCreate}><Plus size={15} />New ATO</button>} />
+      <PageHeader
+        breadcrumbs={[{ label: 'Authorization' }, { label: 'ATO' }]}
+        title="Authority to Operate"
+        description="ATO package tracking and expiration monitoring"
+        action={<button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} />New ATO</button>}
+      />
       <StatusDashboard>
         <div className="flex flex-wrap gap-6 items-start">
           <DonutChart
@@ -205,7 +217,13 @@ export default function ATOPage() {
         </div>
       </StatusDashboard>
       <div className="mt-6">
-      <Table columns={cols} data={data} onRowClick={openEdit} />
+      <Table
+        columns={cols}
+        data={data}
+        onRowClick={openEdit}
+        getRowClass={getAtoRowClass}
+        emptyText="No ATO packages found."
+      />
 
       {modal && (
         <Modal title={modal === 'create' ? 'New ATO' : 'Edit ATO'} onClose={() => setModal(null)}>

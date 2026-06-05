@@ -19,9 +19,12 @@ export default function RequestAccess() {
   const defaultApp = APPS.some(app => app.id === initialApp) ? initialApp : 'scorva';
   const [form, setForm] = useState({
     appId: defaultApp,
-    name: user?.name || '',
-    username: user?.username || '',
+    firstName: user?.firstName || user?.name?.split(' ')[0] || '',
+    lastName: user?.lastName || user?.name?.split(' ').slice(1).join(' ') || '',
     email: user?.email || '',
+    position: '',
+    organization: '',
+    phone: '',
     justification: '',
   });
   const [loading, setLoading] = useState(false);
@@ -39,16 +42,38 @@ export default function RequestAccess() {
     setError('');
     setMessage('');
     try {
+      const payload = {
+        appId: form.appId,
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        email: form.email.trim().toLowerCase(),
+        position: form.position.trim(),
+        organization: form.organization.trim(),
+        phone: form.phone.trim(),
+        justification: form.justification.trim(),
+        // Generate username as first.last for auto user creation
+        username: `${form.firstName.trim().toLowerCase()}.${form.lastName.trim().toLowerCase()}`,
+        // Full name for display
+        name: `${form.firstName.trim()} ${form.lastName.trim()}`.trim(),
+      };
       const res = await fetch(`${BASE}/api/access-requests`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Unable to submit request');
       setMessage(data.message || `Request submitted for ${selectedApp.label}.`);
-      setForm(current => ({ ...current, justification: '' }));
+      setForm(current => ({
+        ...current,
+        firstName: '',
+        lastName: '',
+        position: '',
+        organization: '',
+        phone: '',
+        justification: ''
+      }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -87,18 +112,34 @@ export default function RequestAccess() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-scorva-muted mb-1.5">Name</label>
-                <input className="input-base" value={form.name} onChange={e => setForm(current => ({ ...current, name: e.target.value }))} required />
+                <label className="block text-xs font-medium text-scorva-muted mb-1.5">First Name</label>
+                <input className="input-base" type="text" value={form.firstName} onChange={e => setForm(current => ({ ...current, firstName: e.target.value }))} required />
               </div>
               <div>
-                <label className="block text-xs font-medium text-scorva-muted mb-1.5">Username</label>
-                <input className="input-base" value={form.username} onChange={e => setForm(current => ({ ...current, username: e.target.value.toLowerCase() }))} required />
+                <label className="block text-xs font-medium text-scorva-muted mb-1.5">Last Name</label>
+                <input className="input-base" type="text" value={form.lastName} onChange={e => setForm(current => ({ ...current, lastName: e.target.value }))} required />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-scorva-muted mb-1.5">Email</label>
-              <input className="input-base" type="email" value={form.email} onChange={e => setForm(current => ({ ...current, email: e.target.value.toLowerCase() }))} required />
+              <input className="input-base" type="email" value={form.email} onChange={e => setForm(current => ({ ...current, email: e.target.value }))} required />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-scorva-muted mb-1.5">Position / Title</label>
+                <input className="input-base" type="text" placeholder="e.g., Security Analyst" value={form.position} onChange={e => setForm(current => ({ ...current, position: e.target.value }))} />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-scorva-muted mb-1.5">Organization</label>
+                <input className="input-base" type="text" placeholder="e.g., Cybersecurity Division" value={form.organization} onChange={e => setForm(current => ({ ...current, organization: e.target.value }))} />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-scorva-muted mb-1.5">Phone (Optional)</label>
+              <input className="input-base" type="tel" placeholder="+1 (555) 000-0000" value={form.phone} onChange={e => setForm(current => ({ ...current, phone: e.target.value }))} />
             </div>
 
             <div>
@@ -108,6 +149,7 @@ export default function RequestAccess() {
                 value={form.justification}
                 onChange={e => setForm(current => ({ ...current, justification: e.target.value }))}
                 placeholder={`Tell us why you need ${selectedApp.label} access and what team or mission this supports.`}
+                required
               />
             </div>
 

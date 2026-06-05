@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ShieldCheck, BookOpen, AlertTriangle } from 'lucide-react';
-import AppHeader   from '../../components/layout/AppHeader';
+import AppLayout   from '../../components/layout/AppLayout';
 import ATOPage     from '../ATO';
 import ControlsPage from '../Controls';
 import POAMPage    from '../POAM';
@@ -13,16 +13,13 @@ const TABS = [
 
 export default function AuthorizationApp() {
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg">
-      <AppHeader appName="Authorization & Compliance" appIcon={ShieldCheck} tabs={TABS} />
-      <main className="flex-1 overflow-y-auto p-6">
-        <Routes>
-          <Route index           element={<ATOPage />} />
-          <Route path="controls" element={<ControlsPage />} />
-          <Route path="poam"     element={<POAMPage />} />
-          <Route path="*"        element={<Navigate to="/authorization" replace />} />
-        </Routes>
-      </main>
-    </div>
+    <AppLayout appName="Authorization & Compliance" appIcon={ShieldCheck} tabs={TABS}>
+      <Routes>
+        <Route index           element={<ATOPage />} />
+        <Route path="controls" element={<ControlsPage />} />
+        <Route path="poam"     element={<POAMPage />} />
+        <Route path="*"        element={<Navigate to="/authorization" replace />} />
+      </Routes>
+    </AppLayout>
   );
 }

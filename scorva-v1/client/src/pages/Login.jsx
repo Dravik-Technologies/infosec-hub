@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Shield, Eye, EyeOff } from 'lucide-react';
+import { Shield, Eye, EyeOff, ArrowLeft, LockKeyhole } from 'lucide-react';
 
 export default function Login() {
   const { login, user } = useAuth();
@@ -31,22 +31,33 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-scorva-bg flex items-center justify-center p-4">
-      {/* Background grid */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.03)_1px,transparent_1px)] bg-[size:48px_48px]" />
+    <div className="min-h-screen bg-scorva-bg flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="sc-landing-grid absolute inset-0 pointer-events-none" />
+      <div className="sc-landing-glow-a absolute pointer-events-none" />
+      <div className="sc-landing-glow-b absolute pointer-events-none" />
 
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-[26rem]">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-scorva-accent/10 border border-scorva-accent/20 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-[1.4rem] bg-scorva-accent/10 border border-scorva-accent/20 mb-4 shadow-[0_0_28px_rgba(255,94,20,0.16)]">
             <Shield size={26} className="text-scorva-accent" />
           </div>
-          <h1 className="text-2xl font-bold text-scorva-text font-mono tracking-widest">SCORVA</h1>
-          <p className="text-sm text-scorva-muted mt-1">Cyber Command Center</p>
+          <div className="text-[10px] font-mono font-semibold uppercase tracking-[0.24em] text-scorva-accent mb-2">Secure Access</div>
+          <h1 className="text-3xl font-bold text-scorva-text font-mono tracking-[0.18em]">SCORVA</h1>
+          <p className="text-sm text-scorva-muted mt-2">Mission access portal</p>
         </div>
 
         {/* Card */}
-        <div className="card p-6">
+        <div className="sc-auth-card p-6">
+          <div className="flex items-center gap-2 mb-5">
+            <div className="p-2 rounded-xl bg-scorva-accent/10 border border-scorva-accent/20">
+              <LockKeyhole size={14} className="text-scorva-accent" />
+            </div>
+            <div>
+              <div className="text-xs font-mono font-semibold uppercase tracking-[0.16em] text-scorva-muted">Authentication</div>
+              <div className="text-sm font-semibold text-scorva-text">Sign in to continue</div>
+            </div>
+          </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-medium text-scorva-muted mb-1.5">Username</label>
@@ -103,7 +114,7 @@ export default function Login() {
         </div>
 
         <p className="text-center text-xs text-scorva-muted mt-6">
-          NIST SP 800-53 Rev 5 Compliance Management
+          NIST SP 800-53 Rev 5
         </p>
         <p className="text-center text-xs text-scorva-muted mt-2">
           Need access first? <a href={hubRequestUrl} className="text-scorva-accent hover:underline">Request it through HUB</a>
@@ -113,7 +124,7 @@ export default function Login() {
             onClick={() => navigate('/')}
             className="text-xs text-scorva-muted hover:text-scorva-accent transition-colors"
           >
-            ← Back to home
+            <span className="inline-flex items-center gap-1"><ArrowLeft size={12} /> Back to home</span>
           </button>
         </p>
       </div>

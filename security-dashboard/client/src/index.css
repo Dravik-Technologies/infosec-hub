@@ -217,33 +217,6 @@ body {
 }
 .ws-brand-name { font: 700 0.92rem "IBM Plex Sans", sans-serif; color: var(--text); line-height: 1.1; letter-spacing: -0.02em; }
 .ws-brand-sub { font: 500 0.64rem "IBM Plex Sans", sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
-.ws-header-brief {
-  display: flex;
-  flex-direction: column;
-  gap: 0.12rem;
-  min-width: 0;
-  padding-left: 0.95rem;
-  margin-left: 0.3rem;
-  border-left: 1px solid color-mix(in srgb, var(--section-accent) 22%, var(--border));
-}
-.ws-brief-label {
-  color: color-mix(in srgb, var(--section-accent) 72%, var(--muted));
-  font: 600 0.62rem "IBM Plex Sans", sans-serif;
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-}
-.ws-brief-title {
-  color: var(--text);
-  font: 700 0.8rem "IBM Plex Sans", sans-serif;
-}
-.ws-brief-sub {
-  color: var(--muted);
-  font: 400 0.68rem "IBM Plex Sans", sans-serif;
-  max-width: 26rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 .ws-identity { display: flex; align-items: center; gap: 0.65rem; margin-left: auto; flex-shrink: 0; }
 .ws-status-pill {
   display: inline-flex;
@@ -378,7 +351,6 @@ body {
   padding-bottom: 1rem; border-bottom: 1px solid var(--border);
 }
 .ws-page-title { font: 700 1.32rem "IBM Plex Sans", sans-serif; color: var(--text); letter-spacing: -0.03em; }
-.ws-page-sub { font: 400 0.82rem "IBM Plex Sans", sans-serif; color: var(--muted); margin-top: 0.15rem; }
 .ws-count-badge {
   font: 700 0.68rem "IBM Plex Sans", sans-serif; padding: 0.3rem 0.66rem;
   border-radius: 999px; white-space: nowrap;
@@ -776,7 +748,6 @@ body {
 @media (max-width: 1080px) {
   .ws-kpi-strip { grid-template-columns: 1fr 1fr; }
   .ws-grid-2, .ws-grid-wide, .ws-grid-3 { grid-template-columns: 1fr 1fr; }
-  .ws-header-brief { display: none; }
   .ws-hero-grid { grid-template-columns: 1fr; }
 }
 @media (max-width: 720px) {

@@ -35,7 +35,7 @@ function SectionLabel({ children, live }) {
   );
 }
 
-export default function ProgramCyberPage({ data }) {
+export default function ProgramCyberPage({ data, trend }) {
   if (!data || data._error) {
     const msg = data?._error || 'Cyber rollup unavailable.';
     return (
@@ -43,7 +43,6 @@ export default function ProgramCyberPage({ data }) {
         <div className="page-header">
           <div className="page-header-left">
             <h1>IT &amp; Cybersecurity</h1>
-            <p>Executive posture rollup from SCORVA.</p>
           </div>
         </div>
         <div className="card">
@@ -66,6 +65,13 @@ export default function ProgramCyberPage({ data }) {
   const users     = data?.users        || {};
   const delivery  = data?.delivery     || {};
   const secEvents = data?.securityEvents || {};
+  const controls  = data?.controlCompliance || {};
+  const conmon    = data?.conmon || {};
+  const agreements = data?.agreements || {};
+  const licenses  = data?.licenses || {};
+  const saars     = data?.saars || {};
+  const yubiKeys  = data?.yubiKeys || {};
+  const trackers  = data?.trackers || {};
 
   const generatedAt = data?.generatedAt
     ? new Date(data.generatedAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
@@ -82,7 +88,7 @@ export default function ProgramCyberPage({ data }) {
     .map(([key, value]) => ({ label: key, value, color: SEV_COLORS[key] || '#94a3b8' }));
 
   // Derive a simple posture colour from open critical/high POAMs and expired ATOs
-  const expiredAtos    = ato.byStatus?.Expired || 0;
+  const expiredAtos    = ato.expiration?.expired || ato.byStatus?.Expired || 0;
   const critHighPoams  = (poams.bySeverity?.CRITICAL || poams.bySeverity?.Critical || 0)
                        + (poams.bySeverity?.HIGH     || poams.bySeverity?.High     || 0);
   const overallPosture = expiredAtos > 0 || critHighPoams > 3 ? 'risk'
@@ -92,33 +98,9 @@ export default function ProgramCyberPage({ data }) {
 
   return (
     <div className="page-shell">
-      <section className="ops-hero">
-        <div className="ops-hero-main">
-          <div className="ops-hero-kicker">Cyber operating picture</div>
-          <div className="ops-hero-title">Authorization health, remediation pressure, and delivery readiness in one view.</div>
-          <div className="ops-hero-copy">
-            Give executives a faster read on where cyber posture is stable, where POA&M pressure is growing, and where delivery readiness needs intervention.
-          </div>
-        </div>
-        <div className="ops-hero-side">
-          <div className="signal-mini">
-            <label>Posture</label>
-            <strong>{postureLabel}</strong>
-            <span>{critHighPoams} critical/high POA&amp;Ms</span>
-          </div>
-          <div className="signal-mini">
-            <label>ATO pressure</label>
-            <strong>{expiredAtos}</strong>
-            <span>{ato.expiringSoon || 0} expiring soon</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Page header */}
       <div className="page-header">
         <div className="page-header-left">
           <h1>IT &amp; Cybersecurity</h1>
-          <p>Executive posture rollup — SCORVA is the operational owner of cyber workflows.</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
           <span style={{ fontSize: '0.72rem', fontWeight: 600, color: postureColor, background: 'var(--bg-alt)', border: `1px solid ${postureColor}33`, borderRadius: '999px', padding: '0.3rem 0.75rem', whiteSpace: 'nowrap' }}>
@@ -141,11 +123,21 @@ export default function ProgramCyberPage({ data }) {
           value={poams.open || 0}
           hint={`${poams.bySeverity?.HIGH || poams.bySeverity?.High || 0} high severity`}
           tone={poams.open > 8 ? 'watch' : poams.open > 0 ? 'default' : 'good'}
+          trend={trend?.cyber?.openPoams}
         />
         <MetricCard
           label="Active Users"
           value={users.active || 0}
           hint={users.pendingRequests ? `${users.pendingRequests} pending SAARs` : 'in directory'}
+          trend={trend?.cyber?.activeUsers}
+        />
+        <MetricCard
+          label="Control Compliance"
+          value={controls.pct || 0}
+          suffix="%"
+          hint={`${controls.implemented || 0} implemented`}
+          tone={controls.pct >= 85 ? 'good' : controls.pct >= 70 ? 'watch' : 'risk'}
+          trend={trend?.cyber?.controlCompliance}
         />
         <MetricCard
           label="Hardware Ready"
@@ -153,6 +145,7 @@ export default function ProgramCyberPage({ data }) {
           suffix="%"
           hint={`${delivery.hardwareInstalled || 0} of ${delivery.totalHardware || 0} workstations`}
           tone={delivery.hardwareProgress >= 80 ? 'good' : delivery.hardwareProgress >= 50 ? 'watch' : 'risk'}
+          trend={trend?.cyber?.hardwareReady}
         />
         {secEvents.criticalHigh > 0 && (
           <MetricCard
@@ -160,6 +153,7 @@ export default function ProgramCyberPage({ data }) {
             value={secEvents.criticalHigh}
             hint={`${secEvents.open || 0} open events`}
             tone="risk"
+            trend={trend?.cyber?.criticalHighEvents}
           />
         )}
       </section>
@@ -180,6 +174,14 @@ export default function ProgramCyberPage({ data }) {
         <div className="ops-summary-cell">
           <label>Events</label>
           <strong>{secEvents.open || 0}</strong>
+        </div>
+        <div className="ops-summary-cell">
+          <label>ConMon Overdue</label>
+          <strong>{conmon.overdue || 0}</strong>
+        </div>
+        <div className="ops-summary-cell">
+          <label>SAAR Aging</label>
+          <strong>{saars.pendingOver7d || 0}</strong>
         </div>
       </div>
 
@@ -203,6 +205,23 @@ export default function ProgramCyberPage({ data }) {
                 ))}
               </div>
             )}
+            <div className="stat-grid-3" style={{ marginBottom: '1.25rem' }}>
+              <div className="stat-cell">
+                <label>Expired</label>
+                <strong style={{ color: expiredAtos > 0 ? 'var(--red-val)' : undefined }}>{ato.expiration?.expired || 0}</strong>
+                <span>packages</span>
+              </div>
+              <div className="stat-cell">
+                <label>30 / 60 / 90</label>
+                <strong>{`${ato.expiration?.d30 || 0}/${ato.expiration?.d60 || 0}/${ato.expiration?.d90 || 0}`}</strong>
+                <span>expiration horizon</span>
+              </div>
+              <div className="stat-cell">
+                <label>Open Findings</label>
+                <strong>{(ato.systems || []).reduce((sum, item) => sum + (item.openFindings || 0), 0)}</strong>
+                <span>on displayed systems</span>
+              </div>
+            </div>
             <div className="data-list">
               {(ato.systems || []).length === 0 ? (
                 <div className="empty-state">
@@ -294,6 +313,23 @@ export default function ProgramCyberPage({ data }) {
             <span>{poams.open || 0} open records</span>
           </div>
           <div className="card-body">
+            <div className="stat-grid-3" style={{ marginBottom: '1rem' }}>
+              <div className="stat-cell">
+                <label>&lt; 30 Days</label>
+                <strong>{poams.byAging?.under30 || 0}</strong>
+                <span>recent findings</span>
+              </div>
+              <div className="stat-cell">
+                <label>&gt; 60 Days</label>
+                <strong style={{ color: ((poams.byAging?.over60 || 0) + (poams.byAging?.over90 || 0)) > 0 ? 'var(--amber-val)' : undefined }}>{(poams.byAging?.over60 || 0) + (poams.byAging?.over90 || 0)}</strong>
+                <span>aging backlog</span>
+              </div>
+              <div className="stat-cell">
+                <label>Risk Pending</label>
+                <strong style={{ color: poams.riskPending > 0 ? 'var(--red-val)' : undefined }}>{poams.riskPending || 0}</strong>
+                <span>awaiting decision</span>
+              </div>
+            </div>
             <div className="data-list">
               {(poams.items || []).length === 0 ? (
                 <div className="empty-state">
@@ -338,6 +374,14 @@ export default function ProgramCyberPage({ data }) {
                 />
               )}
               <div className="data-list" style={{ marginTop: '0.25rem' }}>
+                <div className="data-row">
+                  <div className="data-row-main"><strong>Pending SAARs</strong></div>
+                  <div className="data-row-meta"><strong>{saars.pending || 0}</strong></div>
+                </div>
+                <div className="data-row">
+                  <div className="data-row-main"><strong>Pending &gt; 7 Days</strong></div>
+                  <div className="data-row-meta"><strong>{saars.pendingOver7d || 0}</strong></div>
+                </div>
                 {delivery.systemRequestsPending != null && (
                   <div className="data-row">
                     <div className="data-row-main"><strong>System Requests Pending</strong></div>
@@ -380,6 +424,78 @@ export default function ProgramCyberPage({ data }) {
                   </strong>
                   <span>within 30 days</span>
                 </div>
+                <div className="stat-cell">
+                  <label>Access Expiring</label>
+                  <strong style={{ color: saars.accessExpiring30d > 0 ? 'var(--amber-val)' : undefined }}>
+                    {saars.accessExpiring30d || 0}
+                  </strong>
+                  <span>within 30 days</span>
+                </div>
+                <div className="stat-cell">
+                  <label>Revalidation</label>
+                  <strong>{saars.revalidationDue30d || 0}</strong>
+                  <span>due in 30 days</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SectionLabel>Controls &amp; Sustainment</SectionLabel>
+      <section className="split-grid">
+        <div className="card">
+          <div className="card-header">
+            <h3>Controls &amp; ConMon</h3>
+            <span>{controls.total || 0} controls</span>
+          </div>
+          <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className="stat-grid-3">
+              <div className="stat-cell">
+                <label>Implemented</label>
+                <strong>{controls.implemented || 0}</strong>
+                <span>{controls.pct || 0}% compliant</span>
+              </div>
+              <div className="stat-cell">
+                <label>Partial</label>
+                <strong style={{ color: controls.partial > 0 ? 'var(--amber-val)' : undefined }}>{controls.partial || 0}</strong>
+                <span>require work</span>
+              </div>
+              <div className="stat-cell">
+                <label>ConMon Overdue</label>
+                <strong style={{ color: conmon.overdue > 0 ? 'var(--red-val)' : undefined }}>{conmon.overdue || 0}</strong>
+                <span>{conmon.dueSoon || 0} due soon</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <h3>Agreements, Licenses, and Tokens</h3>
+            <span>sustainment horizon</span>
+          </div>
+          <div className="card-body">
+            <div className="data-list">
+              <div className="data-row">
+                <div className="data-row-main"><strong>Agreements Expiring</strong><p>30 / 60 / 90 day horizon</p></div>
+                <div className="data-row-meta"><strong>{`${agreements.expiring30d || 0}/${agreements.expiring60d || 0}/${agreements.expiring90d || 0}`}</strong></div>
+              </div>
+              <div className="data-row">
+                <div className="data-row-main"><strong>Licenses Expiring</strong><p>within 90 days</p></div>
+                <div className="data-row-meta"><strong>{licenses.expiring90d || 0}</strong></div>
+              </div>
+              <div className="data-row">
+                <div className="data-row-main"><strong>License Over-Capacity</strong><p>used seats exceed allocation</p></div>
+                <div className="data-row-meta"><strong>{licenses.overCapacity || 0}</strong></div>
+              </div>
+              <div className="data-row">
+                <div className="data-row-main"><strong>Unassigned YubiKeys</strong><p>available tokens</p></div>
+                <div className="data-row-meta"><strong>{yubiKeys.unassigned || 0}</strong></div>
+              </div>
+              <div className="data-row">
+                <div className="data-row-main"><strong>Tracker Overdue</strong><p>sustainment tracker items past due</p></div>
+                <div className="data-row-meta"><strong>{trackers.overdue || 0}</strong></div>
               </div>
             </div>
           </div>

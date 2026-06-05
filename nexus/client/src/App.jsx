@@ -13,6 +13,7 @@ const EMPTY = {
   programManagement: {},
   programSecurity: {},
   cyber: {},
+  trend: {},
   _sources: {},
 };
 
@@ -89,24 +90,26 @@ export default function App() {
 
   useEffect(() => {
     if (!currentUser) return;
-    (async () => {
-      setError('');
-      const payload = await API.get('bootstrap');
-      if (!payload) {
-        setError('Unable to load NEXUS data. Check server connectivity.');
-        return;
-      }
-      if (payload._apiError) {
-        const hint = payload.status === 403
-          ? 'Your account does not have access to this application.'
-          : `Load failed (${payload.status}): ${payload.message}`;
-        setError(hint);
-        return;
-      }
-      setData(payload);
-      setLoaded(true);
-    })();
+    reloadBootstrap();
   }, [currentUser]);
+
+  async function reloadBootstrap() {
+    setError('');
+    const payload = await API.get('bootstrap');
+    if (!payload) {
+      setError('Unable to load NEXUS data. Check server connectivity.');
+      return;
+    }
+    if (payload._apiError) {
+      const hint = payload.status === 403
+        ? 'Your account does not have access to this application.'
+        : `Load failed (${payload.status}): ${payload.message}`;
+      setError(hint);
+      return;
+    }
+    setData(payload);
+    setLoaded(true);
+  }
 
   function navigate(pathname) {
     window.history.pushState({}, '', pathname);
@@ -126,14 +129,12 @@ export default function App() {
 
   // Refresh PM data after admin edits
   function refreshPm() {
-    API.get('program-management').then(pm => {
-      if (pm && !pm._apiError) setData(prev => ({ ...prev, programManagement: pm }));
-    });
+    reloadBootstrap();
   }
 
   const activePage = useMemo(() => {
-    if (view === 'security') return <ProgramSecurityPage data={data.programSecurity} />;
-    if (view === 'cyber') return <ProgramCyberPage data={data.cyber} />;
+    if (view === 'security') return <ProgramSecurityPage data={data.programSecurity} trend={data.trend} />;
+    if (view === 'cyber') return <ProgramCyberPage data={data.cyber} trend={data.trend} />;
     if (view === 'admin') {
       if (!isAdminRole(currentUser)) {
         return (
@@ -142,9 +143,9 @@ export default function App() {
           </div>
         );
       }
-      return <AdminPage pmData={data.programManagement} onSave={refreshPm} />;
+      return <AdminPage pmData={data.programManagement} trend={data.trend} onSave={refreshPm} />;
     }
-    return <ProgramManagementPage data={data.programManagement} />;
+    return <ProgramManagementPage data={data.programManagement} trend={data.trend} />;
   }, [view, data, currentUser]);
 
   if (!currentUser) return <LoginPage onLogin={setCurrentUser} />;

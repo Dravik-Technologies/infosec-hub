@@ -20,7 +20,7 @@
  *
  * Site-owned MASH collections (JSON store — transitioning to relational in Phase C):
  *   facility_security, personnel_security, activities_security,
- *   document_control, media_control, self_inspection_ops, security_findings
+ *   document_control, dd254_register, media_control, self_inspection_ops, security_findings
  *
  * Global/singleton collections (not site-scoped — no tenant filter applied):
  *   security_workspace_settings, workspace_role_mappings
@@ -34,6 +34,7 @@ const SITE_OWNED_COLLECTIONS = new Set([
   'personnel_security',
   'activities_security',
   'document_control',
+  'dd254_register',
   'media_control',
   'self_inspection_ops',
   'security_findings',

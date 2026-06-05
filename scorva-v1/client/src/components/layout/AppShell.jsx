@@ -1,17 +1,22 @@
 import { useState } from 'react';
 import Sidebar from './Sidebar';
-import Header  from './Header';
 
 export default function AppShell({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-scorva-bg">
-      <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(o => !o)} />
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <Header onMenuClick={() => setSidebarOpen(o => !o)} />
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
+    <div className="sc-shell">
+      <div className="sc-shell-grid cyber-grid">
+        <Sidebar open={sidebarOpen} onToggle={() => setSidebarOpen(o => !o)} />
+        <main className="sc-main">
+          <div className="sc-main-chrome">
+            <div className="sc-main-glow sc-main-glow-a" />
+            <div className="sc-main-glow sc-main-glow-b" />
+            <div className="sc-main-grid" />
+            <div className="sc-main-inner page-enter">
+              {children}
+            </div>
+          </div>
         </main>
       </div>
     </div>

@@ -563,7 +563,6 @@ export default function MediaPage({ siteId }) {
       <div className="ws-page-header">
         <div>
           <div className="ws-page-title">Media Control</div>
-          <div className="ws-page-sub">Removable media register — issue, return, transfer, destruction, and accountability tracking.</div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {overdueCount > 0 && <span className="ws-count-badge" style={{ background: 'var(--red-bg)', color: 'var(--red)', borderColor: 'var(--red-border)' }}>{overdueCount} overdue return</span>}

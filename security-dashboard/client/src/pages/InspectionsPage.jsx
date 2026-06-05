@@ -164,7 +164,6 @@ export default function InspectionsPage({ siteId }) {
       <div className="ws-page-header">
         <div>
           <div className="ws-page-title">Self-Inspection &amp; Compliance Operations</div>
-          <div className="ws-page-sub">DCSA-aligned self-inspection execution, findings management, evidence, and report package support.</div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           {highFindings.length > 0 && <span className="ws-count-badge" style={{ background: 'var(--red-bg)', color: 'var(--red)', borderColor: 'var(--red-border)' }}>{highFindings.length} high findings</span>}

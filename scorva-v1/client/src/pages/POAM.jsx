@@ -8,7 +8,8 @@ import Badge         from '../components/ui/Badge';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2, RefreshCw, Download } from 'lucide-react';
+import { Plus, Pencil, Trash2, RefreshCw, Download, List, LayoutGrid, AlertTriangle } from 'lucide-react';
+import FilterPanel, { FilterGroup, FilterTrigger } from '../components/ui/FilterPanel';
 import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
@@ -202,16 +203,132 @@ function RiskWorkflowPanel({ value, onChange, canReview, onTransition, isTransit
   );
 }
 
+/* ── Severity → row accent class ── */
+function getPoamRowClass(row) {
+  const sev = (row.severity || '').toLowerCase();
+  if (sev === 'critical') return 'row-critical';
+  if (sev === 'high')     return 'row-high';
+  if (sev === 'medium')   return 'row-medium';
+  if (sev === 'low')      return 'row-low';
+  return '';
+}
+
+/* ── Kanban board view ── */
+const KANBAN_COLS = [
+  { status: 'Open',        label: 'Open',        dot: 'bg-red-500',     text: 'text-red-400' },
+  { status: 'In Progress', label: 'In Progress',  dot: 'bg-yellow-400',  text: 'text-yellow-400' },
+  { status: 'Completed',   label: 'Completed',    dot: 'bg-emerald-500', text: 'text-emerald-400' },
+  { status: 'Closed',      label: 'Closed',       dot: 'bg-slate-500',   text: 'text-slate-400' },
+];
+
+function KanbanBoard({ data, onEdit, onDelete }) {
+  const grouped = Object.fromEntries(KANBAN_COLS.map(c => [c.status, []]));
+  data.forEach(row => {
+    const key = grouped[row.status] !== undefined ? row.status : 'Open';
+    grouped[key].push(row);
+  });
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 mt-6 items-start">
+      {KANBAN_COLS.map(col => (
+        <div key={col.status} className="flex flex-col gap-2">
+          {/* Column header */}
+          <div className="flex items-center gap-2 px-1 mb-1">
+            <div className={`w-2 h-2 rounded-full shrink-0 ${col.dot}`} />
+            <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-scorva-muted">
+              {col.label}
+            </span>
+            <span className={`ml-auto text-[11px] font-mono font-semibold ${col.text}`}>
+              {grouped[col.status].length}
+            </span>
+          </div>
+
+          {/* Cards */}
+          {grouped[col.status].length === 0 ? (
+            <div className="flex items-center justify-center h-16 rounded-xl border border-dashed border-scorva-border/50 text-scorva-muted/30 text-xs">
+              Empty
+            </div>
+          ) : (
+            grouped[col.status].map(row => (
+              <div
+                key={row.id}
+                className="card p-3 space-y-2.5 group hover:border-scorva-accent/25 transition-colors cursor-pointer"
+                onClick={() => onEdit(row)}
+              >
+                {/* ID + actions */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-mono text-[10px] text-scorva-accent-light truncate">
+                    {row.id}
+                  </span>
+                  <div
+                    className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    <button
+                      className="p-1 rounded text-scorva-muted hover:text-scorva-accent hover:bg-scorva-hover"
+                      onClick={() => onEdit(row)}
+                    >
+                      <Pencil size={11} />
+                    </button>
+                    <button
+                      className="p-1 rounded text-scorva-muted hover:text-red-400 hover:bg-scorva-hover"
+                      onClick={() => onDelete(row.id)}
+                    >
+                      <Trash2 size={11} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <p className="text-[12px] text-scorva-text font-medium leading-snug line-clamp-2">
+                  {row.title}
+                </p>
+
+                {/* Severity + due date */}
+                <div className="flex items-center justify-between gap-2">
+                  <Badge label={row.severity} />
+                  {(row.scheduled_completion || row.scheduledCompletion) && (
+                    <span className="text-[10px] font-mono text-scorva-muted shrink-0">
+                      {row.scheduled_completion || row.scheduledCompletion}
+                    </span>
+                  )}
+                </div>
+
+                {/* Responsible party */}
+                {(row.responsible_party || row.responsibleParty) && (
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-4 h-4 rounded-full bg-scorva-accent/15 text-scorva-accent text-[9px] font-bold flex items-center justify-center font-mono shrink-0">
+                      {(row.responsible_party || row.responsibleParty).slice(0, 1).toUpperCase()}
+                    </div>
+                    <span className="text-[10px] text-scorva-muted truncate">
+                      {row.responsible_party || row.responsibleParty}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function POAMPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
   const canReviewRisk = REVIEWER_ROLES.has(user?.role);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading, isError, error } = useQuery({ queryKey: ['poam', siteScopeKey], queryFn: api.poam.list });
-  const [modal, setModal]     = useState(null);
-  const [form, setForm]       = useState(EMPTY);
-  const [editing, setEditing] = useState(null);
-  const [delId, setDelId]     = useState(null);
+  const [view,           setView]          = useState('list');
+  const [filterOpen,     setFilterOpen]    = useState(false);
+  const [filterSeverity, setFilterSev]     = useState('All');
+  const [filterStatus,   setFilterStatus]  = useState('All');
+  const [filterRisk,     setFilterRisk]    = useState('All');
+  const [modal,          setModal]         = useState(null);
+  const [form,           setForm]          = useState(EMPTY);
+  const [editing,        setEditing]       = useState(null);
+  const [delId,          setDelId]         = useState(null);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['poam'] });
@@ -272,6 +389,24 @@ export default function POAMPage() {
     update.error?.message ||
     transitionRisk.error?.message;
 
+  const displayData = data.filter(r => {
+    if (filterSeverity !== 'All' && r.severity !== filterSeverity) return false;
+    if (filterStatus   !== 'All' && r.status   !== filterStatus)   return false;
+    const wfState = r.risk_workflow_state || r.riskWorkflowState || 'Draft';
+    if (filterRisk !== 'All' && wfState !== filterRisk) return false;
+    return true;
+  });
+
+  const activeFilterCount = (filterSeverity !== 'All' ? 1 : 0)
+    + (filterStatus !== 'All' ? 1 : 0)
+    + (filterRisk !== 'All' ? 1 : 0);
+
+  function clearFilters() {
+    setFilterSev('All');
+    setFilterStatus('All');
+    setFilterRisk('All');
+  }
+
   const cols = [
     { key: 'id',       label: 'ID',       width: 90, render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span> },
     { key: 'title',    label: 'Title' },
@@ -304,13 +439,34 @@ export default function POAMPage() {
 
   return (
     <div>
-      <PageHeader title="Plan of Action & Milestones" description="POAM tracking"
+      <PageHeader
+        breadcrumbs={[{ label: 'Authorization', to: '/ato' }, { label: 'POAM' }]}
+        title="Plan of Action & Milestones"
+        description={`${data.length} total · ${open} open · ${critical} critical`}
         action={
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {/* View toggle */}
+            <div className="flex items-center rounded-lg border border-scorva-border p-0.5 bg-scorva-surface">
+              <button
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${view === 'list' ? 'bg-scorva-card text-scorva-text shadow-sm' : 'text-scorva-muted hover:text-scorva-text'}`}
+                onClick={() => setView('list')}
+                title="List view"
+              >
+                <List size={13} /> List
+              </button>
+              <button
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-colors ${view === 'board' ? 'bg-scorva-card text-scorva-text shadow-sm' : 'text-scorva-muted hover:text-scorva-text'}`}
+                onClick={() => setView('board')}
+                title="Board view"
+              >
+                <LayoutGrid size={13} /> Board
+              </button>
+            </div>
+            <FilterTrigger onClick={() => setFilterOpen(o => !o)} activeCount={activeFilterCount} />
             <button className="btn-secondary flex items-center gap-1.5" onClick={() => backfill.mutate()} disabled={backfill.isPending} title="Create missing tasks for existing POAMs">
-              <RefreshCw size={14} className={backfill.isPending ? 'animate-spin' : ''} /> Sync Tasks
+              <RefreshCw size={14} className={backfill.isPending ? 'animate-spin' : ''} /> Sync
             </button>
-            <button className="btn-secondary flex items-center gap-1.5" onClick={() => exportXlsx.mutate()} disabled={exportXlsx.isPending} title="Export POAM report to Excel">
+            <button className="btn-secondary flex items-center gap-1.5" onClick={() => exportXlsx.mutate()} disabled={exportXlsx.isPending}>
               <Download size={14} className={exportXlsx.isPending ? 'animate-pulse' : ''} /> Export
             </button>
             <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} />New POAM</button>
@@ -342,8 +498,68 @@ export default function POAMPage() {
           <StatTile label="Total POAMs" value={data.length} />
         </div>
       </StatusDashboard>
-      <div className="mt-6">
-      <Table columns={cols} data={data} />
+      <div className="sc-workbar mt-6 mb-4">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill">{displayData.length} visible</span>
+          <span className="sc-workbar-pill">{view === 'board' ? 'kanban surface' : 'table surface'}</span>
+        </div>
+      </div>
+      <div className="sc-surface-block">
+      {view === 'board' ? (
+        <KanbanBoard
+          data={displayData}
+          onEdit={openEdit}
+          onDelete={id => setDelId(id)}
+        />
+      ) : (
+        <Table
+          columns={cols}
+          data={displayData}
+          getRowClass={getPoamRowClass}
+          emptyText={activeFilterCount > 0 ? 'No POAMs match the active filters.' : 'No POAMs found.'}
+          emptyIcon={AlertTriangle}
+        />
+      )}
+
+      {/* ── Filter panel ── */}
+      <FilterPanel
+        open={filterOpen}
+        onClose={() => setFilterOpen(false)}
+        title="Filter POAMs"
+        onClear={activeFilterCount > 0 ? clearFilters : undefined}
+      >
+        <FilterGroup
+          label="Severity"
+          options={[
+            { value: 'Critical', label: 'Critical', count: data.filter(r => r.severity === 'Critical').length },
+            { value: 'High',     label: 'High',     count: data.filter(r => r.severity === 'High').length },
+            { value: 'Medium',   label: 'Medium',   count: data.filter(r => r.severity === 'Medium').length },
+            { value: 'Low',      label: 'Low',      count: data.filter(r => r.severity === 'Low').length },
+          ]}
+          value={filterSeverity}
+          onChange={setFilterSev}
+        />
+        <FilterGroup
+          label="Status"
+          options={[
+            { value: 'Open',        label: 'Open',        count: data.filter(r => r.status === 'Open').length },
+            { value: 'In Progress', label: 'In Progress', count: data.filter(r => r.status === 'In Progress').length },
+            { value: 'Completed',   label: 'Completed',   count: data.filter(r => r.status === 'Completed').length },
+            { value: 'Closed',      label: 'Closed',      count: data.filter(r => r.status === 'Closed').length },
+          ]}
+          value={filterStatus}
+          onChange={setFilterStatus}
+        />
+        <FilterGroup
+          label="Risk Workflow"
+          options={['Draft', 'Submitted', 'Under Review', 'Approved', 'Rejected'].map(s => ({
+            value: s, label: s,
+            count: data.filter(r => (r.risk_workflow_state || r.riskWorkflowState || 'Draft') === s).length,
+          }))}
+          value={filterRisk}
+          onChange={setFilterRisk}
+        />
+      </FilterPanel>
       {modal && (
         <Modal title={modal === 'create' ? 'New POAM' : 'Edit POAM'} onClose={() => setModal(null)} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">

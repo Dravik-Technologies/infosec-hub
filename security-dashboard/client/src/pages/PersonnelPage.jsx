@@ -646,7 +646,6 @@ export default function PersonnelPage({ siteId }) {
       <div className="ws-page-header">
         <div>
           <div className="ws-page-title">Personnel Security</div>
-          <div className="ws-page-sub">Clearance roster, training status, VARs, foreign travel, and reportable events.</div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {overdueList.length > 0 && (

@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Users, Building2, FileText, ClipboardList, Bell, Globe } from 'lucide-react';
-import AppHeader          from '../../components/layout/AppHeader';
+import AppLayout          from '../../components/layout/AppLayout';
 import { useAuth }        from '../../context/AuthContext';
 import UsersPage          from '../Users';
 import SitesPage          from '../Sites';
@@ -24,9 +24,7 @@ export default function AdminApp() {
   const tabs = user?.role === 'Corporate Admin' ? [...BASE_TABS, PROGRAM_TAB] : BASE_TABS;
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg">
-      <AppHeader appName="Administration" appIcon={Users} tabs={tabs} />
-      <main className="flex-1 overflow-y-auto p-6">
+    <AppLayout appName="Administration" appIcon={Users} tabs={tabs}>
         <Routes>
           <Route index                  element={<UsersPage />} />
           <Route path="sites"           element={<SitesPage />} />
@@ -36,7 +34,6 @@ export default function AdminApp() {
           <Route path="program-view"    element={<ProgramView />} />
           <Route path="*"               element={<Navigate to="/admin" replace />} />
         </Routes>
-      </main>
-    </div>
+    </AppLayout>
   );
 }

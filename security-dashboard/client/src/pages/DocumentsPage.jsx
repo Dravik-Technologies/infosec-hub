@@ -547,7 +547,6 @@ export default function DocumentsPage({ siteId }) {
       <div className="ws-page-header">
         <div>
           <div className="ws-page-title">Document Control</div>
-          <div className="ws-page-sub">Controlled document register — receipts, dispatches, destructions, and inventory accountability.</div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {inventoryOverdueCount > 0 && (

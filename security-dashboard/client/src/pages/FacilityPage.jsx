@@ -490,7 +490,6 @@ export default function FacilityPage({ siteId }) {
       <div className="ws-page-header">
         <div>
           <div className="ws-page-title">Facility Security</div>
-          <div className="ws-page-sub">FCL status, accreditation, IDS posture, open issues, and compliance tracking.</div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
           {idsIssues.length > 0 && (

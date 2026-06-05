@@ -91,8 +91,11 @@ export default function TrackersPage() {
 
   return (
     <div>
-      <PageHeader title="Trackers" description="Custom compliance tracking boards"
-        action={<button className="btn-primary" onClick={() => openCreate()}><Plus size={15} />New Tracker</button>}
+      <PageHeader
+        breadcrumbs={[{ label: 'Records' }, { label: 'Trackers' }]}
+        title="Trackers"
+        description="Custom compliance tracking boards"
+        action={<button className="btn-primary flex items-center gap-1.5" onClick={() => openCreate()}><Plus size={15} />New Tracker</button>}
       />
       <StatusDashboard>
         <div className="flex flex-wrap gap-2">
@@ -105,7 +108,18 @@ export default function TrackersPage() {
         </div>
       </StatusDashboard>
 
-      <div className="card p-4 mb-5">
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill">Compliance Boards</span>
+          <span className="sc-workbar-pill">{totalRows} tracked rows</span>
+          <span className="sc-workbar-pill">{totalCols} total columns</span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          Use templates for recurring evidence-driven checks and scheduled reviews.
+        </div>
+      </div>
+
+      <div className="sc-surface-block mb-5">
         <div className="flex items-center gap-2 mb-3">
           <ClipboardCheck size={14} className="text-scorva-muted" />
           <span className="text-[10px] font-mono font-semibold text-scorva-muted uppercase tracking-widest">Scheduled Requirement Templates</span>
@@ -127,7 +141,7 @@ export default function TrackersPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {data.map(t => (
-            <div key={t.id} className="card p-5">
+            <div key={t.id} className="sc-tracker-card p-5">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="text-sm font-medium text-scorva-text">{t.name}</h3>
@@ -141,7 +155,7 @@ export default function TrackersPage() {
               <div className="flex flex-wrap gap-2 mt-3">
                 <Badge label={trackerHealth(t, todayStr)} />
                 {t.category && <Badge label={t.category} />}
-                {t.frequency && <span className="px-2 py-0.5 rounded text-xs bg-scorva-surface text-scorva-muted border border-scorva-border">{t.frequency}</span>}
+                {t.frequency && <span className="sc-tracker-chip">{t.frequency}</span>}
               </div>
               <div className="flex gap-3 mt-3 text-xs text-scorva-muted">
                 <span>Owner: {t.owner || '—'}</span>
@@ -153,7 +167,10 @@ export default function TrackersPage() {
                 <span>·</span>
                 <span>{(t.rows || []).length} rows</span>
               </div>
-              <div className="text-xs text-scorva-muted mt-1 font-mono">{t.created_at ? t.created_at.split('T')[0] : ''}</div>
+              <div className="mt-4 pt-3 border-t border-scorva-border/70 flex items-center justify-between text-xs">
+                <span className="text-scorva-muted font-mono">{t.created_at ? t.created_at.split('T')[0] : 'No created date'}</span>
+                <span className="sc-tracker-chip">{t.control_id || t.controlId || 'No control link'}</span>
+              </div>
             </div>
           ))}
         </div>

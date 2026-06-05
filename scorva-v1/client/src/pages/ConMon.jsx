@@ -22,6 +22,15 @@ const EMPTY_FORM = {
   conmon_group: '', assignee: '', review_outcome: '', notes: '', due_date: '',
 };
 
+function getConMonRowClass(row) {
+  if ((row.status || '') === 'Completed') return '';
+  const today = new Date().toISOString().split('T')[0];
+  if (!row.due_date) return '';
+  if (row.due_date < today) return 'row-critical';
+  const days = Math.ceil((new Date(row.due_date) - new Date(today)) / 86400000);
+  return days <= 30 ? 'row-medium' : '';
+}
+
 function dueState(item, todayStr) {
   if (item.status === 'Completed') return 'Completed';
   if (!item.due_date) return 'Upcoming';
@@ -465,6 +474,7 @@ export default function ConMonPage() {
   return (
     <div>
       <PageHeader
+        breadcrumbs={[{ label: 'Authorization', to: '/ato' }, { label: 'ConMon' }]}
         title="Continuous Monitoring"
         description={`${items.length} controls · ${pctDone}% complete`}
         action={
@@ -528,6 +538,7 @@ export default function ConMonPage() {
         columns={cols}
         data={filtered}
         onRowClick={openView}
+        getRowClass={getConMonRowClass}
         emptyText={
           tab === 'Pending'
             ? 'No pending controls. Import an Excel spreadsheet or add a control manually.'

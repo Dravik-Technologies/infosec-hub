@@ -32,5 +32,13 @@
     { "id": "ms-02", "title": "Alexandria SCIF Acceptance", "date": "2026-06-28", "status": "Critical" },
     { "id": "ms-03", "title": "Colorado Springs Design Lock", "date": "2026-07-17", "status": "Upcoming" },
     { "id": "ms-04", "title": "Program Executive Review", "date": "2026-07-31", "status": "Planned" }
+  ],
+  "risks": [
+    { "id": "risk-01", "title": "Colorado Springs SAPF schedule pressure", "severity": "High", "status": "Open", "owner": "Program Manager", "dueDate": "2026-06-24", "source": "Construction", "notes": "Design freeze is holding downstream accreditation dates." },
+    { "id": "risk-02", "title": "Alexandria inspection closeout dependencies", "severity": "Medium", "status": "Mitigation", "owner": "Security Lead", "dueDate": "2026-07-02", "source": "Accreditation", "notes": "Report package dependencies remain open before acceptance." }
+  ],
+  "executiveActions": [
+    { "id": "action-01", "title": "Review FY26 portfolio rebaseline", "owner": "Corporate Admin", "dueDate": "2026-06-10", "status": "Open", "priority": "High", "source": "Program Management", "linkedTo": "ms-01" },
+    { "id": "action-02", "title": "Decide on Colorado Springs escalation path", "owner": "Program Manager", "dueDate": "2026-06-18", "status": "Open", "priority": "High", "source": "Risk", "linkedTo": "risk-01" }
   ]
 }

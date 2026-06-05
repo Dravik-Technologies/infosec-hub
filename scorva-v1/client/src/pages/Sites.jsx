@@ -7,7 +7,7 @@ import Table         from '../components/ui/Table';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, Building2, MapPinned } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 
 const EMPTY = { id: '', label: '' };
@@ -58,7 +58,22 @@ export default function SitesPage() {
           <StatTile label="Total Sites" value={data.length} color="blue" />
         </div>
       </StatusDashboard>
-      <div className="mt-6">
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <Building2 size={12} />
+            Tenant registry
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <MapPinned size={12} />
+            {data.length} provisioned sites
+          </span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          Site definitions control assignment scope and data boundaries across the platform.
+        </div>
+      </div>
+      <div className="sc-surface-block mt-6">
       <Table columns={cols} data={data} />
 
       {modal && (

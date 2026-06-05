@@ -8,11 +8,18 @@ import Badge         from '../components/ui/Badge';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, KeyRound, ShieldCheck } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 
 const EMPTY = { serial: '', model: '', status: 'Unassigned', username: '', issued: '', lost_destroyed_date: '' };
+
+function getYkRowClass(row) {
+  const s = (row.status || '').toLowerCase();
+  if (s === 'lost') return 'row-critical';
+  if (s === 'retired') return 'row-medium';
+  return '';
+}
 
 function YKForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
@@ -137,7 +144,10 @@ export default function YubiKeysPage() {
 
   return (
     <div>
-      <PageHeader title="YubiKeys" description="Hardware token management"
+      <PageHeader
+        breadcrumbs={[{ label: 'Assets' }, { label: 'YubiKeys' }]}
+        title="YubiKeys"
+        description="Hardware token management"
         action={<div className="flex gap-2">
           {selectedIds.length > 0 && (
             <button className="btn-secondary flex items-center gap-1.5 text-red-300 border-red-500/40" onClick={() => removeMany.mutate(selectedIds)} disabled={removeMany.isPending}>
@@ -165,8 +175,23 @@ export default function YubiKeysPage() {
           </div>
         </div>
       </StatusDashboard>
-      <div className="mt-6">
-      <Table columns={cols} data={data} />
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <KeyRound size={12} />
+            Token custody
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <ShieldCheck size={12} />
+            {assigned} assigned / {unassigned} ready
+          </span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          {lost > 0 ? `${lost} token${lost > 1 ? 's are' : ' is'} in a loss state and require follow-up.` : 'No active loss records.'}
+        </div>
+      </div>
+      <div className="sc-surface-block mt-6">
+      <Table columns={cols} data={data} getRowClass={getYkRowClass} emptyText="No YubiKeys registered." />
       {modal && (
         <Modal title={modal === 'create' ? 'Add YubiKey' : 'Edit YubiKey'} onClose={() => setModal(null)}>
           <form onSubmit={handleSubmit} className="space-y-4">

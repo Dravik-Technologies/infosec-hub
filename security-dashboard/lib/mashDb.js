@@ -14,6 +14,7 @@ const DOMAIN_MODEL = {
   personnel_security:  'mashPersonnelSecurity',
   activities_security: 'mashActivitiesSecurity',
   document_control:    'mashDocumentControl',
+  dd254_register:      'mashDd254Register',
   media_control:       'mashMediaControl',
   self_inspection_ops: 'mashSelfInspectionOp',
   security_findings:   'mashSecurityFinding',
@@ -60,16 +61,17 @@ async function aggregateOverview(scope) {
   const db = getDb();
   if (!db) throw Object.assign(new Error('DATABASE_URL not configured'), { status: 503 });
   const where = buildWhere(scope);
-  const [facilities, personnel, activities, docs, media, findings, inspections] = await Promise.all([
+  const [facilities, personnel, activities, docs, dd254s, media, findings, inspections] = await Promise.all([
     db.mashFacilitySecurity.findMany({ where }),
     db.mashPersonnelSecurity.findMany({ where }),
     db.mashActivitiesSecurity.findMany({ where }),
     db.mashDocumentControl.findMany({ where }),
+    db.mashDd254Register.findMany({ where }),
     db.mashMediaControl.findMany({ where }),
     db.mashSecurityFinding.findMany({ where }),
     db.mashSelfInspectionOp.findMany({ where }),
   ]);
-  return { facilities, personnel, activities, docs, media, findings, inspections };
+  return { facilities, personnel, activities, docs, dd254s, media, findings, inspections };
 }
 
 module.exports = {

@@ -6,25 +6,6 @@ const NAV = [
   { id: 'cyber',     label: 'IT & Cybersecurity', path: '/cyber', icon: '◉' },
 ];
 
-const VIEW_META = {
-  dashboard: {
-    kicker: 'Portfolio command',
-    title: 'Programs, capital work, milestones, and accreditation delivery.',
-  },
-  security: {
-    kicker: 'Security command',
-    title: 'Facility posture, personnel readiness, and activity security summary.',
-  },
-  cyber: {
-    kicker: 'Cyber command',
-    title: 'ATO health, remediation pressure, and implementation readiness.',
-  },
-  admin: {
-    kicker: 'Control console',
-    title: 'Curate dashboards, portfolio metrics, and command inputs.',
-  },
-};
-
 export default function AppHeader({ view, onNavigate, user, onLogout, appName, theme, onToggleTheme }) {
   const clock = useClock();
   const hubRole = user?.hubRole || user?.role;
@@ -33,7 +14,6 @@ export default function AppHeader({ view, onNavigate, user, onLogout, appName, t
     ? `${user.siteIds.length} sites`
     : primarySiteId;
   const showAdmin = isAdminRole(user);
-  const meta = VIEW_META[view] || VIEW_META.dashboard;
 
   return (
     <header className="nexus-header">
@@ -43,11 +23,6 @@ export default function AppHeader({ view, onNavigate, user, onLogout, appName, t
           <div className="brand-title">{appName || 'NEXUS'}</div>
           <div className="brand-subtitle">Program Command</div>
         </div>
-      </div>
-
-      <div className="header-brief">
-        <div className="header-brief-kicker">{meta.kicker}</div>
-        <div className="header-brief-title">{meta.title}</div>
       </div>
 
       <nav className="top-nav">

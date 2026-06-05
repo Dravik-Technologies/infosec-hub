@@ -36,6 +36,11 @@ function sanitizeRequest(entry) {
     username: normalizeLower(entry && entry.username),
     email: normalizeLower(entry && entry.email),
     name: normalizeText(entry && entry.name),
+    firstName: normalizeText(entry && entry.firstName),
+    lastName: normalizeText(entry && entry.lastName),
+    position: normalizeText(entry && entry.position),
+    organization: normalizeText(entry && entry.organization),
+    phone: normalizeText(entry && entry.phone),
     justification: normalizeText(entry && entry.justification),
     sourceApp: normalizeAppId(entry && entry.sourceApp) || appId,
     status: normalizeText(entry && entry.status) || 'pending',
@@ -78,13 +83,22 @@ async function createAccessRequest(input) {
     username: input && input.username,
     email: input && input.email,
     name: input && input.name,
+    firstName: input && input.firstName,
+    lastName: input && input.lastName,
+    position: input && input.position,
+    organization: input && input.organization,
+    phone: input && input.phone,
     justification: input && input.justification,
     sourceApp: input && input.sourceApp,
     status: 'pending',
   });
 
-  if (!request.username || !request.email || !request.name) {
-    throw new Error('name, username, and email are required');
+  // Validate required fields
+  if (!request.username || !request.email) {
+    throw new Error('username and email are required');
+  }
+  if (!request.firstName || !request.lastName) {
+    throw new Error('firstName and lastName are required');
   }
 
   const requests = await readRequests();

@@ -35,15 +35,17 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
   }, [isAdmin]);
 
   return (
-    <header className="flex items-center h-14 px-4 bg-scorva-surface border-b border-scorva-border shrink-0 gap-3 min-w-0">
+    <header className="sc-app-header min-w-0">
 
       {/* Brand / back to portal */}
       <Link
         to="/portal"
-        className="flex items-center gap-1.5 shrink-0 group"
+        className="flex items-center gap-1.5 shrink-0 group px-1"
         title="Back to Portal"
       >
-        <Shield size={16} className="text-scorva-accent" />
+        <div className="sc-app-header-mark">
+          <Shield size={14} className="text-scorva-accent" />
+        </div>
         <span className="text-xs font-mono font-bold text-scorva-accent tracking-widest">SCORVA</span>
         <ChevronLeft size={13} className="text-scorva-muted group-hover:text-scorva-text transition-colors" />
       </Link>
@@ -67,7 +69,7 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
                 to={tab.to}
                 end={tab.end ?? false}
                 className={({ isActive }) =>
-                  `flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors shrink-0 ${
+                  `sc-app-tab flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm whitespace-nowrap transition-colors shrink-0 ${
                     isActive
                       ? 'bg-scorva-accent/10 text-scorva-accent border border-scorva-accent/25 font-medium'
                       : 'text-scorva-muted hover:text-scorva-text hover:bg-scorva-hover'
@@ -92,7 +94,7 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
             <select
               value={selectedSite || ''}
               onChange={e => selectSite(e.target.value || null)}
-              className="text-xs bg-transparent text-scorva-text border border-scorva-border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-scorva-accent cursor-pointer"
+              className="text-xs bg-transparent text-scorva-text border border-scorva-border rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-scorva-accent cursor-pointer"
               title="Filter data by site, or view all sites"
             >
               <option value="">All Sites</option>
@@ -119,7 +121,7 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
           <Bell size={15} />
         </button>
 
-        <div className="flex items-center gap-2 pl-2 ml-1 border-l border-scorva-border">
+        <div className="sc-app-user flex items-center gap-2 pl-2 ml-1 border-l border-scorva-border">
           <div className="flex items-center justify-center w-7 h-7 rounded-full bg-scorva-accent text-white dark:text-scorva-bg text-xs font-semibold shrink-0">
             {user?.initials}
           </div>

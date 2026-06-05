@@ -328,7 +328,6 @@ export default function ActivitiesPage({ siteId }) {
       <div className="ws-page-header">
         <div>
           <div className="ws-page-title">Activities Security</div>
-          <div className="ws-page-sub">Classified meetings, briefings, debriefings, inspections, and access coordination.</div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           {overdueList.length > 0 && (

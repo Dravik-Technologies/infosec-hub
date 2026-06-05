@@ -84,7 +84,7 @@ export default function ProgramView() {
 
   if (user?.role !== 'Corporate Admin') {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3">
+      <div className="sc-surface-block flex flex-col items-center justify-center py-20 gap-3">
         <ShieldCheck size={32} className="text-scorva-muted" />
         <p className="text-sm text-scorva-muted font-mono">Program View is restricted to Corporate Admins.</p>
       </div>
@@ -99,7 +99,7 @@ export default function ProgramView() {
 
   if (isLoading) return <LoadingSpinner />;
   if (isError || !data)
-    return <div className="text-sm text-red-400">Failed to load aggregate metrics.</div>;
+    return <div className="sc-surface-block text-sm text-red-400">Failed to load aggregate metrics.</div>;
 
   const { sites, totals, analytics = {} } = data;
   const implPct = totals.controls.pct;
@@ -114,6 +114,17 @@ export default function ProgramView() {
         title="Program View"
         description={`Cross-site ISSM dashboard · ${sites.length} site${sites.length !== 1 ? 's' : ''}`}
       />
+
+      <div className="sc-workbar">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill">Enterprise Oversight</span>
+          <span className="sc-workbar-pill">{sites.length} sites in view</span>
+          <span className="sc-workbar-pill">{totals.poams.open} open POAMs</span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          Cross-site posture, risk concentration, and expiring authorization pressure in one leadership view.
+        </div>
+      </div>
 
       {/* ── Program-level aggregate strip ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -241,7 +252,7 @@ export default function ProgramView() {
       </div>
 
       {/* ── Cross-site heatmap ── */}
-      <div className="card overflow-hidden">
+      <div className="sc-surface-block p-0 overflow-hidden">
         <div className="px-4 py-3 border-b border-scorva-border flex items-center gap-2">
           <Radar size={13} className="text-scorva-muted" />
           <span className="text-[10px] font-mono font-semibold text-scorva-muted uppercase tracking-widest">Cross-Site Risk Heatmap</span>
@@ -281,7 +292,7 @@ export default function ProgramView() {
       </div>
 
       {/* ── Per-site breakdown table ── */}
-      <div className="card overflow-hidden">
+      <div className="sc-surface-block p-0 overflow-hidden">
         <div className="px-4 py-3 border-b border-scorva-border flex items-center gap-2">
           <span className="text-[10px] font-mono font-semibold text-scorva-muted uppercase tracking-widest">Site Breakdown</span>
         </div>

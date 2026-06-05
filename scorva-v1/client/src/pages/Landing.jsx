@@ -71,10 +71,13 @@ export default function Landing() {
   }, [user, loading, navigate]);
 
   return (
-    <div className="min-h-screen bg-scorva-bg text-scorva-text">
+    <div className="min-h-screen bg-scorva-bg text-scorva-text relative overflow-hidden">
+      <div className="sc-landing-grid absolute inset-0 pointer-events-none" />
+      <div className="sc-landing-glow-a absolute pointer-events-none" />
+      <div className="sc-landing-glow-b absolute pointer-events-none" />
 
       {/* ── Navbar ── */}
-      <nav className="sticky top-0 z-50 flex items-center justify-between h-16 px-6 md:px-10 bg-scorva-surface/90 backdrop-blur border-b border-scorva-border">
+      <nav className="sticky top-0 z-50 flex items-center justify-between h-16 px-6 md:px-10 bg-scorva-surface/90 backdrop-blur border-b border-scorva-border relative">
         <div className="flex items-center gap-2.5">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-scorva-accent/10 border border-scorva-accent/20">
             <Shield size={16} className="text-scorva-accent" />
@@ -102,11 +105,6 @@ export default function Landing() {
 
       {/* ── Hero ── */}
       <section className="relative overflow-hidden px-6 md:px-10 pt-20 pb-24">
-        {/* Background grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.04)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.04)_1px,transparent_1px)] bg-[size:48px_48px] pointer-events-none" />
-        {/* Radial glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-scorva-accent/5 rounded-full blur-3xl pointer-events-none" />
-
         <div className="relative max-w-4xl mx-auto text-center">
           {reason === 'scorva_access_required' && (
             <div className="mb-6 inline-flex max-w-2xl items-center gap-2 px-4 py-2 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs">
@@ -119,8 +117,8 @@ export default function Landing() {
           </div>
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-scorva-text leading-tight tracking-tight mb-6">
-            Cyber Compliance,<br />
-            <span className="text-scorva-accent">Command Grade.</span>
+            Cyber compliance,<br />
+            <span className="text-scorva-accent">mission ready.</span>
           </h1>
 
           <p className="text-lg text-scorva-muted max-w-2xl mx-auto mb-10 leading-relaxed">
@@ -185,7 +183,7 @@ export default function Landing() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {FEATURES.map(({ icon: Icon, label, desc, color }) => (
-            <div key={label} className="card p-6 hover:border-scorva-accent/30 transition-colors group">
+            <div key={label} className="sc-feature-card p-6 group">
               <div className={`inline-flex p-2.5 rounded-xl border mb-4 ${COLOR_MAP[color]}`}>
                 <Icon size={20} />
               </div>
@@ -219,7 +217,7 @@ export default function Landing() {
               { label: 'Administration',sub: 'Users · Sites · Documents',    icon: Users,       color: 'text-blue-400' },
               { label: 'Command Center',sub: 'Posture · Intel · Activity',   icon: Globe,       color: 'text-scorva-accent' },
             ].map(({ label, sub, icon: Icon, color }) => (
-              <div key={label} className="card p-4 flex flex-col items-center text-center gap-3">
+              <div key={label} className="sc-feature-card p-4 flex flex-col items-center text-center gap-3">
                 <Icon size={24} className={color} />
                 <div>
                   <div className="text-xs font-semibold text-scorva-text">{label}</div>

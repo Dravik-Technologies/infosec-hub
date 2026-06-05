@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import {
   Shield, ShieldCheck, FileText, BarChart3, Flame,
   Sun, Moon, LogOut, ArrowRight, Settings2, Command,
-  Search, Tag, ChevronRight, Loader2, MapPin,
+  Search, Tag, ChevronRight, Loader2, MapPin, AlertCircle,
 } from 'lucide-react';
 
 const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame, Command };
@@ -99,6 +99,7 @@ export default function Portal() {
   const [team,      setTeam]      = useState('All');
   const [launching, setLaunching] = useState(null);
   const [apps,      setApps]      = useState(APPS);
+  const [pendingRequests, setPendingRequests] = useState(0);
 
   const hubRole = user?.hubRole || user?.role;
   const jobRole = user?.jobRole || user?.securityRole;
@@ -114,7 +115,20 @@ export default function Portal() {
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (Array.isArray(data) && data.length) setApps(data); })
       .catch(() => {});
-  }, []);
+
+    // Load pending requests count for Hub Admins
+    if (canAdmin) {
+      fetch(`${BASE}/api/admin/access-requests`, { credentials: 'include' })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+          if (Array.isArray(data?.requests)) {
+            const pending = data.requests.filter(r => r.status === 'pending').length;
+            setPendingRequests(pending);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [canAdmin]);
 
   const visible = apps.filter(app => {
     const matchTeam   = team === 'All' || app.team === team;
@@ -244,6 +258,29 @@ export default function Portal() {
             </div>
           </div>
         </div>
+
+        {/* ── Access Requests Alert (Hub Admin) ── */}
+        {canAdmin && pendingRequests > 0 && (
+          <div className="bg-yellow-500/10 border-y border-yellow-500/20 px-6 md:px-10 py-3">
+            <button
+              onClick={() => navigate('/admin')}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/30 hover:bg-yellow-500/20 hover:border-yellow-500/50 transition-all group"
+            >
+              <div className="flex items-center gap-3 text-left">
+                <AlertCircle size={18} className="text-yellow-500 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-yellow-600 dark:text-yellow-400">
+                    {pendingRequests} {pendingRequests === 1 ? 'Access Request' : 'Access Requests'} Pending
+                  </p>
+                  <p className="text-xs text-yellow-600/70 dark:text-yellow-400/70">
+                    Review and approve user access requests in the admin console.
+                  </p>
+                </div>
+              </div>
+              <ChevronRight size={16} className="text-yellow-500 shrink-0 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+        )}
 
         {/* ── Filters ── */}
         <div className="sticky top-0 z-10 bg-scorva-bg/95 backdrop-blur-xl border-b border-scorva-border px-6 md:px-10 py-3 relative">

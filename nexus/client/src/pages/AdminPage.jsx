@@ -30,6 +30,84 @@ function AdminMsg({ msg }) {
   );
 }
 
+function ScoreCell({ label, value, tone = 'default' }) {
+  const color = tone === 'good'
+    ? 'var(--green)'
+    : tone === 'watch'
+      ? 'var(--amber-val)'
+      : tone === 'risk'
+        ? 'var(--red-val)'
+        : 'var(--text)';
+  return (
+    <div style={{
+      padding: '0.8rem 0.9rem',
+      borderRadius: '0.7rem',
+      border: '1px solid var(--border)',
+      background: 'var(--bg-alt)',
+    }}>
+      <div style={{ font: '600 0.64rem \"IBM Plex Sans\", sans-serif', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)' }}>
+        {label}
+      </div>
+      <div style={{ marginTop: '0.2rem', font: '700 1.45rem \"IBM Plex Sans\", sans-serif', color }}>
+        {value ?? '—'}
+      </div>
+    </div>
+  );
+}
+
+function SnapshotPanel({ trend, onRefresh }) {
+  const [msg, setMsg] = useState('');
+  const [running, setRunning] = useState(false);
+  const baseline = trend?.baselineAt ? new Date(trend.baselineAt).toLocaleString('en-US') : null;
+  const scores = {
+    program: trend?.program?.programScore?.current ?? null,
+    security: trend?.security?.securityScore?.current ?? null,
+    cyber: trend?.cyber?.cyberScore?.current ?? null,
+  };
+
+  function toneForScore(value) {
+    if (value == null) return 'default';
+    if (value >= 85) return 'good';
+    if (value >= 70) return 'watch';
+    return 'risk';
+  }
+
+  async function generateSnapshot() {
+    setRunning(true);
+    setMsg('');
+    const result = await API.post('admin/snapshot', {});
+    setRunning(false);
+    if (!result || result._apiError) {
+      setMsg(`Error: ${result?.message || 'Network error — snapshot not generated'}`);
+      return;
+    }
+    setMsg(`Snapshot generated for ${result.created}/${result.scopeCount} scope${result.scopeCount === 1 ? '' : 's'}.`);
+    onRefresh();
+  }
+
+  return (
+    <div className="card">
+      <div className="card-header">
+        <h3>Rollup Snapshots</h3>
+        <button type="button" style={btnStyle('primary')} onClick={generateSnapshot} disabled={running}>
+          {running ? 'Generating…' : 'Generate Snapshot'}
+        </button>
+      </div>
+      <div className="card-body" style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+          <ScoreCell label="Program Score" value={scores.program != null ? `${scores.program}%` : '—'} tone={toneForScore(scores.program)} />
+          <ScoreCell label="Security Score" value={scores.security != null ? `${scores.security}%` : '—'} tone={toneForScore(scores.security)} />
+          <ScoreCell label="Cyber Score" value={scores.cyber != null ? `${scores.cyber}%` : '—'} tone={toneForScore(scores.cyber)} />
+        </div>
+        <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
+          {baseline ? `Current trend baseline: ${baseline}` : 'No prior snapshot baseline yet. Generate the first snapshot to start trend history.'}
+        </div>
+        <AdminMsg msg={msg} />
+      </div>
+    </div>
+  );
+}
+
 function Field({ label, children, required }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
@@ -448,6 +526,26 @@ const MILESTONE_FIELDS = [
   { key: 'status', label: 'Status', type: 'select', options: ['Planned', 'Upcoming', 'Critical', 'In Progress', 'Complete', 'Slipped', 'Cancelled'] },
 ];
 
+const RISK_FIELDS = [
+  { key: 'title', label: 'Risk Title', required: true },
+  { key: 'severity', label: 'Severity', type: 'select', options: ['Low', 'Medium', 'High', 'Critical'] },
+  { key: 'status', label: 'Status', type: 'select', options: ['Open', 'Mitigation', 'Watch', 'Accepted', 'Closed'] },
+  { key: 'owner', label: 'Owner' },
+  { key: 'dueDate', label: 'Due Date', type: 'date' },
+  { key: 'source', label: 'Source' },
+  { key: 'notes', label: 'Notes', showInTable: false },
+];
+
+const EXECUTIVE_ACTION_FIELDS = [
+  { key: 'title', label: 'Action Title', required: true },
+  { key: 'owner', label: 'Owner', required: true },
+  { key: 'dueDate', label: 'Due Date', type: 'date' },
+  { key: 'status', label: 'Status', type: 'select', options: ['Open', 'In Progress', 'Blocked', 'Closed'] },
+  { key: 'priority', label: 'Priority', type: 'select', options: ['Low', 'Medium', 'High', 'Critical'] },
+  { key: 'source', label: 'Source' },
+  { key: 'linkedTo', label: 'Linked To' },
+];
+
 // ── Main AdminPage ─────────────────────────────────────────────────────────────
 
 const TABS = [
@@ -456,6 +554,8 @@ const TABS = [
   { id: 'accreditations',  label: 'Accreditations' },
   { id: 'realEstate',      label: 'Real Estate' },
   { id: 'milestones',      label: 'Milestones' },
+  { id: 'risks',           label: 'Risks' },
+  { id: 'executiveActions', label: 'Executive Actions' },
 ];
 
 const ADMIN_CONTENT_STYLE = {
@@ -464,7 +564,7 @@ const ADMIN_CONTENT_STYLE = {
   margin: '0 auto',
 };
 
-export default function AdminPage({ pmData, onSave }) {
+export default function AdminPage({ pmData, trend, onSave }) {
   const [tab, setTab] = useState('portfolio');
   const pm = pmData || {};
 
@@ -484,7 +584,6 @@ export default function AdminPage({ pmData, onSave }) {
       <div className="page-header" style={ADMIN_CONTENT_STYLE}>
         <div className="page-header-left">
           <h1>Admin Console</h1>
-          <p>Program Management data — editable by users granted NEXUS admin permission.</p>
         </div>
         <span className="page-badge">NEXUS Admin</span>
       </div>
@@ -499,7 +598,10 @@ export default function AdminPage({ pmData, onSave }) {
 
       <div style={ADMIN_CONTENT_STYLE}>
         {tab === 'portfolio' && (
-          <PortfolioTab portfolio={pm.portfolio || {}} onChange={onSave} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <SnapshotPanel trend={trend} onRefresh={onSave} />
+            <PortfolioTab portfolio={pm.portfolio || {}} onChange={onSave} />
+          </div>
         )}
 
         {tab === 'construction' && (
@@ -538,6 +640,26 @@ export default function AdminPage({ pmData, onSave }) {
             section="milestones"
             items={pm.milestones || []}
             fields={MILESTONE_FIELDS}
+            onChange={onSave}
+          />
+        )}
+
+        {tab === 'risks' && (
+          <CrudSection
+            title="Risks"
+            section="risks"
+            items={pm.risks || []}
+            fields={RISK_FIELDS}
+            onChange={onSave}
+          />
+        )}
+
+        {tab === 'executiveActions' && (
+          <CrudSection
+            title="Executive Actions"
+            section="executiveActions"
+            items={pm.executiveActions || []}
+            fields={EXECUTIVE_ACTION_FIELDS}
             onChange={onSave}
           />
         )}

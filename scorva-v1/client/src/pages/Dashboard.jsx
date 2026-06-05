@@ -130,27 +130,30 @@ export default function Dashboard() {
   return (
     <div className="space-y-5">
 
-      {/* ── Top bar: title + clock + INFOCON ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
-          <Shield size={18} className="text-scorva-accent shrink-0" />
-          <div>
-            <h1 className="text-base font-bold text-scorva-text font-mono tracking-widest uppercase">Cyber Command Center</h1>
-            <p className="text-[10px] text-scorva-muted font-mono">NIST SP 800-53 Rev 5 · Compliance Posture</p>
+      <section className="sc-dashboard-hero card">
+        <div className="sc-dashboard-hero-grid">
+          <div className="min-w-0">
+            <div className="sc-page-kicker">Authorization Surface</div>
+            <h1 className="sc-dashboard-title">Cyber Command Center</h1>
+            <p className="sc-dashboard-copy">Mission posture across authorization, controls, remediation, and operational security workflows.</p>
+            <div className="sc-dashboard-tags">
+              <span className="sc-dashboard-tag">{atos.length} ATO packages</span>
+              <span className="sc-dashboard-tag">{poams.length} POAM records</span>
+              <span className="sc-dashboard-tag">{controls.length} controls</span>
+            </div>
+          </div>
+          <div className="sc-dashboard-hero-side">
+            <div className="sc-dashboard-signal">
+              <label>System Time</label>
+              <strong>{clock}</strong>
+            </div>
+            <div className={`sc-dashboard-signal ${ic.bg}`}>
+              <label>{ic.label}</label>
+              <strong className={ic.color}>{ic.sub}</strong>
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-1.5 text-[11px] font-mono text-scorva-muted">
-            <Clock size={12} className="text-scorva-accent" />
-            {clock}
-          </div>
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md ring-1 ${ic.ring} ${ic.bg}`}>
-            <span className={`w-1.5 h-1.5 rounded-full shrink-0 animate-pulse-slow ${ic.dot}`} />
-            <span className={`text-[11px] font-mono font-bold ${ic.color}`}>{ic.label}</span>
-            <span className="text-[9px] font-mono text-scorva-muted">{ic.sub}</span>
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* ── Alert banner ── */}
       {unread > 0 && (
@@ -179,7 +182,7 @@ export default function Dashboard() {
             <button
               key={to}
               onClick={() => navigate(to)}
-              className="card p-3.5 text-left hover:border-scorva-accent/40 hover:bg-scorva-hover transition-all group flex flex-col gap-2.5"
+              className="card p-3.5 text-left hover:border-scorva-accent/40 hover:bg-scorva-hover transition-all group flex flex-col gap-2.5 sc-module-card"
             >
               <div className={`inline-flex p-2 rounded-lg border ${COLOR_MAP[color]}`}>
                 <Icon size={15} />
@@ -361,7 +364,7 @@ export default function Dashboard() {
 function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-2 mb-3">
-      <span className="text-[10px] font-mono font-semibold text-scorva-muted uppercase tracking-widest">{children}</span>
+      <span className="text-[10px] font-mono font-semibold text-scorva-muted uppercase tracking-[0.18em]">{children}</span>
       <div className="flex-1 h-px bg-scorva-border" />
     </div>
   );
@@ -372,7 +375,7 @@ function KpiTile({ icon: Icon, label, value, sub, warn = false, good = false, ac
   const iconBg = accent ? 'bg-scorva-accent/15 text-scorva-accent' : good ? 'bg-emerald-500/15 text-emerald-400' : warn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted';
   const border = accent ? 'border-scorva-accent/30' : good ? 'border-emerald-500/20' : warn ? 'border-orange-500/25' : '';
   return (
-    <div className={`card p-4 flex gap-3 items-start ${border}`}>
+    <div className={`card p-4 flex gap-3 items-start sc-kpi-tile ${border}`}>
       <div className={`p-2 rounded-lg shrink-0 ${iconBg}`}><Icon size={15} /></div>
       <div className="min-w-0 flex-1">
         <div className={`text-2xl font-bold font-mono leading-none ${color}`}>{value ?? '—'}</div>
@@ -388,7 +391,7 @@ function StatTile({ label, value, total, icon: Icon, accent = false, warn = fals
   const isWarn = warn && value > 0;
 
   return (
-    <div className={`card p-4 flex gap-3 items-start ${accent ? 'border-scorva-accent/30' : isWarn ? 'border-orange-500/25' : ''}`}>
+    <div className={`card p-4 flex gap-3 items-start sc-kpi-tile ${accent ? 'border-scorva-accent/30' : isWarn ? 'border-orange-500/25' : ''}`}>
       <div className={`p-2 rounded-lg shrink-0 ${accent ? 'bg-scorva-accent/15 text-scorva-accent' : isWarn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted'}`}>
         <Icon size={15} />
       </div>

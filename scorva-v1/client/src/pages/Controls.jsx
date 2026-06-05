@@ -56,6 +56,13 @@ function toFormState(row = {}) {
   };
 }
 
+function getControlRowClass(row) {
+  const status = row.status || '';
+  if (status === 'Not Implemented')     return 'row-critical';
+  if (status === 'Partially Implemented') return 'row-medium';
+  return '';
+}
+
 /* ── Add / Edit form ── */
 function ControlForm({ value, onChange, isNew }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
@@ -307,7 +314,10 @@ export default function ControlsPage() {
 
   return (
     <div>
-      <PageHeader title="Control Library" description={`${data.length} controls · NIST SP 800-53 Rev 5`}
+      <PageHeader
+        breadcrumbs={[{ label: 'Authorization', to: '/ato' }, { label: 'Controls' }]}
+        title="Control Library"
+        description={`${data.length} controls · NIST SP 800-53 Rev 5`}
         action={
           <div className="flex gap-2">
             <button className="btn-secondary flex items-center gap-1.5" onClick={() => setImportOpen(true)}>
@@ -350,8 +360,7 @@ export default function ControlsPage() {
         </div>
       </StatusDashboard>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3 mb-4">
+      <div className="sc-workbar mt-6 mb-4">
         <div className="relative flex-1 max-w-xs">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-scorva-muted" />
           <input className="input-base pl-9" placeholder="Search controls..." value={search} onChange={e => setSearch(e.target.value)} />
@@ -364,7 +373,15 @@ export default function ControlsPage() {
         </select>
       </div>
 
-      <Table columns={cols} data={filtered} onRowClick={openView} emptyText="No controls match your filters." />
+      <div className="sc-surface-block">
+        <Table
+          columns={cols}
+          data={filtered}
+          onRowClick={openView}
+          getRowClass={getControlRowClass}
+          emptyText="No controls match your filters."
+        />
+      </div>
 
       {/* View Modal */}
       {modal === 'view' && viewing && (

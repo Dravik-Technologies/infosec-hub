@@ -6,18 +6,20 @@ import FacilityPage from './pages/FacilityPage.jsx';
 import PersonnelPage from './pages/PersonnelPage.jsx';
 import ActivitiesPage from './pages/ActivitiesPage.jsx';
 import DocumentsPage from './pages/DocumentsPage.jsx';
+import DD254Page from './pages/DD254Page.jsx';
 import MediaPage from './pages/MediaPage.jsx';
 import InspectionsPage from './pages/InspectionsPage.jsx';
 
 const THEME_KEY = 'mash-theme';
 const SECTIONS = [
-  { id: 'overview',     label: 'Overview',     dot: '#64748b', accent: 'var(--primary)', heading: 'Program security posture', brief: 'Cross-domain watchfloor for compliance, readiness, and urgent action.' },
-  { id: 'facility',     label: 'Facility',     dot: '#0f766e', accent: 'var(--facility)', heading: 'Facility assurance', brief: 'Accreditation, IDS posture, and SCIF control visibility.' },
-  { id: 'personnel',    label: 'Personnel',    dot: '#6d28d9', accent: 'var(--personnel)', heading: 'Personnel control', brief: 'Clearance health, training status, and reporting requirements.' },
-  { id: 'activities',   label: 'Activities',   dot: '#0369a1', accent: 'var(--activities)', heading: 'Operational tempo', brief: 'Meetings, inspections, travel, and security action tracking.' },
-  { id: 'documents',    label: 'Documents',    dot: '#9a3412', accent: 'var(--docs)', heading: 'Controlled documents', brief: 'Inventory accountability, lifecycle actions, and custodianship.' },
-  { id: 'media',        label: 'Media',        dot: '#7e22ce', accent: 'var(--media)', heading: 'Media accountability', brief: 'Issue, return, destruction, and removable media chain-of-custody.' },
-  { id: 'inspections',  label: 'Inspections',  dot: '#166534', accent: 'var(--inspections)', heading: 'Inspection readiness', brief: 'Findings, campaigns, and evidence-driven compliance execution.' },
+  { id: 'overview',     label: 'Overview',     dot: '#64748b', accent: 'var(--primary)' },
+  { id: 'facility',     label: 'Facility',     dot: '#0f766e', accent: 'var(--facility)' },
+  { id: 'personnel',    label: 'Personnel',    dot: '#6d28d9', accent: 'var(--personnel)' },
+  { id: 'activities',   label: 'Activities',   dot: '#0369a1', accent: 'var(--activities)' },
+  { id: 'documents',    label: 'Documents',    dot: '#9a3412', accent: 'var(--docs)' },
+  { id: 'dd254',        label: 'DD254',        dot: '#b45309', accent: 'var(--docs)' },
+  { id: 'media',        label: 'Media',        dot: '#7e22ce', accent: 'var(--media)' },
+  { id: 'inspections',  label: 'Inspections',  dot: '#166534', accent: 'var(--inspections)' },
 ];
 
 const ROLE_NAV = {
@@ -25,7 +27,7 @@ const ROLE_NAV = {
   facility_security_mgr:    ['overview','facility','activities','inspections'],
   personnel_security_mgr:   ['overview','personnel','activities'],
   activities_security_mgr:  ['overview','activities'],
-  document_control_mgr:     ['overview','documents'],
+  document_control_mgr:     ['overview','documents','dd254'],
   media_control_mgr:        ['overview','media'],
   viewer:                   'all',
 };
@@ -66,12 +68,6 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
             <div className="ws-brand-name">Security Managers Workspace</div>
             <div className="ws-brand-sub">NISPOM / DCSA / ICD 705</div>
           </div>
-        </div>
-
-        <div className="ws-header-brief">
-          <div className="ws-brief-label">Active Mission Layer</div>
-          <div className="ws-brief-title">{activeSection.heading}</div>
-          <div className="ws-brief-sub">{activeSection.brief}</div>
         </div>
 
         <div className="ws-identity">
@@ -190,6 +186,7 @@ export default function App() {
         {section === 'personnel'   && <PersonnelPage    {...pageProps} />}
         {section === 'activities'  && <ActivitiesPage   {...pageProps} />}
         {section === 'documents'   && <DocumentsPage    {...pageProps} />}
+        {section === 'dd254'       && <DD254Page        {...pageProps} />}
         {section === 'media'       && <MediaPage        {...pageProps} />}
         {section === 'inspections' && <InspectionsPage  {...pageProps} />}
       </main>

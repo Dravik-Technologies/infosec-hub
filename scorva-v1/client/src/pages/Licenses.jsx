@@ -8,11 +8,19 @@ import Badge         from '../components/ui/Badge';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, BadgeDollarSign, ReceiptText } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 
 const EMPTY = { product: '', vendor: '', seats: 0, used: 0, status: 'Active', expires: '', cost: '' };
+
+function getLicRowClass(row) {
+  const s = (row.status || '').toLowerCase();
+  if (s === 'expired') return 'row-critical';
+  if (s === 'pending renewal') return 'row-medium';
+  if (row.seats > 0 && (row.used || 0) > row.seats) return 'row-high';
+  return '';
+}
 
 function LicForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
@@ -128,7 +136,10 @@ export default function LicensesPage() {
 
   return (
     <div>
-      <PageHeader title="Licenses" description="Software license management"
+      <PageHeader
+        breadcrumbs={[{ label: 'Assets' }, { label: 'Licenses' }]}
+        title="Licenses"
+        description="Software license management"
         action={<div className="flex gap-2">
           {selectedIds.length > 0 && (
             <button className="btn-secondary flex items-center gap-1.5 text-red-300 border-red-500/40" onClick={() => removeMany.mutate(selectedIds)} disabled={removeMany.isPending}>
@@ -170,8 +181,28 @@ export default function LicensesPage() {
           <StatTile label="Total Licenses" value={data.length} />
         </div>
       </StatusDashboard>
-      <div className="mt-6">
-      <Table columns={cols} data={data} />
+      <div className="sc-workbar mb-4 mt-2">
+        <div className="sc-workbar-meta">
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <ReceiptText size={12} />
+            Subscription register
+          </span>
+          <span className="sc-workbar-pill inline-flex items-center gap-2">
+            <BadgeDollarSign size={12} />
+            {usedSeats} / {totalSeats} seats in use
+          </span>
+        </div>
+        <div className="text-xs text-scorva-muted">
+          {expired > 0 ? `${expired} expired license${expired > 1 ? 's' : ''} need renewal action.` : 'No expired subscriptions at this time.'}
+        </div>
+      </div>
+      <div className="sc-surface-block mt-6">
+      <Table
+        columns={cols}
+        data={data}
+        getRowClass={getLicRowClass}
+        emptyText="No licenses tracked."
+      />
       {modal && (
         <Modal title={modal === 'create' ? 'Add License' : 'Edit License'} onClose={() => setModal(null)}>
           <form onSubmit={handleSubmit} className="space-y-4">
