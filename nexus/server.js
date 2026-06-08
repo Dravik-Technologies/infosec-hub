@@ -995,12 +995,20 @@ app.get('/auth/sso', async (req, res) => {
     if (hubUser.requestedApp && hubUser.requestedApp !== 'nexus') {
       return res.redirect('/?sso_error=invalid_target');
     }
-    const apps = Array.isArray(hubUser.allowedApps) ? hubUser.allowedApps : [];
-    if (!apps.includes('nexus')) {
+
+    // Phase 2: Re-validate against the database
+    const localUser = await db.user.findUnique({
+      where: { username: String(hubUser.username || '').toLowerCase().trim() },
+    });
+    if (!localUser || localUser.status !== 'Active') {
+      return res.redirect('/?sso_error=access_denied');
+    }
+    if (!getAllowedApps(localUser).includes('nexus')) {
       return res.redirect('/?sso_error=nexus_access_denied');
     }
+
     const settings = await readSharedCollection('nexus_settings');
-    const payload = { ...mapHubUser(hubUser, settings), via: 'sso' };
+    const payload = { ...mapHubUser(localUser, settings), via: 'sso' };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.cookie('nexus_auth', token, {
       httpOnly: true,

@@ -16,7 +16,8 @@ const {
 } = require('./lib/tenantScope');
 
 const mashDb = require('./lib/mashDb');
-const { RELATIONAL_DOMAINS } = mashDb;
+const { RELATIONAL_DOMAINS, getDb } = mashDb;
+const { getAllowedApps } = require('../packages/db/src/appAccess');
 
 const PORT       = process.env.PORT || 8080;
 const DATA_DIR   = path.join(__dirname, 'data');
@@ -185,17 +186,29 @@ app.get('/auth/sso', async (req, res) => {
   try {
     const resp = await fetch(`${hubUrl()}/api/sso/verify?token=${encodeURIComponent(token)}`);
     const data = await resp.json();
-    if (!resp.ok || !data.user) return res.redirect('/?error=invalid_sso');
+    if (!resp.ok || !data.valid || !data.user) return res.redirect('/?error=invalid_sso');
 
     if (data.user.requestedApp && data.user.requestedApp !== 'mash') {
       return res.redirect('/?error=invalid_sso_target');
     }
-    const apps = Array.isArray(data.user.allowedApps) ? data.user.allowedApps : [];
-    if (!apps.includes('mash')) {
+
+    // Phase 2: Re-validate against the database
+    const db = getDb();
+    if (!db) {
+      console.error('[sso] database not available');
+      return res.redirect('/?error=db_unavailable');
+    }
+    const localUser = await db.user.findUnique({
+      where: { username: String(data.user.username || '').toLowerCase().trim() },
+    });
+    if (!localUser || localUser.status !== 'Active') {
+      return res.redirect('/?error=access_denied');
+    }
+    if (!getAllowedApps(localUser).includes('mash')) {
       return res.redirect('/?error=mash_access_denied');
     }
 
-    const wsRole = await resolveWorkspaceRole(data.user.username, data.user.securityRole);
+    const wsRole = await resolveWorkspaceRole(localUser.username, localUser.securityRole);
     const payload = { ...data.user, wsRole };
     const wsToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.cookie('mash_auth', wsToken, {
