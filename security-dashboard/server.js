@@ -123,8 +123,13 @@ const app = express();
 app.use(express.json({ limit: '4mb' }));
 
 function auth(req, res, next) {
+  let token = null;
   const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  if (header.startsWith('Bearer ')) {
+    token = header.slice(7);
+  } else if (req.cookies?.mash_auth) {
+    token = req.cookies.mash_auth;
+  }
   if (!token) return res.status(401).json({ error: 'No token' });
   jwt.verify(token, JWT_SECRET, (err, payload) => {
     if (err) return res.status(403).json({ error: 'Invalid or expired token' });
@@ -193,7 +198,13 @@ app.get('/auth/sso', async (req, res) => {
     const wsRole = await resolveWorkspaceRole(data.user.username, data.user.securityRole);
     const payload = { ...data.user, wsRole };
     const wsToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
-    res.redirect(`/?ws_token=${encodeURIComponent(wsToken)}`);
+    res.cookie('mash_auth', wsToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 8 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.redirect('/');
   } catch (err) {
     console.error('[sso]', err.message);
     res.redirect('/?error=sso_failed');

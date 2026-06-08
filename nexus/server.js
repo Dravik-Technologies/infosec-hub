@@ -466,12 +466,23 @@ function mapHubUser(hubUser, settings) {
 }
 
 function requireAuth(req, res, next) {
+  let token = null;
+
+  // Try Bearer token first
   const auth = req.headers.authorization;
-  if (!auth || !auth.startsWith('Bearer ')) {
+  if (auth && auth.startsWith('Bearer ')) {
+    token = auth.slice(7);
+  }
+  // Fall back to httpOnly cookie
+  else if (req.cookies?.nexus_auth) {
+    token = req.cookies.nexus_auth;
+  }
+
+  if (!token) {
     return res.status(401).json({ error: 'Unauthorized — no token' });
   }
   try {
-    req.user = jwt.verify(auth.slice(7), JWT_SECRET);
+    req.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch {
     res.status(401).json({ error: 'Token expired or invalid' });
@@ -991,7 +1002,13 @@ app.get('/auth/sso', async (req, res) => {
     const settings = await readSharedCollection('nexus_settings');
     const payload = { ...mapHubUser(hubUser, settings), via: 'sso' };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
-    res.redirect(`/?nexus_token=${token}`);
+    res.cookie('nexus_auth', token, {
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 8 * 60 * 60 * 1000,
+      secure: process.env.NODE_ENV === 'production',
+    });
+    res.redirect('/');
   } catch (err) {
     console.error('[NEXUS SSO]', err.message);
     res.redirect(`/?sso_error=${encodeURIComponent(err.message)}`);
