@@ -22,12 +22,14 @@ const express     = require('express');
 const crypto      = require('crypto');
 const requireAuth = require('../middleware/requireAuth');
 const { hasAppAccess, getLegacyPlatformRole } = require('../../../packages/db/src/appAccess');
+const { db } = require('../../../packages/db/src');
 const router      = express.Router();
 
 const TTL_MS = (parseInt(process.env.SSO_TOKEN_TTL, 10) || 60) * 1000;
 
-// In-memory token store: { [token]: { user, expires } }
-const tokenStore = new Map();
+function hashToken(token) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
 
 function buildLaunchUser(sessionUser, appId) {
   const hubRole = sessionUser.hubRole || sessionUser.role;
@@ -54,20 +56,23 @@ function buildLaunchUser(sessionUser, appId) {
   };
 }
 
-// Purge expired tokens every 5 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [t, v] of tokenStore) {
-    if (v.expires < now) tokenStore.delete(t);
+// Cleanup expired tokens in the database every 10 minutes
+setInterval(async () => {
+  try {
+    await db.hubSsoToken.deleteMany({
+      where: { expiresAt: { lt: new Date() } },
+    });
+  } catch (err) {
+    console.error('[HUB SSO cleanup]', err.message);
   }
-}, 5 * 60 * 1000);
+}, 10 * 60 * 1000);
 
 /* POST /api/sso/token — authenticated hub user requests a launch token */
 router.post('/token', (req, res, next) => {
   const sessionUser = req.session && req.session.user ? req.session.user.username : 'NONE';
   console.log(`[HUB SSO] /token called — session user: ${sessionUser}`);
   next();
-}, requireAuth, (req, res) => {
+}, requireAuth, async (req, res) => {
   const appId = String((req.body && req.body.appId) || '').trim().toLowerCase();
   if (!appId) {
     return res.status(400).json({ error: 'appId is required' });
@@ -75,40 +80,65 @@ router.post('/token', (req, res, next) => {
   if (!hasAppAccess(req.session.user, appId)) {
     return res.status(403).json({ error: `Access to ${appId} has not been granted` });
   }
-  const token   = crypto.randomBytes(32).toString('hex');
-  const expires = Date.now() + TTL_MS;
-  tokenStore.set(token, {
-    user: buildLaunchUser(req.session.user, appId),
-    appId,
-    expires,
-  });
-  console.log(`[HUB SSO] token issued for ${req.session.user.username} -> ${appId}`);
-  res.json({ token, expires, appId });
+  try {
+    const token = crypto.randomBytes(32).toString('hex');
+    const tokenHash = hashToken(token);
+    const expiresAt = new Date(Date.now() + TTL_MS);
+    const userData = buildLaunchUser(req.session.user, appId);
+
+    await db.hubSsoToken.create({
+      data: {
+        tokenHash,
+        userData,
+        expiresAt,
+      },
+    });
+
+    console.log(`[HUB SSO] token issued for ${req.session.user.username} -> ${appId}`);
+    res.json({ token, expires: expiresAt.getTime(), appId });
+  } catch (err) {
+    console.error('[HUB SSO /token]', err.message);
+    res.status(500).json({ error: 'Unable to issue token' });
+  }
 });
 
 /* GET /api/sso/verify?token=<token> — called by external apps */
-router.get('/verify', (req, res) => {
+router.get('/verify', async (req, res) => {
   const { token } = req.query;
 
   if (!token) {
     return res.status(400).json({ valid: false, error: 'Token required' });
   }
 
-  const entry = tokenStore.get(token);
+  try {
+    const tokenHash = hashToken(token);
+    const entry = await db.hubSsoToken.findUnique({
+      where: { tokenHash },
+    });
 
-  if (!entry) {
-    return res.status(401).json({ valid: false, error: 'Token not found or already used' });
+    if (!entry) {
+      return res.status(401).json({ valid: false, error: 'Token not found or already used' });
+    }
+
+    if (entry.consumedAt) {
+      return res.status(401).json({ valid: false, error: 'Token already consumed' });
+    }
+
+    if (entry.expiresAt < new Date()) {
+      return res.status(401).json({ valid: false, error: 'Token expired' });
+    }
+
+    // Mark as consumed (one-time use)
+    await db.hubSsoToken.update({
+      where: { tokenHash },
+      data: { consumedAt: new Date() },
+    });
+
+    res.json({ valid: true, user: entry.userData });
+  } catch (err) {
+    console.error('[HUB SSO /verify]', err.message);
+    res.status(500).json({ valid: false, error: 'Verification failed' });
   }
-
-  if (entry.expires < Date.now()) {
-    tokenStore.delete(token);
-    return res.status(401).json({ valid: false, error: 'Token expired' });
-  }
-
-  // One-time use — remove after verification
-  tokenStore.delete(token);
-
-  res.json({ valid: true, user: entry.user });
 });
 
 module.exports = router;

@@ -1071,3 +1071,17 @@ model MashSecurityFinding {
   @@index([siteId])
   @@map("mash_security_findings")
 }
+
+// ─── HUB SSO Token Store ──────────────────────────────────────────────────────
+
+model HubSsoToken {
+  tokenHash  String    @id @map("token_hash")
+  userData   Json      @map("user_data")
+  expiresAt  DateTime  @map("expires_at")
+  consumedAt DateTime? @map("consumed_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@index([consumedAt])
+  @@map("hub_sso_tokens")
+}
