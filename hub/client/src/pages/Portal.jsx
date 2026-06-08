@@ -6,7 +6,7 @@ import { CyberLoader } from '../components/CyberLoader';
 import {
   Shield, ShieldCheck, FileText, BarChart3, Flame,
   Sun, Moon, LogOut, ArrowRight, Settings2, Command,
-  Search, Tag, ChevronRight, Loader2, MapPin, AlertCircle,
+  ChevronRight, Loader2, MapPin, AlertCircle,
 } from 'lucide-react';
 
 const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame, Command };
@@ -96,8 +96,6 @@ export default function Portal() {
   const { user, logout, launchApp } = useAuth();
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
-  const [search,    setSearch]    = useState('');
-  const [team,      setTeam]      = useState('All');
   const [launching, setLaunching] = useState(null);
   const [apps,      setApps]      = useState(APPS);
   const [pendingRequests, setPendingRequests] = useState(0);
@@ -107,7 +105,6 @@ export default function Portal() {
   const hubRole = user?.hubRole || user?.role;
   const jobRole = user?.jobRole || user?.securityRole;
   const primarySiteId = user?.primarySiteId || user?.siteId || user?.site;
-  const teams    = ['All', ...new Set(apps.map(a => a.team))];
   const canAdmin = hubRole === 'Hub Admin';
   const siteLabel = primarySiteId || (Array.isArray(user?.siteIds) && user.siteIds.length > 1
     ? `${user.siteIds.length} sites` : null);
@@ -138,17 +135,6 @@ export default function Portal() {
         .catch(() => {});
     }
   }, [canAdmin]);
-
-  const visible = apps.filter(app => {
-    const matchTeam   = team === 'All' || app.team === team;
-    const q           = search.toLowerCase();
-    const matchSearch = !q
-      || app.name.toLowerCase().includes(q)
-      || app.tagline.toLowerCase().includes(q)
-      || app.tags.some(t => t.toLowerCase().includes(q))
-      || app.team.toLowerCase().includes(q);
-    return matchTeam && matchSearch;
-  });
 
   async function handleLaunch(app) {
     setLaunching(app.id);
@@ -295,49 +281,10 @@ export default function Portal() {
           </div>
         )}
 
-        {/* ── Filters ── */}
-        <div className="sticky top-0 z-10 bg-scorva-bg/95 backdrop-blur-xl border-b border-scorva-border px-6 md:px-10 py-3 relative">
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-scorva-accent/25 to-transparent pointer-events-none" />
-          <div className="max-w-5xl mx-auto flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-scorva-muted pointer-events-none" />
-              <input
-                type="text"
-                placeholder="Search apps, tags, teams…"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="input-base pl-8 py-1.5 text-xs font-mono"
-              />
-            </div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Tag size={12} className="text-scorva-muted shrink-0" />
-              {teams.map(t => (
-                <button
-                  key={t}
-                  onClick={() => setTeam(t)}
-                  className={`text-[11px] font-mono px-2.5 py-1 rounded-md border transition-colors ${
-                    team === t
-                      ? 'bg-scorva-accent text-white dark:text-scorva-bg border-scorva-accent'
-                      : 'bg-scorva-card border-scorva-border text-scorva-muted hover:border-scorva-accent/40 hover:text-scorva-text'
-                  }`}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
         {/* ── App Grid ── */}
         <div className="max-w-5xl mx-auto px-6 md:px-10 py-8">
-          {visible.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-scorva-muted gap-3">
-              <Search size={32} className="opacity-30" />
-              <p className="text-sm font-mono">No apps match your search</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {visible.map(app => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {apps.map(app => {
                 const Icon   = ICON_MAP[app.icon] || Shield;
                 const colors = COLOR_MAP[app.color];
                 const busy   = launching === app.id;
@@ -364,6 +311,11 @@ export default function Portal() {
                         {app.name}
                       </h3>
 
+                      {/* Tagline */}
+                      <p className="text-[10px] text-scorva-muted mt-1 leading-tight max-w-[90%]">
+                        {app.tagline}
+                      </p>
+
                       {/* Live status */}
                       <div className="mt-2 flex items-center gap-1">
                         <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
@@ -372,9 +324,8 @@ export default function Portal() {
                     </div>
                   </div>
                 );
-              })}
-            </div>
-          )}
+            })}
+          </div>
         </div>
 
         {/* ── Expanded app modal ── */}
@@ -383,13 +334,13 @@ export default function Portal() {
             className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
             onClick={() => setExpandedApp(null)}
           >
-            {visible.find(a => a.id === expandedApp) && (
+            {apps.find(a => a.id === expandedApp) && (
               <div
                 className="glass border border-scorva-accent/30 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto glow-border-strong"
                 onClick={e => e.stopPropagation()}
               >
                 {(() => {
-                  const app = visible.find(a => a.id === expandedApp);
+                  const app = apps.find(a => a.id === expandedApp);
                   const Icon = ICON_MAP[app.icon] || Shield;
                   const colors = COLOR_MAP[app.color];
                   const busy = launching === app.id;
