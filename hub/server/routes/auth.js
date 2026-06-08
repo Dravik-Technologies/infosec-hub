@@ -146,7 +146,7 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'Username and password are required' });
   }
 
-  if (process.env.NODE_ENV !== 'production' && username === 'admin' && password === 'admin') {
+  if (process.env.ALLOW_DEV_LOGIN === 'true' && username === 'admin' && password === 'admin') {
     req.session.user = {
       authVersion: 3,
       id: 'dev-admin', name: 'Dev Admin', username: 'admin',
