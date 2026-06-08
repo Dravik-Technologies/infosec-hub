@@ -71,39 +71,40 @@ export default function Login() {
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] bg-scorva-accent/6 rounded-full blur-[150px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[400px] h-[300px] bg-indigo-500/4 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="relative w-full max-w-sm">
+      <div className="relative w-full max-w-sm animate-fade-in-up">
         {/* Logo block */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 animate-fade-in-down" style={{ animationDelay: '0.1s' }}>
           {/* Pulse-ring shield */}
-          <div className="relative inline-flex items-center justify-center mb-6">
-            <div className="w-20 h-20 rounded-2xl bg-scorva-accent/10 border border-scorva-accent/30 flex items-center justify-center animate-pulse-ring">
-              <Shield size={36} className="text-scorva-accent" />
+          <div className="relative inline-flex items-center justify-center mb-6 animate-float">
+            <div className="absolute inset-0 rounded-2xl bg-scorva-accent/10 blur-xl animate-pulse" />
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-scorva-accent/20 to-scorva-accent/5 border border-scorva-accent/40 flex items-center justify-center animate-pulse-ring relative z-10">
+              <Shield size={36} className="text-scorva-accent text-glow" />
             </div>
           </div>
           {/* Tactical badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-scorva-accent/10 border border-scorva-accent/20 mb-4">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-scorva-accent/10 border border-scorva-accent/25 mb-4 animate-glow-pulse">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[9px] font-mono text-scorva-accent tracking-[0.35em] uppercase">Secure Channel Active</span>
           </div>
-          <h1 className="text-2xl font-black font-mono tracking-[0.15em] text-scorva-text uppercase text-glow">
+          <h1 className="text-3xl font-black font-mono tracking-[0.15em] text-scorva-text uppercase text-glow-strong">
             MTSI Hub
           </h1>
           <p className="text-xs text-scorva-muted mt-1 font-mono tracking-widest uppercase">Authentication Required</p>
         </div>
 
         {/* Card with HUD corner brackets */}
-        <div className="relative">
-          <div className="absolute -top-2.5 -left-2.5 w-6 h-6 border-t-2 border-l-2 border-scorva-accent/60 pointer-events-none" />
-          <div className="absolute -top-2.5 -right-2.5 w-6 h-6 border-t-2 border-r-2 border-scorva-accent/60 pointer-events-none" />
-          <div className="absolute -bottom-2.5 -left-2.5 w-6 h-6 border-b-2 border-l-2 border-scorva-accent/60 pointer-events-none" />
-          <div className="absolute -bottom-2.5 -right-2.5 w-6 h-6 border-b-2 border-r-2 border-scorva-accent/60 pointer-events-none" />
-        <div className="glass border border-scorva-accent/20 rounded-xl p-6 glow-border">
+        <div className="relative animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <div className="absolute -top-2.5 -left-2.5 w-6 h-6 border-t-2 border-l-2 border-scorva-accent/60 pointer-events-none transition-all duration-500 hover:border-scorva-accent" />
+          <div className="absolute -top-2.5 -right-2.5 w-6 h-6 border-t-2 border-r-2 border-scorva-accent/60 pointer-events-none transition-all duration-500 hover:border-scorva-accent" />
+          <div className="absolute -bottom-2.5 -left-2.5 w-6 h-6 border-b-2 border-l-2 border-scorva-accent/60 pointer-events-none transition-all duration-500 hover:border-scorva-accent" />
+          <div className="absolute -bottom-2.5 -right-2.5 w-6 h-6 border-b-2 border-r-2 border-scorva-accent/60 pointer-events-none transition-all duration-500 hover:border-scorva-accent" />
+        <div className="glass border border-scorva-accent/25 rounded-xl p-6 glow-border-strong hover:glow-border-strong transition-all duration-500 group">
           {entraEnabled && (
-            <div className="mb-5">
+            <div className="mb-5 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
               <button
                 type="button"
                 onClick={handleMicrosoftLogin}
-                className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-scorva-border bg-white text-slate-900 px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 transition-colors"
+                className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-scorva-border bg-white text-slate-900 px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 active:translate-y-0"
               >
                 <span className="inline-block w-4 h-4 rounded-sm bg-[linear-gradient(90deg,#f25022_0_50%,#7fba00_50_100%),linear-gradient(90deg,#00a4ef_0_50%,#ffb900_50_100%)] bg-[length:100%_50%,100%_50%] bg-[position:0_0,0_100%] bg-no-repeat" />
                 Sign in with Microsoft
@@ -119,11 +120,11 @@ export default function Login() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-4" style={{ animationDelay: '0.4s' }}>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
               <label className="block text-[10px] font-mono font-medium text-scorva-muted mb-1.5 tracking-widest uppercase">Username</label>
               <input
-                className="input-base font-mono"
+                className="input-base font-mono hover:border-scorva-accent/50 focus:glow-border-strong"
                 type="text"
                 autoComplete="username"
                 placeholder="username"
@@ -133,7 +134,7 @@ export default function Login() {
               />
             </div>
 
-            <div>
+            <div className="animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
               <label className="block text-[10px] font-mono font-medium text-scorva-muted mb-1.5 tracking-widest uppercase">Password</label>
               <div className="relative">
                 <input
@@ -156,7 +157,7 @@ export default function Login() {
             </div>
 
             {error && (
-              <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 font-mono">
+              <p className="text-xs text-red-400 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 font-mono animate-fade-in-up backdrop-blur-sm">
                 {error}
               </p>
             )}
@@ -164,7 +165,8 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full justify-center py-3 mt-2 glow-border font-mono tracking-wider"
+              className="btn-primary w-full justify-center py-3 mt-2 glow-border font-mono tracking-wider animate-fade-in-up"
+              style={{ animationDelay: '0.7s' }}
             >
               {loading ? (
                 <>
@@ -177,9 +179,9 @@ export default function Login() {
         </div>
         </div>{/* end corner-bracket wrapper */}
 
-        <div className="mt-8 space-y-3">
+        <div className="mt-8 space-y-3 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>
           {/* Sys-connection data */}
-          <div className="glass border border-scorva-border/50 rounded-xl p-3.5 space-y-2">
+          <div className="glass border border-scorva-border/50 rounded-xl p-3.5 space-y-2 hover:border-scorva-accent/30 hover:glow-border transition-all duration-300">
             <div className="flex items-center gap-2 mb-1">
               <div className="w-2 h-px bg-scorva-accent/50" />
               <span className="text-[9px] font-mono text-scorva-muted/70 uppercase tracking-[0.3em]">Connection Parameters</span>
