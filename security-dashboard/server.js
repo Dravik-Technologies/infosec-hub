@@ -207,7 +207,28 @@ app.get('/auth/sso', async (req, res) => {
     }
 
     const wsRole = await resolveWorkspaceRole(localUser.username, localUser.securityRole);
-    const payload = { ...data.user, wsRole, via: 'sso' };
+    // Build JWT from localUser (database record), not HUB payload
+    const siteIds = Array.isArray(localUser.siteIds) ? localUser.siteIds : [];
+    const primarySiteId = localUser.siteId || siteIds[0] || null;
+    const payload = {
+      authVersion: 3,
+      id: localUser.id,
+      username: localUser.username,
+      name: localUser.name,
+      email: localUser.email,
+      role: localUser.role,
+      hubRole: localUser.role,
+      securityRole: localUser.securityRole,
+      jobRole: localUser.securityRole,
+      siteId: primarySiteId,
+      siteIds,
+      primarySiteId,
+      canSeeAllSites: localUser.role === 'Corporate Admin' || localUser.role === 'Hub Admin',
+      allowedApps: getAllowedApps(localUser),
+      initials: localUser.name ? localUser.name.split(' ').map(n => n[0]).join('') : '',
+      wsRole,
+      via: 'sso',
+    };
     const wsToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.cookie('mash_auth', wsToken, {
       httpOnly: true,
