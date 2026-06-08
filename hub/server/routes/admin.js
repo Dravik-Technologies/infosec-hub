@@ -234,6 +234,17 @@ router.post('/users', corpAdminOnly, async (req, res) => {
   }
 });
 
+// Helper: compare arrays as sets (order-insensitive)
+function arraysEqualAsSet(a, b) {
+  const aSet = new Set((a || []).map(String));
+  const bSet = new Set((b || []).map(String));
+  if (aSet.size !== bSet.size) return false;
+  for (const item of aSet) {
+    if (!bSet.has(item)) return false;
+  }
+  return true;
+}
+
 router.patch('/users/:id', adminOnly, async (req, res) => {
   try {
     const current = await db.user.findUnique({ where: { id: req.params.id } });
@@ -271,7 +282,9 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
     }
     if ('siteId' in req.body || 'siteIds' in req.body) {
       const newPrimarySiteId = nextSiteIds[0] || null;
-      if (newPrimarySiteId !== current.siteId || JSON.stringify(nextSiteIds) !== JSON.stringify(current.siteIds || [])) {
+      const siteIdChanged = newPrimarySiteId !== current.siteId;
+      const siteIdsChanged = !arraysEqualAsSet(nextSiteIds, current.siteIds || []);
+      if (siteIdChanged || siteIdsChanged) {
         data.siteId  = newPrimarySiteId;
         data.siteIds = nextSiteIds;
         shouldRevokeTokens = true;
@@ -294,7 +307,7 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
     if ('allowedApps' in req.body) {
       const oldAllowedApps = current.dod8140?.allowedApps || [];
       const newAllowedApps = Array.isArray(req.body.allowedApps) ? req.body.allowedApps : [];
-      if (JSON.stringify(oldAllowedApps) !== JSON.stringify(newAllowedApps)) {
+      if (!arraysEqualAsSet(oldAllowedApps, newAllowedApps)) {
         nextDod8140 = mergeAllowedApps(nextDod8140, req.body.allowedApps);
         shouldRevokeTokens = true;
       }
