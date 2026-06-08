@@ -500,7 +500,7 @@ export default function AccessAdmin() {
                 ) : (
                   <div className="space-y-3">
                     {groupedUsers.map(siteGroup => {
-                      const siteOpen = expandedSites[siteGroup.siteKey] ?? true;
+                      const siteOpen = expandedSites[siteGroup.siteKey] ?? false;
                       return (
                         <div key={siteGroup.siteKey} className="border border-scorva-border rounded-xl overflow-hidden">
                           <button
@@ -520,7 +520,7 @@ export default function AccessAdmin() {
                             <div className="p-3 space-y-3">
                               {siteGroup.roles.map(roleGroup => {
                                 const rolePath = `${siteGroup.siteKey}:${roleGroup.roleKey}`;
-                                const roleOpen = expandedRoles[rolePath] ?? true;
+                                const roleOpen = expandedRoles[rolePath] ?? false;
                                 return (
                                   <div key={rolePath} className="border border-scorva-border/70 rounded-xl overflow-hidden">
                                     <button
