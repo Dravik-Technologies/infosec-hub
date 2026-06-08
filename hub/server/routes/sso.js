@@ -3,7 +3,7 @@
 /**
  * SSO Token Routes
  * ─────────────────────────────────────────────────────────────────────────────
- * Implements a simple single-sign-on token exchange so apps outside the hub
+ * Implements a single-sign-on token exchange so apps outside the hub
  * can validate that a user already authenticated with the hub.
  *
  * Flow:
@@ -13,9 +13,14 @@
  *   4. App backend calls  GET /api/sso/verify?token=<token>
  *      →  { valid: true, user: { ... } }
  *
- * Tokens are one-time-use, stored in-memory, and expire after SSO_TOKEN_TTL
- * seconds (default 60 s).  In production, replace the in-memory store with
- * Redis or a short-TTL MongoDB collection.
+ * Tokens are one-time-use and expire after SSO_TOKEN_TTL seconds (default 60 s).
+ * Token store is PostgreSQL-backed (HubSsoToken model) with periodic cleanup.
+ *
+ * IMPORTANT: Apps issue 8-hour JWTs to users after SSO verification. These JWTs
+ * are valid until expiry and do NOT re-check the database on every request.
+ * Changes to user permissions/status in the database do not immediately revoke
+ * already-issued JWTs. Phase 2 (DB re-validation at SSO) prevents NEW tokens from
+ * being issued to revoked users, but existing tokens remain valid for their TTL.
  */
 
 const express     = require('express');
