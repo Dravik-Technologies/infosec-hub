@@ -343,7 +343,7 @@ export default function Portal() {
                 return (
                   <div
                     key={app.id}
-                    className={`relative card group flex flex-col transition-all duration-300 overflow-hidden ${colors.border} ${colors.glow} hover:tron-border`}
+                    className={`relative glass card group flex flex-col transition-all duration-300 overflow-hidden ${colors.border} ${colors.glow} hover:tron-border`}
                   >
                     {/* Tron border trace on hover */}
                     <div className="absolute inset-0 pointer-events-none" />
