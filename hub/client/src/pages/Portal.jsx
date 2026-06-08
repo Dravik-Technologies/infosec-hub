@@ -102,6 +102,7 @@ export default function Portal() {
   const [apps,      setApps]      = useState(APPS);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [showLoader, setShowLoader] = useState(true);
+  const [expandedApp, setExpandedApp] = useState(null);
 
   const hubRole = user?.hubRole || user?.role;
   const jobRole = user?.jobRole || user?.securityRole;
@@ -335,83 +336,39 @@ export default function Portal() {
               <p className="text-sm font-mono">No apps match your search</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {visible.map(app => {
                 const Icon   = ICON_MAP[app.icon] || Shield;
                 const colors = COLOR_MAP[app.color];
                 const busy   = launching === app.id;
+                const isExpanded = expandedApp === app.id;
+
+                // Simplified grid card
                 return (
                   <div
                     key={app.id}
-                    className={`relative glass card group flex flex-col transition-all duration-300 overflow-hidden ${colors.border} ${colors.glow} hover:tron-border`}
+                    onClick={() => setExpandedApp(isExpanded ? null : app.id)}
+                    className="cursor-pointer transition-transform duration-300 hover:scale-105"
                   >
-                    {/* Tron border trace on hover */}
-                    <div className="absolute inset-0 pointer-events-none" />
+                    <div className={`glass rounded-xl p-6 h-full flex flex-col items-center justify-center text-center group ${colors.glow} hover:glow-border-strong transition-all`}>
+                      {/* Color accent bar */}
+                      <div className={`absolute -top-1 left-0 right-0 h-1 ${colors.top} rounded-t-xl opacity-40 group-hover:opacity-100 transition-opacity`} />
 
-                    {/* Color top bar */}
-                    <div className={`absolute top-0 left-0 right-0 h-[3px] ${colors.top} opacity-60 group-hover:opacity-100 transition-opacity`} />
-
-                    <div className="flex items-start justify-between p-5 pb-0 pt-6">
-                      <div className="flex items-center gap-3">
-                        <div className={`p-3 rounded-xl ${colors.icon}`}>
-                          <Icon size={22} />
-                        </div>
-                        <div>
-                          <h2 className="text-sm font-black text-scorva-text font-mono tracking-widest uppercase">
-                            {app.name}
-                          </h2>
-                          <p className="text-xs text-scorva-muted mt-0.5">{app.tagline}</p>
-                        </div>
+                      {/* Large icon */}
+                      <div className={`p-4 rounded-xl mb-3 ${colors.icon} group-hover:scale-110 transition-transform`}>
+                        <Icon size={32} />
                       </div>
-                      <div className="flex flex-col items-end gap-1.5 shrink-0">
-                        <span className="text-[10px] font-mono text-scorva-muted bg-scorva-hover px-2 py-0.5 rounded border border-scorva-border">
-                          {app.team}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span className="text-[9px] font-mono text-emerald-500 dark:text-emerald-400 uppercase tracking-wider">Live</span>
-                        </div>
+
+                      {/* App name */}
+                      <h3 className="text-sm font-black text-scorva-text font-mono tracking-widest uppercase leading-tight">
+                        {app.name}
+                      </h3>
+
+                      {/* Live status */}
+                      <div className="mt-2 flex items-center gap-1">
+                        <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                        <span className="text-[8px] font-mono text-emerald-500 dark:text-emerald-400 uppercase">LIVE</span>
                       </div>
-                    </div>
-
-                    <p className="text-xs text-scorva-muted leading-relaxed px-5 pt-3 pb-0 flex-1">
-                      {app.desc}
-                    </p>
-
-                    <div className="flex flex-wrap gap-1.5 px-5 pt-3">
-                      {app.tags.map(tag => (
-                        <span key={tag} className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${colors.badge}`}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="flex items-center justify-between px-5 py-3 mt-3 border-t border-scorva-border/60">
-                      <div className="flex items-center gap-3 text-[9px] font-mono text-scorva-muted">
-                        <span className="flex items-center gap-1">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          READY
-                        </span>
-                        <span className="text-scorva-border">·</span>
-                        <span>AUTH:SSO</span>
-                      </div>
-                      <button
-                        onClick={() => handleLaunch(app)}
-                        disabled={busy}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold font-mono transition-all ${colors.launch} disabled:opacity-60`}
-                      >
-                        {busy ? (
-                          <>
-                            <Loader2 size={13} className="animate-spin" />
-                            Launching…
-                          </>
-                        ) : (
-                          <>
-                            Launch Module
-                            <ChevronRight size={13} />
-                          </>
-                        )}
-                      </button>
                     </div>
                   </div>
                 );
@@ -419,6 +376,108 @@ export default function Portal() {
             </div>
           )}
         </div>
+
+        {/* ── Expanded app modal ── */}
+        {expandedApp && (
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+            onClick={() => setExpandedApp(null)}
+          >
+            {visible.find(a => a.id === expandedApp) && (
+              <div
+                className="glass border border-scorva-accent/30 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto glow-border-strong"
+                onClick={e => e.stopPropagation()}
+              >
+                {(() => {
+                  const app = visible.find(a => a.id === expandedApp);
+                  const Icon = ICON_MAP[app.icon] || Shield;
+                  const colors = COLOR_MAP[app.color];
+                  const busy = launching === app.id;
+
+                  return (
+                    <div>
+                      {/* Header */}
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-4 rounded-xl ${colors.icon}`}>
+                            <Icon size={40} />
+                          </div>
+                          <div>
+                            <h2 className="text-2xl font-black text-scorva-text font-mono tracking-widest uppercase">
+                              {app.name}
+                            </h2>
+                            <p className="text-sm text-scorva-muted mt-1">{app.tagline}</p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setExpandedApp(null)}
+                          className="text-scorva-muted hover:text-scorva-accent transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-sm text-scorva-muted leading-relaxed mb-6">
+                        {app.desc}
+                      </p>
+
+                      {/* Meta info */}
+                      <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-scorva-border/50">
+                        <div>
+                          <p className="text-[10px] font-mono text-scorva-muted uppercase mb-1">Team</p>
+                          <p className="text-sm font-mono text-scorva-text">{app.team}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-mono text-scorva-muted uppercase mb-1">Status</p>
+                          <div className="flex items-center gap-1">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                            <span className="text-sm font-mono text-emerald-500">LIVE</span>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[10px] font-mono text-scorva-muted uppercase mb-1">Auth</p>
+                          <p className="text-sm font-mono text-scorva-text">SSO</p>
+                        </div>
+                      </div>
+
+                      {/* Tags */}
+                      <div className="mb-6">
+                        <p className="text-[10px] font-mono text-scorva-muted uppercase mb-2">Capabilities</p>
+                        <div className="flex flex-wrap gap-2">
+                          {app.tags.map(tag => (
+                            <span key={tag} className={`text-[10px] font-mono px-3 py-1 rounded-full ${colors.badge}`}>
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Launch button */}
+                      <button
+                        onClick={() => handleLaunch(app)}
+                        disabled={busy}
+                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold font-mono transition-all ${colors.launch} disabled:opacity-60`}
+                      >
+                        {busy ? (
+                          <>
+                            <Loader2 size={14} className="animate-spin" />
+                            Launching…
+                          </>
+                        ) : (
+                          <>
+                            Launch {app.name}
+                            <ChevronRight size={14} />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── SSO info footer ── */}
         <div className="max-w-5xl mx-auto px-6 md:px-10 pb-10">
