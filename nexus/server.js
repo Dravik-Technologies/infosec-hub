@@ -21,6 +21,12 @@ const HUB_URL = process.env.HUB_URL || null;
 const HUB_HOST = process.env.HUB_HOST || '127.0.0.1';
 const HUB_PORT = parseInt(process.env.HUB_PORT || '3010', 10);
 
+// Validate JWT_SECRET in production
+if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET.length < 32 || JWT_SECRET.includes('dev-secret'))) {
+  console.error('FATAL: JWT_SECRET must be set to a strong secret (32+ chars) in production');
+  process.exit(1);
+}
+
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const COLLECTIONS = ['program_management', 'program_security', 'nexus_settings'];

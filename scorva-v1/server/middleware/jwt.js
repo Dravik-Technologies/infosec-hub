@@ -6,6 +6,12 @@ const { getLegacyPlatformRole, normalizePlatformRole } = require('../../../packa
 const JWT_SECRET = process.env.JWT_SECRET || process.env.SESSION_SECRET || 'dev-jwt-secret';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
 
+// Validate JWT_SECRET in production
+if (process.env.NODE_ENV === 'production' && (!JWT_SECRET || JWT_SECRET.length < 32 || JWT_SECRET.includes('dev-jwt-secret'))) {
+  console.error('FATAL: JWT_SECRET must be set to a strong secret (32+ chars) in production');
+  process.exit(1);
+}
+
 /**
  * Signs a JWT that carries tenant identity claims.
  * Payload includes role + site claims so tenant middleware can enforce isolation.
