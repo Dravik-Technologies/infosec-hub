@@ -10,9 +10,11 @@ const {
   hasAppAccess,
   getSecurityRole,
   getTitleFromSecurityRole,
+  getDisplayRole,
   canSeeAllSites,
   normalizePlatformRole,
 } = require('../../../packages/db/src/appAccess');
+const { createAccessRequest, REQUESTABLE_APPS } = require('../../../packages/db/src/accessRequests');
 const router  = express.Router();
 
 const ENTRA_SCOPES = ['openid', 'profile', 'email'];
@@ -83,6 +85,7 @@ function buildSessionUser(found, extras) {
     site:           primarySiteId,
     securityRole:   securityRole,
     title:          found.title || getTitleFromSecurityRole(securityRole) || null,
+    displayRole:    getDisplayRole(found),
     canSeeAllSites: canSeeAllSites(found),
     initials:       found.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
     authProvider:   extra.authProvider || 'local',
@@ -155,7 +158,7 @@ router.post('/login', async (req, res) => {
       primarySiteId: 'MTSI-ALX',
       siteId: 'MTSI-ALX', siteIds: ['MTSI-ALX', 'MTSI-HVL'],
       site: 'MTSI-ALX', initials: 'DA', allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'],
-      securityRole: null, title: 'Hub Administrator', canSeeAllSites: true,
+      securityRole: null, title: 'Hub Administrator', displayRole: 'Hub Administrator', canSeeAllSites: true,
       authProvider: 'local',
       entraOid: null,
       entraTenantId: null,
@@ -206,6 +209,8 @@ router.post('/login', async (req, res) => {
             ? scorvaUser.allowedApps
             : ['hub', 'scorva'],
           securityRole: scorvaUser.securityRole || scorvaUser.jobRole || null,
+          title: scorvaUser.title || null,
+          displayRole: scorvaUser.displayRole || scorvaUser.title || scorvaUser.jobRole || scorvaUser.securityRole || normalizePlatformRole(scorvaUser.role),
           canSeeAllSites: Boolean(scorvaUser.canSeeAllSites),
           initials: scorvaUser.initials ||
                     scorvaUser.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase(),
@@ -305,6 +310,54 @@ router.post('/logout', (req, res) => {
     res.clearCookie('hub.sid');
     res.json({ ok: true });
   });
+});
+
+router.get('/requestable-apps', (req, res) => {
+  res.json({ apps: REQUESTABLE_APPS });
+});
+
+router.post('/request-access', async (req, res) => {
+  try {
+    const {
+      appId, username, email, firstName, lastName,
+      position, organization, phone, justification,
+    } = req.body || {};
+
+    if (!appId || !username || !email || !firstName || !lastName) {
+      return res.status(400).json({
+        error: 'appId, username, email, firstName, and lastName are required',
+      });
+    }
+
+    const result = await createAccessRequest({
+      appId,
+      username,
+      email,
+      firstName,
+      lastName,
+      position,
+      organization,
+      phone,
+      justification,
+      sourceApp: appId,
+    });
+
+    if (!result.created) {
+      return res.status(409).json({
+        error: 'Access request already pending for this app',
+        request: result.request,
+      });
+    }
+
+    res.status(201).json({
+      ok: true,
+      message: 'Access request submitted successfully',
+      request: result.request,
+    });
+  } catch (err) {
+    console.error('[HUB request-access]', err.message);
+    res.status(400).json({ error: err.message });
+  }
 });
 
 module.exports = router;

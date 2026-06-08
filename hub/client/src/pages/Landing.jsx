@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useEffect } from 'react';
@@ -396,12 +396,16 @@ export default function Landing() {
             <span className="text-xs font-black font-mono text-scorva-accent tracking-[0.2em] uppercase text-glow">MTSI Hub</span>
             <span className="text-xs text-scorva-muted">/ Security App Factory</span>
           </div>
-          <div className="flex items-center gap-4 text-xs text-scorva-muted font-mono">
+          <div className="flex items-center gap-3 text-xs text-scorva-muted font-mono">
             <span>NIST SP 800-53 Rev 5</span>
             <span className="text-scorva-border">·</span>
             <span>DoD Compliant</span>
             <span className="text-scorva-border">·</span>
             <span>v2.0.0</span>
+            <span className="text-scorva-border">·</span>
+            <Link to="/request-access" className="text-scorva-muted hover:text-scorva-accent transition-colors">
+              Request Access
+            </Link>
           </div>
         </div>
       </footer>

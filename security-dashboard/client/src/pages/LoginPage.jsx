@@ -31,8 +31,9 @@ export default function LoginPage({ onLogin }) {
     <div className="ws-login-shell">
       <div className="ws-login-card">
         <div className="ws-login-mark">S</div>
-        <h1>Security Managers Workspace</h1>
-        <p>Operational workspace for facility, personnel, activities, document, and media security programs aligned with NISPOM / DCSA / ICD 705.</p>
+        <div className="ws-login-kicker">Security Managers Workspace</div>
+        <h1>MASH</h1>
+        <p>Sign in with your HUB credentials to continue.</p>
 
         {error && <div className="ws-error">{error}</div>}
 
@@ -46,12 +47,12 @@ export default function LoginPage({ onLogin }) {
             <input className="ws-input" type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" required />
           </div>
           <button type="submit" className="ws-btn-primary" disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Signing in…' : 'Sign in to MASH'}
           </button>
         </form>
 
         <div className="ws-login-note">
-          Use your HUB credentials or sign in through HUB SSO.
+          HUB credentials and HUB SSO are both supported.
         </div>
       </div>
     </div>

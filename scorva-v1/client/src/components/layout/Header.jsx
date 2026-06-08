@@ -12,6 +12,7 @@ export default function Header({ onMenuClick }) {
   const { user, logout, selectedSite, selectSite } = useAuth();
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
+  const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
 
   const [sites, setSites] = useState([]);
   const isAdmin = user?.role === 'Corporate Admin';
@@ -83,7 +84,7 @@ export default function Header({ onMenuClick }) {
             <div className="hidden sm:flex flex-col leading-none">
               <span className="text-xs font-medium text-scorva-text">{user.name}</span>
               <span className="text-xs text-scorva-muted">
-                {user.role}
+                {displayRole}
                 {isAdmin && selectedSite && (
                   <span className="ml-1 text-scorva-accent">
                     · {sites.find(s => s.id === selectedSite)?.label || selectedSite}

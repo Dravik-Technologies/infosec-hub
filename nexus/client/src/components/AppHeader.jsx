@@ -9,6 +9,7 @@ const NAV = [
 export default function AppHeader({ view, onNavigate, user, onLogout, appName, theme, onToggleTheme }) {
   const clock = useClock();
   const hubRole = user?.hubRole || user?.role;
+  const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || hubRole;
   const primarySiteId = user?.primarySiteId || user?.siteId || user?.site || null;
   const siteText = user?.siteIds?.length > 1
     ? `${user.siteIds.length} sites`
@@ -62,8 +63,7 @@ export default function AppHeader({ view, onNavigate, user, onLogout, appName, t
         >
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
         </button>
-        {hubRole && <div className="identity-chip">{hubRole}</div>}
-        {user?.scorvaRole && <div className="identity-chip scorva">SCORVA: {user.scorvaRole}</div>}
+        {displayRole && <div className="identity-chip">{displayRole}</div>}
         {siteText && <div className="identity-chip">{siteText}</div>}
         <div className="identity-user">
           <div>{user?.name || '—'}</div>

@@ -34,6 +34,8 @@ function signAccessToken(user) {
       email: user.email || null,
       name: user.name || null,
       initials: user.initials || null,
+      title: user.title || null,
+      displayRole: user.displayRole || user.title || jobRole || hubRole,
       hubRole,
       jobRole,
       primarySiteId: primarySiteID,

@@ -20,7 +20,7 @@ const {
 const mashDb = require('./lib/mashDb');
 const { RELATIONAL_DOMAINS } = mashDb;
 const { db } = require('../packages/db/src');
-const { getAllowedApps } = require('../packages/db/src/appAccess');
+const { getAllowedApps, getDisplayRole, getTitleFromSecurityRole } = require('../packages/db/src/appAccess');
 
 const PORT       = process.env.PORT || 8080;
 const DATA_DIR   = path.join(__dirname, 'data');
@@ -174,6 +174,10 @@ function hubUrl() {
   return HUB_URL || `http://${HUB_HOST}:${HUB_PORT}`;
 }
 
+app.get('/api/me', auth, (req, res) => {
+  res.json(req.user);
+});
+
 // ── Auth routes ───────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body || {};
@@ -193,7 +197,13 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const wsRole = await resolveWorkspaceRole(username, data.user.securityRole);
-    const payload = { ...data.user, tokenEpoch: data.user.tokenEpoch || 0, wsRole };
+    const payload = {
+      ...data.user,
+      title: data.user.title || getTitleFromSecurityRole(data.user.jobRole || data.user.securityRole) || null,
+      displayRole: data.user.displayRole || getDisplayRole(data.user) || null,
+      tokenEpoch: data.user.tokenEpoch || 0,
+      wsRole,
+    };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.json({ token, user: payload });
   } catch (err) {
@@ -239,6 +249,8 @@ app.get('/auth/sso', async (req, res) => {
       hubRole: localUser.role,
       securityRole: localUser.securityRole,
       jobRole: localUser.securityRole,
+      title: localUser.title || getTitleFromSecurityRole(localUser.securityRole) || null,
+      displayRole: getDisplayRole(localUser),
       siteId: primarySiteId,
       siteIds,
       primarySiteId,

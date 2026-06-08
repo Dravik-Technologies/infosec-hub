@@ -47,15 +47,15 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
     allowedNav === 'all' || allowedNav.includes(s.id)
   );
   const activeSection = SECTIONS.find(s => s.id === section) || SECTIONS[0];
-  const roleLabel = {
-    corporate_security_admin: 'Corp Security Admin',
-    facility_security_mgr: 'Facility Sec Mgr',
-    personnel_security_mgr: 'Personnel Sec Mgr',
-    activities_security_mgr: 'Activities Sec Mgr',
-    document_control_mgr: 'Doc Control Mgr',
-    media_control_mgr: 'Media Control Mgr',
-    viewer: 'Viewer',
-  }[wsRole] || wsRole;
+  const roleLabel = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Security Staff';
+  const siteText = siteId
+    ? sites.find(s => s.id === siteId)?.name || siteId
+    : (user?.primarySiteId || user?.siteId || (user?.siteIds?.length > 1 ? `${user.siteIds.length} sites` : user?.siteIds?.[0]) || 'All sites');
+  const initials = (user?.initials
+    || user?.name?.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('')
+    || user?.username?.slice(0, 2)
+    || 'SM'
+  ).toUpperCase();
 
   return (
     <header className="ws-header" style={{ '--section-accent': activeSection.accent }}>
@@ -66,15 +66,11 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
           </div>
           <div>
             <div className="ws-brand-name">Security Managers Workspace</div>
-            <div className="ws-brand-sub">NISPOM / DCSA / ICD 705</div>
+            <div className="ws-brand-sub">MASH</div>
           </div>
         </div>
 
         <div className="ws-identity">
-          <div className="ws-status-pill">
-            <span className="ws-status-dot" />
-            <span>Secure session</span>
-          </div>
           <button
             type="button"
             className="ws-theme-toggle"
@@ -93,8 +89,14 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
             </div>
           )}
           <span className="ws-role-chip">{roleLabel}</span>
-          <span className="ws-user-chip">{user?.name || user?.username}</span>
-          <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontVariantNumeric: 'tabular-nums' }}>{clock}</span>
+          <span className="ws-site-chip">{siteText}</span>
+          <div className="ws-user-cluster">
+            <div className="ws-user-avatar" aria-hidden="true">{initials}</div>
+            <div className="ws-user-meta">
+              <div className="ws-user-name">{user?.name || user?.username}</div>
+              <div className="ws-user-time">{clock}</div>
+            </div>
+          </div>
           <button type="button" className="ws-logout" onClick={onLogout}>Sign out</button>
         </div>
       </div>
@@ -138,6 +140,7 @@ export default function App() {
     }
     return null;
   });
+  const [authChecked, setAuthChecked] = useState(() => Boolean(AUTH.getUser()));
 
   const [section, setSection] = useState('overview');
   const [siteId, setSiteId] = useState('');
@@ -150,6 +153,26 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    if (user) {
+      setAuthChecked(true);
+      return;
+    }
+    fetch('/api/me', { credentials: 'include' })
+      .then(async res => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then(payload => {
+        if (payload) {
+          AUTH.setUser(payload);
+          setUser(payload);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setAuthChecked(true));
+  }, [user]);
+
+  useEffect(() => {
     if (!user) return;
     WS.get('security_workspace_settings').then(s => {
       if (s?.sites) setSites(s.sites.filter(x => x.active !== false));
@@ -159,6 +182,19 @@ export default function App() {
   function handleLogin(u) { setUser(u); }
   function handleLogout() { AUTH.clearAll(); setUser(null); }
   function handleToggleTheme() { setTheme(t => t === 'dark' ? 'light' : 'dark'); }
+
+  if (!authChecked) {
+    return (
+      <div className="ws-login-shell">
+        <div className="ws-login-card">
+          <div className="ws-login-mark">S</div>
+          <div className="ws-login-kicker">Security Managers Workspace</div>
+          <h1>MASH</h1>
+          <p>Restoring secure session…</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!user) return <LoginPage onLogin={handleLogin} />;
 

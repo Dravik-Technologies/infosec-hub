@@ -61,6 +61,7 @@ export default function Sidebar({ open, onToggle }) {
   const { user, logout, selectedSite, selectSite } = useAuth();
   const { dark, toggle: toggleTheme } = useTheme();
   const [sites, setSites] = useState([]);
+  const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
   const isAdmin = user?.role === 'Corporate Admin';
 
   useEffect(() => {
@@ -198,7 +199,7 @@ export default function Sidebar({ open, onToggle }) {
                 {user?.name}
               </div>
               <div className="text-[10px] text-scorva-muted/70 truncate leading-tight mt-0.5">
-                {user?.role}
+                {displayRole}
               </div>
             </div>
           )}

@@ -24,6 +24,7 @@ export default function AppLayout({ appName, appIcon: AppIcon, tabs = [], childr
   const { dark, toggle } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sites, setSites] = useState([]);
+  const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
 
   const isAdmin = user?.role === 'Corporate Admin';
 
@@ -177,7 +178,7 @@ export default function AppLayout({ appName, appIcon: AppIcon, tabs = [], childr
               </div>
               <div className="hidden sm:flex flex-col">
                 <span className="text-xs font-medium text-scorva-text">{user?.name}</span>
-                <span className="text-[10px] text-scorva-muted/70">{user?.role}</span>
+                <span className="text-[10px] text-scorva-muted/70">{displayRole}</span>
               </div>
             </div>
           </div>

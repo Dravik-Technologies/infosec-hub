@@ -58,6 +58,7 @@ function buildLaunchUser(sessionUser, appId) {
     siteId: primarySiteId,
     site: primarySiteId,
     securityRole: jobRole,
+    displayRole: sessionUser.displayRole || sessionUser.title || jobRole || hubRole,
   };
 }
 

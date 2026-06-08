@@ -28,7 +28,7 @@ export const WS = {
     const qs = new URLSearchParams(params).toString();
     const url = `/api/ws/${collection}${qs ? '?' + qs : ''}`;
     try {
-      const r = await fetch(url, { headers: AUTH.hdrs() });
+      const r = await fetch(url, { headers: AUTH.hdrs(), credentials: 'include' });
       if (r.status === 401) { on401(); return null; }
       const body = await r.json();
       // Return a discriminated error object so pages can show a real error state
@@ -38,21 +38,21 @@ export const WS = {
     } catch { return null; }
   },
   async post(collection, data) {
-    const r = await fetch(`/api/ws/${collection}`, { method: 'POST', headers: AUTH.hdrs(), body: JSON.stringify(data) });
+    const r = await fetch(`/api/ws/${collection}`, { method: 'POST', headers: AUTH.hdrs(), credentials: 'include', body: JSON.stringify(data) });
     if (r.status === 401) { on401(); return null; }
     const body = await r.json();
     if (!r.ok) return { _wsError: true, status: r.status, message: body?.error || 'Save failed' };
     return body;
   },
   async patch(collection, id, data) {
-    const r = await fetch(`/api/ws/${collection}/${id}`, { method: 'PATCH', headers: AUTH.hdrs(), body: JSON.stringify(data) });
+    const r = await fetch(`/api/ws/${collection}/${id}`, { method: 'PATCH', headers: AUTH.hdrs(), credentials: 'include', body: JSON.stringify(data) });
     if (r.status === 401) { on401(); return null; }
     const body = await r.json();
     if (!r.ok) return { _wsError: true, status: r.status, message: body?.error || 'Update failed' };
     return body;
   },
   async del(collection, id) {
-    const r = await fetch(`/api/ws/${collection}/${id}`, { method: 'DELETE', headers: AUTH.hdrs() });
+    const r = await fetch(`/api/ws/${collection}/${id}`, { method: 'DELETE', headers: AUTH.hdrs(), credentials: 'include' });
     if (r.status === 401) { on401(); return null; }
     const body = await r.json();
     if (!r.ok) return { _wsError: true, status: r.status, message: body?.error || 'Delete failed' };
@@ -62,10 +62,10 @@ export const WS = {
 
 /* ── Legacy API (fallback) ── */
 export const API = {
-  async get(c) { try { const r = await fetch(`/api/${c}`, { headers: AUTH.hdrs() }); if (r.status === 401) { on401(); return null; } return r.json(); } catch { return null; } },
-  async post(c, d) { const r = await fetch(`/api/${c}`, { method: 'POST', headers: AUTH.hdrs(), body: JSON.stringify(d) }); return r.json(); },
-  async patch(c, id, d) { const r = await fetch(`/api/${c}/${id}`, { method: 'PATCH', headers: AUTH.hdrs(), body: JSON.stringify(d) }); return r.json(); },
-  async del(c, id) { const r = await fetch(`/api/${c}/${id}`, { method: 'DELETE', headers: AUTH.hdrs() }); return r.json(); },
+  async get(c) { try { const r = await fetch(`/api/${c}`, { headers: AUTH.hdrs(), credentials: 'include' }); if (r.status === 401) { on401(); return null; } return r.json(); } catch { return null; } },
+  async post(c, d) { const r = await fetch(`/api/${c}`, { method: 'POST', headers: AUTH.hdrs(), credentials: 'include', body: JSON.stringify(d) }); return r.json(); },
+  async patch(c, id, d) { const r = await fetch(`/api/${c}/${id}`, { method: 'PATCH', headers: AUTH.hdrs(), credentials: 'include', body: JSON.stringify(d) }); return r.json(); },
+  async del(c, id) { const r = await fetch(`/api/${c}/${id}`, { method: 'DELETE', headers: AUTH.hdrs(), credentials: 'include' }); return r.json(); },
 };
 
 /* ── Date helpers ── */

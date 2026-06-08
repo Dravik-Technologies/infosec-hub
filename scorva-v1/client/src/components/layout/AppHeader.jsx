@@ -19,6 +19,7 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
   const navigate = useNavigate();
   const { user, logout, selectedSite, selectSite } = useAuth();
   const { dark, toggle } = useTheme();
+  const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
 
   const isAdmin = user?.role === 'Corporate Admin';
   const [sites, setSites] = useState([]);
@@ -128,7 +129,7 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
           <div className="hidden sm:flex flex-col leading-none">
             <span className="text-xs font-medium text-scorva-text">{user?.name}</span>
             <span className="text-[10px] text-scorva-muted">
-              {user?.role}
+              {displayRole}
               {isAdmin && selectedSite && (
                 <span className="ml-1 text-scorva-accent">
                   · {sites.find(s => s.id === selectedSite)?.label || selectedSite}

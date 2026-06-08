@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Shield, Eye, EyeOff } from 'lucide-react';
 
@@ -202,13 +202,22 @@ export default function Login() {
               </div>
             ))}
           </div>
-          <div className="text-center">
-            <button
-              onClick={() => navigate('/')}
-              className="text-xs text-scorva-muted hover:text-scorva-accent transition-colors font-mono"
-            >
-              ← Return to main terminal
-            </button>
+          <div className="text-center space-y-2">
+            <div className="flex items-center justify-center gap-3 text-xs font-mono">
+              <button
+                onClick={() => navigate('/')}
+                className="text-scorva-muted hover:text-scorva-accent transition-colors"
+              >
+                ← Return to main terminal
+              </button>
+              <span className="text-scorva-muted/50">•</span>
+              <Link
+                to="/request-access"
+                className="text-scorva-muted hover:text-scorva-accent transition-colors"
+              >
+                Request Access
+              </Link>
+            </div>
           </div>
         </div>
       </div>

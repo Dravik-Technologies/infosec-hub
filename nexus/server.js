@@ -9,7 +9,7 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 const { db } = require('../packages/db/src');
 const { readCollection, writeCollection } = require('./pg-store');
-const { getAllowedApps, getScorvaRole } = require('../packages/db/src/appAccess');
+const { getAllowedApps, getDisplayRole, getScorvaRole } = require('../packages/db/src/appAccess');
 
 const PORT = process.env.PORT || 8090;
 const DATA_DIR = path.join(__dirname, 'data');
@@ -449,6 +449,7 @@ function mapHubUser(hubUser, settings) {
     username: hubUser.username,
     name: hubUser.name || hubUser.username,
     title: hubUser.title || 'Program Stakeholder',
+    displayRole: getDisplayRole(hubUser) || hubRole,
     hubRole,
     jobRole,
     primarySiteId: resolvedPrimarySiteId,
@@ -1042,6 +1043,10 @@ app.get('/auth/sso', async (req, res) => {
 });
 
 app.use('/api', requireAuth);
+
+app.get('/api/me', (req, res) => {
+  res.json(req.user);
+});
 
 // ── Read routes ────────────────────────────────────────────────────────────────
 

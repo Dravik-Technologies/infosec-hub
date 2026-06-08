@@ -10,6 +10,7 @@ const {
   SECURITY_ROLE_TITLES,
   SECURITY_ROLE_APPS,
   getAllowedApps,
+  getDisplayRole,
   getStoredAllowedApps,
   mergeAllowedApps,
   mergeAppFactory,
@@ -77,7 +78,7 @@ async function getValidationError(body) {
 function pickUser(row) {
   const securityRole = getSecurityRole(row) || null;
   const defaultApps = SECURITY_ROLE_APPS[securityRole] || ['hub'];
-  const derivedTitle = getTitleFromSecurityRole(securityRole) || '';
+  const derivedTitle = row.title || getTitleFromSecurityRole(securityRole) || '';
   const hubRole = normalizePlatformRole(row.role);
   const primarySiteId = row.siteId || null;
   const siteIds = Array.isArray(row.siteIds) ? row.siteIds : [];
@@ -87,6 +88,7 @@ function pickUser(row) {
     id:             row.id,
     name:           row.name,
     title:          derivedTitle,
+    displayRole:    getDisplayRole(row) || derivedTitle || hubRole,
     username:       row.username,
     email:          row.email,
     hubRole:        hubRole,

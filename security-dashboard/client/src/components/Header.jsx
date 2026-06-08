@@ -5,6 +5,7 @@ import { GoldLine } from './index.jsx';
 export default function Header({ section, onNav, data, currentUser, onLogout }) {
   const clock    = useClock();
   const user     = currentUser || data.settings?.user || {};
+  const displayRole = user.displayRole || user.title || user.jobRole || user.securityRole || user.hubRole || user.role || 'Security Staff';
   const sites    = data.sites || [];
   const stds     = data.compliance?.standards || [];
   const avg      = sites.length ? Math.round(sites.reduce((a, s) => a + s.compliance, 0) / sites.length) : 0;
@@ -66,7 +67,7 @@ export default function Header({ section, onNav, data, currentUser, onLogout }) 
         ))}
         <div className="mt-auto pt-6" style={{ borderTop: '1px solid rgba(201,168,76,.1)' }}>
           <div className="text-xs uppercase tracking-widest" style={{ color: 'rgba(201,168,76,.4)', letterSpacing: '.1em' }}>{user.name || 'VET-Kilika'}</div>
-          <div className="text-xs mt-0.5" style={{ color: 'rgba(201,168,76,.28)' }}>{user.title || 'Director of Security'}</div>
+          <div className="text-xs mt-0.5" style={{ color: 'rgba(201,168,76,.28)' }}>{displayRole}</div>
         </div>
       </div>
       {menuOpen && <div className="fixed inset-0 z-[480]" onClick={() => setMenuOpen(false)} />}
@@ -113,13 +114,8 @@ export default function Header({ section, onNav, data, currentUser, onLogout }) 
             </button>
             <GoldLine />
             <div className="text-right leading-none hidden lg:block">
-              <div className="flex items-center gap-x-2 justify-end">
-                <div className="text-sm font-semibold" style={{ color: 'var(--off-white)' }}>{user.name || 'VET-Kilika'}</div>
-                {user.role === 'global_fso'
-                  ? <span className="badge b-gold" style={{ fontSize: '.52rem' }}>Global FSO</span>
-                  : <span className="badge b-b"    style={{ fontSize: '.52rem' }}>Site Manager</span>}
-              </div>
-              <div className="text-[9px] mt-0.5 uppercase tracking-wider" style={{ color: 'rgba(201,168,76,.55)' }}>{user.title || 'Director of Security'}</div>
+              <div className="text-sm font-semibold" style={{ color: 'var(--off-white)' }}>{user.name || 'VET-Kilika'}</div>
+              <div className="text-[9px] mt-0.5 uppercase tracking-wider" style={{ color: 'rgba(201,168,76,.55)' }}>{displayRole}</div>
             </div>
             <button onClick={() => MASH.toast('Generating executive briefing PDF…', 'info')} className="btn-gold hidden sm:flex">
               <i className="fa-solid fa-download text-[9px]" /> <span className="hidden lg:inline">Export Briefing</span><span className="lg:hidden">Export</span>

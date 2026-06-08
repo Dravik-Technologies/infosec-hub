@@ -216,28 +216,8 @@ body {
   border: 1px solid rgba(255,255,255,0.14);
 }
 .ws-brand-name { font: 700 0.92rem "IBM Plex Sans", sans-serif; color: var(--text); line-height: 1.1; letter-spacing: -0.02em; }
-.ws-brand-sub { font: 500 0.64rem "IBM Plex Sans", sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
+.ws-brand-sub { font: 700 0.64rem "IBM Plex Sans", sans-serif; color: color-mix(in srgb, var(--section-accent) 78%, var(--muted)); text-transform: uppercase; letter-spacing: 0.16em; }
 .ws-identity { display: flex; align-items: center; gap: 0.65rem; margin-left: auto; flex-shrink: 0; }
-.ws-status-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.34rem 0.62rem;
-  border-radius: 999px;
-  color: var(--text-2);
-  background: color-mix(in srgb, var(--surface) 88%, var(--section-accent) 12%);
-  border: 1px solid color-mix(in srgb, var(--section-accent) 18%, var(--border));
-  font: 600 0.7rem "IBM Plex Sans", sans-serif;
-  white-space: nowrap;
-}
-.ws-status-dot {
-  width: 0.46rem;
-  height: 0.46rem;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 0 rgba(34,197,94,0.42);
-  animation: wsPulse 2s infinite;
-}
 .ws-site-filter {
   display: flex; align-items: center; gap: 0.4rem;
   font: 500 0.75rem "IBM Plex Sans", sans-serif; color: var(--muted);
@@ -265,6 +245,52 @@ body {
   white-space: nowrap;
   text-transform: uppercase;
   letter-spacing: 0.08em;
+}
+.ws-site-chip {
+  font: 600 0.68rem "IBM Plex Sans", sans-serif;
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--section-accent) 14%, var(--border));
+  background: color-mix(in srgb, var(--surface) 88%, var(--section-accent) 12%);
+  color: var(--muted);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ws-user-cluster {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding-left: 0.25rem;
+  border-left: 1px solid color-mix(in srgb, var(--section-accent) 14%, var(--border));
+}
+.ws-user-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font: 700 0.75rem "IBM Plex Sans", sans-serif;
+  color: var(--text-on-primary);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--section-accent) 72%, white 28%), var(--primary));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--section-accent) 20%, transparent);
+}
+.ws-user-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ws-user-name {
+  color: var(--text);
+  font: 700 0.78rem "IBM Plex Sans", sans-serif;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.ws-user-time {
+  color: var(--muted);
+  font: 500 0.68rem "IBM Plex Sans", sans-serif;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 .ws-logout {
   border: 1px solid var(--border); background: var(--surface);
@@ -680,10 +706,25 @@ body {
   padding: 2rem;
 }
 .ws-login-card {
-  background: linear-gradient(180deg, color-mix(in srgb, var(--surface) 94%, var(--primary) 6%), var(--surface));
-  border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
-  border-radius: 1rem; box-shadow: var(--shadow-md);
-  width: min(26rem, 100%); padding: 2rem;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, var(--primary) 4%), color-mix(in srgb, var(--surface) 90%, var(--section-accent) 10%));
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, var(--border));
+  border-radius: 1.15rem;
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.3);
+  width: min(28rem, 100%);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+.ws-login-card::before {
+  content: '';
+  position: absolute;
+  inset: -35% auto auto 60%;
+  width: 16rem;
+  height: 16rem;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent), transparent 68%);
+  pointer-events: none;
 }
 .ws-login-mark {
   width: 2.5rem; height: 2.5rem; border-radius: 0.625rem;
@@ -693,24 +734,42 @@ body {
   margin-bottom: 1.25rem;
   box-shadow: 0 10px 30px rgba(30,64,175,0.24);
 }
-.ws-login-card h1 { font: 700 1.35rem Inter, sans-serif; color: var(--text); margin-bottom: 0.25rem; }
-.ws-login-card > p { font: 400 0.83rem Inter, sans-serif; color: var(--muted); line-height: 1.55; margin-bottom: 1.5rem; }
+.ws-login-kicker {
+  font: 700 0.7rem "IBM Plex Sans", sans-serif;
+  color: color-mix(in srgb, var(--primary) 74%, var(--muted));
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.35rem;
+}
+.ws-login-card h1 {
+  font: 700 2rem "IBM Plex Sans", sans-serif;
+  color: var(--text);
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.05em;
+}
+.ws-login-card > p { font: 400 0.88rem Inter, sans-serif; color: var(--muted); line-height: 1.55; margin-bottom: 1.5rem; max-width: 28ch; }
 .ws-field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.875rem; }
 .ws-field label { font: 500 0.75rem Inter, sans-serif; color: var(--text-2); }
 .ws-input {
   border: 1px solid var(--border); border-radius: 0.4rem;
-  background: var(--field-bg); color: var(--text); padding: 0.55rem 0.7rem;
+  background: color-mix(in srgb, var(--field-bg) 92%, var(--primary) 8%);
+  color: var(--text); padding: 0.7rem 0.82rem;
   font: 400 0.875rem Inter, sans-serif; outline: none; width: 100%;
   transition: border-color 0.12s, box-shadow 0.12s;
 }
 .ws-input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px var(--focus-ring); }
 .ws-btn-primary {
-  width: 100%; background: var(--primary); color: var(--text-on-primary); border: none;
-  border-radius: 0.4rem; padding: 0.6rem 1rem;
+  width: 100%;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 82%, white 18%), color-mix(in srgb, var(--facility) 82%, white 18%));
+  color: #ffffff;
+  border: none;
+  border-radius: 0.55rem; padding: 0.75rem 1rem;
   font: 600 0.875rem Inter, sans-serif; cursor: pointer;
-  transition: background 0.12s, opacity 0.12s; margin-top: 0.25rem;
+  transition: transform 0.12s, filter 0.12s, opacity 0.12s;
+  margin-top: 0.25rem;
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 26%, transparent);
 }
-.ws-btn-primary:hover { background: var(--primary-hover); }
+.ws-btn-primary:hover { transform: translateY(-1px); filter: brightness(1.03); }
 .ws-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 .ws-error { color: var(--red); background: var(--red-bg); border: 1px solid var(--red-border); border-radius: 0.4rem; padding: 0.55rem 0.75rem; font-size: 0.8rem; margin-bottom: 0.75rem; }
 .ws-login-note { font: 400 0.75rem Inter, sans-serif; color: var(--muted); line-height: 1.55; margin-top: 1rem; }
@@ -756,10 +815,10 @@ body {
   .ws-main { padding: 1rem; }
   .ws-nav { padding: 0 0.75rem; }
   .facility-grid { grid-template-columns: 1fr; }
-  .ws-status-pill { display: none; }
   .ws-identity { gap: 0.45rem; }
-  .ws-user-chip { display: none; }
-  .ws-role-chip { display: none; }
+  .ws-role-chip, .ws-site-chip { display: none; }
+  .ws-user-meta { display: none; }
+  .ws-user-cluster { border-left: none; padding-left: 0; }
   .ws-page-title { font-size: 1.14rem; }
   .ws-hero-title { font-size: 1.4rem; }
 }

@@ -6,7 +6,9 @@ const { db } = require('../../../packages/db/src/index');
 const {
   hasAppAccess,
   getAllowedApps,
+  getDisplayRole,
   getSecurityRole,
+  getTitleFromSecurityRole,
   canSeeAllSites,
   getLegacyPlatformRole,
   normalizePlatformRole,
@@ -35,6 +37,8 @@ function toAuthUser(u) {
     name:     u.name,
     username: u.username,
     email:    u.email || null,
+    title:    u.title || getTitleFromSecurityRole(jobRole) || null,
+    displayRole: getDisplayRole(u),
     hubRole,
     jobRole,
     primarySiteId: siteId,
@@ -48,6 +52,7 @@ function toAuthUser(u) {
     securityRole: jobRole,
     allowedApps: Array.isArray(u.allowedApps) ? u.allowedApps : getAllowedApps(u),
     canSeeAllSites: Boolean(u.canSeeAllSites) || canSeeAllSites({ ...u, role: hubRole }),
+    tokenEpoch: Number.isFinite(Number(u.tokenEpoch)) ? Number(u.tokenEpoch) : 0,
   };
 }
 

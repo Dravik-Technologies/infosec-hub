@@ -26,7 +26,7 @@ function on401() {
 export const API = {
   async get(path) {
     try {
-      const res = await fetch(`/api/${path}`, { headers: AUTH.hdrs() });
+      const res = await fetch(`/api/${path}`, { headers: AUTH.hdrs(), credentials: 'include' });
       if (res.status === 401) { on401(); return null; }
       const body = await res.json();
       if (!res.ok) return { _apiError: true, status: res.status, message: body?.error || 'Request failed' };
@@ -36,7 +36,7 @@ export const API = {
 
   async put(path, data) {
     try {
-      const res = await fetch(`/api/${path}`, { method: 'PUT', headers: AUTH.hdrs(), body: JSON.stringify(data) });
+      const res = await fetch(`/api/${path}`, { method: 'PUT', headers: AUTH.hdrs(), credentials: 'include', body: JSON.stringify(data) });
       if (res.status === 401) { on401(); return null; }
       const body = await res.json();
       if (!res.ok) return { _apiError: true, status: res.status, message: body?.error || 'Save failed' };
@@ -46,7 +46,7 @@ export const API = {
 
   async post(path, data) {
     try {
-      const res = await fetch(`/api/${path}`, { method: 'POST', headers: AUTH.hdrs(), body: JSON.stringify(data) });
+      const res = await fetch(`/api/${path}`, { method: 'POST', headers: AUTH.hdrs(), credentials: 'include', body: JSON.stringify(data) });
       if (res.status === 401) { on401(); return null; }
       const body = await res.json();
       if (!res.ok) return { _apiError: true, status: res.status, message: body?.error || 'Create failed' };
@@ -56,7 +56,7 @@ export const API = {
 
   async del(path) {
     try {
-      const res = await fetch(`/api/${path}`, { method: 'DELETE', headers: AUTH.hdrs() });
+      const res = await fetch(`/api/${path}`, { method: 'DELETE', headers: AUTH.hdrs(), credentials: 'include' });
       if (res.status === 401) { on401(); return null; }
       const body = await res.json();
       if (!res.ok) return { _apiError: true, status: res.status, message: body?.error || 'Delete failed' };

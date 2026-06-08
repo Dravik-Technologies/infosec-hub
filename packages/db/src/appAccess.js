@@ -124,6 +124,24 @@ function getTitleFromSecurityRole(securityRole) {
   return SECURITY_ROLE_TITLES[securityRole] || securityRole;
 }
 
+function getDisplayRole(user) {
+  if (!user) return null;
+  const explicitTitle = String(user.title || '').trim();
+  if (explicitTitle) return explicitTitle;
+
+  const explicitJobRole = String(user.jobRole || user.securityRole || '').trim();
+  if (explicitJobRole) {
+    return getTitleFromSecurityRole(explicitJobRole) || explicitJobRole;
+  }
+
+  const modeledSecurityRole = getSecurityRole(user);
+  if (modeledSecurityRole) {
+    return getTitleFromSecurityRole(modeledSecurityRole) || modeledSecurityRole;
+  }
+
+  return normalizePlatformRole(user.hubRole || user.role);
+}
+
 function defaultAllowedAppsForRole(securityRole) {
   if (!securityRole) return null;
   return ensureHubAccess(SECURITY_ROLE_APPS[securityRole] || []);
@@ -227,6 +245,7 @@ module.exports = {
   isHubAdmin,
   getSecurityRole,
   getTitleFromSecurityRole,
+  getDisplayRole,
   defaultAllowedAppsForRole,
   getStoredAllowedApps,
   canSeeAllSites,

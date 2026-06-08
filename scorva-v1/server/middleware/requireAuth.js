@@ -49,6 +49,8 @@ module.exports = async function requireAuth(req, res, next) {
         email:         claims.email,
         name:          claims.name,
         initials:      claims.initials,
+        title:         claims.title || null,
+        displayRole:   claims.displayRole || claims.title || jobRole || hubRole,
         hubRole:       hubRole,
         jobRole:       jobRole,
         primarySiteId: claims.primarySiteId || claims.siteId || claims.siteID || siteID,
@@ -94,6 +96,8 @@ module.exports = async function requireAuth(req, res, next) {
         req.user = {
           ...req.session.user,
           authVersion:     req.session.user.authVersion || 2,
+          title:           req.session.user.title || null,
+          displayRole:     req.session.user.displayRole || req.session.user.title || req.session.user.jobRole || req.session.user.securityRole || req.session.user.hubRole || req.session.user.role || 'Hub Viewer',
           hubRole:         req.session.user.hubRole || req.session.user.role || 'Hub Viewer',
           jobRole:         req.session.user.jobRole || req.session.user.securityRole || null,
           primarySiteId:   req.session.user.primarySiteId || sessionSiteID,

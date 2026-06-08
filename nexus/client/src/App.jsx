@@ -72,6 +72,7 @@ export default function App() {
     }
     return null;
   });
+  const [authChecked, setAuthChecked] = useState(() => Boolean(AUTH.getUser()));
   const [view, setView] = useState(() => pathToView(window.location.pathname));
   const [loaded, setLoaded] = useState(false);
   const [data, setData] = useState(EMPTY);
@@ -81,6 +82,20 @@ export default function App() {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem(THEME_KEY, theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (currentUser) {
+      setAuthChecked(true);
+      return;
+    }
+    API.get('me').then(payload => {
+      if (payload && !payload._apiError) {
+        AUTH.setUser(payload);
+        setCurrentUser(payload);
+      }
+      setAuthChecked(true);
+    }).catch(() => setAuthChecked(true));
+  }, [currentUser]);
 
   useEffect(() => {
     const onPop = () => setView(pathToView(window.location.pathname));
@@ -147,6 +162,21 @@ export default function App() {
     }
     return <ProgramManagementPage data={data.programManagement} trend={data.trend} />;
   }, [view, data, currentUser]);
+
+  if (!authChecked) {
+    return (
+      <div className="loading-shell">
+        <div className="nexus-boot">
+          <div className="boot-ring-wrap">
+            <div className="boot-ring" />
+            <div className="boot-ring-pulse" />
+          </div>
+          <div className="boot-wordmark">NEXUS</div>
+          <div className="boot-sub">Restoring secure session…</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) return <LoginPage onLogin={setCurrentUser} />;
 
