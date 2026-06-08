@@ -3,6 +3,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
@@ -963,6 +964,7 @@ async function buildCyberRollup(viewer) {
 
 const app = express();
 app.use(express.json());
+app.use(cookieParser());
 
 // ── Auth ───────────────────────────────────────────────────────────────────────
 

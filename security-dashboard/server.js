@@ -2,6 +2,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const fs      = require('fs');
 const path    = require('path');
 const jwt     = require('jsonwebtoken');
@@ -16,7 +17,8 @@ const {
 } = require('./lib/tenantScope');
 
 const mashDb = require('./lib/mashDb');
-const { RELATIONAL_DOMAINS, getDb } = mashDb;
+const { RELATIONAL_DOMAINS } = mashDb;
+const { db } = require('../packages/db/src');
 const { getAllowedApps } = require('../packages/db/src/appAccess');
 
 const PORT       = process.env.PORT || 8080;
@@ -122,6 +124,7 @@ async function seedAll() {
 // ── Middleware ────────────────────────────────────────────────────────────────
 const app = express();
 app.use(express.json({ limit: '4mb' }));
+app.use(cookieParser());
 
 function auth(req, res, next) {
   let token = null;
@@ -193,11 +196,6 @@ app.get('/auth/sso', async (req, res) => {
     }
 
     // Phase 2: Re-validate against the database
-    const db = getDb();
-    if (!db) {
-      console.error('[sso] database not available');
-      return res.redirect('/?error=db_unavailable');
-    }
     const localUser = await db.user.findUnique({
       where: { username: String(data.user.username || '').toLowerCase().trim() },
     });
@@ -209,7 +207,7 @@ app.get('/auth/sso', async (req, res) => {
     }
 
     const wsRole = await resolveWorkspaceRole(localUser.username, localUser.securityRole);
-    const payload = { ...data.user, wsRole };
+    const payload = { ...data.user, wsRole, via: 'sso' };
     const wsToken = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.cookie('mash_auth', wsToken, {
       httpOnly: true,

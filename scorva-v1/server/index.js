@@ -93,15 +93,15 @@ app.use('/api/yubikeys', requireAuth, tenantHandler, missionSiteScope, yubikeysR
 app.use('/api/licenses', requireAuth, tenantHandler, missionSiteScope, licensesRouter);
 app.use('/api/audit', requireAuth, tenantHandler, missionSiteScope, auditRouter);
 app.use('/api/evidence', requireAuth, tenantHandler, evidenceRouter);
-app.use('/api/checklist', requireAuth, checklistRouter);
+app.use('/api/checklist', requireAuth, tenantHandler, checklistRouter);
 app.use('/api/checklist', requireAuth, tenantHandler, checklistCampaignRouter);
 app.use('/api/notifications', requireAuth, tenantHandler, notificationsRouter);
 app.use('/api/metrics', requireAuth, tenantHandler, metricsRouter);
 app.use('/api/reports', requireAuth, tenantHandler, reportsRouter);
 app.use('/api/security-events', requireAuth, tenantHandler, securityEventsRouter);
-app.use('/api/aggregate', requireAuth, aggregateRouter);
-app.use('/api/sites', requireAuth, sitesRouter);
-app.use('/api/threats', requireAuth, threatsRouter);
+app.use('/api/aggregate', requireAuth, tenantHandler, aggregateRouter);
+app.use('/api/sites', requireAuth, tenantHandler, sitesRouter);
+app.use('/api/threats', requireAuth, tenantHandler, threatsRouter);
 
 app.use('/api/mission-apps/authorization/ato', requireAuth, tenantHandler, missionSiteScope, atoRouter);
 app.use('/api/mission-apps/authorization/controls', requireAuth, tenantHandler, missionSiteScope, controlsRouter);
