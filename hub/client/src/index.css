@@ -319,4 +319,118 @@
   .hover-glow {
     @apply transition-all duration-300 hover:text-scorva-accent hover:shadow-lg;
   }
+
+  /* Tron-style border trace animation */
+  @keyframes border-trace-top {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+
+  @keyframes border-trace-right {
+    from { height: 0; }
+    to { height: 100%; }
+  }
+
+  @keyframes border-trace-bottom {
+    from { width: 100%; }
+    to { width: 0; }
+  }
+
+  @keyframes border-trace-left {
+    from { height: 100%; }
+    to { height: 0; }
+  }
+
+  .tron-border::before,
+  .tron-border::after,
+  .tron-border > *::before,
+  .tron-border > *::after {
+    content: '';
+    position: absolute;
+    background: rgb(var(--scorva-accent));
+    pointer-events: none;
+  }
+
+  .tron-border::before {
+    top: 0;
+    left: 0;
+    height: 1.5px;
+    animation: border-trace-top 0.6s ease-out forwards;
+  }
+
+  .tron-border::after {
+    top: 0;
+    right: 0;
+    width: 1.5px;
+    animation: border-trace-right 0.6s ease-out 0.2s forwards;
+    animation-fill-mode: both;
+  }
+
+  .tron-border > *::before {
+    bottom: 0;
+    right: 0;
+    height: 1.5px;
+    animation: border-trace-bottom 0.6s ease-out 0.4s forwards;
+    animation-fill-mode: both;
+  }
+
+  .tron-border > *::after {
+    bottom: 0;
+    left: 0;
+    width: 1.5px;
+    animation: border-trace-left 0.6s ease-out 0.6s forwards;
+    animation-fill-mode: both;
+  }
+
+  /* Loading animation */
+  @keyframes cyber-pulse {
+    0%, 100% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes cyber-scan {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+
+  .cyber-loader {
+    display: inline-block;
+    position: relative;
+    width: 80px;
+    height: 80px;
+  }
+
+  .cyber-loader::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    border: 2px solid rgb(var(--scorva-accent));
+    border-radius: 50%;
+    opacity: 0.3;
+    animation: cyber-pulse 1.5s ease-in-out infinite;
+  }
+
+  .cyber-scanner {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(180deg, transparent 0%, rgb(var(--scorva-accent)) 50%, transparent 100%);
+    opacity: 0.8;
+    animation: cyber-scan 1.2s linear infinite;
+  }
 }

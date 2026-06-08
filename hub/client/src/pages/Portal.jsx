@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { CyberLoader } from '../components/CyberLoader';
 import {
   Shield, ShieldCheck, FileText, BarChart3, Flame,
   Sun, Moon, LogOut, ArrowRight, Settings2, Command,
@@ -100,6 +101,7 @@ export default function Portal() {
   const [launching, setLaunching] = useState(null);
   const [apps,      setApps]      = useState(APPS);
   const [pendingRequests, setPendingRequests] = useState(0);
+  const [showLoader, setShowLoader] = useState(true);
 
   const hubRole = user?.hubRole || user?.role;
   const jobRole = user?.jobRole || user?.securityRole;
@@ -108,6 +110,12 @@ export default function Portal() {
   const canAdmin = hubRole === 'Hub Admin';
   const siteLabel = primarySiteId || (Array.isArray(user?.siteIds) && user.siteIds.length > 1
     ? `${user.siteIds.length} sites` : null);
+
+  useEffect(() => {
+    // Show cyber loader for 1.5 seconds after login
+    const loaderTimer = setTimeout(() => setShowLoader(false), 1500);
+    return () => clearTimeout(loaderTimer);
+  }, []);
 
   useEffect(() => {
     const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
@@ -151,6 +159,10 @@ export default function Portal() {
     } finally {
       setLaunching(null);
     }
+  }
+
+  if (showLoader) {
+    return <CyberLoader />;
   }
 
   return (
@@ -331,8 +343,11 @@ export default function Portal() {
                 return (
                   <div
                     key={app.id}
-                    className={`relative card group flex flex-col transition-all duration-300 overflow-hidden ${colors.border} ${colors.glow}`}
+                    className={`relative card group flex flex-col transition-all duration-300 overflow-hidden ${colors.border} ${colors.glow} hover:tron-border`}
                   >
+                    {/* Tron border trace on hover */}
+                    <div className="absolute inset-0 pointer-events-none" />
+
                     {/* Color top bar */}
                     <div className={`absolute top-0 left-0 right-0 h-[3px] ${colors.top} opacity-60 group-hover:opacity-100 transition-opacity`} />
 
