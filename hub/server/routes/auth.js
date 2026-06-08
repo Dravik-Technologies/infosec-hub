@@ -249,7 +249,8 @@ router.get('/entra/login', async (req, res) => {
       nonce,
     });
 
-    return res.redirect(authUrl);
+    // Save session before redirect so entraAuth state persists
+    return req.session.save(() => res.redirect(authUrl));
   } catch (err) {
     console.error('[HUB] Entra login init error:', err.message);
     return res.redirect('/login?error=entra_init_failed');
