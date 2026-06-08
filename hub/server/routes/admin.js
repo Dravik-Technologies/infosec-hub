@@ -249,38 +249,62 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
     ].filter(Boolean).map(String))];
 
     if ('name'   in req.body) data.name   = req.body.name;
+
+    let shouldRevokeTokens = false;
+
     if ('role'   in req.body) {
       if (!isHubAdmin(req.session?.user)) {
         return res.status(403).json({ error: 'Only Hub Admin can change platform roles' });
       }
-      data.role = normalizePlatformRole(req.body.role || current.role);
+      const newRole = normalizePlatformRole(req.body.role || current.role);
+      if (newRole !== current.role) {
+        data.role = newRole;
+        shouldRevokeTokens = true;
+      }
     }
     if ('status' in req.body) {
       const newStatus = req.body.status || current.status;
-      data.status = newStatus;
-      // Revoke all outstanding tokens when user is deactivated
-      if (newStatus === 'Inactive' && current.status === 'Active') {
-        data.tokenEpoch = (current.tokenEpoch || 0) + 1;
+      if (newStatus !== current.status) {
+        data.status = newStatus;
+        shouldRevokeTokens = true;
       }
     }
     if ('siteId' in req.body || 'siteIds' in req.body) {
-      data.siteId  = nextSiteIds[0] || null;
-      data.siteIds = nextSiteIds;
+      const newPrimarySiteId = nextSiteIds[0] || null;
+      if (newPrimarySiteId !== current.siteId || JSON.stringify(nextSiteIds) !== JSON.stringify(current.siteIds || [])) {
+        data.siteId  = newPrimarySiteId;
+        data.siteIds = nextSiteIds;
+        shouldRevokeTokens = true;
+      }
     }
 
     let nextDod8140 = current.dod8140;
     if ('securityRole' in req.body || 'jobRole' in req.body) {
       const newSecRole = req.body.jobRole || req.body.securityRole || null;
-      data.title = getTitleFromSecurityRole(newSecRole) || null;
-      nextDod8140 = mergeAppFactory(nextDod8140, {
-        securityRole: newSecRole,
-        scorvaRole:   null, // clear legacy field when securityRole is updated
-      });
+      const oldSecRole = current.securityRole || (current.dod8140?.securityRole) || null;
+      if (newSecRole !== oldSecRole) {
+        data.title = getTitleFromSecurityRole(newSecRole) || null;
+        nextDod8140 = mergeAppFactory(nextDod8140, {
+          securityRole: newSecRole,
+          scorvaRole:   null, // clear legacy field when securityRole is updated
+        });
+        shouldRevokeTokens = true;
+      }
     }
     if ('allowedApps' in req.body) {
-      nextDod8140 = mergeAllowedApps(nextDod8140, req.body.allowedApps);
+      const oldAllowedApps = current.dod8140?.allowedApps || [];
+      const newAllowedApps = Array.isArray(req.body.allowedApps) ? req.body.allowedApps : [];
+      if (JSON.stringify(oldAllowedApps) !== JSON.stringify(newAllowedApps)) {
+        nextDod8140 = mergeAllowedApps(nextDod8140, req.body.allowedApps);
+        shouldRevokeTokens = true;
+      }
     }
     if (nextDod8140 !== current.dod8140) data.dod8140 = nextDod8140;
+
+    // Revoke all outstanding tokens if any permission/role/access changes
+    if (shouldRevokeTokens) {
+      data.tokenEpoch = (current.tokenEpoch || 0) + 1;
+    }
 
     if (req.body.password) {
       data.passwordHash = await bcrypt.hash(req.body.password, 12);

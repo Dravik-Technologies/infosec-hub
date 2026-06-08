@@ -75,27 +75,42 @@ module.exports = async function requireAuth(req, res, next) {
 
   // Legacy session fallback while routes are fully migrated to JWT clients.
   if (req.session?.user) {
-    const sessionSiteIDs = normalizeSiteList(
-      req.session.user.siteIDs, req.session.user.siteIds,
-      req.session.user.siteID,  req.session.user.site
-    );
-    const sessionSiteID = req.session.user.siteID || req.session.user.siteId
-      || req.session.user.site || sessionSiteIDs[0] || null;
-    req.user = {
-      ...req.session.user,
-      authVersion:     req.session.user.authVersion || 2,
-      hubRole:         req.session.user.hubRole || req.session.user.role || 'Hub Viewer',
-      jobRole:         req.session.user.jobRole || req.session.user.securityRole || null,
-      primarySiteId:   req.session.user.primarySiteId || sessionSiteID,
-      siteID:         sessionSiteID,
-      siteIDs:        sessionSiteIDs,
-      siteId:         sessionSiteID,
-      siteIds:        sessionSiteIDs,
-      site:           sessionSiteID,
-      canSeeAllSites: Boolean(req.session.user.canSeeAllSites) || req.session.user.role === 'Corporate Admin' || req.session.user.hubRole === 'Hub Admin',
-      securityRole:   req.session.user.jobRole || req.session.user.securityRole || null,
-    };
-    return next();
+    (async () => {
+      try {
+        // Validate token epoch (revocation check) for session users too
+        const sessionUserId = req.session.user.sub || req.session.user.id;
+        const currentEpoch = await getTokenEpoch(db, sessionUserId);
+        const sessionEpoch = req.session.user.tokenEpoch ?? 0;
+        if (sessionEpoch < currentEpoch) {
+          return res.status(401).json({ error: 'Token revoked' });
+        }
+
+        const sessionSiteIDs = normalizeSiteList(
+          req.session.user.siteIDs, req.session.user.siteIds,
+          req.session.user.siteID,  req.session.user.site
+        );
+        const sessionSiteID = req.session.user.siteID || req.session.user.siteId
+          || req.session.user.site || sessionSiteIDs[0] || null;
+        req.user = {
+          ...req.session.user,
+          authVersion:     req.session.user.authVersion || 2,
+          hubRole:         req.session.user.hubRole || req.session.user.role || 'Hub Viewer',
+          jobRole:         req.session.user.jobRole || req.session.user.securityRole || null,
+          primarySiteId:   req.session.user.primarySiteId || sessionSiteID,
+          siteID:         sessionSiteID,
+          siteIDs:        sessionSiteIDs,
+          siteId:         sessionSiteID,
+          siteIds:        sessionSiteIDs,
+          site:           sessionSiteID,
+          canSeeAllSites: Boolean(req.session.user.canSeeAllSites) || req.session.user.role === 'Corporate Admin' || req.session.user.hubRole === 'Hub Admin',
+          securityRole:   req.session.user.jobRole || req.session.user.securityRole || null,
+        };
+        return next();
+      } catch (err) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+    })();
+    return;
   }
 
   res.status(401).json({ error: 'Unauthorized' });
