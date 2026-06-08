@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 const fs      = require('fs');
 const path    = require('path');
 const jwt     = require('jsonwebtoken');
+const { getTokenEpoch } = require('../packages/db/src/tokenEpochCache');
 const { dbOk, getModel, readCollection, writeCollection } = require('./pg-store');
 const {
   SITE_OWNED_COLLECTIONS,
@@ -132,7 +133,7 @@ const app = express();
 app.use(express.json({ limit: '4mb' }));
 app.use(cookieParser());
 
-function auth(req, res, next) {
+async function auth(req, res, next) {
   let token = null;
   const header = req.headers.authorization || '';
   if (header.startsWith('Bearer ')) {
@@ -141,8 +142,20 @@ function auth(req, res, next) {
     token = req.cookies.mash_auth;
   }
   if (!token) return res.status(401).json({ error: 'No token' });
-  jwt.verify(token, JWT_SECRET, (err, payload) => {
+  jwt.verify(token, JWT_SECRET, async (err, payload) => {
     if (err) return res.status(403).json({ error: 'Invalid or expired token' });
+
+    // Validate token epoch (revocation check)
+    try {
+      const currentEpoch = await getTokenEpoch(db, payload.id);
+      const jwtEpoch = payload.tokenEpoch ?? 0;
+      if (jwtEpoch < currentEpoch) {
+        return res.status(401).json({ error: 'Token revoked' });
+      }
+    } catch (err) {
+      console.error('[auth] epoch check error:', err.message);
+    }
+
     // Normalize site fields: HUB issues lowercase (siteId/siteIds); handle any legacy variants
     const siteIds = normalizeSiteList(payload.siteIds, payload.siteIDs, payload.siteId, payload.siteID);
     const siteId  = payload.siteId || payload.siteID || siteIds[0] || null;
@@ -180,7 +193,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 
     const wsRole = await resolveWorkspaceRole(username, data.user.securityRole);
-    const payload = { ...data.user, wsRole };
+    const payload = { ...data.user, tokenEpoch: data.user.tokenEpoch || 0, wsRole };
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_TTL });
     res.json({ token, user: payload });
   } catch (err) {
@@ -232,6 +245,7 @@ app.get('/auth/sso', async (req, res) => {
       canSeeAllSites: localUser.role === 'Corporate Admin' || localUser.role === 'Hub Admin',
       allowedApps: getAllowedApps(localUser),
       initials: localUser.name ? localUser.name.split(' ').map(n => n[0]).join('') : '',
+      tokenEpoch: localUser.tokenEpoch || 0,
       wsRole,
       via: 'sso',
     };

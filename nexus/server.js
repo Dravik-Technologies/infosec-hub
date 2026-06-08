@@ -454,6 +454,7 @@ function mapHubUser(hubUser, settings) {
     primarySiteId: resolvedPrimarySiteId,
     siteIds,
     allowedApps: getAllowedApps(hubUser),
+    tokenEpoch: hubUser.tokenEpoch || 0,
     nexusAdmin: isNexusAdminUser({
       ...hubUser,
       hubRole,
@@ -472,7 +473,7 @@ function mapHubUser(hubUser, settings) {
   };
 }
 
-function requireAuth(req, res, next) {
+async function requireAuth(req, res, next) {
   let token = null;
 
   // Try Bearer token first
@@ -490,8 +491,17 @@ function requireAuth(req, res, next) {
   }
   try {
     req.user = jwt.verify(token, JWT_SECRET);
+
+    // Validate token epoch (revocation check)
+    const { getTokenEpoch } = require('../packages/db/src/tokenEpochCache');
+    const currentEpoch = await getTokenEpoch(db, req.user.sub);
+    const jwtEpoch = req.user.tokenEpoch ?? 0;
+    if (jwtEpoch < currentEpoch) {
+      return res.status(401).json({ error: 'Token revoked' });
+    }
+
     next();
-  } catch {
+  } catch (err) {
     res.status(401).json({ error: 'Token expired or invalid' });
   }
 }

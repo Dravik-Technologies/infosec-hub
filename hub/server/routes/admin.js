@@ -255,7 +255,14 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
       }
       data.role = normalizePlatformRole(req.body.role || current.role);
     }
-    if ('status' in req.body) data.status = req.body.status || current.status;
+    if ('status' in req.body) {
+      const newStatus = req.body.status || current.status;
+      data.status = newStatus;
+      // Revoke all outstanding tokens when user is deactivated
+      if (newStatus === 'Inactive' && current.status === 'Active') {
+        data.tokenEpoch = (current.tokenEpoch || 0) + 1;
+      }
+    }
     if ('siteId' in req.body || 'siteIds' in req.body) {
       data.siteId  = nextSiteIds[0] || null;
       data.siteIds = nextSiteIds;

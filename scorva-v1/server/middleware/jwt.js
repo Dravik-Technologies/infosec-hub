@@ -40,6 +40,7 @@ function signAccessToken(user) {
       siteIds: siteIDs,
       allowedApps,
       canSeeAllSites: Boolean(user.canSeeAllSites),
+      tokenEpoch: user.tokenEpoch || 0,
 
       // Legacy compatibility claims retained during migration.
       role: getLegacyPlatformRole(hubRole),

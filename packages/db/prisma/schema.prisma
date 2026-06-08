@@ -59,6 +59,7 @@ model User {
   site              Site?     @relation(fields: [siteId], references: [id])
   siteIds           String[]  @default([]) @map("site_ids")
   status            String    @default("Active")
+  tokenEpoch        Int       @default(0) @map("token_epoch")
   yubikey           String?
   workstation       String?
   lastLogin         DateTime? @map("last_login")
@@ -68,6 +69,7 @@ model User {
   createdAt         DateTime  @default(now()) @map("created_at")
   updatedAt         DateTime  @updatedAt @map("updated_at")
 
+  @@index([tokenEpoch])
   @@map("users")
 }
 

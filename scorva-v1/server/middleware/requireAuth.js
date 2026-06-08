@@ -1,6 +1,8 @@
 'use strict';
 
 const { verifyAccessToken } = require('./jwt');
+const { getTokenEpoch } = require('../../../packages/db/src/tokenEpochCache');
+const { db } = require('../../../packages/db/src');
 
 /**
  * requireAuth — Express middleware
@@ -20,13 +22,21 @@ function normalizeSiteList(...values) {
   return [...new Set(flat.filter(Boolean).map(v => String(v).trim()).filter(Boolean))];
 }
 
-module.exports = function requireAuth(req, res, next) {
+module.exports = async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
 
   if (bearer) {
     try {
       const claims = verifyAccessToken(bearer);
+
+      // Validate token epoch (revocation check)
+      const currentEpoch = await getTokenEpoch(db, claims.sub || claims.id);
+      const jwtEpoch = claims.tokenEpoch ?? 0;
+      if (jwtEpoch < currentEpoch) {
+        return res.status(401).json({ error: 'Token revoked' });
+      }
+
       // Merge lowercase (HUB) and uppercase (legacy SCORVA) site field variants
       const siteIDs = normalizeSiteList(claims.siteIDs, claims.siteIds, claims.siteID, claims.siteId);
       const siteID  = claims.siteID || claims.siteId || siteIDs[0] || null;
@@ -58,7 +68,7 @@ module.exports = function requireAuth(req, res, next) {
       if (!req.session) req.session = {};
       req.session.user = req.user;
       return next();
-    } catch (_) {
+    } catch (err) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
   }
