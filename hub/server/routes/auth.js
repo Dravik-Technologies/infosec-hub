@@ -250,7 +250,14 @@ router.get('/entra/login', async (req, res) => {
     });
 
     // Save session before redirect so entraAuth state persists
-    return req.session.save(() => res.redirect(authUrl));
+    return req.session.save((err) => {
+      if (err) {
+        console.error('[HUB] Session save error:', err.message);
+        return res.redirect('/login?error=session_save_failed');
+      }
+      console.log('[HUB] Entra session saved, redirecting to Entra with state:', state);
+      return res.redirect(authUrl);
+    });
   } catch (err) {
     console.error('[HUB] Entra login init error:', err.message);
     return res.redirect('/login?error=entra_init_failed');
@@ -266,7 +273,10 @@ router.get('/entra/callback', async (req, res) => {
   const code = req.query && req.query.code ? String(req.query.code) : '';
   const stored = req.session && req.session.entraAuth ? req.session.entraAuth : null;
 
+  console.log('[HUB] Entra callback - state:', state ? state.slice(0, 8) : 'missing', 'stored:', stored ? stored.state.slice(0, 8) : 'missing', 'match:', stored && stored.state === state);
+
   if (!code || !stored || !state || stored.state !== state) {
+    console.error('[HUB] Entra state validation failed:', { code: !!code, stored: !!stored, state: !!state, match: stored && stored.state === state });
     return res.redirect('/login?error=entra_state_invalid');
   }
 
