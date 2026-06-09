@@ -99,35 +99,6 @@ export default function Sidebar({ open, onToggle }) {
         )}
       </div>
 
-      {/* Back to HUB Button */}
-      {open && (
-        <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid rgba(198, 218, 238, 0.3)' }}>
-          <button
-            onClick={() => window.location.href = '/portal'}
-            style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              padding: '0.5rem 0.75rem',
-              borderRadius: '0.5rem',
-              backgroundColor: 'rgba(10, 63, 107, 0.1)',
-              color: 'rgb(10, 63, 107)',
-              fontSize: '0.75rem',
-              fontWeight: '500',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'background-color 0.2s'
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(10, 63, 107, 0.2)'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(10, 63, 107, 0.1)'}
-          >
-            <ChevronLeft size={14} />
-            <span>Back to HUB</span>
-          </button>
-        </div>
-      )}
-
       {/* CTA: New POAM */}
       <div className="px-3 pt-3 pb-3 shrink-0">
         {open ? (
@@ -161,6 +132,17 @@ export default function Sidebar({ open, onToggle }) {
 
       {/* Nav Groups */}
       <nav className="flex-1 overflow-y-auto px-2 pb-2 sidebar-nav">
+        {/* Back to HUB - First Item */}
+        <div className="space-y-1 mb-3">
+          <button
+            onClick={() => window.location.href = '/portal'}
+            className="w-full sc-nav-link px-3 flex items-center gap-2 text-scorva-accent hover:bg-scorva-accent/10"
+          >
+            <ChevronLeft size={16} className="shrink-0" />
+            {open && <span className="truncate font-medium text-sm">Back to HUB</span>}
+          </button>
+        </div>
+
         {NAV_GROUPS.map((group, gi) => (
           <div key={group.id} className={gi === 0 ? '' : 'mt-3'}>
             {open && (
