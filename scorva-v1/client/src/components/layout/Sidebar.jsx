@@ -81,41 +81,32 @@ export default function Sidebar({ open, onToggle }) {
         open ? 'w-[18rem]' : 'w-[5rem]'
       }`}
     >
-      {/* Top: Logo + Brand */}
-      <div className="sc-sidebar-top">
-        <button
-          onClick={!open ? onToggle : undefined}
-          className={`sc-brand-mark ${!open ? 'hover:bg-scorva-accent/20 cursor-pointer mx-auto' : 'cursor-default'}`}
-        >
-          <Shield size={16} />
-        </button>
+      {/* Top: Logo + Brand + Back Button */}
+      <div className="sc-sidebar-top flex-col">
+        <div className="flex items-center gap-2 w-full">
+          <button
+            onClick={!open ? onToggle : undefined}
+            className={`sc-brand-mark ${!open ? 'hover:bg-scorva-accent/20 cursor-pointer mx-auto' : 'cursor-default'}`}
+          >
+            <Shield size={16} />
+          </button>
+
+          {open && (
+            <div className="flex-1 min-w-0">
+              <div className="sc-brand-wordmark">
+                SCORVA
+              </div>
+            </div>
+          )}
+        </div>
 
         {open && (
-          <div className="flex-1 min-w-0">
-            <div className="sc-brand-wordmark">
-              SCORVA
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Back to HUB button */}
-      <div className="px-3 pt-2 pb-3 shrink-0 border-b border-scorva-border/30">
-        {open ? (
           <button
             onClick={() => window.location.href = '/portal'}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all text-sm font-medium"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all text-xs font-medium mt-2"
           >
-            <ChevronLeft size={16} className="shrink-0" />
+            <ChevronLeft size={14} className="shrink-0" />
             <span>Back to HUB</span>
-          </button>
-        ) : (
-          <button
-            onClick={() => window.location.href = '/portal'}
-            title="Back to HUB"
-            className="flex items-center justify-center p-2 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all mx-auto w-full"
-          >
-            <ChevronLeft size={16} />
           </button>
         )}
       </div>
