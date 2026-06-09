@@ -81,35 +81,52 @@ export default function Sidebar({ open, onToggle }) {
         open ? 'w-[18rem]' : 'w-[5rem]'
       }`}
     >
-      {/* Top: Logo + Brand + Back Button */}
-      <div className="sc-sidebar-top flex-col">
-        <div className="flex items-center gap-2 w-full">
-          <button
-            onClick={!open ? onToggle : undefined}
-            className={`sc-brand-mark ${!open ? 'hover:bg-scorva-accent/20 cursor-pointer mx-auto' : 'cursor-default'}`}
-          >
-            <Shield size={16} />
-          </button>
-
-          {open && (
-            <div className="flex-1 min-w-0">
-              <div className="sc-brand-wordmark">
-                SCORVA
-              </div>
-            </div>
-          )}
-        </div>
+      {/* Top: Logo + Brand */}
+      <div className="sc-sidebar-top">
+        <button
+          onClick={!open ? onToggle : undefined}
+          className={`sc-brand-mark ${!open ? 'hover:bg-scorva-accent/20 cursor-pointer mx-auto' : 'cursor-default'}`}
+        >
+          <Shield size={16} />
+        </button>
 
         {open && (
-          <button
-            onClick={() => window.location.href = '/portal'}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all text-xs font-medium mt-2"
-          >
-            <ChevronLeft size={14} className="shrink-0" />
-            <span>Back to HUB</span>
-          </button>
+          <div className="flex-1 min-w-0">
+            <div className="sc-brand-wordmark">
+              SCORVA
+            </div>
+          </div>
         )}
       </div>
+
+      {/* Back to HUB Button */}
+      {open && (
+        <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid rgba(198, 218, 238, 0.3)' }}>
+          <button
+            onClick={() => window.location.href = '/portal'}
+            style={{
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 0.75rem',
+              borderRadius: '0.5rem',
+              backgroundColor: 'rgba(10, 63, 107, 0.1)',
+              color: 'rgb(10, 63, 107)',
+              fontSize: '0.75rem',
+              fontWeight: '500',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = 'rgba(10, 63, 107, 0.2)'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = 'rgba(10, 63, 107, 0.1)'}
+          >
+            <ChevronLeft size={14} />
+            <span>Back to HUB</span>
+          </button>
+        </div>
+      )}
 
       {/* CTA: New POAM */}
       <div className="px-3 pt-3 pb-3 shrink-0">
