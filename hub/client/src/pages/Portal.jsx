@@ -336,7 +336,7 @@ export default function Portal() {
           >
             {apps.find(a => a.id === expandedApp) && (
               <div
-                className="glass border border-scorva-accent/30 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto glow-border-strong"
+                className="glass border border-scorva-accent/20 rounded-2xl p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto glow-border-strong shadow-2xl"
                 onClick={e => e.stopPropagation()}
               >
                 {(() => {
@@ -369,35 +369,35 @@ export default function Portal() {
                       </div>
 
                       {/* Description */}
-                      <p className="text-sm text-scorva-muted leading-relaxed mb-6">
+                      <p className="text-sm text-scorva-text leading-relaxed mb-6 bg-scorva-bg/30 p-4 rounded-lg">
                         {app.desc}
                       </p>
 
                       {/* Meta info */}
-                      <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-scorva-border/50">
-                        <div>
+                      <div className="grid grid-cols-3 gap-4 mb-6 pb-6 border-b border-scorva-border/40">
+                        <div className="bg-scorva-bg/20 p-3 rounded-lg">
                           <p className="text-[10px] font-mono text-scorva-muted uppercase mb-1">Team</p>
-                          <p className="text-sm font-mono text-scorva-text">{app.team}</p>
+                          <p className="text-sm font-mono text-scorva-text font-semibold">{app.team}</p>
                         </div>
-                        <div>
+                        <div className="bg-scorva-bg/20 p-3 rounded-lg">
                           <p className="text-[10px] font-mono text-scorva-muted uppercase mb-1">Status</p>
                           <div className="flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                            <span className="text-sm font-mono text-emerald-500">LIVE</span>
+                            <span className="text-sm font-mono text-emerald-600 dark:text-emerald-400 font-semibold">LIVE</span>
                           </div>
                         </div>
-                        <div>
+                        <div className="bg-scorva-bg/20 p-3 rounded-lg">
                           <p className="text-[10px] font-mono text-scorva-muted uppercase mb-1">Auth</p>
-                          <p className="text-sm font-mono text-scorva-text">SSO</p>
+                          <p className="text-sm font-mono text-scorva-text font-semibold">SSO</p>
                         </div>
                       </div>
 
                       {/* Tags */}
-                      <div className="mb-6">
-                        <p className="text-[10px] font-mono text-scorva-muted uppercase mb-2">Capabilities</p>
+                      <div className="mb-6 bg-scorva-bg/20 p-4 rounded-lg">
+                        <p className="text-[10px] font-mono text-scorva-muted uppercase mb-2 font-semibold">Capabilities</p>
                         <div className="flex flex-wrap gap-2">
                           {app.tags.map(tag => (
-                            <span key={tag} className={`text-[10px] font-mono px-3 py-1 rounded-full ${colors.badge}`}>
+                            <span key={tag} className={`text-[10px] font-mono px-3 py-1 rounded-full font-semibold ${colors.badge}`}>
                               {tag}
                             </span>
                           ))}
@@ -408,7 +408,7 @@ export default function Portal() {
                       <button
                         onClick={() => handleLaunch(app)}
                         disabled={busy}
-                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold font-mono transition-all ${colors.launch} disabled:opacity-60`}
+                        className={`w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-bold font-mono transition-all shadow-lg ${colors.launch} disabled:opacity-60 hover:shadow-xl`}
                       >
                         {busy ? (
                           <>
