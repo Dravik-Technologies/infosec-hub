@@ -104,18 +104,19 @@
     );
   }
 
+  /* Light mode glass (default, no .dark class) */
   .glass {
-    background: rgb(var(--scorva-surface) / 0.75);
-    backdrop-filter: blur(20px) saturate(160%);
-    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    background: rgb(255 255 255 / 0.85);
+    backdrop-filter: blur(30px) saturate(180%);
+    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    border-color: rgb(var(--scorva-border) / 0.4);
   }
 
-  /* Enhanced glass for light mode with better backdrop and opacity */
-  .light .glass {
-    background: rgb(255 255 255 / 0.85);
-    backdrop-filter: blur(30px) saturate(180%) brightness(1.1);
-    -webkit-backdrop-filter: blur(30px) saturate(180%) brightness(1.1);
-    border-color: rgb(var(--scorva-border) / 0.4);
+  /* Dark mode glass */
+  .dark .glass {
+    background: rgb(var(--scorva-surface) / 0.80);
+    backdrop-filter: blur(25px) saturate(160%);
+    -webkit-backdrop-filter: blur(25px) saturate(160%);
   }
 
   .glow-border {
@@ -312,6 +313,19 @@
   .card:hover {
     box-shadow: 0 12px 48px rgb(var(--scorva-accent) / 0.08);
     border-color: rgb(var(--scorva-accent) / 0.2);
+  }
+
+  /* Light mode cards with enhanced visibility */
+  :not(.dark) .card {
+    background: rgb(255 255 255 / 0.95);
+    box-shadow: 0 8px 32px rgb(var(--scorva-accent) / 0.08);
+    border-color: rgb(var(--scorva-border) / 0.6);
+  }
+
+  :not(.dark) .card:hover {
+    box-shadow: 0 12px 48px rgb(var(--scorva-accent) / 0.15);
+    background: rgb(255 255 255);
+    border-color: rgb(var(--scorva-accent) / 0.4);
   }
 
   /* Gradient backgrounds for hero sections */
