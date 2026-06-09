@@ -187,9 +187,14 @@ export default function Portal() {
   } = useQuery({
     queryKey: ['threats'],
     queryFn: api.threats.latest,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
     refetchInterval: 5 * 60 * 1000,
   });
+
+  // Auto-refetch threats on page load
+  useEffect(() => {
+    refetchThreats();
+  }, []);
 
   /* ── Derived: ATOs ── */
   const atoClasses   = atos.map(classifyAto);
@@ -314,7 +319,6 @@ export default function Portal() {
             <Globe size={18} className="text-scorva-accent shrink-0" />
             <div>
               <h1 className="text-base font-bold text-scorva-text font-mono tracking-widest uppercase">Cyber Command Center</h1>
-              <p className="text-[10px] text-scorva-muted font-mono">NIST SP 800-53 Rev 5 · command surface</p>
             </div>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -375,7 +379,7 @@ export default function Portal() {
           </ChartCard>
 
           {/* Tasks */}
-          <ChartCard icon={CheckSquare} label="Tasks" sublabel={`${tasks.length} total`}>
+          <ChartCard icon={CheckSquare} label="Tasks" sublabel={`${tasks.length} total`} warn>
             <DonutChart
               size={96} thickness={12}
               label={String(tasks.length)} sublabel="tasks"
@@ -388,7 +392,7 @@ export default function Portal() {
           </ChartCard>
 
           {/* Controls */}
-          <ChartCard icon={BookOpen} label="Controls" sublabel={`${controls.length} required`}>
+          <ChartCard icon={BookOpen} label="Controls" sublabel={`${controls.length} required`} warn>
             <DonutChart
               size={96} thickness={12}
               label={`${implPct}%`} sublabel="impl."
