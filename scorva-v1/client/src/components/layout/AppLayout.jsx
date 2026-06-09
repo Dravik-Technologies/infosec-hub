@@ -82,6 +82,16 @@ export default function AppLayout({ appName, appIcon: AppIcon, tabs = [], childr
 
           {/* Navigation Tabs */}
           <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-1">
+            <button
+              type="button"
+              onClick={() => navigate('/portal')}
+              className="w-full app-nav-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-scorva-accent hover:bg-scorva-accent/10 hover:text-scorva-accent transition-all"
+              title={!sidebarOpen ? 'Back to Command Center' : undefined}
+            >
+              <ChevronLeft size={16} className="shrink-0" />
+              {sidebarOpen && <span className="truncate font-semibold">Back to Command Center</span>}
+            </button>
+
             {tabs.map(tab => (
               <NavLink
                 key={tab.to}
