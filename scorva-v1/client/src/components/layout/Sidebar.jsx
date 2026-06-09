@@ -102,21 +102,21 @@ export default function Sidebar({ open, onToggle }) {
       {/* Back to HUB button */}
       <div className="px-3 pt-2 pb-3 shrink-0 border-b border-scorva-border/30">
         {open ? (
-          <a
-            href="/portal"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all text-sm font-medium"
+          <button
+            onClick={() => window.location.href = '/portal'}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all text-sm font-medium"
           >
             <ChevronLeft size={16} className="shrink-0" />
             <span>Back to HUB</span>
-          </a>
+          </button>
         ) : (
-          <a
-            href="/portal"
+          <button
+            onClick={() => window.location.href = '/portal'}
             title="Back to HUB"
-            className="flex items-center justify-center p-2 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all mx-auto"
+            className="flex items-center justify-center p-2 rounded-lg bg-scorva-accent/10 hover:bg-scorva-accent/20 text-scorva-accent hover:text-scorva-accent transition-all mx-auto w-full"
           >
             <ChevronLeft size={16} />
-          </a>
+          </button>
         )}
       </div>
 
