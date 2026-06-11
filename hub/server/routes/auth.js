@@ -163,7 +163,7 @@ router.post('/login', async (req, res) => {
       entraOid: null,
       entraTenantId: null,
     };
-    return res.json({ user: req.session.user });
+    return req.session.save(() => res.json({ user: req.session.user }));
   }
 
   // Primary: authenticate against shared PostgreSQL Users table
@@ -185,7 +185,7 @@ router.post('/login', async (req, res) => {
     req.session.user = buildSessionUser(found, { authProvider: 'local' });
 
     db.user.update({ where: { id: found.id }, data: { lastLogin: new Date() } }).catch(() => {});
-    return res.json({ user: req.session.user });
+    return req.session.save(() => res.json({ user: req.session.user }));
   } catch (err) {
     // Fallback: proxy to SCORVA if database is unreachable
     if ((err.message && err.message.includes('connect')) || err.code === 'P1001') {
@@ -218,7 +218,7 @@ router.post('/login', async (req, res) => {
           entraOid: null,
           entraTenantId: null,
         };
-        return res.json({ user: req.session.user });
+        return req.session.save(() => res.json({ user: req.session.user }));
       } catch (proxyErr) {
         if (proxyErr.message === 'Invalid credentials') {
           return res.status(401).json({ error: 'Invalid credentials' });
