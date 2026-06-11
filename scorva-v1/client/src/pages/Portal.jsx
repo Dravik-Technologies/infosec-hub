@@ -300,7 +300,7 @@ export default function Portal() {
             </div>
             <div className="hidden sm:flex flex-col leading-none">
               <span className="text-xs font-medium text-scorva-text">{user?.name}</span>
-              <span className="text-[10px] text-scorva-muted">{user?.role}</span>
+              <span className="text-[10px] text-scorva-muted">{user?.displayRole || user?.role}</span>
             </div>
             <button onClick={logout} className="p-1.5 rounded-md text-scorva-muted hover:text-red-500 hover:bg-scorva-hover transition-colors" title="Sign out">
               <LogOut size={15} />

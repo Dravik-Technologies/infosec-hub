@@ -31,7 +31,7 @@ services:
       PORT: 3010
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
-      SESSION_SECRET: ${HUB_SESSION_SECRET:-hub-change-me-in-production}
+      SESSION_SECRET: ${HUB_SESSION_SECRET:-hub-local-session-secret-2026-please-change}
       SSO_TOKEN_TTL: 60
       SCORVA_HOST: scorva
       SCORVA_PORT: 3000
@@ -51,8 +51,8 @@ services:
       PORT: 3000
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
-      SESSION_SECRET: ${SCORVA_SESSION_SECRET:-scorva-change-me-in-production}
-      JWT_SECRET: ${JWT_SECRET:-scorva-jwt-change-in-production}
+      SESSION_SECRET: ${SCORVA_SESSION_SECRET:-scorva-local-session-secret-2026-please-change}
+      JWT_SECRET: ${JWT_SECRET:-scorva-local-jwt-secret-2026-please-change}
       JWT_EXPIRES_IN: 8h
       HUB_URL: http://hub:3010
     depends_on:
@@ -73,7 +73,7 @@ services:
       PORT: 3001
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
-      JWT_SECRET: ${JWT_SECRET:-crater-dev-secret-change-in-production}
+      JWT_SECRET: ${JWT_SECRET:-crater-local-jwt-secret-2026-please-change}
       JWT_EXPIRES_IN: 7d
       HUB_URL: http://hub:3010
     depends_on:
@@ -105,6 +105,7 @@ services:
       PORT: 8080
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
+      JWT_SECRET: ${JWT_SECRET:-mash-local-jwt-secret-2026-please-change}
       HUB_URL: http://hub:3010
       HUB_HOST: hub
       HUB_PORT: 3010
@@ -145,7 +146,7 @@ services:
       PORT: 3002
       NODE_ENV: production
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
-      SESSION_SECRET: ${LAVA_SESSION_SECRET:-lava-change-me-in-production}
+      SESSION_SECRET: ${LAVA_SESSION_SECRET:-lava-local-session-secret-2026-please-change}
       HUB_URL: http://hub:3010
     depends_on:
       postgres:

@@ -1,0 +1,67 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama:latest
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+
+  ollama-init:
+    image: ollama/ollama:latest
+    entrypoint: ['/bin/sh', '-c', 'ollama pull "$${LOCAL_AI_MODEL}"']
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-llama3.1:8b}
+    depends_on:
+      - ollama
+    restart: 'no'
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    restart: always
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      NODE_ENV: production
+      OLLAMA_BASE_URL: http://ollama:11434
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-llama3.1:8b}
+      LOCAL_AI_MAX_TOKENS: ${LOCAL_AI_MAX_TOKENS:-384}
+      LOCAL_AI_CONTEXT_WINDOW: ${LOCAL_AI_CONTEXT_WINDOW:-4096}
+      LOCAL_AI_MAX_RAG_CHUNKS: ${LOCAL_AI_MAX_RAG_CHUNKS:-3}
+      LOCAL_AI_MAX_RAG_CHARS_PER_CHUNK: ${LOCAL_AI_MAX_RAG_CHARS_PER_CHUNK:-1200}
+    depends_on:
+      db:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - '${CRATER_PROD_FRONTEND_PORT:-8080}:80'
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  ollama_data:

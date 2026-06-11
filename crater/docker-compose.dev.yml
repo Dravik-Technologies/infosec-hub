@@ -1,0 +1,47 @@
+include:
+  - docker-compose.yml
+
+services:
+  db:
+    ports:
+      - "${CRATER_DB_PORT:-5433}:5432"    # Host:container. Use 5433 by default to avoid host Postgres on 5432.
+
+  backend:
+    build:
+      target: development
+    environment:
+      DATABASE_URL: postgresql://crater:craterpassword@db:5432/crater
+      NODE_ENV:     development
+      CLIENT_URL:   http://localhost:${CRATER_FRONTEND_PORT:-5174}
+      OLLAMA_BASE_URL: http://ollama:11434
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-llama3.1:8b}
+      LOCAL_AI_MAX_TOKENS: ${LOCAL_AI_MAX_TOKENS:-384}
+      LOCAL_AI_CONTEXT_WINDOW: ${LOCAL_AI_CONTEXT_WINDOW:-4096}
+      LOCAL_AI_MAX_RAG_CHUNKS: ${LOCAL_AI_MAX_RAG_CHUNKS:-3}
+      LOCAL_AI_MAX_RAG_CHARS_PER_CHUNK: ${LOCAL_AI_MAX_RAG_CHARS_PER_CHUNK:-1200}
+    volumes:
+      - ./backend:/app        # Hot-reload: mount source over container copy
+      - /app/node_modules     # Keep container's node_modules (not host's)
+    ports:
+      - "${CRATER_BACKEND_PORT:-3002}:3000"           # Host:container. Container API remains on 3000.
+    # prisma db push = non-interactive schema sync (no migration files required).
+    # Perfect for development. Use 'prisma migrate deploy' in production.
+    command: >
+      sh -c "
+        npx prisma db push --accept-data-loss &&
+        npm run dev
+      "
+
+  frontend:
+    build:
+      context: ./client       # Source is in ./client (not ./frontend)
+      target: development
+    environment:
+      # Browser calls /api on the Vite dev server; Vite proxies to backend:3000.
+      # This avoids CORS drift when host ports change.
+      VITE_API_BASE_URL: /api
+    volumes:
+      - ./client:/app         # Hot-reload
+      - /app/node_modules     # Keep container's node_modules
+    ports:
+      - "${CRATER_FRONTEND_PORT:-5174}:5173"
