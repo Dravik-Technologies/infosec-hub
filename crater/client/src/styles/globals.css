@@ -1,0 +1,215 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --color-space: 244 247 251;
+    --color-space-card: 255 255 255;
+    --color-space-elevated: 235 241 248;
+    --color-space-border: 14 165 233;
+    --color-slate-50: 2 6 23;
+    --color-slate-100: 15 23 42;
+    --color-slate-200: 30 41 59;
+    --color-slate-300: 51 65 85;
+    --color-slate-400: 71 85 105;
+    --color-slate-500: 100 116 139;
+    --color-slate-600: 148 163 184;
+    --color-slate-700: 203 213 225;
+    --color-slate-800: 255 255 255;
+    --color-slate-900: 241 245 249;
+    --color-slate-950: 226 232 240;
+    --color-cyan-neon: 8 145 178;
+    --color-purple-electric: 109 40 217;
+    --color-green-matrix: 22 163 74;
+    --color-red-alert: 220 38 38;
+    --surface-sidebar: 255 255 255;
+    --surface-header: 255 255 255;
+    --aegis-border: rgba(8, 145, 178, 0.22);
+    --aegis-border-strong: rgba(8, 145, 178, 0.46);
+    --aegis-glow: rgba(8, 145, 178, 0.12);
+    --input-bg: 255 255 255;
+    --input-border: 203 213 225;
+    --input-text: 15 23 42;
+    --input-placeholder: 100 116 139;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+    --color-space: 11 15 25;
+    --color-space-card: 22 27 34;
+    --color-space-elevated: 28 35 51;
+    --color-space-border: 0 245 255;
+    --color-slate-50: 248 250 252;
+    --color-slate-100: 241 245 249;
+    --color-slate-200: 226 232 240;
+    --color-slate-300: 203 213 225;
+    --color-slate-400: 148 163 184;
+    --color-slate-500: 100 116 139;
+    --color-slate-600: 71 85 105;
+    --color-slate-700: 51 65 85;
+    --color-slate-800: 30 41 59;
+    --color-slate-900: 15 23 42;
+    --color-slate-950: 2 6 23;
+    --color-cyan-neon: 0 245 255;
+    --color-purple-electric: 112 0 255;
+    --color-green-matrix: 0 255 65;
+    --color-red-alert: 255 49 49;
+    --surface-sidebar: 22 27 34;
+    --surface-header: 22 27 34;
+    --aegis-border: rgba(0, 245, 255, 0.15);
+    --aegis-border-strong: rgba(0, 245, 255, 0.35);
+    --aegis-glow: rgba(0, 245, 255, 0.1);
+    --input-bg: 30 41 59;
+    --input-border: 51 65 85;
+    --input-text: 241 245 249;
+    --input-placeholder: 100 116 139;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    @apply bg-space text-slate-200 font-sans antialiased;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: rgb(var(--color-space)); }
+  ::-webkit-scrollbar-thumb { background: var(--aegis-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--aegis-border-strong); }
+}
+
+@layer components {
+  .rmf-card {
+    @apply bg-space-card/80 backdrop-blur-sm rounded transition-all duration-300;
+    border: 1px solid var(--aegis-border);
+    border-left: 4px solid transparent;
+  }
+  .rmf-card:hover {
+    @apply shadow-glow-cyan;
+    border-color: var(--aegis-border-strong);
+    border-left-color: rgb(var(--color-cyan-neon));
+  }
+  .rmf-card.active {
+    border-left-color: rgb(var(--color-cyan-neon));
+    @apply shadow-glow-cyan;
+  }
+
+  .control-id {
+    @apply font-mono text-green-matrix uppercase text-xs tracking-wider;
+  }
+
+  .hud-label {
+    @apply font-mono text-xs uppercase tracking-widest text-slate-500;
+  }
+
+  /* Hexagonal step indicator */
+  .step-hex {
+    @apply font-mono font-bold text-sm flex items-center justify-center flex-shrink-0;
+    width: 36px;
+    height: 36px;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  }
+  .step-hex.complete { background: rgb(var(--color-green-matrix)); color: rgb(var(--color-space)); }
+  .step-hex.active   { background: rgb(var(--color-cyan-neon)); color: rgb(var(--color-space)); }
+  .step-hex.pending  { background: rgb(var(--color-space-elevated)); color: rgb(var(--color-slate-400)); }
+
+  :root:not(.dark) .step-hex.complete { color: white; }
+
+  .progress-glow-bar {
+    height: 3px;
+    background: linear-gradient(90deg, rgb(var(--color-cyan-neon)), rgb(var(--color-purple-electric)));
+    box-shadow: 0 0 8px var(--aegis-border-strong);
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .input-hud,
+  .textarea-hud,
+  .select-hud,
+  .input-field {
+    @apply w-full rounded border px-3 py-2;
+    @apply font-mono text-sm;
+    @apply transition-all duration-200 focus:outline-none focus:ring-1 focus:ring-cyan-neon/40;
+    background: rgb(var(--input-bg));
+    border-color: rgb(var(--input-border));
+    color: rgb(var(--input-text));
+    color-scheme: light;
+  }
+  :root.dark .input-hud,
+  :root.dark .textarea-hud,
+  :root.dark .select-hud,
+  :root.dark .input-field {
+    color-scheme: dark;
+  }
+  .input-hud::placeholder,
+  .textarea-hud::placeholder,
+  .input-field::placeholder {
+    color: rgb(var(--input-placeholder));
+  }
+  .input-hud:focus,
+  .textarea-hud:focus,
+  .select-hud:focus,
+  .input-field:focus {
+    border-color: var(--aegis-border-strong);
+    box-shadow: 0 0 0 1px var(--aegis-glow), 0 0 16px var(--aegis-glow);
+  }
+  .input-hud:disabled,
+  .textarea-hud:disabled,
+  .select-hud:disabled,
+  .input-field:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+  .textarea-hud {
+    @apply min-h-[100px] resize-y;
+  }
+  .select-hud {
+    @apply appearance-none pr-9;
+  }
+  .select-hud option {
+    background: rgb(var(--input-bg));
+    color: rgb(var(--input-text));
+  }
+
+  .btn-primary {
+    @apply font-mono text-sm uppercase tracking-wider px-4 py-2 rounded cursor-pointer;
+    @apply transition-all duration-200 border;
+    background: rgba(0, 245, 255, 0.08);
+    border-color: var(--aegis-border-strong);
+    color: rgb(var(--color-cyan-neon));
+  }
+  .btn-primary:hover {
+    background: var(--aegis-glow);
+    border-color: rgb(var(--color-cyan-neon));
+    box-shadow: 0 0 15px var(--aegis-glow);
+  }
+
+  .btn-secondary {
+    @apply font-mono text-sm uppercase tracking-wider px-4 py-2 rounded cursor-pointer;
+    @apply bg-transparent border border-slate-700 text-slate-400;
+    @apply hover:border-slate-500 hover:text-slate-300 transition-all duration-200;
+  }
+
+  .btn-danger {
+    @apply font-mono text-sm uppercase tracking-wider px-4 py-2 rounded cursor-pointer;
+    @apply transition-all duration-200 border;
+    background: rgba(255, 49, 49, 0.08);
+    border-color: rgba(255, 49, 49, 0.4);
+    color: #FF3131;
+  }
+  .btn-danger:hover {
+    background: rgba(255, 49, 49, 0.16);
+    border-color: #FF3131;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 5px var(--aegis-glow); }
+    50% { box-shadow: 0 0 15px var(--aegis-border-strong), 0 0 30px var(--aegis-glow); }
+  }
+  .notification-pulse { animation: pulse-glow 2s ease-in-out infinite; }
+
+  @keyframes scan-line {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100vh); }
+  }
+}

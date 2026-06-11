@@ -1,0 +1,180 @@
+{
+  "docId": "nist-sp-800-128",
+  "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+  "docType": "NIST_SUPPLEMENT",
+  "version": "SP 800-128, August 2011 (Updated March 2019)",
+  "source": "https://doi.org/10.6028/NIST.SP.800-128",
+  "chunks": [
+    {
+      "id": "nist-sp-800-128:1.1:0",
+      "content": "NIST SP 800-128 establishes security-focused configuration management (SecCM) as a security discipline distinct from, but closely related to, general IT configuration management. While traditional configuration management focuses on system availability, reliability, and performance, SecCM explicitly incorporates security objectives into every aspect of configuration management activity: planning, identifying and implementing configurations, controlling changes, and monitoring the effects of those changes on the security posture of the system.\n\nSecCM is not a replacement for general IT configuration management but rather a security-aware extension of it. Organizations with existing IT configuration management programs should integrate SecCM requirements into those programs rather than establishing parallel processes. The key distinction is that SecCM requires explicit documentation and enforcement of security-related configuration requirements (STIGs, SRGs, CIS Benchmarks) alongside general operational configuration requirements.\n\nThe relationship between SecCM and the NIST SP 800-53 Configuration Management (CM) control family is direct. SP 800-128 provides detailed implementation guidance for controls CM-1 through CM-14. The five activities of SecCM — planning, identifying configurations, implementing configurations, controlling changes, and monitoring — map to specific CM controls: CM-9 (Configuration Management Plan), CM-2 (Baseline Configuration) and CM-8 (System Component Inventory), CM-6 (Configuration Settings), CM-3 (Configuration Change Control) and CM-4 (Security Impact Analysis), and CA-7 (Continuous Monitoring) respectively.\n\nSecCM and the RMF are tightly coupled. During the RMF Select step, CM controls are chosen based on system categorization. During Implement, the system's baseline configurations are established and documented. During Assess, configuration compliance is evaluated. During Authorize, the AO accepts configuration-related risks. During Monitor, configuration drift is continuously detected. SSP implementation statements for CM controls must reflect the SecCM framework described in SP 800-128, including the organization's Configuration Management Plan (CMP), baseline configuration documentation, change control procedures, and ongoing monitoring approach.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "1.1",
+        "sectionTitle": "Purpose: SecCM vs. General CM",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["CM-1", "CM-2", "CM-3", "CM-6", "CM-8", "CM-9", "CA-7"],
+        "families": ["CM", "CA"],
+        "chunkIndex": 0,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["seccm", "security-focused configuration management", "cm control family", "cm-1", "cm-9", "configuration management plan", "rmf", "sp 800-53", "it configuration management", "security discipline"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:secCM-planning:1",
+      "content": "Planning for SecCM is documented in the Configuration Management Plan (CMP), which is the primary deliverable for CM-9 (Configuration Management Plan). The CMP establishes the organization's approach to SecCM and serves as the governing document for all CM activities on the system. SP 800-128 specifies the required contents of a CMP and provides guidance for tailoring those contents to the organization's specific environment and risk profile.\n\nThe CMP must include: the purpose and scope of the SecCM program for the specific system; roles and responsibilities for SecCM activities; the configuration management process including how changes are requested, evaluated, approved, implemented, verified, and documented; the tools and automation used to support SecCM; the process for establishing and maintaining baseline configurations; and the interface between SecCM and other security processes (incident response, vulnerability management, continuous monitoring).\n\nKey roles in SecCM include the System Owner, who is ultimately responsible for the security of the system's configuration; the ISSO, who monitors configuration compliance and advises on security implications of proposed changes; and the Configuration Control Board (CCB), which is the formal decision-making body for reviewing and approving configuration changes. In smaller organizations, the CCB function may be performed by a configuration control officer rather than a formal board, but the authority to approve changes affecting the approved security baseline must be clearly delegated.\n\nThe scope and boundaries of SecCM must align with the system's authorization boundary as defined in the SSP. All hardware, software, and firmware components within the authorization boundary are subject to SecCM. This includes operating systems, applications, network devices, security devices (firewalls, IDS/IPS), and the firmware of all in-scope hardware. Virtual components, containers, and cloud services within the authorization boundary must also be managed under the SecCM program.\n\nTools and automation are addressed in the CMP, specifying the scanning tools, CMDB (Configuration Management Database), and change tracking systems used to support SecCM. In DoD environments, the CMP should reference ACAS/STIG scanning, eMASS as the system of record, and any automated configuration enforcement tools (e.g., HBSS DLP, application whitelisting tools).",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "secCM-planning",
+        "sectionTitle": "Planning for SecCM",
+        "parentSection": "2",
+        "parentTitle": "SecCM Planning",
+        "controlRefs": ["CM-9", "CM-3", "CM-2", "CM-8"],
+        "families": ["CM"],
+        "chunkIndex": 1,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["configuration management plan", "cmp", "cm-9", "ccb", "configuration control board", "system owner", "isso", "authorization boundary", "cmdb", "acas", "emass", "seccm roles"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:baseline-configuration:2",
+      "content": "The baseline configuration is the foundation of SecCM and the primary subject of CM-2 (Baseline Configuration). It represents the documented, formally reviewed, and agreed-upon specification for the configuration of all system components. SP 800-128 describes the baseline configuration as including hardware specifications, operating system and application versions, configuration settings, network topology, and the security settings applied to achieve compliance with applicable security requirements.\n\nThe system component inventory, required by CM-8, must document all hardware, software, and firmware components within the authorization boundary. The inventory serves as the reference list against which the baseline configuration is defined. It must include sufficient detail to support accountability, patch management, and vulnerability assessment — typically: component type, make, model, version/release, serial number (for hardware), IP address, location, and owner.\n\nThe approved baseline configuration represents what the system is supposed to look like from a security standpoint, while the as-built configuration represents the system's actual state at a given point in time. SecCM processes must ensure that the as-built configuration remains consistent with the approved baseline and that any authorized deviations are formally documented and risk-accepted.\n\nSTIGs (Security Technical Implementation Guides) and SRGs (Security Requirements Guides) published by DISA serve as the primary source of approved security configuration settings for DoD systems. For each major technology in scope (OS, database, web server, network device), the applicable STIG specifies required configuration settings, with each rule assigned a Category (CAT I, II, or III) and a STIG ID. The baseline configuration must reflect the approved STIG settings for each technology, with documented Findings (open vulnerability) or Not a Finding (compliant) determinations for each applicable rule.\n\nCIS Benchmarks provide an alternative baseline source for technologies where no DISA STIG is available. For DoD systems, DISA STIGs take precedence over CIS Benchmarks for supported technologies. For technologies not covered by a DISA STIG, the system owner may use a DISA SRG as a baseline or document a rationale for using an alternative source. Baseline configuration documentation must be included in the SSP as an attachment or referenced artifact and updated whenever the baseline is approved for change.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "baseline-configuration",
+        "sectionTitle": "Establishing Baseline Configurations",
+        "parentSection": "3",
+        "parentTitle": "Baseline Configuration",
+        "controlRefs": ["CM-2", "CM-8", "CM-6"],
+        "families": ["CM"],
+        "chunkIndex": 2,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["baseline configuration", "cm-2", "cm-8", "system component inventory", "disa stig", "srg", "cis benchmark", "approved baseline", "as-built configuration", "cat i cat ii cat iii", "stig compliance"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:configuration-control:3",
+      "content": "Configuration control and change management processes govern how changes to the approved baseline configuration are requested, evaluated for security impact, approved, implemented, tested, and documented. These processes are the operational core of CM-3 (Configuration Change Control) and CM-4 (Security Impact Analysis).\n\nThe change request process begins when any stakeholder identifies a need to modify a system component's configuration, software version, hardware, or security settings. Change requests must be submitted to the CCB using a standardized Change Request (CR) form that captures: the description of the proposed change, the reason for the change, affected system components, planned implementation timeline, rollback procedures, and any anticipated security impact.\n\nSecurity Impact Analysis (SIA), required by CM-4, is the process of evaluating the security implications of proposed changes before they are approved and implemented. The ISSO performs or oversees the SIA for all proposed changes to ensure that proposed modifications do not inadvertently introduce new vulnerabilities, weaken existing security controls, or create configuration drift from the STIG-compliant baseline. The SIA must consider: introduction of new software or libraries with known vulnerabilities, changes to network connectivity or firewall rules, modifications to authentication or access control settings, changes to audit logging configuration, and the potential for the change to affect controls in other system components.\n\nEmergency change procedures address changes required to address critical security vulnerabilities (e.g., IAVA compliance) or operational outages that cannot wait for the normal CCB cycle. Emergency changes must still document the security impact (even if after the fact), receive after-action CCB review, and be reflected in the updated baseline configuration. Emergency changes to address CAT I STIG findings or Critical IAVAs may be initiated by the ISSO without prior CCB approval in DoD environments, subject to immediate notification and documentation requirements.\n\nTesting before deployment ensures that changes perform as intended and do not degrade security or functionality. All changes that affect the approved security baseline must be tested in a development or test environment that mirrors production before being deployed. Test results must be documented and retained as evidence. Rollback procedures must be defined and tested for all changes to critical system components. Post-implementation verification confirms that the change was applied correctly and that security settings remain compliant with the STIG baseline.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "configuration-control",
+        "sectionTitle": "Configuration Control and Change Management",
+        "parentSection": "4",
+        "parentTitle": "Configuration Control",
+        "controlRefs": ["CM-3", "CM-4", "CM-5", "SA-10"],
+        "families": ["CM", "SA"],
+        "chunkIndex": 3,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["configuration change control", "cm-3", "cm-4", "security impact analysis", "ccb", "change request", "emergency change", "iava compliance", "rollback procedure", "stig baseline", "test before deployment"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:configuration-monitoring:4",
+      "content": "Configuration monitoring and compliance is the ongoing process of verifying that system configurations remain consistent with the approved baseline and that STIG compliance is maintained over time. SP 800-128 describes configuration monitoring as the CM component of the broader ISCM program described in NIST SP 800-137.\n\nAutomated compliance scanning using SCAP (Security Content Automation Protocol) is the most efficient approach to configuration monitoring. SCAP-compliant scanners evaluate system configurations against XCCDF-encoded checklists (STIGs expressed in SCAP format) and produce standardized result files (ARF format) that record compliant and non-compliant settings for each rule. OVAL content within SCAP packages defines the specific technical checks that validate each configuration setting. Automated SCAP scanning enables organizations to assess STIG compliance across large numbers of systems in a fraction of the time required for manual review.\n\nContinuous configuration monitoring requires establishing a scanning schedule aligned with the system's risk level and the organization's ISCM strategy. For HIGH categorization systems in DoD, configuration scanning should occur at minimum monthly; for critical systems, weekly scanning is recommended. Scan results should be compared to prior scans to identify new non-compliances (configuration drift) that may indicate unauthorized changes or security regressions.\n\nConfiguration drift detection identifies system components that have deviated from the approved baseline between scans. Drift may result from unauthorized changes, automatic updates that override hardened settings, software patches that reset configuration settings, or user actions. When configuration drift is detected, the ISSO must determine whether the deviation was authorized (and thus should be reflected in an updated baseline) or unauthorized (and should be remediated immediately).\n\nSCC (SCAP Compliance Checker) and ACAS/Nessus are the primary tools used in DoD for automated STIG compliance scanning. SCC generates XCCDF result files that can be imported into STIG Viewer for review and tracking. ACAS provides continuous vulnerability and configuration assessment through scheduled scans. STIG Viewer is used to review individual STIG findings and document the organization's implementation status (Open, Not a Finding, Not Applicable, Not Reviewed) and finding details. Findings categories in DoD: CAT I (critical, CVSS high/critical or STIG Severity Category I), CAT II (medium, STIG Severity Category II), CAT III (low, STIG Severity Category III). CAT I open findings require immediate attention and may constitute a DATO condition.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "configuration-monitoring",
+        "sectionTitle": "Configuration Monitoring and Compliance",
+        "parentSection": "5",
+        "parentTitle": "Configuration Monitoring",
+        "controlRefs": ["CM-6", "CM-3", "CA-7", "RA-5"],
+        "families": ["CM", "CA", "RA"],
+        "chunkIndex": 4,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["configuration monitoring", "scap", "xccdf", "oval", "stig compliance scanning", "configuration drift", "scc", "acas", "stig viewer", "cat i cat ii cat iii", "automated compliance scanning", "continuous monitoring"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:hardening:5",
+      "content": "System hardening is the process of reducing the attack surface of a system by eliminating unnecessary services, ports, protocols, software, and features, and by configuring remaining components to their most secure settings. SP 800-128 treats hardening as a core SecCM activity that directly implements CM-7 (Least Functionality) and supports the broader principle of least privilege.\n\nDoD STIG applicability determines the hardening baseline for each technology type. Each STIG specifies the hardening requirements for a specific operating system, application, or device, reflecting DoD's minimum acceptable security configuration. STIGs must be applied to all DoD information systems and their components within the authorization boundary. Where a STIG is not available for a specific technology, the system owner must document an equivalent hardening approach using the relevant SRG and justify any deviations.\n\nRemoving unnecessary services, ports, and protocols is one of the most effective hardening measures. The principle is to disable or uninstall everything that is not required for the system's intended function. For each service, port, or protocol that remains enabled, the SSP CM-7 implementation statement must document the business justification and the security mitigations applied. A Port, Protocol, and Service Management (PPSM) register should be maintained that lists all approved ports, protocols, and services with their justifications.\n\nApplication whitelisting implements a default-deny approach to executable code, allowing only pre-approved executables and libraries to run on the system. In DoD environments, HBSS Application Control (formerly McAfee Application Control) or Microsoft Windows Defender Application Control (WDAC) are common whitelisting solutions. Application whitelisting significantly reduces the risk of malware execution and unauthorized software installation.\n\nMobile code controls restrict or prohibit the execution of potentially malicious mobile code (JavaScript, ActiveX, Java applets) in browsers and other client applications. Configuration settings that limit or disable mobile code must be documented in the SSP CM-6 implementation statement.\n\nScript execution restrictions, such as PowerShell Constrained Language Mode, execution policy settings, and Group Policy Object (GPO) restrictions on script hosts, reduce the risk of attackers using scripting languages as attack vectors. For high-security DoD systems, script execution restrictions are often required by STIG findings. The SSP hardening section must document the specific restrictions applied and reference the applicable STIG rule IDs.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "hardening",
+        "sectionTitle": "System Hardening Requirements",
+        "parentSection": "6",
+        "parentTitle": "Hardening",
+        "controlRefs": ["CM-7", "CM-6", "CM-11", "SI-3"],
+        "families": ["CM", "SI"],
+        "chunkIndex": 5,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["system hardening", "least functionality", "cm-7", "unnecessary services", "ppsm", "application whitelisting", "mobile code controls", "script execution restrictions", "disa stig", "attack surface reduction", "hbss"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:patch-management:6",
+      "content": "Patch and vulnerability management is the process of identifying, acquiring, testing, and installing patches (code changes) to eliminate vulnerabilities in software, firmware, and hardware. SP 800-128 integrates patch management as a core SecCM activity implementing SI-2 (Flaw Remediation) and tying directly to CM-3 (Configuration Change Control) through the change management process for patch deployment.\n\nPatches are categorized based on the severity of the vulnerability they address. In DoD, the IAVA (Information Assurance Vulnerability Alert) system from DISA is the primary vehicle for communicating mandatory patches to DoD system administrators. IAVAs address critical vulnerabilities requiring immediate action. IAVBs (Information Assurance Vulnerability Bulletins) address less critical vulnerabilities. IAVTs (Information Assurance Vulnerability Technical Advisories) provide awareness of vulnerabilities without mandating immediate action.\n\nDoD patch compliance timelines are mandatory and strictly enforced through VRAM and ISCM programs. CAT I vulnerabilities (CVSS score 9.0 or higher, or IAVA designation) must be remediated within 21 calendar days of the IAVA release date. CAT II vulnerabilities (CVSS 7.0–8.9) must be remediated within 30 days. CAT III vulnerabilities (CVSS 4.0–6.9) must be remediated within 60 days. CAT IV vulnerabilities (CVSS below 4.0) must be remediated within 90 days. These timelines apply from the date the IAVA is published, not from when the system owner first becomes aware of it.\n\nVulnerability scanning integration with patch management ensures that the ACAS scanner identifies unpatched vulnerabilities, and that these findings are mapped to applicable IAVAs and tracked in the POA&M. The ISSO must review ACAS scan results upon completion and create or update POA&M items for newly identified vulnerabilities. VRAM integration enables commanders to view IAVA compliance status across all systems in their portfolio.\n\nPatch exceptions and mitigations: When a patch cannot be applied within the required timeframe (e.g., due to operational requirements, system stability concerns, or vendor delays), the system owner must document a patch exception in the POA&M with a mitigating control, an acceptance of the increased risk by the AO, and a target remediation date. Compensating controls for unpatched vulnerabilities may include network segmentation, application whitelisting, IDS signatures for the specific exploit, or other mitigations that reduce the exploitability of the vulnerability.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "patch-management",
+        "sectionTitle": "Patch and Vulnerability Management",
+        "parentSection": "7",
+        "parentTitle": "Patch Management",
+        "controlRefs": ["SI-2", "RA-5", "CM-3"],
+        "families": ["SI", "RA", "CM"],
+        "chunkIndex": 6,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["patch management", "si-2", "iava", "iavb", "iavt", "cat i findings", "patch compliance timelines", "acas", "vram", "poam", "patch exception", "vulnerability remediation", "cvss"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:secCM-dod:7",
+      "content": "DoD SecCM implementation is distinguished from civilian Federal implementation by its reliance on DISA-managed tools, STIG baselines, and IAVA compliance requirements. Understanding the DoD-specific SecCM ecosystem is essential for writing accurate SSP implementation statements for CM controls.\n\neMASS (Enterprise Mission Assurance Support Service) is the system of record for the DoD RMF process, including SecCM activities. STIG checklists (STIG viewer .ckl files) are uploaded to eMASS as part of the assessment package, providing evidence of configuration compliance for CM-6 and CM-7. eMASS tracks the status of each STIG finding (Open, Not a Finding, Not Applicable, Not Reviewed) and integrates with the POA&M to track remediation of open findings.\n\nACAS scan results serve as automated assessment evidence in DoD authorization packages. ACAS produces Nessus scan reports that map findings to applicable STIG Rule IDs and CVE identifiers. These reports are imported into eMASS as part of the continuous assessment workflow and provide objective evidence for SI-2 (Flaw Remediation), CM-6 (Configuration Settings), and RA-5 (Vulnerability Monitoring and Scanning) assessments.\n\nVRAM (Vulnerability Remediation Asset Manager) is the DoD enterprise tool for tracking IAVA compliance. ISSOs must register their systems in VRAM and report IAVA compliance status. VRAM provides commanders and AOs with a portfolio-level view of IAVA compliance and generates reports for the DoD IG and oversight bodies.\n\nThe DISA FSO (Field Security Operations) STIG library, accessible through the DoD Cyber Exchange, provides the authoritative repository of STIGs for all covered technologies. ISSOs must use the most current STIG version for all compliance assessments; using outdated STIG versions is a common finding during SCA reviews. DISA also provides SCAP content for many STIGs, enabling automated assessment using SCC or ACAS.\n\nAutomated SCAP content in the form of DataStream collections or XCCDF+OVAL packages enables SCC to perform automated STIG compliance checks against system images or live systems. SCC-generated XCCDF result files provide objective, reproducible evidence of configuration compliance that can be imported directly into STIG Viewer and eMASS, significantly reducing the labor burden of manual STIG review.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "secCM-dod",
+        "sectionTitle": "DoD SecCM Implementation",
+        "parentSection": "8",
+        "parentTitle": "DoD Implementation",
+        "controlRefs": ["CM-6", "CM-7", "CM-2", "SI-2", "RA-5"],
+        "families": ["CM", "SI", "RA"],
+        "chunkIndex": 7,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "RMF", "HIGH", "MODERATE", "NSS"],
+        "keywords": ["emass", "acas", "vram", "disa stig library", "scc", "scap", "stig viewer", "xccdf results", "iava compliance", "dod seccm", "ckl file", "disa fso"]
+      }
+    },
+    {
+      "id": "nist-sp-800-128:ssp-documentation:8",
+      "content": "Writing effective SSP implementation statements for CM controls requires understanding what assessors will look for during SCA review and providing sufficient specificity to demonstrate actual control implementation rather than general policy compliance. SP 800-128 provides the conceptual framework; this section describes how to translate that framework into actionable SSP language.\n\nCM-2 (Baseline Configuration) implementation statements must specify: the title and version of the approved baseline configuration document, where the baseline is stored and how it is version-controlled, the technologies covered (OS, DBMS, web server, etc.) and their applicable STIG versions, the process for updating the baseline when changes are approved, and the frequency at which the baseline is reviewed for accuracy. Example: 'The system baseline configuration is documented in the System Baseline Configuration Specification v2.3, maintained in the configuration management repository and updated following each approved CCB change. The baseline covers Windows Server 2019 (DISA STIG V2R3), SQL Server 2019 (DISA STIG V1R1), and IIS 10.0 (DISA STIG V1R2).'\n\nCM-3 (Configuration Change Control) implementation statements must specify: the CCB composition and meeting cadence, the change request template and workflow, the security impact analysis process and responsible party, the emergency change procedure, and the integration with the eMASS change management workflow.\n\nCM-6 (Configuration Settings) implementation statements must specify: the applicable STIGs by name and version, the tools used for compliance scanning (SCC, ACAS), the scanning frequency, the process for documenting and tracking open findings, and the risk acceptance procedure for documented exceptions. Statement must acknowledge that all CAT I findings are remediated or have AO-accepted risk acceptance and documented compensating controls.\n\nCM-7 (Least Functionality) implementation statements must specify: the PPSM register with all approved ports, protocols, and services; the process for disabling unnecessary functionality; the application whitelisting solution in use; and the documentation of any required deviations from least functionality with compensating controls.\n\nCM-8 (System Component Inventory) implementation statements must specify: the tool or system used to maintain the inventory, the attributes tracked for each component (type, version, IP, location, owner), the frequency of inventory updates and reconciliation, and the process for identifying unauthorized components.",
+      "metadata": {
+        "docId": "nist-sp-800-128",
+        "docTitle": "NIST SP 800-128 — Guide for Security-Focused Configuration Management of Information Systems",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "ssp-documentation",
+        "sectionTitle": "SSP Documentation for CM Controls",
+        "parentSection": "9",
+        "parentTitle": "SSP Documentation",
+        "controlRefs": ["CM-2", "CM-3", "CM-6", "CM-7", "CM-8"],
+        "families": ["CM"],
+        "chunkIndex": 8,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "NSS", "CLEARED_INDUSTRY"],
+        "keywords": ["ssp implementation statement", "cm-2", "cm-3", "cm-6", "cm-7", "cm-8", "baseline configuration documentation", "ppsm", "configuration change control", "stig version", "emass", "sca review"]
+      }
+    }
+  ]
+}

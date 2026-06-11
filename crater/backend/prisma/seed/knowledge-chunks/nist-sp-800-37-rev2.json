@@ -1,0 +1,484 @@
+{
+  "docId": "nist-sp-800-37-rev2",
+  "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+  "docType": "NIST_SUPPLEMENT",
+  "version": "Rev 2 December 2018",
+  "source": "https://doi.org/10.6028/NIST.SP.800-37r2",
+  "chunks": [
+    {
+      "id": "nist-sp-800-37-rev2:1.1:0",
+      "content": "NIST Special Publication 800-37, Revision 2 establishes the Risk Management Framework (RMF) for information systems and organizations. The purpose of this publication is to provide guidelines for applying the RMF to information systems and organizations. The RMF provides a disciplined, structured, and flexible process for managing security and privacy risk that includes information security categorization; control selection, implementation, and assessment; system and common control authorizations; and continuous monitoring. The framework integrates security and privacy into the system development life cycle and aligns with the Federal Information Security Modernization Act (FISMA) of 2014, the Privacy Act of 1974, OMB policies, and Federal information processing standards. The RMF is also applicable to systems designated as National Security Systems (NSS) pursuant to FISMA and applicable laws, Executive Orders, directives, regulations, and policies. This publication supersedes NIST SP 800-37, Revision 1 published in February 2010.\n\nThe scope of this publication addresses the full life cycle of information systems, including the development, implementation, operation, and disposal of systems that process, store, or transmit federal information. The RMF applies to all federal information systems other than those operated by elements of the Intelligence Community. State, local, and tribal governments, as well as private sector organizations are encouraged to use this voluntary guidance. The framework is designed to promote the development of trustworthy, secure, and resilient systems, and facilitates reciprocity among federal agencies by establishing a common foundation for assessing and authorizing information systems.\n\nThe applicability of the RMF extends to all components of federal information systems and the environments in which those systems operate. Organizations apply the RMF at Tier 3 (information system level) to authorize systems for operation. However, the framework is most effective when implemented at all three tiers of the risk management hierarchy, with senior leaders and executives establishing risk management strategy and governance at Tier 1, mission and business owners managing risk at Tier 2, and system owners applying the RMF tasks at Tier 3. The integration of privacy requirements throughout the RMF ensures compliance with applicable privacy laws, regulations, and policies, and reflects the federal government's commitment to protecting personally identifiable information (PII) throughout the information system life cycle.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Scope",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["CA-1", "RA-1", "PL-1", "PM-1"],
+        "families": ["CA", "RA", "PL", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["risk-management-framework", "fisma", "categorization", "authorization", "continuous-monitoring", "privacy", "national-security-systems", "life-cycle", "reciprocity", "trustworthy", "resilient", "applicability", "personally-identifiable-information", "governance", "federal"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:2.1:0",
+      "content": "The risk management hierarchy established in NIST SP 800-37 Rev 2 consists of three tiers that collectively address risk at the organization level, mission/business process level, and information system level. This multi-tiered approach ensures that risk decisions are informed by and consistent with the organization's overall risk management strategy and risk tolerance.\n\nTier 1 — Organization Level: Senior leaders and executives, including the Risk Executive (Function), establish organizational risk management strategy, policies, and risk tolerance. Tier 1 activities include defining the organizational risk management strategy, identifying mission/business processes, determining the risk tolerance of the organization, and identifying common controls available for inheritance. The Risk Executive (Function) coordinates with senior leadership to ensure risks affecting organizational operations, assets, and individuals are addressed consistently across the enterprise. Tier 1 outputs include the organization's risk management strategy, organizational risk tolerance statements, and enterprise architecture information.\n\nTier 2 — Mission/Business Process Level: Mission owners, business process owners, and the Chief Information Officer (CIO) operate at this tier to define mission/business processes and the information types that support those processes. Tier 2 activities include identifying mission-essential functions and their criticality, allocating security and privacy controls across the enterprise architecture, and designating information systems supporting mission/business processes. Tier 2 outputs include the mission/business process definitions, security and privacy architectures, and the authorization boundaries for supporting information systems.\n\nTier 3 — Information System Level: System owners, information system security officers (ISSOs), and security control assessors (SCAs) apply the RMF tasks at Tier 3 to obtain authorization to operate (ATO) for specific information systems. Tier 3 activities encompass the complete set of RMF steps: Prepare, Categorize, Select, Implement, Assess, Authorize, and Monitor. The information and risk decisions at Tier 3 feed back to Tier 1 and Tier 2 to update the organizational risk posture and inform future risk management decisions. Effective communication across all three tiers is essential to maintaining situational awareness of the security and privacy posture of the organization's information systems.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.1",
+        "sectionTitle": "Risk Management Hierarchy — Tiers 1, 2, 3",
+        "parentSection": "2",
+        "parentTitle": "Foundations",
+        "controlRefs": ["PM-1", "PM-2", "PM-9", "RA-1", "RA-2"],
+        "families": ["PM", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["tier-1", "tier-2", "tier-3", "risk-executive", "mission-owner", "authorization-boundary", "enterprise-architecture", "risk-tolerance", "risk-strategy", "cio", "isso", "sca", "mission-essential", "ato", "situational-awareness"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:2.3:0",
+      "content": "The Risk Management Framework is applied within the context of the System Development Life Cycle (SDLC). RMF tasks are integrated into all phases of the SDLC—initiation, development/acquisition, implementation/assessment, operations/maintenance, and disposal—to ensure that security and privacy requirements are addressed throughout the system life cycle, not only at the point of authorization.\n\nDuring the Initiation phase, organizations apply RMF Prepare tasks to establish the system boundary, identify stakeholders and roles, and conduct preliminary risk assessments. During the Development/Acquisition phase, security and privacy requirements are defined, and the control baseline is selected and documented. The Implementation/Assessment phase involves deploying controls, assessing their effectiveness, and preparing the authorization package. The Operations/Maintenance phase encompasses continuous monitoring activities, ongoing authorizations, and remediation of identified vulnerabilities. During the Disposal phase, organizations execute system decommissioning procedures ensuring proper media sanitization and closure of the system security plan.\n\nThe integration of the RMF with the SDLC enables organizations to identify security and privacy risks early, reducing the cost and complexity of addressing those risks late in the development cycle. By embedding RMF tasks into SDLC phases, organizations achieve security-by-design rather than security-as-an-afterthought. The SDLC integration also supports the incorporation of modern development methodologies including Agile, DevSecOps, and hybrid development approaches. In DevSecOps environments, RMF tasks such as control assessment and continuous monitoring are automated to the greatest extent possible using approved tools, enabling near-real-time awareness of the system security posture and supporting ongoing authorization (OA) decisions.\n\nThe overlap between SDLC phases and RMF steps is intentional and represents the iterative nature of risk management. As systems evolve through their life cycles, the risk posture changes, and RMF tasks must be revisited. Changes to the operational environment, threat landscape, or system configuration may require re-categorization, control re-selection, additional assessment activities, or reauthorization. The organization's configuration management and change management processes must be integrated with the RMF to ensure that significant changes trigger appropriate re-engagement of RMF activities.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.3",
+        "sectionTitle": "RMF Overview and SDLC Integration",
+        "parentSection": "2",
+        "parentTitle": "Foundations",
+        "controlRefs": ["SA-3", "SA-4", "SA-8", "CM-1", "CM-3", "PM-7"],
+        "families": ["SA", "CM", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["sdlc", "initiation", "development", "acquisition", "implementation", "devsecops", "agile", "ongoing-authorization", "change-management", "configuration-management", "media-sanitization", "disposal", "security-by-design", "authorization-package", "continuous-monitoring"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:D:0",
+      "content": "NIST SP 800-37 Rev 2 Appendix D defines the roles and responsibilities of key participants in the Risk Management Framework. Understanding and assigning these roles is a prerequisite for effective RMF implementation. The following roles are described:\n\nAuthorizing Official (AO): A senior official or executive with the authority to formally assume responsibility for operating an information system at an acceptable level of risk to organizational operations and assets, individuals, other organizations, and the Nation. The AO reviews the authorization package, makes a risk-based authorization decision, and signs the Authorization Decision Document (ADD). The AO may delegate certain functions to an Authorizing Official Designated Representative (AODR).\n\nAuthorizing Official Designated Representative (AODR): An organizational official who acts on behalf of the AO in coordinating and conducting the day-to-day activities associated with managing information security and privacy risk. The AODR may also be empowered by the AO to make certain risk-based authorization decisions.\n\nSystem Owner: An organizational official responsible for the procurement, development, integration, modification, operation, maintenance, and disposal of an information system. The system owner oversees the implementation of security controls, coordinates with the ISSO, Common Control Provider, and SCA, and prepares the System Security Plan (SSP).\n\nInformation System Security Officer (ISSO): An individual assigned responsibility for ensuring the appropriate operational security posture is maintained for an information system. The ISSO works closely with the system owner, coordinates with the SCA, maintains system security documentation, and serves as the principal advisor on all matters related to the security of the system.\n\nSecurity Control Assessor (SCA): An individual, group, or organization responsible for conducting a comprehensive assessment of the management, operational, and technical security controls employed within or inherited by an information system to determine the overall effectiveness of those controls. The SCA produces the Security Assessment Report (SAR).\n\nMission/Business Owner: A senior official or executive with oversight responsibility for the mission or business function supported by an information system, including making risk acceptance decisions for that mission or business function.\n\nCommon Control Provider: An organizational official responsible for the development, implementation, assessment, and monitoring of common controls. Common controls are security controls whose implementation results in a security capability that is inheritable by one or more organizational information systems.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "D",
+        "sectionTitle": "Roles and Responsibilities",
+        "parentSection": "D",
+        "parentTitle": "Appendix D",
+        "controlRefs": ["PM-2", "CA-2", "CA-5", "CA-7", "PL-2"],
+        "families": ["PM", "CA", "PL"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["authorizing-official", "aodr", "system-owner", "isso", "sca", "mission-owner", "common-control-provider", "authorization-decision", "sar", "ssp", "inheritable", "risk-acceptance", "security-posture", "procurement", "designated-representative"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.1:0",
+      "content": "The Prepare step at the organization level establishes the context and infrastructure for implementing the Risk Management Framework across the organization. Organization-level Prepare activities are performed once for the organization as a whole, not for individual information systems. These activities set the stage for efficient, consistent, and cost-effective RMF execution across all organizational systems.\n\nOrganization-level Prepare tasks establish the risk management roles and responsibilities (P-1), define the organization's risk management strategy (P-2), conduct an organization-level risk assessment (P-3), identify common controls available for inheritance (P-5), prioritize information systems by impact level (P-6), and develop the organization-level continuous monitoring strategy (P-7). Together, these tasks ensure that senior leadership has defined acceptable risk tolerances, that a common set of controls is available for organizational systems to inherit, and that the organization understands its aggregate risk posture before system-level RMF activities begin.\n\nThe outputs of organization-level Prepare tasks directly feed the system-level Prepare tasks and all subsequent RMF steps. A well-executed organization-level Prepare phase reduces duplication of effort across system authorizations by identifying reusable control implementations, establishes reciprocity by aligning organizational risk decisions with federal and sector-wide frameworks, and enables the Risk Executive (Function) to maintain a current and accurate picture of the organizational risk posture. Organizations that invest in thorough organization-level Prepare activities realize significant efficiency gains during Categorize, Select, and Authorize steps, as system owners and authorizing officials operate from a well-defined risk management foundation rather than making ad-hoc risk decisions for each system independently.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.1",
+        "sectionTitle": "Prepare — Organization Level Overview",
+        "parentSection": "3",
+        "parentTitle": "The Risk Management Framework",
+        "controlRefs": ["PM-1", "PM-2", "PM-9", "PM-10", "PM-11", "CA-7", "RA-3"],
+        "families": ["PM", "CA", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["prepare", "organization-level", "risk-management-strategy", "common-controls", "risk-executive", "aggregate-risk", "reciprocity", "risk-tolerance", "continuous-monitoring-strategy", "impact-level", "efficiency", "inheritance", "foundation", "reusable", "governance"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:P1-P2:0",
+      "content": "Task P-1: Risk Management Roles. The purpose of task P-1 is to identify and assign individuals to specific roles associated with the risk management of information systems and organizations. This task requires organizations to establish a Risk Executive (Function), designate Authorizing Officials (AOs), assign System Owners, identify Information System Security Officers (ISSOs), designate Security Control Assessors (SCAs), and identify Mission/Business Owners and Common Control Providers for all common controls offered to organizational systems. The primary inputs to P-1 include organizational charts, system inventories, and existing role assignment documentation. The key outcomes of P-1 include documented role assignments, a clear chain of accountability from system owners through the AO to senior leadership, and a roster of qualified personnel aligned to each role. Organizations should ensure that individuals assigned to RMF roles have the necessary training, experience, and resources to effectively execute the responsibilities associated with those roles.\n\nTask P-2: Risk Management Strategy. The purpose of task P-2 is to establish a risk management strategy for the organization that provides a foundation for all risk management decisions related to the operation and use of information systems. The risk management strategy addresses how the organization intends to assess risk, the risk response strategies to be employed (including risk acceptance, avoidance, mitigation, sharing, and transfer), and the level of risk that the organization is willing to accept (risk tolerance). Inputs to P-2 include organizational mission/business objectives, regulatory requirements, and prior risk assessment results. The risk management strategy is documented in the organization's risk management strategy document or equivalent artifact and is approved by senior leadership. The strategy aligns with the organizational risk tolerance communicated from Tier 1 to Tier 2 and Tier 3, ensuring that risk decisions made by system owners and authorizing officials are consistent with organizational intent. The strategy must also address privacy risk management in addition to security risk management, with explicit consideration of the types of personally identifiable information (PII) processed by organizational systems and the privacy risks associated with those systems.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "P1-P2",
+        "sectionTitle": "P-1 Risk Management Roles / P-2 Risk Management Strategy",
+        "parentSection": "3.1",
+        "parentTitle": "Prepare — Organization Level",
+        "controlRefs": ["PM-1", "PM-2", "PM-9", "PM-10", "RA-1", "RA-3"],
+        "families": ["PM", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["p-1", "p-2", "risk-management-roles", "risk-management-strategy", "risk-executive", "risk-tolerance", "risk-acceptance", "risk-mitigation", "risk-avoidance", "pii", "privacy-risk", "accountability", "chain-of-accountability", "senior-leadership", "role-assignment"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:P3-P5:0",
+      "content": "Task P-3: Risk Assessment (Organization). The purpose of task P-3 is to assess organization-level risks arising from the operation and use of information systems, and from the loss of confidentiality, integrity, or availability of organizational information. This assessment provides senior leadership with an understanding of the types of risks the organization faces, the likelihood of those risks materializing, the potential impact of risk events on organizational operations, and the current risk posture of the organization. P-3 leverages information from previous risk assessments, threat intelligence reports, vulnerability assessments, and knowledge of the organizational mission to produce a comprehensive organization-level risk assessment report. The outputs of P-3 feed directly into P-2 (risk management strategy) and P-6 (impact-level prioritization), and inform the selection of common controls at P-5. The risk assessment must address both security risks and privacy risks, reflecting the full scope of organizational exposure.\n\nTask P-5: Common Control Identification. The purpose of task P-5 is to identify, document, and publish organization-wide common controls that are available to organizational information systems for inheritance. Common controls are security or privacy controls whose implementation can be shared across multiple information systems, reducing the burden on individual system owners to independently implement and manage those controls. Examples of common controls include organizational physical security controls, enterprise identity management services, network boundary protection, and shared audit logging infrastructure. Inputs to P-5 include the organization's enterprise architecture, existing security plans for infrastructure systems, and the NIST SP 800-53 control catalog. Outputs include a Common Controls Catalog or equivalent document listing each available common control, the implementing organization, the control's implementation status, any parameters or conditions applicable to inheriting systems, and the inherited portions versus system-specific portions. Common control documentation must be sufficient for inheriting system owners to accurately represent the inherited control in their System Security Plans and for assessors to evaluate the effectiveness of those controls.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "P3-P5",
+        "sectionTitle": "P-3 Risk Assessment (Organization) / P-5 Common Control Identification",
+        "parentSection": "3.1",
+        "parentTitle": "Prepare — Organization Level",
+        "controlRefs": ["RA-3", "PM-9", "PM-10", "CA-2", "CA-3", "AC-20"],
+        "families": ["RA", "PM", "CA", "AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["p-3", "p-5", "organization-risk-assessment", "common-controls", "inheritance", "common-controls-catalog", "threat-intelligence", "vulnerability-assessment", "privacy-risk", "enterprise-architecture", "boundary-protection", "audit-logging", "inheriting", "shared-infrastructure", "risk-posture"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:P6-P7:0",
+      "content": "Task P-6: Impact-Level Prioritization. The purpose of task P-6 is to prioritize organizational information systems with the same impact level to facilitate a sequenced approach to RMF execution, resource allocation, and authorization decisions. Not all information systems within an impact level carry the same operational criticality or risk exposure. P-6 allows the Risk Executive (Function) and senior leadership to direct authorization resources toward the highest-risk systems first, ensuring that the most critical systems receive timely and thorough authorization activities. Inputs to P-6 include the organizational mission/business process definitions, preliminary impact level determinations, and threat and vulnerability information. Outputs include a prioritized list of information systems within each impact level, with documented rationale for the prioritization. This prioritization directly informs the sequencing of Categorize, Select, Assess, and Authorize steps across the system portfolio.\n\nTask P-7: Continuous Monitoring Strategy (Organization). The purpose of task P-7 is to develop and document an organization-wide strategy for monitoring the security and privacy posture of organizational information systems on an ongoing basis. The organization-level continuous monitoring strategy defines the monitoring frequency for each control family, the types of assessment activities to be performed (automated scanning, manual review, penetration testing), the metrics used to measure security and privacy posture, and the escalation procedures for identified risks. The strategy is informed by the organizational risk management strategy (P-2), the available security automation tools, and applicable federal requirements such as OMB Memorandum M-14-03, Enhancing the Security of Federal Networks and Critical Infrastructure. The continuous monitoring strategy is reviewed and updated at defined intervals and whenever significant changes occur in the organizational risk environment. The strategy must provide for the automated collection of security-related information from deployed tools, near-real-time reporting of security status to authorizing officials and senior leadership, and the correlation of continuous monitoring data with the organization's overall risk posture.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "P6-P7",
+        "sectionTitle": "P-6 Impact-Level Prioritization / P-7 Continuous Monitoring Strategy (Org)",
+        "parentSection": "3.1",
+        "parentTitle": "Prepare — Organization Level",
+        "controlRefs": ["CA-7", "PM-6", "PM-9", "RA-7", "SI-4"],
+        "families": ["CA", "PM", "RA", "SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["p-6", "p-7", "impact-level-prioritization", "continuous-monitoring-strategy", "monitoring-frequency", "automated-scanning", "penetration-testing", "security-metrics", "escalation", "omb", "near-real-time", "security-automation", "risk-environment", "portfolio", "sequencing"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.2:0",
+      "content": "The Prepare step at the system level establishes the context and infrastructure necessary for a specific information system to proceed through the remaining RMF steps efficiently and effectively. System-level Prepare tasks are performed for each individual information system and build upon the foundation established by organization-level Prepare tasks. These tasks collectively define the system's identity, purpose, boundaries, information types, and initial risk profile before the system undergoes formal categorization and control selection.\n\nSystem-level Prepare tasks include: defining the authorization boundary (P-11), identifying the information types processed, stored, and transmitted by the system (P-12), understanding the information life cycle for system information (P-13), conducting a system-level risk assessment (P-14), defining the system's security and privacy requirements (P-15), identifying and registering the system with organizational asset inventories (P-16), and designating the system owner, ISSO, and other key roles for the specific system (P-17). Completing these tasks produces a well-documented preliminary system profile that enables the system owner and AO to make informed decisions during Categorize and Select steps.\n\nEffective system-level Prepare activities reduce rework and iteration during subsequent RMF steps. When the authorization boundary is clearly defined, the scope of control selection and assessment is well-understood. When information types are accurately identified upfront, the security categorization is more accurate and the resulting control baseline is appropriately scoped. Organizations that rush through or skip system-level Prepare tasks frequently encounter misscoped system security plans, control selections that are insufficient for the actual system functionality, and authorization packages that require extensive revision before an AO can make a risk determination. The investment in thorough system-level Prepare yields authorization packages that are complete, accurate, and defensible.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.2",
+        "sectionTitle": "Prepare — System Level Overview",
+        "parentSection": "3",
+        "parentTitle": "The Risk Management Framework",
+        "controlRefs": ["PL-2", "RA-3", "SA-3", "SA-4", "PM-5"],
+        "families": ["PL", "RA", "SA", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["prepare", "system-level", "authorization-boundary", "information-types", "information-life-cycle", "system-registration", "risk-profile", "ssp", "preliminary", "boundary-scoping", "control-baseline", "asset-inventory", "system-owner", "isso", "risk-determination"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:P11:0",
+      "content": "Task P-11: Authorization Boundary Definition and Scoping. The purpose of task P-11 is to determine the authorization boundary of the information system. The authorization boundary defines the set of system components, including hardware, software, firmware, data, people, processes, and the physical environment, that are under the direct management and control of the system owner and are subject to the authorization decision. Establishing a well-defined, accurate, and appropriately scoped authorization boundary is one of the most important and consequential decisions made during the Prepare step.\n\nInputs to P-11 include system component inventories, network architecture diagrams, data flow diagrams, enterprise architecture documentation, and organizational policies on system boundaries. Outputs include the documented authorization boundary definition, a diagram depicting the system boundary and its interfaces with external systems, a listing of system components within the boundary, and identification of external services upon which the system depends. The authorization boundary documentation is incorporated into the System Security Plan.\n\nScoping the authorization boundary requires the system owner to make deliberate decisions about which components are directly managed and controlled versus which are externally provided services or common controls that will be inherited. Components that are within the authorization boundary are fully assessed as part of the system authorization. Components that are outside the boundary but connected to the system are covered by Interconnection Security Agreements (ISAs), Memoranda of Understanding (MOUs), or other formal agreements. The system owner must also identify and document all external services consumed by the system, including cloud services, and ensure that those services are covered by existing authorizations or are otherwise addressed in the authorization package.\n\nOrganizations should resist the tendency to draw boundaries too broadly, which results in unwieldy assessment scopes, or too narrowly, which creates security gaps. The authorization boundary must encompass all components that collectively provide the security capabilities required to protect system information and functionality. Changes to the authorization boundary after authorization require a significant change notification to the AO and may trigger re-authorization.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "P11",
+        "sectionTitle": "P-11 Authorization Boundary Definition and Scoping",
+        "parentSection": "3.2",
+        "parentTitle": "Prepare — System Level",
+        "controlRefs": ["CA-3", "CA-9", "SA-9", "PL-2", "CM-8"],
+        "families": ["CA", "SA", "PL", "CM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["p-11", "authorization-boundary", "scoping", "isa", "mou", "external-services", "cloud-services", "network-architecture", "data-flow", "component-inventory", "significant-change", "re-authorization", "interconnection", "boundary-definition", "external-systems"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:P12-P13:0",
+      "content": "Task P-12: Information Types. The purpose of task P-12 is to identify and document the types of information processed, stored, and transmitted by the information system. Information types are categories of information defined by the organization or derived from applicable laws, regulations, policies, and mission/business functions. The primary reference for information type identification is NIST SP 800-60, Guide for Mapping Types of Information and Information Systems to Security Categories, which provides a taxonomy of information types organized by mission area and supporting functions, along with provisional impact level recommendations for each type's confidentiality, integrity, and availability.\n\nInputs to P-12 include system purpose statements, data flow diagrams, data element dictionaries, and organizational data classification policies. Outputs include a comprehensive information type listing with associated provisional confidentiality, integrity, and availability impact levels for each type. This output directly feeds the security categorization task (C-2).\n\nTask P-13: Information Life Cycle. The purpose of task P-13 is to identify and understand the stages of the information life cycle for all information types processed, stored, or transmitted by the information system. The information life cycle describes how information is created or received, processed, stored, transmitted, and eventually disposed of. Understanding the full life cycle enables the system owner to identify security and privacy risks at each stage and to select controls that are appropriate to protect information throughout its life. Privacy risks are particularly dependent on understanding the life cycle of personally identifiable information (PII), including where PII enters the system, how it is used, who has access to it, where it is stored, how it is transmitted, and when and how it is disposed of. Inputs to P-13 include information type listings from P-12, system design documentation, data flow diagrams, and organizational records management policies. Outputs include an information life cycle description or diagram for each major information type, with identification of key security and privacy risks at each stage.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "P12-P13",
+        "sectionTitle": "P-12 Information Types / P-13 Information Life Cycle",
+        "parentSection": "3.2",
+        "parentTitle": "Prepare — System Level",
+        "controlRefs": ["RA-2", "PM-5", "SI-12", "MP-6", "AU-11"],
+        "families": ["RA", "PM", "SI", "MP", "AU"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["p-12", "p-13", "information-types", "information-life-cycle", "nist-800-60", "confidentiality", "integrity", "availability", "pii", "privacy-risk", "data-classification", "data-flow", "records-management", "provisional-impact", "disposal"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:P14-P15:0",
+      "content": "Task P-14: Risk Assessment (System). The purpose of task P-14 is to conduct an initial risk assessment for the information system or update an existing risk assessment to reflect the current threat environment, vulnerabilities, likelihood, and potential impact of identified risks. The system-level risk assessment is focused on the specific information system, its operating environment, and the information it processes, stores, and transmits. Unlike the organization-level risk assessment (P-3), which addresses risks at an enterprise level, P-14 produces a system-specific risk picture that informs control tailoring and supplementation decisions during the Select step. Inputs to P-14 include threat intelligence, vulnerability assessments, the information type listings from P-12, the authorization boundary documentation from P-11, and the organizational risk assessment results from P-3. Outputs include a system-level risk assessment report identifying specific threats to the system, existing and planned vulnerabilities, likelihood of exploitation, and potential impact to organizational operations, assets, individuals, and the Nation. The risk assessment findings are used by the system owner and AO to make informed tailoring decisions and to understand the residual risk that will remain after controls are implemented.\n\nTask P-15: Requirements Definition. The purpose of task P-15 is to define the security and privacy requirements for the information system based on the applicable laws, executive orders, directives, regulations, policies, standards, mission/business needs, and risk assessments results. Security and privacy requirements are derived from multiple sources including FISMA, Privacy Act of 1974, applicable OMB circulars and memoranda, agency-specific policies, and the results of the preliminary risk assessments. Requirements are documented in the system security plan, system privacy plan, contract language for externally provided services, and system acquisition documentation. Clearly defined requirements at P-15 prevent requirements creep and scope changes later in the SDLC and ensure that contractors and third-party service providers understand their security and privacy obligations.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "P14-P15",
+        "sectionTitle": "P-14 Risk Assessment (System) / P-15 Requirements Definition",
+        "parentSection": "3.2",
+        "parentTitle": "Prepare — System Level",
+        "controlRefs": ["RA-3", "RA-5", "SA-4", "SA-8", "PL-2"],
+        "families": ["RA", "SA", "PL"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["p-14", "p-15", "system-risk-assessment", "requirements-definition", "threat-intelligence", "vulnerability-assessment", "tailoring", "supplementation", "residual-risk", "fisma", "privacy-act", "omb", "contract-requirements", "third-party", "requirements-creep"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.3:0",
+      "content": "Task C-1: System Description. The purpose of task C-1 is to document the characteristics of the information system to facilitate risk management decisions. The system description provides a comprehensive characterization of the information system including its purpose; functions; and the nature, sensitivity, and scope of the information processed, stored, or transmitted by the system. The system description forms the foundation of the System Security Plan and enables assessors, authorizing officials, and oversight personnel to understand the system in sufficient detail to make informed risk management decisions.\n\nThe system description must include: the system name and identifier; the system location (physical and logical); the system environment of operation; the system's purpose and mission; a description of the hardware, software, firmware, and information components; network architecture diagrams; data flow diagrams; the authorization boundary and interfaces; identification of users and roles; identification of external interconnections; and the applicable laws, regulations, and policies governing the system's operation. The description should be written at a level of detail that enables a knowledgeable reviewer who is unfamiliar with the specific system to understand its composition and operation.\n\nTask C-2: Security Categorization. The purpose of task C-2 is to categorize the information system and the information processed, stored, and transmitted by that system based on an analysis of the potential adverse impact to organizational operations, organizational assets, individuals, other organizations, and the Nation if the information or information system is compromised. Security categorization is performed in accordance with FIPS Publication 199, Standards for Security Categorization of Federal Information and Information Systems, and NIST SP 800-60. The security categorization result is expressed as a combination of the impact levels for confidentiality, integrity, and availability, with the overall system impact level being the highest of the three values. Inputs include information type listings from P-12, the system description from C-1, and mission/business impact analyses. Outputs include the documented security categorization with rationale, reviewed and approved by the system owner, mission/business owner, and authorizing official.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.3",
+        "sectionTitle": "Categorize — C-1 System Description / C-2 Security Categorization",
+        "parentSection": "3",
+        "parentTitle": "The Risk Management Framework",
+        "controlRefs": ["RA-2", "PL-2", "PM-7", "PM-5"],
+        "families": ["RA", "PL", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["c-1", "c-2", "system-description", "security-categorization", "fips-199", "nist-800-60", "confidentiality", "integrity", "availability", "impact-level", "network-architecture", "data-flow", "authorization-boundary", "mission-impact", "high-water-mark"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.4:0",
+      "content": "Task S-1: Control Selection. The purpose of task S-1 is to select an initial set of controls for the information system based on the security categorization and the applicable control baselines established by NIST SP 800-53 and FIPS Publication 200. The initial control selection begins with the applicable baseline—Low, Moderate, or High—from NIST SP 800-53, which provides a starting point calibrated to the system's impact level. For National Security Systems, control selection follows CNSSI 1253. For systems within the DoD, control selection must also comply with DoDI 8510.01 and applicable STIG requirements.\n\nInputs to S-1 include the security categorization from C-2, organizational risk assessment results, the available common controls identified at P-5, and applicable laws and policies. Outputs include the initial control selection documented in the System Security Plan, identifying which controls from the applicable baseline are selected and which, if any, are being considered for tailoring. The initial control selection is the starting point for control tailoring (S-2) and allocation (S-3).\n\nTask S-2: Control Tailoring. The purpose of task S-2 is to tailor the selected control baseline to more closely align with the specific characteristics, operating environment, threat environment, and risk posture of the information system. Tailoring actions include applying scoping guidance, substituting controls, adding compensating controls, and specifying parameter values for controls that include organization-defined parameters. Scoping guidance allows organizations to remove controls that are not applicable to the system's operating environment—for example, removing physical security controls from a system hosted entirely in an FedRAMP-authorized cloud environment. Compensating controls are alternative controls that provide equivalent security capability when the baseline control cannot be implemented as specified. All tailoring decisions must be documented with rationale, reviewed by the SCA, and approved by the AO. Tailoring that removes or reduces controls must be accompanied by an analysis showing that the residual risk remains within the organization's risk tolerance.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.4",
+        "sectionTitle": "Select — S-1 Control Selection / S-2 Control Tailoring",
+        "parentSection": "3",
+        "parentTitle": "The Risk Management Framework",
+        "controlRefs": ["PM-7", "RA-3", "SA-8", "CA-2", "PL-2"],
+        "families": ["PM", "RA", "SA", "CA", "PL"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["s-1", "s-2", "control-selection", "control-tailoring", "nist-800-53", "fips-200", "cnssi-1253", "baseline", "scoping", "compensating-controls", "parameter-values", "fedramp", "cloud", "residual-risk", "stig"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:S3-S5:0",
+      "content": "Task S-3: Control Allocation. The purpose of task S-3 is to designate each selected control as a system-specific control, hybrid control, or inherited control, and to allocate each control to the appropriate system component or organizational entity responsible for its implementation. System-specific controls are implemented solely by the information system. Hybrid controls have portions implemented by the system and portions provided by the organization as common controls. Inherited controls are provided entirely by a common control provider and are simply inherited by the system. Proper allocation of controls is essential for ensuring that no controls are left unaddressed and that accountability for each control is clearly established.\n\nTask S-4: Documentation of Planned Control Implementations. The purpose of task S-4 is to document the planned or actual implementation approaches for each allocated control in sufficient detail to enable assessment of the control's effectiveness. For each control, the documentation describes the control requirement, how the control will be implemented (or has been implemented), the system components involved, any applicable parameters or constraints, and the planned or actual implementation status. This documentation forms the core of the implementation statements in the System Security Plan and must be specific, accurate, and verifiable by the assessor.\n\nTask S-5: System Security Plan / System Privacy Plan. The purpose of task S-5 is to develop the System Security Plan (SSP) and, where applicable, the System Privacy Plan (SPP) that together provide a comprehensive description of the security and privacy controls planned for or in place to protect the information system. The SSP includes the system description (from C-1), the security categorization (from C-2), the selected and tailored control baselines (from S-1 and S-2), the control allocation (from S-3), and the implementation documentation (from S-4). The SSP must be reviewed and approved by the system owner and authorizing official prior to submission for assessment. The SSP serves as the primary artifact for the security control assessor to use during the Assess step and forms a central component of the authorization package.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "S3-S5",
+        "sectionTitle": "Select — S-3 Control Allocation / S-4 Documentation / S-5 SSP",
+        "parentSection": "3.4",
+        "parentTitle": "Select",
+        "controlRefs": ["PL-2", "PL-8", "CA-2", "PM-7", "SA-5"],
+        "families": ["PL", "CA", "PM", "SA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["s-3", "s-4", "s-5", "control-allocation", "system-specific", "hybrid-control", "inherited-control", "ssp", "system-security-plan", "system-privacy-plan", "implementation-statements", "authorization-package", "common-control-provider", "spp", "accountability"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.5:0",
+      "content": "Task I-1: Control Implementation. The purpose of task I-1 is to implement the controls specified in the System Security Plan in accordance with established implementation procedures and engineering practices. Control implementation requires the system owner and development/operations teams to configure, deploy, or otherwise instantiate each selected control in the operational environment. Implementation activities include deploying technical controls (e.g., access control software, cryptographic modules, audit logging agents), establishing operational procedures (e.g., incident response procedures, backup procedures), and implementing management controls (e.g., user training programs, risk management procedures). Inputs to I-1 include the System Security Plan, system design documentation, vendor configuration guidance, and applicable Security Technical Implementation Guides (STIGs) and checklists. Implementation evidence (screenshots, configuration files, procedure documents, training records) is collected during implementation to support subsequent assessment activities.\n\nTask I-2: Update Control Implementation Information. The purpose of task I-2 is to document changes to the planned control implementations that occur during the implementation phase and to update the System Security Plan to reflect the as-implemented state of each control. Differences between planned and actual implementations are common during system development and must be documented and assessed for their impact on the system's security posture. Significant deviations from the approved implementation plan must be reviewed by the system owner and communicated to the AO. The SSP must be updated prior to the commencement of formal assessment activities to accurately reflect the as-implemented control environment. An outdated or inaccurate SSP that does not reflect actual implementations will result in finding discrepancies between the assessed state and the documented state, increasing assessment effort and potentially delaying authorization.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.5",
+        "sectionTitle": "Implement — I-1 Control Implementation / I-2 Update Implementation Info",
+        "parentSection": "3",
+        "parentTitle": "The Risk Management Framework",
+        "controlRefs": ["SA-3", "SA-4", "SA-10", "CM-2", "CM-3", "CM-6"],
+        "families": ["SA", "CM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["i-1", "i-2", "control-implementation", "stig", "configuration", "cryptographic-modules", "audit-logging", "operational-procedures", "training", "implementation-evidence", "as-implemented", "significant-deviation", "checklist", "technical-controls", "management-controls"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.6a:0",
+      "content": "Task A-1: Assessor Selection. The purpose of task A-1 is to select an appropriate assessor or assessment team to conduct the security and privacy control assessment for the information system. The independence of the assessor is a critical factor in the credibility and value of the assessment results. NIST SP 800-37 Rev 2 distinguishes between three levels of assessor independence: (1) developer testing, with no independence; (2) independent operational testing; and (3) independent audit or assessment, with the highest level of independence. The required level of independence depends on the system's impact level: Low impact systems may be assessed by the system owner's team; Moderate and High impact systems should have independent assessors; and High impact systems supporting critical infrastructure or national security functions should have the greatest level of assessor independence. The AO determines the required level of independence and selects or approves the assessor.\n\nTask A-2: Assessment Plan Development. The purpose of task A-2 is to develop a Security Assessment Plan (SAP) that describes the scope of the assessment, the assessment procedures to be used, the schedule of assessment activities, and the assessment team roles and responsibilities. The SAP is developed in accordance with NIST SP 800-53A, which provides assessment procedures for each control in NIST SP 800-53. The SAP specifies for each control: the assessment methods to be employed (examine, interview, test), the depth of the assessment (basic, focused, or comprehensive), the coverage of the assessment (representative sample or exhaustive), and the specific assessment objects to be examined, interviewed, or tested. The SAP must be reviewed and approved by the system owner and AO prior to the commencement of assessment activities. The approved SAP provides the assessor with clear guidance on what must be assessed and how, and provides the system owner with visibility into the planned scope and depth of the assessment.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.6a",
+        "sectionTitle": "Assess — A-1 Assessor Selection / A-2 Assessment Plan",
+        "parentSection": "3.6",
+        "parentTitle": "Assess",
+        "controlRefs": ["CA-2", "CA-5", "CA-7", "RA-3"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["a-1", "a-2", "assessor-selection", "assessor-independence", "assessment-plan", "sap", "nist-800-53a", "examine", "interview", "test", "depth", "coverage", "basic", "focused", "comprehensive", "critical-infrastructure"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.6b:0",
+      "content": "Task A-3: Control Assessments. The purpose of task A-3 is to execute the Security Assessment Plan and assess the selected controls using the specified assessment methods and procedures. The assessment team examines documents and artifacts, interviews key personnel, and tests controls through technical means to determine whether each control is implemented correctly, operating as intended, and producing the desired outcome with respect to meeting the security and privacy requirements for the system. Assessment findings are categorized as: Satisfied (S) — the control is effectively implemented and is operating as intended; Other Than Satisfied (OTS) — the control is not implemented, partially implemented, implemented incorrectly, not operating as intended, or producing an undesired outcome. For each OTS finding, the assessor documents the specific deficiency, the evidence supporting the finding, the affected control, the potential impact of the deficiency, and initial recommendations for remediation.\n\nDuring the assessment, the assessor operates from the approved SAP and does not scope-creep beyond the agreed assessment boundary. However, if the assessor discovers significant vulnerabilities or risks outside the planned assessment scope, those findings should be communicated to the system owner and AO and may result in supplemental assessment activities. The assessor maintains objectivity throughout the assessment and does not consult with the system owner or ISSO in a manner that would compromise the independence of the findings. The raw assessment data, evidence artifacts, and working papers produced during A-3 are the evidentiary basis for the Security Assessment Report produced in A-4.\n\nTask A-4: Assessment Reports. The Security Assessment Report (SAR) produced in task A-4 documents the results of the security and privacy control assessment. The SAR includes: the assessment scope and methodology; a summary of the assessment findings; detailed findings for each OTS control with supporting evidence; the initial risk determination for each finding (high, moderate, or low); and the assessor's recommendations for remediation. The SAR is provided to the system owner and AO as part of the authorization package.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.6b",
+        "sectionTitle": "Assess — A-3 Control Assessments / A-4 Assessment Reports",
+        "parentSection": "3.6",
+        "parentTitle": "Assess",
+        "controlRefs": ["CA-2", "CA-5", "RA-5"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["a-3", "a-4", "control-assessment", "sar", "satisfied", "other-than-satisfied", "ots", "finding", "deficiency", "remediation", "evidence", "objectivity", "assessment-boundary", "authorization-package", "risk-determination"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.6c:0",
+      "content": "Task A-5: Remediation Actions. The purpose of task A-5 is to conduct initial remediation actions on controls found to be other than satisfied and reassess those controls as needed. Remediation actions taken during the assessment period — before the authorization package is finalized — provide an opportunity to address the most critical deficiencies prior to submission to the AO. Remediation during A-5 is limited to actions that can be completed within the assessment timeframe and does not require modifying the SAP or repeating the entire assessment. After remediation, the assessor reassesses the remediated controls to verify that the remediation is effective and updates the SAR to reflect the revised findings.\n\nNot all OTS findings require remediation before authorization. The system owner, in coordination with the ISSO and SCA, performs an initial triage of findings to prioritize those that pose the greatest risk and that can feasibly be remediated within the available time. Findings that cannot be remediated before authorization are documented in the Plan of Action and Milestones (POA&M), which is submitted to the AO as part of the authorization package. The POA&M must include for each finding: the finding description, the affected control, the responsible party for remediation, the planned completion date, the resources required, and any interim mitigations in place. The AO reviews the POA&M to assess whether the residual risk from unmitigated findings is acceptable.\n\nThe relationship between the SAR and the POA&M is critical to the authorization decision. The SAR documents what was found; the POA&M documents what will be done about findings that remain open. Together, these documents form the risk picture that the AO uses to make the authorization decision. A credible, specific, and resource-backed POA&M increases AO confidence that the system owner is managing residual risks responsibly.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.6c",
+        "sectionTitle": "Assess — A-5 Remediation Actions",
+        "parentSection": "3.6",
+        "parentTitle": "Assess",
+        "controlRefs": ["CA-2", "CA-5", "RA-7", "PM-4"],
+        "families": ["CA", "RA", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["a-5", "remediation", "poam", "plan-of-action-and-milestones", "ots", "triage", "residual-risk", "interim-mitigation", "reassessment", "responsible-party", "planned-completion", "authorization-decision", "sar", "deficiency", "finding-disposition"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.7a:0",
+      "content": "Task R-1: Authorization Package Assembly. The purpose of task R-1 is to compile the information necessary for the AO to make a risk-based authorization decision. The authorization package is a collection of artifacts that together provide the AO with a comprehensive picture of the security and privacy posture of the information system, the risks associated with operating the system, and the proposed plan for managing any residual risks. The authorization package must include the following core documents: (1) the System Security Plan (SSP), including the system description, security categorization, selected controls, tailoring rationale, and control implementation statements; (2) the Security Assessment Report (SAR), documenting the assessment findings and the assessor's risk determinations; (3) the Plan of Action and Milestones (POA&M), documenting open findings and planned remediation activities; and, where applicable, (4) the System Privacy Plan (SPP).\n\nTask R-2: Risk Assessment Update. The purpose of task R-2 is to update the risk assessment results to reflect any changes in the threat environment, new vulnerabilities identified during assessment, or updated information about the system's environment of operation. The risk assessment update ensures that the AO has access to current risk information at the time of the authorization decision. Inputs include the completed SAR, the current POA&M, any recently published threat intelligence, and updated vulnerability scan results. The updated risk assessment may change the risk determination for individual findings, identify new risks not previously assessed, or confirm that the existing risk picture remains current. The risk assessment update is incorporated into the authorization package and reviewed by the AO as part of the authorization review process.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.7a",
+        "sectionTitle": "Authorize — R-1 Authorization Package / R-2 Risk Assessment",
+        "parentSection": "3.7",
+        "parentTitle": "Authorize",
+        "controlRefs": ["CA-6", "CA-2", "CA-5", "RA-3", "PM-4"],
+        "families": ["CA", "RA", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["r-1", "r-2", "authorization-package", "sar", "poam", "ssp", "spp", "risk-assessment-update", "threat-environment", "vulnerability-scan", "risk-determination", "ao", "authorization-decision", "residual-risks", "artifacts"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.7b:0",
+      "content": "Task R-3: Risk Response. The purpose of task R-3 is to identify and implement risk response actions that address the risks identified in the authorization package and reduce residual risks to an acceptable level prior to or concurrent with the authorization decision. Risk response actions may include: implementing additional security controls or control enhancements to reduce the likelihood or impact of identified risks; accepting risks that fall within the organization's risk tolerance and documenting that acceptance; applying compensating controls where baseline controls cannot be implemented; sharing risks through agreements with external service providers; or avoiding risks by eliminating the functionality or data that gives rise to the risk. The risk response actions are documented in the SSP, POA&M, and risk assessment, and are reviewed by the AO as part of the authorization decision.\n\nTask R-4: Authorization Decision. The purpose of task R-4 is for the AO to review the authorization package, evaluate the residual risks, and make a formal authorization decision. The AO may make one of three decisions: (1) Authorization to Operate (ATO) — the AO accepts the residual risks and authorizes the system to operate for a specified period; (2) Authorization to Operate with Conditions (ATOC) — the AO authorizes the system to operate subject to specified conditions being met; or (3) Denial of Authorization to Operate (DATO) — the AO determines that the residual risks are unacceptable and denies authorization. The authorization decision is documented in the Authorization Decision Document (ADD), which includes the AO's signature, the authorization boundary, the authorization period, any conditions or restrictions on the authorization, and any outstanding POA&M items that must be addressed during the authorization period. The ATO is time-limited, typically not to exceed three years, and subject to significant change reviews that may require re-authorization before the expiration of the authorization period.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.7b",
+        "sectionTitle": "Authorize — R-3 Risk Response / R-4 Authorization Decision",
+        "parentSection": "3.7",
+        "parentTitle": "Authorize",
+        "controlRefs": ["CA-6", "RA-7", "PM-9", "SI-2"],
+        "families": ["CA", "RA", "PM", "SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["r-3", "r-4", "risk-response", "authorization-decision", "ato", "atoc", "dato", "add", "authorization-decision-document", "residual-risk", "compensating-controls", "authorization-period", "significant-change", "re-authorization", "risk-acceptance"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.7c:0",
+      "content": "Task R-5: Authorization Reporting. The purpose of task R-5 is to report the authorization decision and any conditions of the authorization to appropriate organizational officials and external entities as required by applicable laws, regulations, and policies. Authorization reporting fulfills FISMA reporting requirements and provides senior leadership, the CIO, the SAISO, and oversight bodies such as Inspectors General (IGs) and the Office of Management and Budget (OMB) with visibility into the security and privacy posture of the organization's information systems.\n\nAuthorization reporting activities include: entering the authorization decision into the organizational security assessment and authorization tracking system (e.g., eMASS, XACTA, Archer, or equivalent); reporting new ATOs or re-authorizations to the agency CIO and SAISO; reporting Denials of Authorization to Operate (DATOs) to senior leadership; notifying external organizations with interconnections to the authorized system of any significant changes in the system's security posture; and fulfilling annual FISMA reporting requirements for authorization status across the organization's system portfolio. For DoD systems, authorization reporting is conducted in eMASS and must comply with DoDI 8510.01 and applicable DISA reporting requirements. For NSS, reporting must comply with CNSS policy requirements. Organizations must maintain current and accurate authorization status information to support Federal IT Dashboard reporting and other oversight mechanisms.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.7c",
+        "sectionTitle": "Authorize — R-5 Authorization Reporting",
+        "parentSection": "3.7",
+        "parentTitle": "Authorize",
+        "controlRefs": ["CA-6", "PM-1", "PM-6"],
+        "families": ["CA", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["r-5", "authorization-reporting", "fisma-reporting", "emass", "xacta", "dato", "ato", "cio", "saiso", "inspector-general", "omb", "federal-dashboard", "nss", "cnss", "disa"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.8a:0",
+      "content": "Task M-1: System and Environment Changes. The purpose of task M-1 is to determine the impact of changes to the information system and its operating environment on the security and privacy posture of the system and to make decisions about the need for reauthorization. During the authorization period, systems undergo changes due to hardware refreshes, software upgrades, configuration changes, changes in threat environment, changes in organizational policies, and changes in the system's operating environment. Not all changes require reauthorization, but all changes must be evaluated to determine their security and privacy impact.\n\nThe organization's configuration management process must include a security and privacy impact analysis for proposed changes. Changes are classified as: (1) minor changes — no impact on security posture, no additional action required; (2) significant changes — changes that may increase the risk to organizational operations and that require AO notification and potentially additional assessment; or (3) major changes — changes that substantially alter the security posture and require formal reauthorization. Significant change examples include: major software version upgrades affecting security-relevant components; changes to the authorization boundary; addition of new interconnections; changes to the cryptographic mechanisms protecting high-value data; changes in the system's location or operating environment; and discovery of new high-severity vulnerabilities.\n\nTask M-2: Ongoing Assessments. The purpose of task M-2 is to assess selected controls on an ongoing basis in accordance with the organization-wide and system-level continuous monitoring strategies (P-7). Ongoing assessments provide timely information about the current security and privacy posture of the system and identify control degradation before it results in security incidents or significant risk events. Assessment frequencies for ongoing monitoring are determined based on control volatility, criticality, and the results of prior assessments. Technical controls (e.g., vulnerability scanning, log review) are typically assessed more frequently than administrative and physical controls.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.8a",
+        "sectionTitle": "Monitor — M-1 System/Environment Changes / M-2 Ongoing Assessments",
+        "parentSection": "3.8",
+        "parentTitle": "Monitor",
+        "controlRefs": ["CA-7", "CM-3", "CM-4", "RA-7", "SI-2"],
+        "families": ["CA", "CM", "RA", "SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["m-1", "m-2", "significant-change", "configuration-management", "impact-analysis", "reauthorization", "ongoing-assessments", "control-volatility", "vulnerability-scanning", "continuous-monitoring", "minor-change", "major-change", "authorization-period", "security-impact", "control-degradation"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.8b:0",
+      "content": "Task M-3: Ongoing Risk Response. The purpose of task M-3 is to respond to risk identified during continuous monitoring activities on an ongoing basis. Risks identified through ongoing assessments, vulnerability scanning, threat intelligence, or security incident analysis are evaluated and responded to in accordance with the organizational risk management strategy. Risk response options remain the same as in the Authorize step: accept, avoid, mitigate, share, or transfer. However, in the Monitor step, risk responses must be executed in an operational environment where the system is live and processing production data, requiring careful coordination with system owners, operations personnel, and the AO. Mitigation actions that involve significant changes to the system require the change impact analysis described in M-1 before they are implemented.\n\nTask M-4: Authorization Package Updates. The purpose of task M-4 is to update the authorization package documents on an ongoing basis to reflect the current state of the information system and its security and privacy posture. As the system evolves and as monitoring activities identify changes in the risk posture, the SSP, SAR, and POA&M must be updated to maintain their accuracy and currency. Stale or inaccurate authorization package documents reduce the AO's confidence in the currency of the authorization and may result in the AO suspending or revoking the authorization. Specific update triggers include: completion of POA&M items (close the finding in the POA&M); new OTS findings identified during ongoing assessments (open new POA&M items); completion of significant changes (update the SSP); and changes to the organizational risk management strategy or common control baseline (update the SSP and potentially re-tailor the control baseline).\n\nTask M-5: Reporting. The purpose of task M-5 is to report the security and privacy posture of the information system to appropriate organizational officials on an ongoing basis. Reporting provides the AO, CIO, SAISO, and senior leadership with a current view of the system's risk posture throughout the authorization period, enabling proactive risk management rather than reactive responses to security incidents.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.8b",
+        "sectionTitle": "Monitor — M-3 Ongoing Risk Response / M-4 Package Updates / M-5 Reporting",
+        "parentSection": "3.8",
+        "parentTitle": "Monitor",
+        "controlRefs": ["CA-7", "CA-5", "RA-7", "PM-4", "SI-4"],
+        "families": ["CA", "RA", "PM", "SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["m-3", "m-4", "m-5", "ongoing-risk-response", "authorization-package-updates", "poam-updates", "ato-maintenance", "ssp-updates", "risk-posture-reporting", "threat-intelligence", "vulnerability", "proactive", "authorization-period", "sar-updates", "risk-mitigation"]
+      }
+    },
+    {
+      "id": "nist-sp-800-37-rev2:3.8c:0",
+      "content": "Task M-6: Ongoing Authorization. The purpose of task M-6 is to determine if the current security and privacy risk to organizational operations and assets, individuals, other organizations, and the Nation is acceptable on an ongoing basis. Ongoing authorization (OA) is a form of authorization that replaces the periodic reauthorization cycle with a continuous, evidence-based authorization process. In an OA environment, the AO maintains an ongoing awareness of the system's security and privacy posture through automated monitoring tools, continuous assessment data feeds, and regular reporting from the system owner and ISSO. The AO's authorization decision remains in effect as long as the risk remains acceptable and within the parameters established during the initial authorization. Significant changes that push risk beyond the AO's established risk thresholds trigger a formal AO review that may result in modification of the authorization conditions or suspension of the authorization.\n\nOngoing authorization is most effective when enabled by security automation tools that provide near-real-time data on control effectiveness, vulnerability status, configuration drift, and threat activity. In DoD environments, eMASS integration with automated scanning tools supports ongoing authorization by maintaining a current compliance posture for system controls. DISA STIGs and automated SCAP/STIG compliance scanning tools provide continuous visibility into technical control compliance, reducing the need for point-in-time manual assessments.\n\nTask M-7: System Disposal. The purpose of task M-7 is to implement a system disposal strategy that ensures that hardware, software, and information are appropriately disposed of and that the risks associated with system retirement are managed. Disposal activities include: removing the system from service and updating organizational inventories; sanitizing media in accordance with NIST SP 800-88, Guidelines for Media Sanitization; destroying hardware containing sensitive information; revoking system access for all users; closing all system interconnections; archiving the authorization package and assessment records in accordance with applicable records retention requirements; and notifying relevant organizational officials and external stakeholders of the system disposal.",
+      "metadata": {
+        "docId": "nist-sp-800-37-rev2",
+        "docTitle": "NIST SP 800-37 Rev 2 Risk Management Framework",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "3.8c",
+        "sectionTitle": "Monitor — M-6 Ongoing Authorization / M-7 System Disposal",
+        "parentSection": "3.8",
+        "parentTitle": "Monitor",
+        "controlRefs": ["CA-7", "MP-6", "CM-8", "SI-12", "MA-5"],
+        "families": ["CA", "MP", "CM", "SI", "MA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["m-6", "m-7", "ongoing-authorization", "system-disposal", "media-sanitization", "nist-800-88", "emass", "scap", "stig", "configuration-drift", "security-automation", "near-real-time", "records-retention", "hardware-destruction", "disa"]
+      }
+    }
+  ]
+}

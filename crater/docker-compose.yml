@@ -1,0 +1,86 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: crater-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     crater
+      POSTGRES_PASSWORD: craterpassword
+      POSTGRES_DB:       crater
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crater -d crater"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: crater-backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Override .env DATABASE_URL — "db" resolves on the Docker network, "localhost" does not
+      DATABASE_URL: postgresql://crater:craterpassword@db:5432/crater
+      NODE_ENV:     production
+      PORT:         3000
+      OLLAMA_BASE_URL: http://ollama:11434
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-llama3.1:8b}
+      LOCAL_AI_MAX_TOKENS: ${LOCAL_AI_MAX_TOKENS:-384}
+      LOCAL_AI_CONTEXT_WINDOW: ${LOCAL_AI_CONTEXT_WINDOW:-4096}
+      LOCAL_AI_MAX_RAG_CHUNKS: ${LOCAL_AI_MAX_RAG_CHUNKS:-3}
+      LOCAL_AI_MAX_RAG_CHARS_PER_CHUNK: ${LOCAL_AI_MAX_RAG_CHARS_PER_CHUNK:-1200}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: crater-ollama
+    restart: unless-stopped
+    environment:
+      OLLAMA_KEEP_ALIVE: 24h
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  ollama-init:
+    image: ollama/ollama:latest
+    container_name: crater-ollama-init
+    restart: "no"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
+      LOCAL_AI_MODEL: ${LOCAL_AI_MODEL:-llama3.1:8b}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint:
+      - /bin/sh
+      - -c
+      - ollama pull "$${LOCAL_AI_MODEL}"
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: crater-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+
+networks:
+  default:
+    name: crater_network
+
+volumes:
+  postgres_data:
+  ollama_data:

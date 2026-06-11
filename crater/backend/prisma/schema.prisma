@@ -1,0 +1,466 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  SYSTEM_OWNER  // System owner — accountable executive for the IS
+  ISSO          // Information System Security Officer — primary RMF practitioner
+  ISSM          // Information System Security Manager — oversees ISSOs
+  ISSE          // Information System Security Engineer — implements controls
+  SCA           // Security Control Assessor — independent assessment (read-only)
+  AO            // Authorizing Official — authorization authority (read-only)
+  DAO           // Delegated Authorizing Official — acts on behalf of AO (read-only)
+  ADMIN         // Platform administrator
+}
+
+enum ImpactLevel {
+  LOW
+  MODERATE
+  HIGH
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  PENDING_ATO
+  AUTHORIZED
+  DENIED
+  EXPIRED
+}
+
+enum StepStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  PENDING_REVIEW
+  COMPLETE
+}
+
+enum ControlStatus {
+  NOT_IMPLEMENTED
+  PLANNED
+  PARTIALLY_IMPLEMENTED
+  IMPLEMENTED
+  NOT_APPLICABLE
+}
+
+enum DiagramType {
+  NETWORK
+  BOUNDARY
+  DATA_FLOW
+  ARCHITECTURE
+  RACK
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MODERATE
+  LOW
+}
+
+enum POAMStatus {
+  OPEN
+  IN_REMEDIATION
+  CLOSED
+  RISK_ACCEPTED
+}
+
+enum ArtifactType {
+  APPOINTMENT_LETTER
+  USER_AGREEMENT
+  PRIVILEGED_USER_AGREEMENT
+  VULNERABILITY_SCAN
+  TEMPEST_DIAGRAM
+  ISA
+  MOU
+  TRAINING_RECORD
+  OTHER
+}
+
+enum InventoryItemType {
+  HARDWARE
+  SOFTWARE
+}
+
+enum InventoryApprovalStatus {
+  APPROVED
+  PENDING
+  REJECTED
+  RETIRED
+}
+
+enum PPSMProtocol {
+  TCP
+  UDP
+  ICMP
+}
+
+enum PPSMDirection {
+  INBOUND
+  OUTBOUND
+  BOTH
+}
+
+enum PPSMApprovalStatus {
+  APPROVED
+  PENDING
+  REJECTED
+  RETIRED
+}
+
+enum ConMonEventType {
+  CONTROL_ASSESSMENT
+  POAM_REVIEW
+  ATO_RENEWAL
+  SECURITY_REVIEW
+  SYSTEM_SCAN
+  TRAINING
+  CUSTOM
+}
+
+enum ConMonEventStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETE
+  OVERDUE
+  CANCELLED
+}
+
+enum ConMonRecurrence {
+  NONE
+  MONTHLY
+  QUARTERLY
+  SEMI_ANNUAL
+  ANNUAL
+}
+
+// ─── Core Models ─────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  role         Role     @default(ISSO)   // New registrations default to ISSO
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  ownedProjects  Project[]       @relation("ProjectOwner")
+  projectMembers ProjectMember[]
+  auditLogs      AuditLog[]
+  diagrams       Diagram[]
+  artifacts      Artifact[]
+
+  @@index([email])
+  @@map("users")
+}
+
+model Project {
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  ownerId      String
+  impactLevel  ImpactLevel   @default(LOW)
+  status       ProjectStatus @default(PLANNING)
+  authBoundary String?
+  atoExpiry    DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  owner            User              @relation("ProjectOwner", fields: [ownerId], references: [id])
+  members          ProjectMember[]
+  rmfSteps         RMFStep[]
+  controlInstances ControlInstance[]
+  diagrams         Diagram[]
+  artifacts        Artifact[]
+  inventoryItems   InventoryItem[]
+  ppsmEntries      PPSMEntry[]
+  poamItems        POAMItem[]
+  auditLogs        AuditLog[]
+  conmonEvents     ConMonEvent[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([impactLevel])
+  @@map("projects")
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      Role
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([projectId])
+  @@index([userId])
+  @@map("project_members")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  projectId  String?
+  action     String
+  entityType String
+  entityId   String?
+  details    Json?
+  ipAddress  String?
+  userAgent  String?
+  timestamp  DateTime @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([entityType, entityId])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+// ─── RMF Models ──────────────────────────────────────────────────────────────
+
+model RMFStep {
+  id          String     @id @default(cuid())
+  projectId   String
+  stepNumber  Int        // 0–6 per NIST SP 800-37 Rev. 2
+  status      StepStatus @default(NOT_STARTED)
+  data        Json?      // Step-specific payload; shape validated by Zod in the service layer
+  notes       String?
+  completedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  project  Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  evidence Evidence[]
+  diagrams Diagram[]
+  artifacts Artifact[]
+
+  @@unique([projectId, stepNumber])
+  @@index([projectId])
+  @@map("rmf_steps")
+}
+
+model Control {
+  id                    String    @id @default(cuid())
+  controlId             String    @unique // e.g. "AC-1"
+  family                String             // e.g. "AC"
+  title                 String
+  description           String
+  lowBaseline           Boolean   @default(false)
+  modBaseline           Boolean   @default(false)
+  highBaseline          Boolean   @default(false)
+  bestPracticeStatement String?
+  typicalEvidence       String?
+  aiLastGenerated       DateTime?
+
+  createdAt DateTime @default(now())
+
+  instances ControlInstance[]
+
+  @@index([family])
+  @@index([controlId])
+  @@map("controls")
+}
+
+model ControlInstance {
+  id                     String        @id @default(cuid())
+  projectId              String
+  controlId              String
+  status                 ControlStatus @default(NOT_IMPLEMENTED)
+  implementationNotes    String?
+  inherited              Boolean       @default(false)
+  tailoringJustification String?
+  createdAt              DateTime      @default(now())
+  updatedAt              DateTime      @updatedAt
+
+  project  Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  control  Control    @relation(fields: [controlId], references: [id])
+  evidence Evidence[]
+
+  @@unique([projectId, controlId])
+  @@index([projectId])
+  @@index([status])
+  @@map("control_instances")
+}
+
+model Evidence {
+  id                String   @id @default(cuid())
+  title             String
+  description       String?
+  fileUrl           String?
+  fileName          String?
+  fileSize          Int?
+  mimeType          String?
+  stepId            String?
+  controlInstanceId String?
+  uploadedById      String?
+  createdAt         DateTime @default(now())
+
+  step            RMFStep?         @relation(fields: [stepId], references: [id], onDelete: SetNull)
+  controlInstance ControlInstance? @relation(fields: [controlInstanceId], references: [id], onDelete: SetNull)
+
+  @@index([stepId])
+  @@index([controlInstanceId])
+  @@map("evidence")
+}
+
+model Diagram {
+  id           String      @id @default(cuid())
+  projectId    String
+  stepId       String?     // Optional link to the RMF step this diagram belongs to
+  uploadedById String?     // User who uploaded
+  title        String
+  type         DiagramType
+  fileUrl      String      // Server-relative path: /uploads/projects/{id}/diagrams/{file}
+  fileName     String      // Original client filename
+  fileSize     Int?
+  mimeType     String?
+  annotations  Json?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  step       RMFStep? @relation(fields: [stepId], references: [id], onDelete: SetNull)
+  uploadedBy User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([stepId])
+  @@index([type])
+  @@map("diagrams")
+}
+
+model Artifact {
+  id           String       @id @default(cuid())
+  projectId    String
+  stepId       String?
+  controlId    String?
+  poamItemId   String?
+  uploadedById String?
+  title        String
+  type         ArtifactType @default(OTHER)
+  description  String?
+  tags         String[]     @default([])
+  fileUrl      String
+  fileName     String
+  fileSize     Int?
+  mimeType     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  step       RMFStep? @relation(fields: [stepId], references: [id], onDelete: SetNull)
+  uploadedBy User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+  @@index([stepId])
+  @@index([controlId])
+  @@index([poamItemId])
+  @@index([type])
+  @@map("artifacts")
+}
+
+model InventoryItem {
+  id             String                  @id @default(cuid())
+  projectId      String
+  item           String
+  itemType       InventoryItemType
+  modelVersion   String?
+  location       String?
+  classification String?
+  approvalStatus InventoryApprovalStatus @default(PENDING)
+  notes          String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([itemType])
+  @@index([approvalStatus])
+  @@map("inventory_items")
+}
+
+model PPSMEntry {
+  id                 String             @id @default(cuid())
+  projectId          String
+  port               String
+  protocol           PPSMProtocol
+  direction          PPSMDirection
+  serviceApplication String
+  justification      String?
+  approvalStatus     PPSMApprovalStatus @default(PENDING)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([protocol])
+  @@index([direction])
+  @@index([approvalStatus])
+  @@map("ppsm_entries")
+}
+
+model POAMItem {
+  id                  String     @id @default(cuid())
+  projectId           String
+  controlId           String?
+  weakness            String
+  description         String?
+  severity            Severity
+  status              POAMStatus @default(OPEN)
+  scheduledCompletion DateTime?
+  milestonesWithDates String?
+  resources           String?
+  cost                Float?
+  closedAt            DateTime?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([severity])
+  @@map("poam_items")
+}
+
+model ConMonEvent {
+  id          String            @id @default(cuid())
+  projectId   String
+  title       String
+  description String?
+  eventType   ConMonEventType
+  dueDate     DateTime
+  status      ConMonEventStatus @default(PENDING)
+  recurrence  ConMonRecurrence  @default(NONE)
+  controlId   String?
+  poamItemId  String?
+  assignedTo  String?
+  completedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([dueDate])
+  @@index([status])
+  @@index([eventType])
+  @@map("conmon_events")
+}

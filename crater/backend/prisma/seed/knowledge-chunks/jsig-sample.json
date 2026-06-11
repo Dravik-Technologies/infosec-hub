@@ -1,0 +1,179 @@
+{
+  "docId": "jsig-rev2",
+  "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+  "docType": "JSIG",
+  "version": "Rev 2",
+  "source": "Under Secretary of Defense for Intelligence and Security (USD(I&S)) / Director of National Intelligence (DNI)",
+  "chunks": [
+    {
+      "id": "jsig-rev2:4:0",
+      "content": "ACCESS CONTROL requirements for Special Access Program (SAP) information systems extend beyond the baseline NIST SP 800-53 Rev. 5 requirements and impose additional obligations on Program Security Officers, system owners, and ISSOs responsible for SAP-accredited enclaves. The overarching principle governing access to SAP information systems is need-to-know, which must be formally documented, adjudicated by a qualified authority, and verified before any access is provisioned. Unlike standard national security systems, SAP enclaves cannot rely solely on clearance level as a sufficient basis for access; a separate, explicit determination of need-to-know must be made and recorded for every individual user account.\n\nAll access to SAP systems requires prior written approval from the Program Security Officer (PSO) or designated Program Access Request (PAR) authority. The PAR process must document the requesting individual's identity, clearance level, formal need-to-know determination, briefing status for the relevant Special Access Program, and the specific system or data scope to which access is requested. Access rosters maintained by the ISSO must be reconciled with PAR records at least quarterly and immediately following any personnel action that affects clearance status or organizational assignment. Discrepancies between active system accounts and current PAR authorizations constitute a security-relevant finding that must be documented and tracked through the POA&M process until resolved.\n\nAccount provisioning in SAP environments must follow a formal workflow: the system owner initiates the request, the PSO or delegated PAR authority approves access, and the ISSO implements the account with least-privilege permissions scoped to the approved need-to-know. Temporary or guest accounts are prohibited unless explicitly authorized in the system security plan with defined expiration dates. Service accounts and privileged accounts require separate PAR documentation and must not be shared among multiple individuals.",
+      "overlapAfter": "The access control policy for all SAP information systems must be formally documented, approved by the Authorizing Official, and reviewed at least annually or following any significant change.",
+      "metadata": {
+        "docId": "jsig-rev2",
+        "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+        "docType": "JSIG",
+        "section": "4",
+        "sectionTitle": "Access Control Overview for SAP Environments",
+        "controlRefs": ["AC-1", "AC-2", "AC-3", "AC-17"],
+        "families": ["AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 1,
+        "applicability": ["SAP", "SCI", "HIGH", "JSIG"],
+        "keywords": [
+          "need-to-know", "par", "program-access-request", "pso", "program-security-officer",
+          "access-roster", "briefing", "clearance", "provisioning", "compartment",
+          "least-privilege", "guest-accounts", "privileged", "accounts", "reconcile"
+        ]
+      }
+    },
+    {
+      "id": "jsig-rev2:4.1:0",
+      "content": "AC-1 ACCESS CONTROL POLICY AND PROCEDURES — SAP Supplemental Guidance\n\nThe access control policy for all SAP information systems must be formally documented, approved by the Authorizing Official, and reviewed at least annually or following any significant change to the system boundary, mission, or applicable policy. The policy must explicitly address the following SAP-unique elements not covered by standard organizational access control policy: (1) the formal need-to-know determination process and the authority responsible for making such determinations; (2) the Program Access Request lifecycle, including initiation, adjudication, provisioning, and revocation; (3) requirements for compartment-aware access review including cross-program access restrictions; (4) procedures governing access by contractor personnel, visiting foreign nationals where applicable, and system administrators with elevated privileges; and (5) incident reporting obligations specific to unauthorized access attempts or access policy violations in SAP environments.\n\nSAP access control procedures must be implemented as separate, system-specific documents rather than relying solely on organizational-level procedures. The procedures must address the operational context of the SAP enclave, including physical access controls at the SCIF or accredited facility level, electronic access authentication requirements, and integration between physical and logical access control mechanisms. Procedures must be maintained in the System Security Plan and available to the Security Control Assessor upon request.\n\nFor JSIG-applicable systems, the access control policy must acknowledge the primacy of the JSIG and relevant DoD/IC component directives over general organizational policy where conflicts exist. The ISSO is responsible for documenting any JSIG-required deviations from the organizational baseline and obtaining Authorizing Official concurrence before implementation.",
+      "overlapBefore": "All access to SAP systems requires prior written approval from the Program Security Officer (PSO) or designated Program Access Request (PAR) authority.",
+      "overlapAfter": "Account management for SAP systems must address the complete identity lifecycle from initial PAR approval through final account termination and debrief.",
+      "metadata": {
+        "docId": "jsig-rev2",
+        "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+        "docType": "JSIG",
+        "section": "4.1",
+        "sectionTitle": "AC-1 Access Control Policy and Procedures (SAP Supplement)",
+        "parentSection": "4",
+        "parentTitle": "Access Control Overview for SAP Environments",
+        "controlRefs": ["AC-1", "AC-2"],
+        "families": ["AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 1,
+        "applicability": ["SAP", "SCI", "HIGH", "JSIG", "DOD"],
+        "keywords": [
+          "policy", "procedures", "need-to-know", "par", "pso", "compartment",
+          "scif", "jsig", "authorizing-official", "isso", "sca", "contractor",
+          "privileged", "access-review", "cross-program", "lifecycle"
+        ]
+      }
+    },
+    {
+      "id": "jsig-rev2:4.2:0",
+      "content": "AC-2 ACCOUNT MANAGEMENT — SAP Supplemental Guidance\n\nAccount management for SAP systems must address the complete identity lifecycle from initial PAR approval through final account termination and debrief. Each user account must be mapped to a specific, approved PAR record; accounts without a corresponding current PAR authorization are considered unauthorized and must be disabled within one business day of discovery. The ISSO must maintain an Access Roster that is kept current in near-real-time and reconciled against the authoritative PAR database maintained by the PSO at a minimum quarterly cadence.\n\nAccount types must be formally defined in the System Security Plan and must include at minimum: standard user accounts, privileged/administrative accounts, service accounts, and emergency or break-glass accounts. Each account type requires a distinct approval chain: standard users require PSO PAR approval; privileged accounts require PSO PAR approval plus documented justification from the system owner and a separate privileged access agreement signed by the individual; service accounts require written authorization from the system owner and must be documented in a service account inventory with associated system functions and expiration or review dates.\n\nAccount reviews must be conducted at the following mandatory intervals: (1) quarterly review of all active user accounts against current PAR and clearance status; (2) immediate review triggered by personnel actions including separation, transfer, loss of clearance, or change in need-to-know; (3) annual review of all privileged accounts with documented justification for continued elevated access. Review records must identify the reviewer, date, accounts reviewed, changes made, and disposition of accounts flagged for termination. These records constitute objective evidence required for Security Control Assessment activities under AC-2.\n\nAccount termination in SAP environments must occur within 24 hours of a termination trigger event — not within the organizational standard timeframe — due to the elevated risk associated with unauthorized continued access to compartmented information. The ISSO must implement automated account expiration where technically feasible and must log all account creation, modification, and termination events to the audit system.",
+      "overlapBefore": "The access control policy must explicitly address the formal need-to-know determination process and the authority responsible for making such determinations.",
+      "overlapAfter": "Access enforcement in SAP systems must implement technical controls that prevent any access not explicitly authorized through the PAR process.",
+      "metadata": {
+        "docId": "jsig-rev2",
+        "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+        "docType": "JSIG",
+        "section": "4.2",
+        "sectionTitle": "AC-2 Account Management (SAP Supplement)",
+        "parentSection": "4",
+        "parentTitle": "Access Control Overview for SAP Environments",
+        "controlRefs": ["AC-2", "AC-3", "AC-17"],
+        "families": ["AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 1,
+        "applicability": ["SAP", "SCI", "HIGH", "JSIG"],
+        "keywords": [
+          "account-management", "par", "access-roster", "pso", "privileged",
+          "service-accounts", "quarterly", "termination", "separation", "clearance",
+          "break-glass", "lifecycle", "inventory", "review", "automated", "expiration",
+          "24-hours", "isso", "audit"
+        ]
+      }
+    },
+    {
+      "id": "jsig-rev2:4.3:0",
+      "content": "AC-3 / AC-4 ACCESS ENFORCEMENT AND INFORMATION FLOW — SAP Supplemental Guidance\n\nAccess enforcement in SAP systems must implement technical controls that prevent any access not explicitly authorized through the PAR process. Role-based access control (RBAC) or attribute-based access control (ABAC) mechanisms must be configured to enforce least-privilege at the data object, function, and system interface level. Where the underlying platform supports mandatory access control (MAC), MAC must be enabled and configured to enforce compartment boundaries. Generic or shared user roles that grant access beyond demonstrated need-to-know are prohibited; each role must be associated with a specific functional requirement documented in the System Security Plan.\n\nInformation flow control under AC-4 is particularly critical for SAP environments because of the potential for inadvertent cross-compartment data migration. Information flow policies must explicitly address: (1) permitted data flows between the SAP enclave and other accredited or unaccredited systems; (2) requirements for cross-domain solutions (CDS) or data transfer agents where data must transit between classification domains; (3) prohibition of direct file transfers between compartmented and non-compartmented networks without an approved and accredited transfer mechanism; and (4) audit logging of all information flows crossing defined boundary points.\n\nCross-domain solution deployments in SAP environments require separate accreditation and must be documented as a system interconnection in the System Security Plan. Data received from external sources through a CDS must be validated for integrity and inspected for malicious content before being made available to SAP users. Transfer logs must be retained in accordance with the system's audit log retention requirements and must be reviewed at least monthly by the ISSO or designated reviewer.\n\nFor systems operating within a SCIF or accredited SAP facility, the physical boundary is considered a logical component of the access enforcement mechanism. Physical access controls and electronic access controls must be integrated in the security architecture documentation to provide an end-to-end access control narrative that a Security Control Assessor can trace from entry to the facility through to user authentication on the information system.",
+      "overlapBefore": "Account termination in SAP environments must occur within 24 hours of a termination trigger event due to the elevated risk associated with unauthorized continued access to compartmented information.",
+      "overlapAfter": "Identification and authentication requirements for SAP systems go beyond the NIST baseline because the risk of unauthorized access to compartmented information demands the strongest available authentication mechanisms.",
+      "metadata": {
+        "docId": "jsig-rev2",
+        "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+        "docType": "JSIG",
+        "section": "4.3",
+        "sectionTitle": "AC-3/AC-4 Access Enforcement and Information Flow Control (SAP Supplement)",
+        "parentSection": "4",
+        "parentTitle": "Access Control Overview for SAP Environments",
+        "controlRefs": ["AC-3", "AC-4", "SC-7", "SC-8"],
+        "families": ["AC", "SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 1,
+        "applicability": ["SAP", "SCI", "HIGH", "JSIG"],
+        "keywords": [
+          "access-enforcement", "information-flow", "rbac", "abac", "least-privilege",
+          "mandatory-access-control", "compartment", "cross-domain", "cds", "data-transfer",
+          "scif", "boundary", "interconnection", "audit", "integrity", "malicious-content",
+          "classification", "cross-compartment"
+        ]
+      }
+    },
+    {
+      "id": "jsig-rev2:6.1:0",
+      "content": "IA-2 / IA-5 IDENTIFICATION AND AUTHENTICATION — SAP Supplemental Guidance\n\nIdentification and authentication requirements for SAP systems go beyond the NIST baseline because the risk of unauthorized access to compartmented information demands the strongest available authentication mechanisms. All interactive user access to SAP information systems must use multi-factor authentication (MFA) employing at minimum two factors from different factor categories: something you have (e.g., CAC/PIV hardware token, FIDO2 security key), something you know (PIN or passphrase), and optionally something you are (biometric). Password-only authentication is prohibited for all SAP systems regardless of impact level classification.\n\nCommon Access Card (CAC) or Personal Identity Verification (PIV) card authentication is the mandated primary authentication mechanism for all DoD and IC SAP systems where PKI infrastructure is available. CAC/PIV authentication must be combined with a PIN meeting minimum length requirements (6 digits minimum for CAC; organization-defined complexity for software certificates). Where CAC/PIV is not technically feasible — for example, on legacy systems with hardware constraints — an approved exception must be documented in the System Security Plan and authorized by the Authorizing Official, with a compensating control narrative addressing the elevated authentication risk.\n\nPrivileged accounts — including system administrator, database administrator, network administrator, and security officer accounts — require separate authentication credentials distinct from the standard user account. Privileged access must be protected by a Privileged Access Workstation (PAW) or equivalent privileged access management solution where technically feasible. Privileged account credentials must be changed immediately upon personnel separation or suspected compromise and must be reviewed at a minimum quarterly to verify current need-to-know and continued authorization.\n\nAuthenticator management under IA-5 must address the full authenticator lifecycle: issuance (synchronized with PAR approval), strength enforcement (minimum standards per applicable JSIG annex), revocation (synchronized with PAR termination within 24 hours), and refresh (certificates: prior to expiration; PINs: organization-defined but not to exceed 365 days for privileged accounts). Authenticator management procedures must be documented in the System Security Plan and tested during Security Control Assessment activities.",
+      "overlapBefore": "For systems operating within a SCIF, physical access controls and electronic access controls must be integrated in the security architecture documentation to provide an end-to-end access control narrative.",
+      "overlapAfter": "Audit and accountability requirements for SAP systems are among the most rigorous in the JSIG due to the insider threat risk inherent to compartmented environments.",
+      "metadata": {
+        "docId": "jsig-rev2",
+        "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+        "docType": "JSIG",
+        "section": "6.1",
+        "sectionTitle": "IA-2/IA-5 Identification and Authentication (SAP Supplement)",
+        "controlRefs": ["IA-2", "IA-3", "IA-5", "IA-6", "AC-2"],
+        "families": ["IA", "AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 1,
+        "applicability": ["SAP", "SCI", "HIGH", "JSIG", "DOD"],
+        "keywords": [
+          "mfa", "multi-factor", "cac", "piv", "pki", "pin", "biometric", "fido2",
+          "privileged-access", "paw", "workstation", "authenticator", "lifecycle",
+          "revocation", "separation", "certificate", "passphrase", "compensating-control",
+          "legacy", "insider-threat", "quarterly"
+        ]
+      }
+    },
+    {
+      "id": "jsig-rev2:8.1:0",
+      "content": "AU-2 / AU-10 AUDIT AND NON-REPUDIATION — SAP Supplemental Guidance\n\nAudit and accountability requirements for SAP systems are among the most rigorous in the JSIG due to the insider threat risk inherent in compartmented environments and the potential for classified information compromise. All user actions on SAP systems must be subject to audit logging, with no audit-free access paths permitted for any user type including system administrators. Audit logs must capture at minimum: user identity (individual account, not shared account), time of action (synchronized UTC), action taken, object or resource accessed, success or failure of the action, and workstation or session identifier.\n\nFor privileged users — system administrators, database administrators, security officers, and any account with elevated access — audit logging must be comprehensive and must capture every administrative action including: account creation, modification, deletion; privilege elevation; configuration changes; access to audit log files; and access to cryptographic key material. Privileged user activity logs must be stored in a protected log repository that privileged users cannot modify or delete, enforcing separation of duties between system administration and audit log management.\n\nNon-repudiation under AU-10 is a mandatory requirement for SAP systems and cannot be waived through tailoring. Non-repudiation must be implemented through a combination of: individual (non-shared) account authentication, audit logging of all access events, digital signature or cryptographic binding of sensitive transactions where technically feasible, and retention of audit evidence for a period sufficient to support investigation of any suspected compromise. For SAP systems handling Special Access Program information, the minimum audit log retention period is three years unless a longer period is specified by the relevant SAP authority or applicable law.\n\nAudit log reviews must be conducted at defined intervals: automated alerting on high-priority events (failed login attempts exceeding threshold, privilege escalation, access to classified data outside normal work hours) must be configured and tested; weekly review of privileged user activity by the ISSO or designated reviewer; and monthly comprehensive review of audit logs covering all user activity. Anomalies identified during review must be documented, investigated, and reported to the PSO within 24 hours. All audit review activities must themselves be logged to provide a complete chain of custody.",
+      "overlapBefore": "Privileged account credentials must be changed immediately upon personnel separation or suspected compromise and reviewed quarterly to verify need-to-know.",
+      "overlapAfter": "Incident response for SAP systems requires a formal, documented capability that integrates with the broader SAP program security infrastructure.",
+      "metadata": {
+        "docId": "jsig-rev2",
+        "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+        "docType": "JSIG",
+        "section": "8.1",
+        "sectionTitle": "AU-2/AU-10 Audit Events and Non-Repudiation (SAP Supplement)",
+        "controlRefs": ["AU-2", "AU-6", "AU-9", "AU-10", "AU-12"],
+        "families": ["AU"],
+        "chunkIndex": 0,
+        "chunkTotal": 1,
+        "applicability": ["SAP", "SCI", "HIGH", "JSIG"],
+        "keywords": [
+          "audit", "non-repudiation", "privileged-users", "audit-logs", "retention",
+          "insider-threat", "separation-of-duties", "pso", "isso", "anomalies",
+          "alerting", "review", "chain-of-custody", "cryptographic", "digital-signature",
+          "three-years", "24-hours", "weekly", "monthly", "investigation"
+        ]
+      }
+    },
+    {
+      "id": "jsig-rev2:10.1:0",
+      "content": "SC-7 BOUNDARY PROTECTION — SAP Supplemental Guidance\n\nBoundary protection requirements for SAP information systems are based on the principle that no uncontrolled path should exist between the SAP enclave and any external network, system, or physical space. The authorization boundary must be formally defined in the System Security Plan and must correspond precisely to the physical boundaries of accredited spaces (SCIF or accredited facility) and the logical boundaries of the network and system components within those spaces. Any discrepancy between the documented boundary and the actual physical or logical boundary constitutes a security finding.\n\nAll connections crossing the SAP enclave boundary — including connections to SAP-unaware organizational networks, external service providers, maintenance networks, and cross-domain solution interfaces — must be documented as formal system interconnections with an associated Interconnection Security Agreement (ISA) or Memorandum of Understanding (MOU). Undocumented connections are prohibited and constitute a critical finding. Each documented connection must specify: purpose, data types, protocols, security controls applied at the interface, and the monitoring and review cadence.\n\nDemilitarized zones (DMZ) and protective distribution systems used in SAP environments must meet accreditation standards applicable to the classification level of information traversing them. All boundary devices — firewalls, intrusion detection/prevention systems, proxy servers, and data diodes — must have their configurations reviewed at least quarterly and must be included in the configuration management baseline. Changes to boundary device configurations require change control board approval and must be tested against the approved configuration standard before deployment.\n\nFor SAP systems connected to or processing data from Sensitive Compartmented Information (SCI) networks, boundary protection must comply with applicable IC directives governing SCI system interconnections in addition to JSIG requirements. Systems co-located in facilities accredited for multiple compartments must implement technical controls sufficient to prevent cross-compartment data flows unless explicitly authorized and documented.",
+      "overlapBefore": "Anomalies identified during audit review must be documented, investigated, and reported to the PSO within 24 hours.",
+      "metadata": {
+        "docId": "jsig-rev2",
+        "docTitle": "Joint SAP Implementation Guide (JSIG) Rev 2",
+        "docType": "JSIG",
+        "section": "10.1",
+        "sectionTitle": "SC-7 Boundary Protection (SAP Supplement)",
+        "controlRefs": ["SC-3", "SC-7", "SC-8", "AC-4", "CA-3"],
+        "families": ["SC", "AC", "CA"],
+        "chunkIndex": 0,
+        "chunkTotal": 1,
+        "applicability": ["SAP", "SCI", "HIGH", "JSIG", "DOD"],
+        "keywords": [
+          "boundary-protection", "scif", "interconnection", "isa", "mou", "dmz",
+          "firewall", "ids", "ips", "proxy", "data-diode", "cross-domain", "configuration",
+          "compartment", "sci", "accreditation", "change-control", "quarterly",
+          "undocumented", "protocols", "monitoring"
+        ]
+      }
+    }
+  ]
+}

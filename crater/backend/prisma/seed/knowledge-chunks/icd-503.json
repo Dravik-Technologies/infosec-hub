@@ -1,0 +1,161 @@
+{
+  "docId": "icd-503",
+  "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+  "docType": "IC_POLICY",
+  "version": "ICD 503, 15 September 2008 (as amended)",
+  "source": "https://www.dni.gov/files/documents/icd/icd_503.pdf",
+  "chunks": [
+    {
+      "id": "icd-503:1.1:0",
+      "content": "ICD 503 establishes the Intelligence Community (IC) policy for security risk management, certification, and accreditation of all IC information technology systems. This directive applies to all IC elements as defined in the National Security Act of 1947, as amended, including the Office of the Director of National Intelligence (ODNI), Central Intelligence Agency (CIA), Defense Intelligence Agency (DIA), National Security Agency (NSA), National Geospatial-Intelligence Agency (NGA), National Reconnaissance Office (NRO), and all other elements of the IC. The directive governs all National Security Systems (NSS) operated by or on behalf of IC elements, regardless of classification level, to include systems processing Sensitive Compartmented Information (SCI) and Special Access Program (SAP) information.\n\nThe purpose of this directive is to ensure that IC IT systems are operated at an acceptable level of risk, consistent with the mission requirements of the IC and the protection needs of the information they process, store, and transmit. ICD 503 aligns IC practice with the Risk Management Framework (RMF) established by the National Institute of Standards and Technology (NIST) and codified for the Federal Government under FISMA, while recognizing that IC systems often operate in threat environments and with mission sensitivities that require additional rigor beyond standard Federal civilian agency practice.\n\nAll IC elements shall implement the requirements of this directive for systems that: (1) process, store, or transmit SCI or other classified national intelligence; (2) are interconnected with systems that process SCI; (3) support IC missions, including collection, processing, analysis, production, and dissemination of intelligence; or (4) are otherwise designated as NSS. Systems that are contractor-owned but operated on behalf of IC elements and that process IC information are also within scope. ICD 503 supersedes DCID 6/3, Policy for Sensitive Compartmented Information and Security Policy Manual, for IT system security purposes, while DCID 6/3 physical and personnel security provisions remain in effect through successor directives.\n\nThe IC Chief Information Officer (IC CIO), under the authority of the Director of National Intelligence (DNI), is responsible for issuing implementing guidance, maintaining the IC IT Security Risk Management Framework, and ensuring consistent application of this directive across all IC elements. IC elements retain authority to implement the requirements of this directive subject to DNI oversight and consistent with their statutory authorities. This directive shall be read in conjunction with ICS 500-series documents, which provide implementing standards for specific security domains.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Scope",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["CA-1", "PM-6", "RA-3"],
+        "families": ["CA", "PM", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["icd 503", "ic policy", "authorization", "accreditation", "nss", "sci", "sap", "ic elements", "dni", "risk management", "fisma", "dcid 6/3", "ic cio", "national security systems", "scope"]
+      }
+    },
+    {
+      "id": "icd-503:authorization-process:1",
+      "content": "The IC Authorization Process established under ICD 503 consists of six sequential phases that mirror the NIST Risk Management Framework while incorporating IC-specific requirements and terminology. All IC IT systems must complete each phase prior to operational authorization and must maintain ongoing compliance throughout the system lifecycle.\n\nPhase 1 — Categorize: IC elements shall categorize their IT systems using CNSSI 1253, Security Categorization and Control Selection for National Security Systems, in conjunction with IC-specific information type guidance. Systems processing SCI shall be categorized at a minimum of HIGH confidentiality. The categorization shall account for the sensitivity of the information processed, the criticality of the mission supported, and the potential adverse impact to national security if confidentiality, integrity, or availability is compromised. The categorization must be documented in the system security plan and approved by the Authorizing Official (AO).\n\nPhase 2 — Select: Based on the system categorization, IC elements shall select security controls from the NIST SP 800-53 control catalog as tailored by CNSSI 1253 overlays applicable to the system. IC elements shall apply the Intelligence Community Overlay and any other applicable overlays (DoD Overlay, Privacy Overlay) to the baseline control set. The selected control set must address all threats identified in the threat assessment and must be documented in the system security plan and a security control traceability matrix.\n\nPhase 3 — Implement: Security controls shall be implemented in accordance with the approved system security plan. Implementation evidence shall be documented and maintained for assessor review. For IC systems, implementation must account for the unique operational environments in which IC systems are deployed, to include forward-deployed, denied-area, and coalition interoperability scenarios.\n\nPhase 4 — Assess: Independent security control assessments shall be conducted by qualified Security Control Assessors (SCAs) who have no direct responsibility for implementing or managing the controls under assessment. For SCI systems, the SCA must hold appropriate clearances and be approved by the Cognizant Security Authority (CSA). Assessment results shall be documented in a Security Assessment Report (SAR).\n\nPhase 5 — Authorize: Based on the SAR and the overall risk posture, the Authorizing Official (AO) shall make a risk-based authorization decision. The authorization package shall include the system security plan, SAR, and plan of action and milestones (POA&M). Authorization decisions include: Authorization to Operate (ATO), Interim Authorization to Operate (IATO), Authorization to Test (ATT), or Denial of Authorization to Operate (DATO).\n\nPhase 6 — Monitor: Authorized IC systems shall implement continuous monitoring programs in accordance with IC continuous monitoring requirements. Changes to the system shall be assessed for security impact and reported to the AO. Authorization decisions shall be revisited upon significant changes or at scheduled review intervals not to exceed three years.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "authorization-process",
+        "sectionTitle": "IC Authorization Process",
+        "parentSection": "3",
+        "parentTitle": "IC RMF Process",
+        "controlRefs": ["CA-2", "CA-5", "CA-6", "CA-7", "RA-2", "RA-3", "PL-2"],
+        "families": ["CA", "RA", "PL"],
+        "chunkIndex": 1,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["authorization process", "rmf phases", "categorize", "select", "implement", "assess", "authorize", "monitor", "ato", "sar", "sca", "csa", "control selection", "security plan", "ic rmf"]
+      }
+    },
+    {
+      "id": "icd-503:roles:2",
+      "content": "ICD 503 defines a clear hierarchy of roles and responsibilities for IC IT system security that must be reflected in every system security plan and authorization package. SSP authors must accurately identify and document the specific individuals filling each role for their system, along with documented acceptance of role-specific responsibilities.\n\nThe Authorizing Official (AO) is the senior official with the authority to formally assume responsibility for operating an IC IT system at an acceptable level of risk. The AO must be a senior organizational official with the authority to allocate resources, accept risk on behalf of the organization, and hold personnel accountable for security outcomes. For IC systems processing SCI, the AO must be designated by the head of the IC element or senior CSA representative with delegated authority. The AO reviews and approves the authorization package, makes the final authorization decision, and signs the authorization decision document. The AO cannot delegate the final authorization decision itself, though preparatory activities may be delegated.\n\nThe Senior Agency Information Security Officer (SAISO), known in some IC elements as the Senior Information Security Officer (SISO) or Chief Information Security Officer (CISO), serves as the principal advisor to the AO on all matters related to IT security. The SAISO is responsible for developing and maintaining the IC element's IT security program, ensuring compliance with ICD 503 and applicable IC security directives, coordinating with the IC CIO and IC-ISAC on security matters, and overseeing the overall security posture of all systems within the element's purview.\n\nThe Information System Security Manager (ISSM) is responsible for the day-to-day security operations of one or more IT systems. The ISSM develops and maintains the system security plan, coordinates security assessments, tracks POA&M items to closure, evaluates proposed system changes for security impact, and serves as the primary point of contact for the AO on system-specific security matters. For SCI systems, the ISSM must hold a TS/SCI clearance and must be formally appointed in writing by the AO or SAISO.\n\nThe Information System Security Officer (ISSO) assists the ISSM in implementing and maintaining the security posture of assigned systems. The ISSO performs day-to-day security monitoring, manages user accounts and access control, reviews audit logs, responds to security incidents, and ensures that security procedures are followed by system users. On smaller IC systems, the ISSM and ISSO roles may be combined, though this is discouraged for systems with large user populations or complex security requirements.\n\nSystem Owners are responsible for the overall procurement, development, integration, modification, operation, maintenance, and disposal of an IT system. System Owners work closely with the ISSM to ensure security requirements are incorporated throughout the system lifecycle. For IC systems, the System Owner must coordinate with the AO and SAISO to ensure the system's mission requirements can be met within the approved security constraints.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "roles",
+        "sectionTitle": "Roles and Responsibilities",
+        "parentSection": "4",
+        "parentTitle": "Responsibilities",
+        "controlRefs": ["CA-1", "CA-6", "PM-6", "PL-2"],
+        "families": ["CA", "PM", "PL"],
+        "chunkIndex": 2,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["authorizing official", "ao", "issm", "isso", "saiso", "siso", "ciso", "system owner", "roles", "responsibilities", "authorization", "ssp", "ic roles", "security officer", "designated approving authority"]
+      }
+    },
+    {
+      "id": "icd-503:authorization-types:3",
+      "content": "ICD 503 defines four types of authorization decisions that an Authorizing Official (AO) may grant for IC IT systems. Each authorization type reflects a different level of risk acceptance and carries specific conditions and limitations that must be documented in the authorization decision document and reflected in the system security plan.\n\nAuthorization to Operate (ATO) is the standard authorization decision indicating that the AO has determined the residual risk to IC operations, IC assets, and individuals is acceptable and that the system is authorized to operate in its described environment with its described user population. An ATO for IC systems is typically granted for a period not to exceed three years, after which a full reauthorization is required. The ATO is conditioned upon the System Owner and ISSM maintaining the security posture documented in the authorization package and completing all POA&M items on schedule. Any significant change to the system's environment, architecture, interconnections, or mission must trigger a security impact analysis and may require AO re-approval.\n\nInterim Authorization to Operate (IATO) is a time-limited authorization granted when an IC element has a validated mission need to operate a system before all security requirements have been fully implemented or assessed. An IATO acknowledges elevated residual risk and must include specific conditions: a defined period not to exceed 180 days (extendable once with AO approval and documented justification), a list of specific security controls not yet fully implemented or assessed, compensating controls accepted by the AO to mitigate the elevated risk during the interim period, and milestones and responsible parties for completing the remaining implementation and assessment activities. IATOs shall not be used as a routine mechanism to avoid completing the full authorization process.\n\nAuthorization to Test (ATT) permits a system to operate in a restricted test environment for the purpose of conducting security testing, including penetration testing, vulnerability assessments, and interoperability testing. The ATT defines the specific test activities permitted, the boundaries of the test environment, isolation requirements to prevent test activity from affecting operational systems, and the period during which testing is authorized. Systems operating under an ATT shall not process live classified or SCI data unless specifically authorized in writing by the AO.\n\nDenial of Authorization to Operate (DATO) is issued when the AO determines that the residual risk posed by the system is unacceptable and that the system shall not be authorized to operate. A DATO may be issued following an initial authorization review that reveals unacceptable risk, following discovery of a significant vulnerability or security breach, or when a previously authorized system fails to maintain its security posture. Upon receipt of a DATO, the System Owner and ISSM must immediately take corrective action to address the identified deficiencies. Systems under a DATO shall not be connected to any IC network or used to process IC information until a new authorization decision is issued by the AO.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "authorization-types",
+        "sectionTitle": "Authorization Decision Types",
+        "parentSection": "5",
+        "parentTitle": "Authorization Decisions",
+        "controlRefs": ["CA-6", "CA-5", "RA-3", "CA-2"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 3,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["ato", "iato", "att", "dato", "authorization to operate", "interim authorization", "authorization to test", "denial", "authorization decision", "residual risk", "poam", "security authorization", "ic authorization", "risk acceptance"]
+      }
+    },
+    {
+      "id": "icd-503:categorization-controls:4",
+      "content": "IC elements operating National Security Systems shall use CNSSI 1253, Security Categorization and Control Selection for National Security Systems, as the primary guidance for system categorization and security control selection. CNSSI 1253 supplements FIPS 199 and FIPS 200 with NSS-specific impact values and control baselines that account for the unique threat environment, mission criticality, and classification requirements applicable to IC systems.\n\nFor IC systems, security categorization must address the confidentiality, integrity, and availability of all information types processed by the system. Systems processing SCI shall be assigned a HIGH confidentiality impact value regardless of other factors; the classification of the information alone drives the HIGH confidentiality determination. Systems supporting mission-critical IC functions — such as primary collection systems, intelligence production systems, or command-and-control systems for sensitive operations — shall be assessed for HIGH integrity and HIGH availability impact values based on the potential adverse mission impact of unauthorized modification or system unavailability.\n\nIC elements shall document the categorization determination in the system security plan with sufficient specificity to allow a reviewer to understand the rationale for each impact value assignment. Categorization worksheets or supporting documentation using IC-approved information type taxonomies must be included in or referenced from the authorization package. The system categorization must be approved by the Authorizing Official prior to proceeding with control selection.\n\nControl selection for IC systems uses the NIST SP 800-53 control catalog as the baseline, with required tailoring specified in CNSSI 1253. IC elements shall apply the Intelligence Community Overlay published by the IC CIO, which adds IC-specific control enhancements and modifies certain baseline controls to address IC-unique threat and operational considerations. The Intelligence Community Overlay is mandatory for all IC systems and is not subject to waiver without DNI approval.\n\nIn addition to the IC overlay, IC elements shall apply any other applicable overlays based on the system's characteristics: the DoD Overlay for systems operated by defense IC elements, the Privacy Overlay for systems processing PII or Privacy Act-protected information, and the Industrial Control Systems (ICS) Overlay for systems incorporating ICS or SCADA components. The combined control set — baseline plus all applicable overlays — constitutes the minimum required controls for the system.\n\nFor each selected control, the SSP must document the control implementation statement, the implementation status (implemented, partially implemented, planned, not applicable), the responsible entities, and for controls assessed during the security control assessment, the assessment findings and risk disposition. SSP authors should note that CNSSI 1253 includes control parameters for certain controls that differ from the NIST SP 800-53 low/moderate/high parameters; IC-specific parameter values must be used for NSS.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "categorization-controls",
+        "sectionTitle": "Categorization and Control Selection",
+        "parentSection": "6",
+        "parentTitle": "Security Categorization and Control Selection",
+        "controlRefs": ["RA-2", "PL-2", "CA-2", "SI-12"],
+        "families": ["RA", "PL", "CA", "SI"],
+        "chunkIndex": 4,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["cnssi 1253", "categorization", "control selection", "nist sp 800-53", "ic overlay", "dod overlay", "fips 199", "fips 200", "high confidentiality", "sci", "baselines", "overlays", "impact values", "nss", "tailoring"]
+      }
+    },
+    {
+      "id": "icd-503:continuous-monitoring:5",
+      "content": "ICD 503 requires all authorized IC IT systems to implement a robust Continuous Monitoring (CM) program, consistent with the Information Security Continuous Monitoring (ISCM) guidance in NIST SP 800-137 and IC-specific continuous monitoring requirements issued by the IC CIO. Continuous monitoring is not merely periodic reassessment; it is an ongoing program that provides IC leadership with real-time or near-real-time situational awareness of the security posture of IC IT systems.\n\nThe IC ISCM program must address: (1) the ongoing monitoring of implemented security controls to verify they remain effective; (2) the ongoing assessment of security control effectiveness through automated and manual means; (3) the reporting of security status information to the AO and SAISO on a schedule defined in the system's continuous monitoring strategy; (4) the ongoing management of hardware and software inventory to identify unauthorized components; and (5) the collection and analysis of security-relevant events to detect potential incidents and anomalies.\n\nIC elements shall develop and maintain a Continuous Monitoring Strategy for each authorized system. The strategy must specify: monitoring frequencies for each control family (some controls are monitored continuously via automated means; others are reviewed annually or at other defined intervals); the tools, techniques, and procedures used to collect monitoring data; the criteria for determining when a monitored condition represents a significant finding requiring AO notification; and the process for translating monitoring findings into POA&M updates and authorization package revisions.\n\nOngoing Authorization replaces the traditional fixed-term reauthorization cycle for IC systems that have mature, fully implemented continuous monitoring programs. Under ongoing authorization, the AO maintains an active, continuously updated picture of the system's security posture rather than relying on periodic point-in-time assessments. The IC CIO may grant ongoing authorization status to IC systems that demonstrate sustained compliance with continuous monitoring requirements, effective POA&M management, and timely reporting of security-relevant events. Systems operating under ongoing authorization remain subject to AO review and the AO retains authority to suspend or revoke authorization at any time.\n\nISSMs are responsible for submitting monthly security status reports to the AO summarizing: the results of automated control monitoring, any new vulnerabilities identified and their disposition, POA&M status and milestone progress, any significant changes assessed during the reporting period, and any security incidents or near-misses. Failure to maintain continuous monitoring reporting requirements may result in the AO reverting the system to a fixed-term authorization or, in cases of significant non-compliance, issuing a DATO.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "continuous-monitoring",
+        "sectionTitle": "Continuous Monitoring",
+        "parentSection": "7",
+        "parentTitle": "Ongoing Authorization and Monitoring",
+        "controlRefs": ["CA-7", "CA-5", "PM-6", "IR-6", "SI-12"],
+        "families": ["CA", "PM", "IR", "SI"],
+        "chunkIndex": 5,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["continuous monitoring", "iscm", "ongoing authorization", "security posture", "nist sp 800-137", "monitoring strategy", "poam", "security status report", "automated monitoring", "control effectiveness", "vulnerability management", "ic cio", "issm", "real-time"]
+      }
+    },
+    {
+      "id": "icd-503:scrm:6",
+      "content": "ICD 503 recognizes that IC IT systems face sophisticated supply chain threats from nation-state adversaries who may attempt to compromise hardware, software, or services prior to their delivery to IC elements. Effective supply chain risk management (SCRM) is therefore a mandatory element of the IC IT security program, not an optional enhancement.\n\nIC elements shall establish and maintain a Supply Chain Risk Management (SCRM) process that addresses all phases of the IT system lifecycle, from requirements definition through disposal. The SCRM process must include: (1) identification of critical system components whose compromise could adversely affect the confidentiality, integrity, or availability of IC information or the performance of IC missions; (2) assessment of the supply chain risk associated with those components, including the provenance of hardware and software, the security practices of vendors and developers, and the trustworthiness of the supply chain entities involved; (3) implementation of countermeasures to reduce supply chain risk to acceptable levels; and (4) documentation of residual supply chain risk in the system authorization package.\n\nFor IC systems processing SCI or supporting critical IC missions, the SCRM process must include specific activities beyond standard Federal SCRM practices: component authenticity verification to detect counterfeit or tampered hardware; software provenance analysis including software composition analysis to identify open-source components with known vulnerabilities or suspicious origins; network equipment vetting for hardware implants or firmware modifications; and vendor risk assessments that include evaluation of vendor ownership, foreign influence, and security practices.\n\nIC elements shall identify and maintain a list of high-risk vendors and technologies based on intelligence reporting and SCRM assessments. Technologies from high-risk vendors shall not be deployed in IC systems without an explicit risk acceptance decision by the AO, a documented risk mitigation plan, and notification to the IC CIO. The use of vendor-provided maintenance and support for critical IC system components shall be tightly controlled, monitored, and logged.\n\nSSP authors must address supply chain risk management in the system security plan using NIST SP 800-53 controls from the SA (System and Services Acquisition) and SR (Supply Chain Risk Management) families, as applicable to the system's categorization. The SSP must describe the SCRM measures applied to the system's critical components, identify the provenance of those components to the extent known, and document any supply chain risks that were identified and the AO's risk acceptance or mitigation decisions.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "scrm",
+        "sectionTitle": "Supply Chain Risk Management",
+        "parentSection": "8",
+        "parentTitle": "Supply Chain Security",
+        "controlRefs": ["CA-9", "CM-4", "SI-12", "RA-3"],
+        "families": ["CA", "CM", "SI", "RA"],
+        "chunkIndex": 6,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["scrm", "supply chain", "supply chain risk management", "counterfeit", "hardware implants", "software provenance", "vendor risk", "high-risk vendors", "component authenticity", "software composition analysis", "ic scrm", "nation-state", "ic systems", "critical components"]
+      }
+    },
+    {
+      "id": "icd-503:relationships:7",
+      "content": "ICD 503 operates within a broader framework of IC security directives and must be read in conjunction with several other authoritative documents that govern specific security domains within the IC. Understanding the relationships among these documents is essential for SSP authors working on IC systems to ensure all applicable requirements are addressed.\n\nICD 705 — Sensitive Compartmented Information Facilities establishes the physical security requirements for SCIFs used to house IC IT systems that process SCI. ICD 503 governs the IT system security requirements within those facilities; ICD 705 governs the physical, technical, and personnel security requirements for the facility itself. Systems authorized under ICD 503 that are located in SCIFs must also meet ICD 705 requirements, and the authorization package must reflect compliance with both directives. The SCIF accreditation and the IT system authorization are distinct processes managed by different authorities, though they are closely related.\n\nDCID 6/3 — Policy for Sensitive Compartmented Information and Security Policy Manual was the predecessor to ICD 503 for IC IT system security. ICD 503 supersedes DCID 6/3 for IT security purposes. SSP authors working on older systems may encounter references to DCID 6/3 in legacy documentation; those references should be updated to reflect ICD 503 and current CNSSI/NIST guidance.\n\nICS 500-series documents provide IC-wide implementing standards for specific security domains. ICS 500-27 addresses the collection, processing, and dissemination of audit information for IC systems. ICS 500-series documents are incorporated by reference into ICD 503 and are mandatory for IC systems. SSP implementation statements must reflect compliance with applicable ICS 500-series standards.\n\nICD 501 — Discovery and Dissemination or Retrieval of Information Within the IC establishes requirements for information sharing and access controls within the IC. IC systems that support information sharing or that are connected to IC-wide networks must ensure their access control implementations are consistent with ICD 501 attribute-based access control requirements.\n\nThe relationship between ICD 503 and DoD Instruction 8510.01 (the DoD RMF instruction) is important for defense IC elements. DIA, NGA, NRO, and other defense IC elements are subject to both ICD 503 and DoDI 8510.01. In cases of conflict, the more restrictive requirement applies. Defense IC elements shall coordinate with both their Service/Defense Agency CISO and the IC element SAISO to ensure authorization packages satisfy both DoD and IC requirements.",
+      "metadata": {
+        "docId": "icd-503",
+        "docTitle": "ICD 503 — Intelligence Community Information Technology Systems Security Risk Management, Certification and Accreditation",
+        "docType": "IC_POLICY",
+        "section": "relationships",
+        "sectionTitle": "Relationships to Other IC Directives",
+        "parentSection": "9",
+        "parentTitle": "Related Authorities",
+        "controlRefs": ["CA-1", "CA-6", "PL-7", "CA-9"],
+        "families": ["CA", "PL"],
+        "chunkIndex": 7,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["icd 705", "dcid 6/3", "ics 500 series", "icd 501", "dodi 8510.01", "scif", "ic directives", "relationships", "defense ic", "dia", "nga", "nro", "ic framework", "authorization", "access control"]
+      }
+    }
+  ]
+}

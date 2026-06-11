@@ -1,0 +1,142 @@
+{
+  "docId": "cnssp-15",
+  "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+  "docType": "CNSSI",
+  "version": "CNSSP No. 15, 10 October 2016",
+  "source": "https://www.cnss.gov/CNSS/issuances/Policies.cfm",
+  "chunks": [
+    {
+      "id": "cnssp-15:1.1:0",
+      "content": "CNSSP 15 establishes national policy on the cryptographic algorithms and key sizes that are approved for use to protect National Security Systems (NSS). The policy is mandatory for all U.S. Government departments and agencies operating NSS and for contractors operating NSS on their behalf. CNSSP 15 works in concert with FIPS 140-3 (Security Requirements for Cryptographic Modules) and NSA requirements to ensure that cryptographic implementations protecting NSS provide adequate protection against current and emerging threats, including threats from nation-state adversaries with advanced cryptanalytic capabilities.\n\nFIPS 140-3 establishes the minimum security requirements that cryptographic modules must satisfy to be approved for use in Federal information systems. For NSS specifically, FIPS 140-3 validation is a necessary but not sufficient condition: NSS cryptographic products must be FIPS 140-3 validated AND must use only the algorithms specified in CNSSP 15. A product may be FIPS 140-3 validated but still not be approved for NSS use if it implements algorithms that are not included in the CNSSP 15 approved algorithm list.\n\nNSA's role in NSS cryptography is established by National Security Directive 42 and related authorities. NSA is responsible for approving cryptographic algorithms and key lengths for protecting classified information and NSS, and NSA publishes the Commercial National Security Algorithm (CNSA) Suite as the approved set of algorithms. CNSSP 15 gives legal and policy force to NSA's CNSA Suite requirements by mandating their use for NSS and by establishing transition timelines for the deprecation of older, weaker algorithms that are no longer considered adequate for NSS protection.\n\nSSP authors working on NSS must ensure that the implementation statements for cryptography-related controls (SC-12, SC-13, SC-8, SC-28, IA-7, and IA-5 where applicable) reference CNSSP 15 compliance, identify the specific CNSA Suite algorithms used, and cite the Cryptographic Module Validation Program (CMVP) certificate numbers for all FIPS 140-3 validated modules employed in the system. Stating simply that the system uses 'FIPS 140-2/3 validated modules' is insufficient for NSS; the specific algorithm compliance and certificate references are required.",
+      "metadata": {
+        "docId": "cnssp-15",
+        "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+        "docType": "CNSSI",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Relationship to FIPS 140-3",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["SC-12", "SC-13", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 0,
+        "chunkTotal": 7,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP", "CLEARED_INDUSTRY"],
+        "keywords": ["cnssp 15", "cnsa suite", "cryptography", "fips 140-3", "nss cryptography", "nsa", "approved algorithms", "cmvp", "cryptographic module", "sc-13", "ia-7", "national security systems", "algorithm policy", "key lengths", "commercial national security algorithm"]
+      }
+    },
+    {
+      "id": "cnssp-15:cnsa-suite:1",
+      "content": "The Commercial National Security Algorithm (CNSA) Suite 1.0 defines the specific cryptographic algorithms and minimum key/parameter sizes approved by NSA for protecting NSS and classified national security information. All NSS must implement CNSA Suite algorithms exclusively for cryptographic operations protecting classified information; the use of non-CNSA algorithms for NSS cryptographic operations requires an explicit waiver from NSA.\n\nThe CNSA Suite 1.0 consists of the following approved algorithms and minimum parameters:\n\nAdvanced Encryption Standard (AES): The AES algorithm is approved for symmetric encryption of NSS data at two key sizes: AES-128 may be used for protecting SECRET information; AES-256 is required for protecting TOP SECRET information and is strongly recommended for all NSS cryptographic applications regardless of classification level. AES shall be used in an approved mode of operation (e.g., AES-GCM, AES-CBC, AES-CCM) with a FIPS 140-3 validated implementation.\n\nSecure Hash Algorithm (SHA): SHA-384 is the minimum approved hash function for NSS. SHA-256 may be used for some applications protecting up to SECRET information. SHA-1 is not approved for any NSS cryptographic applications.\n\nRSA (for digital signatures and key establishment): Minimum key size of 3072 bits for NSS protecting SECRET information; 4096-bit RSA is required for TOP SECRET applications. RSA-2048 is not approved for new NSS implementations and must be replaced in legacy systems on the transition timelines specified by CNSSP 15.\n\nElliptic Curve Diffie-Hellman (ECDH) with NIST P-384: Approved for key establishment on NSS. ECDH with P-256 is not approved for NSS protecting classified information.\n\nElliptic Curve Digital Signature Algorithm (ECDSA) with NIST P-384: Approved for digital signatures on NSS. ECDSA with P-256 is not approved for NSS protecting TOP SECRET or SCI information.\n\nDiffie-Hellman (DH) key exchange: Minimum 3072-bit DH groups approved for NSS. DH-2048 is not approved for new NSS implementations.\n\nAll CNSA Suite implementations must use NSA-reviewed or FIPS 140-3 validated cryptographic modules. The Cryptographic Module Validation Program (CMVP) certificate number for each validated module must be documented in the SSP and verified as current (not revoked or superceded) at the time of authorization.",
+      "metadata": {
+        "docId": "cnssp-15",
+        "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+        "docType": "CNSSI",
+        "section": "cnsa-suite",
+        "sectionTitle": "CNSA Suite 1.0 Requirements",
+        "parentSection": "2",
+        "parentTitle": "Approved Algorithms",
+        "controlRefs": ["SC-13", "SC-8", "SC-28", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 1,
+        "chunkTotal": 7,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP", "CLEARED_INDUSTRY"],
+        "keywords": ["cnsa suite", "aes-256", "sha-384", "rsa-3072", "rsa-4096", "ecdh p-384", "ecdsa p-384", "dh-3072", "approved algorithms", "nsa", "cmvp", "fips 140-3", "top secret", "secret", "sc-13"]
+      }
+    },
+    {
+      "id": "cnssp-15:transition:2",
+      "content": "CNSSP 15 establishes mandatory transition timelines for deprecating legacy cryptographic algorithms that no longer provide adequate protection for NSS. These transitions are necessary because advances in cryptanalysis, increasing computational power, and evolving adversary capabilities can erode the security margins of algorithms that were previously considered adequate. The failure to transition away from deprecated algorithms on schedule represents a material security risk to NSS and must be tracked as a finding in the system's Plan of Action and Milestones (POA&M).\n\nTriple Data Encryption Standard (3DES / TDEA): 3DES is deprecated for all NSS applications and shall not be used for new NSS implementations. Existing NSS systems using 3DES must complete migration to AES on the timeline established by NSA and documented in CNSSP 15 updates. Systems still using 3DES after the applicable sunset date require NSA waiver approval and must document a specific, time-bounded migration plan.\n\nSHA-1: SHA-1 is deprecated for all NSS cryptographic applications. The use of SHA-1 in new NSS implementations is prohibited; legacy systems using SHA-1 must complete migration to SHA-384 (or SHA-256 for some applications) on NSA-specified timelines. Certificate authorities serving NSS must not issue new certificates with SHA-1 signatures.\n\nRSA-2048 and ECDSA/ECDH with P-256 curves: These key sizes and curves are deprecated for protecting classified NSS information. While RSA-2048 with SHA-256 may be acceptable for some unclassified NSS applications in the near term, systems protecting SECRET and above must use minimum RSA-3072 or ECDH/ECDSA P-384. Legacy systems using RSA-2048 or P-256 for classified NSS applications must document migration plans in their POA&M.\n\nWaiver process: Waivers for continued use of deprecated algorithms may be requested from NSA through the NSS program's SAISO or CISO. Waivers are time-limited (typically 12 months maximum) and require documentation of: the specific deprecated algorithm in use, the technical constraints preventing immediate migration, compensating security measures in place during the waiver period, and a firm migration completion date. Waivers will not be granted for systems where migration is technically feasible within a reasonable timeframe; genuine technical barriers to migration must be demonstrated. All waivers must be disclosed to the AO and documented in the authorization package.",
+      "metadata": {
+        "docId": "cnssp-15",
+        "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+        "docType": "CNSSI",
+        "section": "transition",
+        "sectionTitle": "Algorithm Transition and Deprecation",
+        "parentSection": "3",
+        "parentTitle": "Algorithm Transitions",
+        "controlRefs": ["SC-13", "SC-12", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 2,
+        "chunkTotal": 7,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP", "CLEARED_INDUSTRY"],
+        "keywords": ["algorithm deprecation", "3des", "sha-1", "rsa-2048", "ecdsa p-256", "transition timeline", "migration", "waiver", "nsa waiver", "poam", "legacy algorithms", "deprecated", "cnsa suite", "sunset date", "cryptographic transition"]
+      }
+    },
+    {
+      "id": "cnssp-15:pqc:3",
+      "content": "In 2022, NSA published the Commercial National Security Algorithm Suite 2.0 (CNSA 2.0), announcing the transition from classical public-key cryptography to Post-Quantum Cryptography (PQC) algorithms for NSS. This transition is driven by the anticipated future threat from cryptographically relevant quantum computers (CRQCs), which would be capable of breaking current asymmetric cryptographic algorithms — including RSA and elliptic curve cryptography — using Shor's algorithm. NSS with long security lifetimes, or systems that protect information requiring decades of confidentiality, must begin PQC transitions immediately.\n\nCNSA 2.0 designates the following NIST-standardized PQC algorithms as the eventual replacements for classical asymmetric algorithms on NSS:\n\nML-KEM (Module-Lattice-Based Key Encapsulation Mechanism, NIST FIPS 203, formerly known as CRYSTALS-Kyber): Approved for key establishment and key encapsulation on NSS as the primary replacement for RSA-based and Diffie-Hellman key exchange. NSA recommends ML-KEM-1024 as the minimum parameter set for NSS protecting classified information.\n\nML-DSA (Module-Lattice-Based Digital Signature Algorithm, NIST FIPS 204, formerly known as CRYSTALS-Dilithium): Approved for digital signatures on NSS as a replacement for ECDSA P-384 and RSA signatures. ML-DSA-87 (CRYSTALS-Dilithium Level 5) is recommended for NSS protecting classified information.\n\nSLH-DSA (Stateless Hash-Based Digital Signature Algorithm, NIST FIPS 205, formerly known as SPHINCS+): An alternative digital signature algorithm that can be used when the statefulness of ML-DSA is a concern. SLH-DSA-SHA2-256s or SLH-DSA-SHAKE-256s are appropriate parameter sets for NSS.\n\nThe DoD PQC transition timeline as published by NSA and the DoD CIO targets: widespread PQC deployment in new NSS systems beginning no later than 2025; all NSS systems transitioned to CNSA 2.0 algorithms by 2033 for most applications, with mission-critical and highest-sensitivity systems targeted for earlier completion. Legacy systems unable to support PQC due to hardware limitations must document their transition plans and obtain NSA-approved migration waivers.\n\nSSP authors must begin documenting PQC transition planning in system security plans now, even for systems that will not complete migration for several years. The SSP should identify which CNSA 2.0 algorithms are planned for each cryptographic use case, the estimated transition timeline, and any technical dependencies or constraints affecting migration.",
+      "metadata": {
+        "docId": "cnssp-15",
+        "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+        "docType": "CNSSI",
+        "section": "pqc",
+        "sectionTitle": "Post-Quantum Cryptography Planning",
+        "parentSection": "4",
+        "parentTitle": "Post-Quantum Transition",
+        "controlRefs": ["SC-13", "SC-12", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 3,
+        "chunkTotal": 7,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP", "CLEARED_INDUSTRY"],
+        "keywords": ["post-quantum cryptography", "pqc", "cnsa 2.0", "ml-kem", "ml-dsa", "slh-dsa", "crystals-kyber", "crystals-dilithium", "quantum computer", "crqc", "nist fips 203", "nist fips 204", "nist fips 205", "dod pqc transition", "quantum transition"]
+      }
+    },
+    {
+      "id": "cnssp-15:key-management:4",
+      "content": "Key management is a critical and often poorly documented aspect of NSS cryptographic security. CNSSP 15 establishes requirements for key generation, distribution, storage, use, recovery, and destruction for NSS, ensuring that cryptographic keys receive protection commensurate with the classification and sensitivity of the information they protect.\n\nKey generation for NSS must use NSA-approved random number generators that produce cryptographically strong randomness with sufficient entropy. For classified applications, the random number generator must be from an NSA-evaluated product. Keys must be generated at the minimum required strength for the algorithm and use case: AES-256 for TOP SECRET symmetric encryption, AES-128 or AES-256 for SECRET; RSA keys at minimum 3072 bits; ECDH/ECDSA keys using P-384.\n\nKey lifetimes for NSS are defined by the type of key and its use. Session keys (ephemeral keys used to protect a single session or transaction) may have lifetimes of a few hours to a day. Traffic encryption keys (TEKs) used in link encryption systems typically have lifetimes of 24 hours or as specified by NSA keying procedures. Key encryption keys (KEKs) and key wrapping keys used to protect other keys in transit or storage must have lifetimes that limit the exposure window; CNSA Suite-compliant KEKs for NSS should not exceed 12 months without reissuance.\n\nKey establishment for NSS inter-system communication must use CNSA Suite key agreement mechanisms — ECDH P-384 for ephemeral key agreement or RSA-3072/4096 for key transport — to protect keys in transit. Pre-shared symmetric keys (PSKs) may be used for specific NSS applications where public-key key establishment is not feasible, but PSKs must be distributed through NSA-controlled key distribution systems or approved COMSEC processes.\n\nCOMSEC account requirements apply to NSS programs that use keying material produced or controlled by NSA. Programs must establish a COMSEC account with the applicable COMSEC Management Office (CMO), designate a COMSEC Custodian with appropriate clearance and training, maintain COMSEC material accounting records, and conduct annual COMSEC account inventories. Loss, compromise, or suspected compromise of NSS keying material must be reported immediately through COMSEC incident reporting channels.\n\nSSP authors must document key management under SC-12 (Cryptographic Key Establishment and Management), identifying key types, key lengths, key lifetimes, key generation methods, key distribution mechanisms, and key destruction procedures for each cryptographic application within the system.",
+      "metadata": {
+        "docId": "cnssp-15",
+        "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+        "docType": "CNSSI",
+        "section": "key-management",
+        "sectionTitle": "Key Management for NSS",
+        "parentSection": "5",
+        "parentTitle": "Key Management",
+        "controlRefs": ["SC-12", "SC-13", "IA-5"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 4,
+        "chunkTotal": 7,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP", "CLEARED_INDUSTRY"],
+        "keywords": ["key management", "comsec", "key generation", "key lifetime", "session keys", "tek", "kek", "key establishment", "ecdh", "rsa key", "psk", "comsec account", "comsec custodian", "key distribution", "sc-12"]
+      }
+    },
+    {
+      "id": "cnssp-15:tls-requirements:5",
+      "content": "Transport Layer Security (TLS) is the dominant protocol for securing data in transit on NSS networks, and CNSSP 15 specifies which TLS versions and cipher suites are approved for NSS applications. The use of unapproved TLS configurations on NSS — including outdated protocol versions, weak cipher suites, and non-CNSA key exchange mechanisms — constitutes a cryptographic control deficiency that must be documented in the POA&M and remediated.\n\nTLS version requirements for NSS: TLS 1.3 is the preferred version for new NSS implementations and must be the default where technically supported. TLS 1.2 is approved for NSS applications where TLS 1.3 is not yet supported, provided only CNSA Suite-compatible cipher suites are configured. TLS 1.1 and TLS 1.0 are deprecated and shall not be used on NSS. SSL 3.0 and all earlier versions of SSL are prohibited on NSS. Systems that cannot be updated to support TLS 1.2 at minimum must be documented as significant vulnerabilities and require AO risk acceptance with a firm remediation timeline.\n\nApproved TLS 1.3 cipher suites for NSS include: TLS_AES_256_GCM_SHA384 (preferred for TOP SECRET applications), TLS_AES_128_GCM_SHA256 (acceptable for SECRET applications). TLS 1.3 cipher suites using ChaCha20 are not approved for NSS as ChaCha20 is not in the CNSA Suite.\n\nApproved TLS 1.2 cipher suites for NSS must use CNSA Suite algorithms exclusively: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 (preferred), TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, and TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256. Cipher suites using 3DES, RC4, NULL encryption, EXPORT key exchange, anonymous (ADH/AECDH) key exchange, or SHA-1 PRF are prohibited on NSS.\n\nCertificate requirements for NSS TLS: server certificates and client certificates used in mutual TLS authentication on NSS must use CNSA Suite signature algorithms (ECDSA P-384 or RSA-3072+) and must be issued by certificate authorities whose root certificates are trusted within the NSS trust fabric. NSS-protected web services and APIs shall not use publicly trusted commercial CA certificates unless those CAs meet NSA and CNSSP 15 requirements.\n\nSSP authors must enumerate all TLS implementations in the system security plan under SC-8 (Transmission Confidentiality and Integrity), specifying the TLS version, approved cipher suites, certificate details, and CMVP certificate numbers for the underlying cryptographic modules.",
+      "metadata": {
+        "docId": "cnssp-15",
+        "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+        "docType": "CNSSI",
+        "section": "tls-requirements",
+        "sectionTitle": "TLS Requirements for NSS",
+        "parentSection": "6",
+        "parentTitle": "TLS and Network Security",
+        "controlRefs": ["SC-8", "SC-13", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 5,
+        "chunkTotal": 7,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP", "CLEARED_INDUSTRY"],
+        "keywords": ["tls", "tls 1.3", "tls 1.2", "cipher suites", "nss tls", "ecdhe", "aes-256-gcm", "sha-384", "certificate requirements", "sc-8", "tls configuration", "prohibited cipher suites", "transport security", "cnsa suite tls", "cmvp"]
+      }
+    },
+    {
+      "id": "cnssp-15:ssp-documentation:6",
+      "content": "One of the most common deficiencies identified during NSS security control assessments is inadequate documentation of cryptographic controls in the System Security Plan. CNSSP 15 compliance requires that the SSP not only describe the cryptographic controls implemented but provide sufficient specificity for an assessor to verify compliance with CNSA Suite requirements without needing to interrogate system engineers.\n\nFor control IA-7 (Cryptographic Module Authentication), the SSP implementation statement must: identify each cryptographic module used for authentication functions (e.g., the module that implements ECDSA P-384 for certificate-based authentication); provide the FIPS 140-3 (or FIPS 140-2) CMVP validation certificate number for each module; confirm the module is operating in its approved mode of operation (FIPS-approved mode or CNSA-approved mode); specify the CNSA Suite algorithms implemented by the module; and confirm the module's validation certificate is current and not revoked.\n\nFor control SC-8 (Transmission Confidentiality and Integrity), the SSP must: identify all transmission paths where classified or sensitive NSS data is transmitted; specify the encryption protocol (e.g., TLS 1.3) and approved cipher suites used for each path; identify the CMVP-validated modules implementing those protocols; and confirm that the cipher suites and key exchange mechanisms are fully compliant with CNSA Suite requirements and CNSSP 15.\n\nFor control SC-13 (Cryptographic Protection), the SSP must provide a comprehensive cryptographic inventory that catalogs every cryptographic application in the system, including: the data being protected (at rest, in transit, or both), the algorithms and key lengths used, the CMVP certificate numbers for the validated modules, the NSA approval status for any Type 1 cryptographic equipment used for classified information, and whether the implementation uses CNSA Suite 1.0 or is in transition to CNSA Suite 2.0.\n\nFor control SC-28 (Protection of Information at Rest), the SSP must identify all storage locations where classified NSS data resides, the encryption algorithm and key length protecting that data (AES-256 required for TOP SECRET at rest), the CMVP certificate for the encryption module, the key management procedures for the encryption keys, and the process for ensuring keys are destroyed upon media sanitization or disposal.\n\nAssessors evaluating NSS will use the SSP cryptographic documentation to select specific systems and configurations for testing. Vague statements such as 'the system uses FIPS-approved algorithms' or 'encryption is applied to data in transit' are insufficient for NSS authorization packages; specific algorithm names, key lengths, CMVP numbers, and CNSA Suite compliance attestations are required.",
+      "metadata": {
+        "docId": "cnssp-15",
+        "docTitle": "CNSSP 15 — National Information Assurance Policy on the Use of Public Standards for the Secure Sharing of Information Among National Security Systems",
+        "docType": "CNSSI",
+        "section": "ssp-documentation",
+        "sectionTitle": "SSP Documentation Requirements for Cryptographic Controls",
+        "parentSection": "7",
+        "parentTitle": "SSP Documentation",
+        "controlRefs": ["SC-12", "SC-13", "SC-8", "SC-28", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 6,
+        "chunkTotal": 7,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP", "CLEARED_INDUSTRY"],
+        "keywords": ["ssp documentation", "cmvp certificate", "ia-7", "sc-8", "sc-13", "sc-28", "cryptographic inventory", "fips 140-3", "cnsa suite compliance", "implementation statement", "cryptographic module", "assessor", "nss ssp", "approved mode", "encryption documentation"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "docId": "fips-140-3",
+  "docTitle": "FIPS 140-3 Security Requirements for Cryptographic Modules",
+  "docType": "NIST_SUPPLEMENT",
+  "version": "FIPS 140-3, March 2019",
+  "source": "https://doi.org/10.6028/NIST.FIPS.140-3",
+  "chunks": [
+    {
+      "id": "fips-140-3:1.1:0",
+      "content": "FIPS Publication 140-3, Security Requirements for Cryptographic Modules, establishes the security requirements that must be satisfied by a cryptographic module utilized within a security system protecting sensitive but unclassified information. FIPS 140-3 supersedes FIPS 140-2 and aligns with the ISO/IEC 19790:2012 international standard.\n\nScope and Applicability: FIPS 140-3 applies to all federal agencies that use cryptographic-based security systems to protect sensitive information. The standard applies to: (1) hardware, software, and firmware cryptographic modules; (2) modules that protect sensitive federal government data at rest and in transit; (3) all products claiming FIPS compliance used in federal systems. For DoD and IC systems, only FIPS-validated cryptographic modules may be used to protect classified and sensitive unclassified information. The use of non-validated or commercial-only cryptographic implementations does not satisfy federal security requirements.\n\nCMVP: The Cryptographic Module Validation Program (CMVP), operated jointly by NIST and the Canadian Centre for Cyber Security (CCCS), validates cryptographic modules to the FIPS 140-3 standard. Organizations must verify that cryptographic products are validated at the appropriate security level for their use case. Validated modules are listed in the CMVP module search tool at csrc.nist.gov/projects/cryptographic-module-validation-program.\n\nTransition from FIPS 140-2: FIPS 140-2 validations remained active after the FIPS 140-3 effective date. Organizations using FIPS 140-2 validated modules continue to meet federal requirements. However, new procurements should target FIPS 140-3 validated products.",
+      "metadata": {
+        "docId": "fips-140-3",
+        "docTitle": "FIPS 140-3 Security Requirements for Cryptographic Modules",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "1.1",
+        "sectionTitle": "Purpose, Scope, and CMVP",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["SC-12", "SC-13", "SC-28", "IA-5", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 0,
+        "chunkTotal": 12,
+        "applicability": ["DOD", "FEDERAL", "HIGH", "CUI"],
+        "keywords": ["fips", "140-3", "cryptographic", "modules", "validation", "cmvp", "validated", "sensitive", "classified", "encryption", "federal", "requirement", "hardware", "software", "firmware"]
+      }
+    },
+    {
+      "id": "fips-140-3:security-levels:0",
+      "content": "FIPS 140-3 Security Levels. FIPS 140-3 defines four increasing levels of security to cover a wide range of potential applications and environments in which cryptographic modules may be deployed.\n\nSecurity Level 1: The lowest level of security. Basic security requirements are specified for a cryptographic module (e.g., at least one Approved algorithm or Approved security function shall be used). No specific physical security mechanisms are required beyond production-grade components, and the basic requirement to be able to execute algorithms correctly. Level 1 is suitable for commercial cryptographic module use in software applications.\n\nSecurity Level 2: Adds requirements for physical security mechanisms that show evidence of tampering, including tamper-evident coatings, seals, or pick-resistant locks. Level 2 also adds requirements for role-based authentication. Level 2 is appropriate for many commercial applications requiring a higher level of security than Level 1.\n\nSecurity Level 3: Adds requirements for preventing the unauthorized extraction of critical security parameters (CSPs) such as cryptographic keys. Mechanisms include hard-to-penetrate physical enclosures, circuitry that zeroizes CSPs when the module's cover or door is opened. Level 3 also adds identity-based authentication. Level 3 is appropriate for higher-security environments.\n\nSecurity Level 4: The highest level. Provides complete protection of the cryptographic module against unauthorized physical access. Physical security mechanisms provide complete envelope of protection around the module with the intent of detecting and responding to all unauthorized attempts to access the module. Penetration of the module enclosure from any direction has a high probability of being detected, resulting in the immediate zeroization of all CSPs. Level 4 is appropriate for cryptographic modules operating in physically unprotected environments.",
+      "metadata": {
+        "docId": "fips-140-3",
+        "docTitle": "FIPS 140-3 Security Requirements for Cryptographic Modules",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "security-levels",
+        "sectionTitle": "FIPS 140-3 Security Levels 1 through 4",
+        "parentSection": "4",
+        "parentTitle": "Security Levels",
+        "controlRefs": ["SC-12", "SC-13", "SC-28", "PE-3"],
+        "families": ["SC", "PE"],
+        "chunkIndex": 0,
+        "chunkTotal": 12,
+        "applicability": ["DOD", "FEDERAL", "HIGH"],
+        "keywords": ["security", "level", "1", "2", "3", "4", "tamper", "evident", "physical", "zeroization", "csp", "critical", "parameters", "role-based", "identity-based", "authentication"]
+      }
+    },
+    {
+      "id": "fips-140-3:approved-algorithms:0",
+      "content": "Approved Cryptographic Algorithms. FIPS 140-3 requires the use of approved cryptographic algorithms — those listed as approved in NIST standards and Special Publications. Only approved algorithms may be used within FIPS-validated modules to provide security services.\n\nApproved Symmetric Encryption: AES (FIPS 197) — the only approved symmetric block cipher for federal systems. AES key sizes of 128, 192, or 256 bits are all approved. Triple DES (3DES/TDEA) is approved only in legacy implementations; new systems must use AES. DES is no longer approved for any use.\n\nApproved Hashing Algorithms: SHA-1 is approved only for legacy digital signature verification and specific limited uses; new uses of SHA-1 for cryptographic purposes are not approved. SHA-2 family (SHA-224, SHA-256, SHA-384, SHA-512) are fully approved. SHA-3 family is also approved.\n\nApproved Asymmetric Key Algorithms: RSA (FIPS 186-5) — approved for digital signatures and key establishment with key sizes of 2048 bits or larger. ECDSA and ECDH (FIPS 186-5, SP 800-56A) using approved curves (P-256, P-384, P-521) are approved for digital signatures and key agreement. DSA (FIPS 186-5) is approved for legacy signature verification only.\n\nApproved Key Derivation: SP 800-108 (KDF in counter mode, feedback mode, double-pipeline mode), SP 800-56C. Approved random number generators: SP 800-90A (DRBG), SP 800-90B (entropy sources).\n\nPractical implication for SSP writers: When documenting cryptographic controls in implementation statements, specify that FIPS-validated modules are used (citing the CMVP certificate number if known) and identify the specific algorithms employed. Stating only 'AES encryption is used' without noting FIPS validation is insufficient for an auditor review.",
+      "metadata": {
+        "docId": "fips-140-3",
+        "docTitle": "FIPS 140-3 Security Requirements for Cryptographic Modules",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "approved-algorithms",
+        "sectionTitle": "Approved Cryptographic Algorithms",
+        "parentSection": "5",
+        "parentTitle": "Approved Algorithms",
+        "controlRefs": ["SC-12", "SC-13", "SC-8", "SC-28", "IA-5", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 0,
+        "chunkTotal": 12,
+        "applicability": ["DOD", "FEDERAL", "HIGH", "CUI"],
+        "keywords": ["aes", "sha-2", "sha-3", "rsa", "ecdsa", "ecdh", "approved", "algorithms", "encryption", "hashing", "digital", "signatures", "key", "derivation", "fips", "validated"]
+      }
+    },
+    {
+      "id": "fips-140-3:key-management:0",
+      "content": "Cryptographic Key Management Requirements. Proper key management is essential to the security provided by cryptographic modules. FIPS 140-3 and associated NIST publications establish requirements for the entire cryptographic key lifecycle.\n\nKey Generation: Keys must be generated using approved random bit generators (RBGs) compliant with SP 800-90A and SP 800-90B. Keys generated outside of FIPS-validated modules and imported must be protected during transport using key wrapping or other approved key protection mechanisms.\n\nKey Establishment: Key establishment must use approved key agreement (SP 800-56A for Diffie-Hellman and elliptic-curve-based methods, SP 800-56B for RSA-based methods) or key transport mechanisms. Key lengths must be commensurate with the required protection period and sensitivity level — NIST SP 800-57 provides key length recommendations.\n\nKey Storage: Cryptographic keys must be stored in a protected manner. Within a FIPS 140-3 validated module, keys are stored as critical security parameters (CSPs) and may not be exported in plaintext. Outside of the module, keys must be encrypted (key-wrapped) with another key of equal or greater strength, or stored in hardware security modules (HSMs).\n\nKey Destruction: When keys are no longer needed, they must be securely destroyed by overwriting with random data or by destroying the storage medium. NIST SP 800-57 and SP 800-88 provide guidance on key and media destruction. The destruction of cryptographic keys must be documented.\n\nKey Management in SSP context: Implementation statements for SC-12 (Cryptographic Key Establishment and Management) must address: who manages keys (ISSO, system administrator, or designated key custodian), how keys are generated (approved RBG), how keys are distributed (key wrapping or HSM), how keys are stored (HSM or encrypted key store), key rotation schedule, and key destruction procedures.",
+      "metadata": {
+        "docId": "fips-140-3",
+        "docTitle": "FIPS 140-3 Security Requirements for Cryptographic Modules",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "key-management",
+        "sectionTitle": "Cryptographic Key Management",
+        "parentSection": "6",
+        "parentTitle": "Key Management",
+        "controlRefs": ["SC-12", "SC-13", "SC-28", "SC-8"],
+        "families": ["SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 12,
+        "applicability": ["DOD", "FEDERAL", "HIGH", "CUI"],
+        "keywords": ["key", "management", "generation", "establishment", "storage", "destruction", "hsm", "wrapping", "800-57", "rotation", "custodian", "rbg", "csp", "lifecycle", "protected"]
+      }
+    },
+    {
+      "id": "fips-140-3:dod-requirements:0",
+      "content": "DoD and NSA Cryptographic Requirements. For DoD and national security systems, cryptographic requirements extend beyond FIPS 140-3 to include NSA-approved algorithms and Commercial National Security Algorithms (CNSA).\n\nCommercial National Security Algorithm (CNSA) Suite: NSA has approved the CNSA Suite for protecting national security information. The CNSA 2.0 Suite (published in 2022) specifies: AES-256 for symmetric encryption; SHA-384 for hashing; RSA 3072-bit minimum (4096-bit preferred) for key establishment; Diffie-Hellman 3072-bit minimum for key agreement; ECDH P-384 for key agreement; ECDSA P-384 for digital signatures. Classic CNSA algorithms are being replaced by post-quantum cryptography (PQC) algorithms per CNSA 2.0 guidance, with a transition timeline extending to 2030-2033.\n\nPost-Quantum Cryptography (PQC): NSA has directed DoD systems to begin transitioning to PQC-approved algorithms. NIST finalized three PQC algorithms in 2024 (FIPS 203 — ML-KEM, FIPS 204 — ML-DSA, FIPS 205 — SLH-DSA). DoD systems should begin planning for PQC migration, particularly for systems with long operational lifespans where data encrypted today could be attacked by quantum computers in the future.\n\nCNSSP 15: CNSS Policy 15, National Information Assurance Policy on the Use of Public Standards for Secure Sharing of Information Among National Security Systems, specifies cryptographic algorithm requirements for NSS. CNSS Policy 15 requires the use of CNSA Suite algorithms for protecting NSS information and mandates migration timelines for legacy algorithm replacement.\n\nFor SSP writers: When writing implementation statements for IA-7 (Cryptographic Module Authentication) and SC-13 (Cryptographic Protection), note whether the system uses FIPS 140-3 validated modules, CNSA Suite algorithms, or both. Systems protecting classified information should reference CNSA Suite compliance in addition to FIPS 140 validation.",
+      "metadata": {
+        "docId": "fips-140-3",
+        "docTitle": "FIPS 140-3 Security Requirements for Cryptographic Modules",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "dod-requirements",
+        "sectionTitle": "DoD CNSA Suite and NSA Cryptographic Requirements",
+        "parentSection": "appendix",
+        "parentTitle": "Appendices",
+        "controlRefs": ["SC-12", "SC-13", "IA-7", "SC-8", "SC-28"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 0,
+        "chunkTotal": 12,
+        "applicability": ["DOD", "NSS", "HIGH", "SAP"],
+        "keywords": ["cnsa", "suite", "nsa", "post-quantum", "pqc", "aes-256", "sha-384", "rsa", "ecdsa", "cnssp", "15", "quantum", "migration", "classified", "national", "security"]
+      }
+    },
+    {
+      "id": "fips-140-3:implementation:0",
+      "content": "Implementing Cryptographic Requirements in DoD RMF Systems. When documenting cryptographic controls in an SSP, the following standards and controls apply.\n\nControl SC-13 (Cryptographic Protection): Implementation statements must identify: (a) the specific types of cryptographic use (data at rest, data in transit, authentication, digital signatures, key management); (b) the specific FIPS-validated modules or NSA-approved solutions used; (c) the specific approved algorithms and key lengths in use; (d) the CMVP validation certificate numbers or references to approved products lists.\n\nControl SC-8 (Transmission Confidentiality and Integrity): For data in transit, organizations must implement FIPS-validated TLS 1.2 or 1.3 using approved cipher suites. TLS 1.0 and 1.1 are not approved for use on federal or DoD systems. Approved cipher suites must use AES for encryption and SHA-256 or stronger for integrity. For government systems, TLS connections must use server certificate authentication minimum; mutual TLS with client certificates is required for higher-assurance applications.\n\nControl SC-28 (Protection of Information at Rest): Data at rest must be encrypted using FIPS-validated AES-256 (preferred) or AES-128. Full disk encryption (FDE) or volume encryption using validated tools (BitLocker in FIPS mode, VeraCrypt with FIPS module, etc.) satisfies this requirement for workstations and laptops. Database encryption, file-level encryption, or application-layer encryption may be used for server-hosted data.\n\nControl IA-7 (Cryptographic Module Authentication): Authentication mechanisms that use cryptographic functions must use FIPS-validated modules. PKI-based authentication with DoD-issued certificates and CAC/PIV cards uses NSA-validated PKI infrastructure that satisfies this requirement.",
+      "metadata": {
+        "docId": "fips-140-3",
+        "docTitle": "FIPS 140-3 Security Requirements for Cryptographic Modules",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "implementation",
+        "sectionTitle": "Implementing Cryptographic Requirements in SSP",
+        "parentSection": "appendix",
+        "parentTitle": "Appendices",
+        "controlRefs": ["SC-8", "SC-12", "SC-13", "SC-28", "IA-5", "IA-7"],
+        "families": ["SC", "IA"],
+        "chunkIndex": 0,
+        "chunkTotal": 12,
+        "applicability": ["DOD", "FEDERAL", "HIGH", "CUI"],
+        "keywords": ["sc-13", "sc-8", "sc-28", "ia-7", "tls", "1.2", "1.3", "bitlocker", "fips", "validated", "cipher", "suites", "aes-256", "full-disk", "encryption", "implementation"]
+      }
+    }
+  ]
+}

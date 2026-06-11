@@ -1,0 +1,218 @@
+{
+  "docId": "nist-sp-800-171-rev3",
+  "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+  "docType": "NIST_SUPPLEMENT",
+  "version": "Rev 3, May 2024",
+  "source": "https://doi.org/10.6028/NIST.SP.800-171r3",
+  "chunks": [
+    {
+      "id": "nist-sp-800-171-rev3:1.1:0",
+      "content": "NIST SP 800-171 provides requirements for protecting the confidentiality of Controlled Unclassified Information (CUI) when such information resides in nonfederal systems and organizations. The requirements apply to any component of a nonfederal system that processes, stores, or transmits CUI, or that provides security protection for such components. Federal agencies share CUI with nonfederal organizations to support their missions, and those organizations must provide adequate security to protect that information.\n\nCUI is information the government creates or possesses, or that an entity creates or possesses for or on behalf of the government, that requires safeguarding or dissemination controls consistent with applicable law, regulation, or government policy. The CUI Registry, maintained by the National Archives and Records Administration (NARA), identifies the categories of CUI and the applicable handling requirements.\n\nApplicability: NIST SP 800-171 applies to nonfederal organizations — contractors, grantees, research institutions, and state and local governments — that process, store, or transmit CUI pursuant to federal contracts, grants, agreements, or other means. For DoD contractors, Defense Federal Acquisition Regulation Supplement (DFARS) clause 252.204-7012 requires implementation of NIST SP 800-171 and the conduct of cyber incident reporting. CMMC (Cybersecurity Maturity Model Certification) incorporates NIST SP 800-171 requirements and requires third-party assessment for contractors handling sensitive defense information.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "1.1",
+        "sectionTitle": "Purpose, Scope, and Applicability",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["AC-1", "AU-1", "CM-1", "IA-1", "IR-1", "MA-1", "MP-1", "RA-1", "SC-1", "SI-1"],
+        "families": ["AC", "AU", "CM", "IA", "IR", "MA", "MP", "RA", "SC", "SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["cui", "controlled", "unclassified", "information", "nonfederal", "contractors", "dfars", "cmmc", "registry", "nara", "grantees", "confidentiality", "safeguarding", "dissemination", "applicability"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:2.1:0",
+      "content": "Structure and Organization of NIST SP 800-171 Requirements. NIST SP 800-171 Rev 3 organizes its security requirements into 17 requirement families, each corresponding to a related area of security practice. The 110 basic security requirements in Rev 2 were restructured in Rev 3 to provide enhanced clarity and updated alignment with NIST SP 800-53 Rev 5.\n\nThe 17 requirement families in NIST SP 800-171 Rev 3 are: Access Control (AC), Awareness and Training (AT), Audit and Accountability (AU), Configuration Management (CM), Identification and Authentication (IA), Incident Response (IR), Maintenance (MA), Media Protection (MP), Personnel Security (PS), Physical Protection (PE), Risk Assessment (RA), Security Assessment (CA), System and Communications Protection (SC), System and Information Integrity (SI), Planning (PL), Program Management (PM), and Supply Chain Risk Management (SR).\n\nBasic vs. Derived Requirements: Each family contains basic security requirements (from FIPS 200) and derived security requirements (that supplement the basic requirements and provide specificity for implementation). Both basic and derived requirements must be implemented to satisfy NIST SP 800-171.\n\nMapping to NIST SP 800-53: Each NIST SP 800-171 requirement maps to one or more NIST SP 800-53 Rev 5 controls. The mapping is provided in Appendix D of NIST SP 800-171. Organizations that have already implemented NIST SP 800-53 Moderate baseline controls will satisfy most NIST SP 800-171 requirements, though not all 800-53 Moderate controls are required by 800-171 and some 800-171 requirements are not covered by the basic Moderate baseline.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.1",
+        "sectionTitle": "Structure and Requirement Families",
+        "parentSection": "2",
+        "parentTitle": "The Requirements",
+        "controlRefs": ["AC-1", "AT-1", "AU-1", "CM-1", "IA-1", "IR-1", "MA-1", "MP-1", "PS-1", "PE-1", "RA-1", "CA-1", "SC-1", "SI-1"],
+        "families": ["AC", "AT", "AU", "CM", "IA", "IR", "MA", "MP", "PS", "PE", "RA", "CA", "SC", "SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["requirements", "families", "basic", "derived", "mapping", "800-53", "access", "control", "audit", "configuration", "identification", "authentication", "incident", "response", "maintenance"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:ac:0",
+      "content": "Access Control Requirements (3.1). The access control requirements in NIST SP 800-171 limit system access to authorized users, processes, and devices, and limit the types of transactions and functions authorized users are permitted to exercise.\n\nKey AC requirements: 3.1.1 — Limit system access to authorized users, processes acting on behalf of authorized users, and devices. 3.1.2 — Limit system access to the types of transactions and functions authorized users are permitted to execute. 3.1.3 — Control the flow of CUI in accordance with approved authorizations. 3.1.4 — Separate the duties of individuals to reduce the risk of malevolent activity. 3.1.5 — Employ the principle of least privilege. 3.1.6 — Use non-privileged accounts or roles when accessing non-security functions. 3.1.7 — Prevent non-privileged users from executing privileged functions and capture the execution of such functions in audit logs.\n\n3.1.12 — Monitor and control remote access sessions. 3.1.13 — Employ cryptographic mechanisms to protect the confidentiality of remote access sessions. 3.1.14 — Route remote access via managed access control points. 3.1.17 — Protect wireless access using authentication and encryption. 3.1.20 — Verify and control connections to external systems. 3.1.22 — Control CUI posted or processed on publicly accessible systems.\n\nMobile device controls: 3.1.18 — Control connection of mobile devices. 3.1.19 — Encrypt CUI on mobile devices and mobile computing platforms. These requirements ensure that CUI remains protected when accessed from portable devices that may be used outside the organization's physical control perimeter.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "ac",
+        "sectionTitle": "Access Control Requirements 3.1",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["AC-2", "AC-3", "AC-4", "AC-5", "AC-6", "AC-17", "AC-18", "AC-19", "AC-20"],
+        "families": ["AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["access", "control", "least", "privilege", "separation", "duties", "remote", "access", "mobile", "wireless", "encryption", "privileged", "non-privileged", "authorized", "cui"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:au-cm:0",
+      "content": "Audit and Accountability (3.3) and Configuration Management (3.4).\n\nAudit Requirements: 3.3.1 — Create and retain system audit logs and records to the extent needed to enable the monitoring, analysis, investigation, and reporting of unlawful or unauthorized system activity. 3.3.2 — Ensure that the actions of individual system users can be uniquely traced to those users so they can be held accountable for their actions. 3.3.3 — Review and update logged events. 3.3.4 — Alert in the event of an audit logging process failure. 3.3.5 — Correlate audit record review, analysis, and reporting processes. 3.3.6 — Provide audit record reduction and report generation to support on-demand analysis and reporting. 3.3.7 — Provide a system capability that compares and synchronizes internal clocks with an authoritative source. 3.3.8 — Protect audit information and tools from unauthorized access, modification, and deletion. 3.3.9 — Limit management of audit logging to a subset of privileged users.\n\nConfiguration Management Requirements: 3.4.1 — Establish and maintain baseline configurations and inventories of CUI systems. 3.4.2 — Establish and enforce security configuration settings. 3.4.3 — Track, review, approve, and log changes to CUI systems. 3.4.4 — Analyze the security impact of changes prior to implementation. 3.4.5 — Define, document, approve, and enforce physical and logical access restrictions associated with changes. 3.4.6 — Employ the principle of least functionality by configuring systems to provide only essential capabilities. 3.4.7 — Restrict, disable, or prevent the use of nonessential programs, functions, ports, protocols, and services. 3.4.8 — Apply deny-by-exception policy to prevent use of unauthorized software. 3.4.9 — Control and monitor user-installed software.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "au-cm",
+        "sectionTitle": "Audit and Accountability (3.3) and Configuration Management (3.4)",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["AU-2", "AU-3", "AU-6", "AU-9", "AU-12", "CM-2", "CM-3", "CM-6", "CM-7", "CM-11"],
+        "families": ["AU", "CM"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["audit", "logging", "records", "accountability", "configuration", "baseline", "inventory", "changes", "least", "functionality", "deny", "exception", "user-installed", "synchronize", "clock"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:ia:0",
+      "content": "Identification and Authentication Requirements (3.5). NIST SP 800-171 requires organizations to identify and authenticate system users, processes, and devices before allowing access to CUI systems.\n\n3.5.1 — Identify system users, processes acting on behalf of users, and devices. 3.5.2 — Authenticate (or verify) the identities of those users, processes, or devices as a prerequisite to allowing access to the system. 3.5.3 — Use multifactor authentication (MFA) for local and network access to privileged accounts and for network access to non-privileged accounts. This requirement is a critical CUI protection — passwords alone are not sufficient for system access. 3.5.4 — Employ replay-resistant authentication mechanisms for network access. 3.5.5 — Employ identifier management practices. 3.5.6 — Employ authenticator management practices. 3.5.7 — Enforce a minimum password complexity and change of passwords when new passwords are created. 3.5.8 — Prohibit password reuse for a specified number of generations. 3.5.9 — Allow temporary password use for system logons with an immediate change to a permanent password. 3.5.10 — Store and transmit only cryptographically protected passwords. 3.5.11 — Obscure feedback of authentication information.\n\nMFA implementation note: For contractor systems, the DoD CAC (Common Access Card) satisfies the MFA requirement for users who hold DoD-issued CACs. For contractors without CAC access, compliant MFA solutions include FIDO2 hardware tokens, PIV cards, or software-based authenticators compliant with NIST SP 800-63B Authenticator Assurance Level 2 (AAL2) or higher.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "ia",
+        "sectionTitle": "Identification and Authentication Requirements 3.5",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["IA-2", "IA-3", "IA-4", "IA-5", "IA-8", "IA-11"],
+        "families": ["IA"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["identification", "authentication", "mfa", "multifactor", "cac", "piv", "passwords", "replay-resistant", "privileged", "fido2", "aal2", "cryptographic", "obscure", "feedback", "complexity"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:ir-ma:0",
+      "content": "Incident Response (3.6) and Maintenance (3.7).\n\nIncident Response Requirements: 3.6.1 — Establish an operational incident-handling capability including preparation, detection, analysis, containment, recovery, and user response activities. 3.6.2 — Track, document, and report incidents to appropriate organizational officials and authorities. 3.6.3 — Test the organizational incident response capability.\n\nFor DoD contractors, DFARS 252.204-7012 requires reporting of cyber incidents affecting CUI within 72 hours of discovery to the DoD Cyber Crime Center (DC3). Contractors must also preserve images of compromised systems and provide them to the government upon request. The incident report must include: company information, contract numbers affected, facility CAGE code, date incident discovered, location of compromise, type of compromise, description of the technique used, narrative of the incident, and list of compromised data.\n\nMaintenance Requirements: 3.7.1 — Perform maintenance on organizational systems. 3.7.2 — Provide controls on the tools, techniques, mechanisms, and personnel that perform maintenance on organizational systems. 3.7.3 — Ensure equipment removed for maintenance is sanitized with respect to any CUI. 3.7.4 — Check media containing diagnostic and test programs for malicious code before use on systems with CUI. 3.7.5 — Require MFA to establish remote maintenance sessions via external networks, and terminate such sessions after completion. 3.7.6 — Supervise maintenance activities of personnel without required access authorizations.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "ir-ma",
+        "sectionTitle": "Incident Response (3.6) and Maintenance (3.7)",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["IR-2", "IR-3", "IR-4", "IR-5", "IR-6", "IR-7", "MA-2", "MA-3", "MA-4", "MA-5", "MA-6"],
+        "families": ["IR", "MA"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["incident", "response", "reporting", "dc3", "dfars", "72", "hours", "cyber", "incident", "maintenance", "remote", "mfa", "sanitization", "diagnostic", "contractor"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:mp-ps:0",
+      "content": "Media Protection (3.8) and Personnel Security (3.9).\n\nMedia Protection Requirements: 3.8.1 — Protect system media containing CUI, both paper and digital. 3.8.2 — Limit access to CUI on system media to authorized users. 3.8.3 — Sanitize or destroy system media before disposal or reuse. 3.8.4 — Mark media with necessary CUI markings and distribution limitations. 3.8.5 — Control access to media containing CUI and maintain accountability for media during transport. 3.8.6 — Implement cryptographic mechanisms to protect CUI during transport unless otherwise protected by alternative physical safeguards. 3.8.7 — Control the use of removable media on system components. 3.8.8 — Prohibit the use of portable storage without identifiable owner. 3.8.9 — Protect the confidentiality of backup CUI at storage locations.\n\nSanitization standards: NIST SP 800-88 Rev 1 provides the authoritative guidelines for media sanitization. Methods include Clear (applying logical techniques to sanitize data in all user-addressable storage locations), Purge (applying physical or logical techniques that render recovery infeasible using state-of-the-art laboratory techniques), and Destroy (physically destroying the media). For CUI, Purge or Destroy is required.\n\nPersonnel Security Requirements: 3.9.1 — Screen individuals prior to authorizing access to CUI systems. 3.9.2 — Ensure CUI is protected during and after personnel actions such as terminations and transfers. Personnel security controls ensure that access to CUI is limited to individuals who have been appropriately vetted and that access is terminated promptly when individuals leave the organization or change roles.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "mp-ps",
+        "sectionTitle": "Media Protection (3.8) and Personnel Security (3.9)",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["MP-2", "MP-3", "MP-4", "MP-5", "MP-6", "MP-7", "MP-8", "PS-3", "PS-4", "PS-5"],
+        "families": ["MP", "PS"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["media", "protection", "sanitization", "800-88", "purge", "destroy", "removable", "backup", "encryption", "transport", "personnel", "security", "screening", "termination", "cui"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:ra-ca:0",
+      "content": "Risk Assessment (3.11) and Security Assessment (3.12).\n\nRisk Assessment Requirements: 3.11.1 — Periodically assess the risk to organizational operations, assets, and individuals resulting from the operation of CUI systems. 3.11.2 — Scan for vulnerabilities in CUI systems periodically and when new vulnerabilities potentially affecting those systems are identified. 3.11.3 — Remediate vulnerabilities in accordance with risk assessments. Vulnerability scanning must cover all system components and must be performed at regular intervals. Scan results must be reviewed and high-risk vulnerabilities remediated within defined timeframes. For DoD contractors, DFARS requires maintaining current vulnerability scans.\n\nSecurity Assessment Requirements: 3.12.1 — Periodically assess the security controls in CUI systems to determine if the controls are effective in their application. 3.12.2 — Develop and implement plans of action (POA&Ms) designed to correct deficiencies and reduce or eliminate vulnerabilities. 3.12.3 — Monitor security controls on an ongoing basis to ensure the continued effectiveness of the controls. 3.12.4 — Develop, document, and periodically update system security plans (SSPs) that describe system boundaries, system environments, how security requirements are implemented, and relationships with or connections to other systems.\n\nSSP requirements for NIST 800-171: The SSP required by requirement 3.12.4 must document how all 110 requirements are implemented. For requirements that are not implemented, the SSP must document them in a POA&M with planned completion dates. CMMC assessments evaluate the SSP and POA&M for completeness and accuracy.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "ra-ca",
+        "sectionTitle": "Risk Assessment (3.11) and Security Assessment (3.12)",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["RA-3", "RA-5", "RA-7", "CA-2", "CA-5", "CA-7"],
+        "families": ["RA", "CA"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["risk", "assessment", "vulnerability", "scanning", "remediation", "poam", "ssp", "security", "controls", "effectiveness", "monitoring", "cmmc", "dfars", "periodic", "assessment"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:sc:0",
+      "content": "System and Communications Protection Requirements (3.13). The SC requirements address the protection of CUI in transit and at rest, as well as boundary protection and network monitoring.\n\n3.13.1 — Monitor, control, and protect communications at the external boundaries of systems and key internal boundaries. 3.13.2 — Employ architectural designs, software development techniques, and systems engineering principles that promote effective security. 3.13.3 — Separate user functionality from system management functionality. 3.13.4 — Prevent unauthorized and unintended information transfer via shared system resources. 3.13.5 — Implement subnetworks for publicly accessible system components that are physically or logically separated from internal networks. 3.13.6 — Deny network communications traffic by default; allow by exception (whitelist approach).\n\n3.13.7 — Prevent remote devices from simultaneously using non-remote connections (split tunneling). 3.13.8 — Implement cryptographic mechanisms to prevent unauthorized disclosure of CUI during transmission. 3.13.10 — Establish and manage cryptographic keys for required cryptography. 3.13.11 — Employ FIPS-validated cryptography when used to protect the confidentiality of CUI. This requirement is critical: only NIST-validated cryptographic modules (validated under FIPS 140-2 or 140-3) may be used to protect CUI. The use of non-validated cryptography does not satisfy this requirement.\n\n3.13.14 — Control and monitor the use of mobile code. 3.13.15 — Control and monitor the use of VoIP technologies. 3.13.16 — Protect the authenticity of communications sessions. 3.13.17 — Protect CUI at rest.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "sc",
+        "sectionTitle": "System and Communications Protection Requirements 3.13",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["SC-1", "SC-2", "SC-3", "SC-4", "SC-5", "SC-7", "SC-8", "SC-12", "SC-13", "SC-28"],
+        "families": ["SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["communications", "protection", "fips", "validated", "cryptography", "encryption", "boundaries", "monitoring", "split", "tunneling", "mobile", "code", "voip", "rest", "transit"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:si:0",
+      "content": "System and Information Integrity Requirements (3.14). The SI requirements address identification and remediation of system flaws, malicious code protection, and security alerting.\n\n3.14.1 — Identify, report, and correct information and system flaws in a timely manner. 3.14.2 — Provide protection from malicious code at appropriate locations within the system. 3.14.3 — Monitor system security alerts and advisories and take action in response. 3.14.4 — Update malicious code protection mechanisms as new releases are available. 3.14.5 — Perform periodic scans of the system and real-time scans of files from external sources as files are downloaded, opened, or executed. 3.14.6 — Monitor CUI systems to detect attacks and indicators of potential attacks. 3.14.7 — Identify unauthorized use of CUI systems.\n\nPatch management: Requirement 3.14.1 requires timely remediation of flaws. DoD contractors should implement a vulnerability management program that: (1) continuously scans for vulnerabilities using automated tools; (2) assigns risk ratings to findings based on CVSS scores and asset criticality; (3) remediates CRITICAL findings within 15 days, HIGH within 30 days, and MODERATE within 90 days; (4) documents exceptions with compensating controls and AO/ISSO approval; and (5) tracks remediation status in the POA&M.\n\nSecurity monitoring: Requirements 3.14.6 and 3.14.7 require active monitoring for attacks and unauthorized use. This is typically implemented through a Security Information and Event Management (SIEM) system, host-based intrusion detection, endpoint detection and response (EDR) tools, and network monitoring solutions.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "si",
+        "sectionTitle": "System and Information Integrity Requirements 3.14",
+        "parentSection": "3",
+        "parentTitle": "Requirements",
+        "controlRefs": ["SI-2", "SI-3", "SI-4", "SI-5", "SI-7"],
+        "families": ["SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["integrity", "flaws", "malicious", "code", "patching", "vulnerability", "siem", "edr", "monitoring", "intrusion", "detection", "alerts", "advisories", "scans", "unauthorized"]
+      }
+    },
+    {
+      "id": "nist-sp-800-171-rev3:cmmc:0",
+      "content": "CMMC and DFARS Compliance Context. The Cybersecurity Maturity Model Certification (CMMC) program requires DoD contractors to demonstrate implementation of NIST SP 800-171 requirements as a condition of contract award. CMMC 2.0 establishes three levels of certification.\n\nCMMC Level 1 (Foundational): 17 practices from the basic safeguarding requirements of FAR clause 52.204-21. Requires annual self-assessment.\n\nCMMC Level 2 (Advanced): 110 practices from NIST SP 800-171 Rev 2/3. Required for contracts involving Controlled Unclassified Information (CUI). Requires a triennial third-party assessment by a CMMC Third Party Assessment Organization (C3PAO) for most contracts. Self-assessment is permitted for selected contracts.\n\nCMMC Level 3 (Expert): Practices from NIST SP 800-172 plus Level 2. Required for the most sensitive programs. Requires a government-led assessment.\n\nDFARS 252.204-7012 obligations independent of CMMC: Contractors must: (1) implement adequate security on all covered contractor information systems; (2) report cyber incidents to DC3 within 72 hours; (3) preserve images of compromised systems for 90 days; (4) submit a medium assurance certificate (MAC) when a cyber incident occurs; (5) provide DoD with access to additional information or equipment when requested; and (6) submit an annual self-assessment score using the NIST SP 800-171 DoD Assessment Methodology, uploading scores to the Supplier Performance Risk System (SPRS).\n\nSSP and POA&M requirements for DFARS compliance: Contractors must maintain a current SSP describing how each of the 110 NIST 800-171 requirements is met, and a POA&M documenting any unimplemented requirements with scheduled completion dates.",
+      "metadata": {
+        "docId": "nist-sp-800-171-rev3",
+        "docTitle": "NIST SP 800-171 Rev 3 Protecting Controlled Unclassified Information in Nonfederal Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "cmmc",
+        "sectionTitle": "CMMC and DFARS Compliance",
+        "parentSection": "appendix",
+        "parentTitle": "Appendices",
+        "controlRefs": ["CA-2", "CA-5", "CA-7", "IR-6"],
+        "families": ["CA", "IR"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["CUI", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["cmmc", "dfars", "level", "1", "2", "3", "c3pao", "assessment", "sprs", "ssp", "poam", "self-assessment", "contractor", "72", "hours", "cyber", "incident"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+{
+  "docId": "icd-502",
+  "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+  "docType": "IC_POLICY",
+  "version": "ICD 502, 11 March 2011",
+  "source": "https://www.dni.gov/files/documents/icd/icd_502.pdf",
+  "chunks": [
+    {
+      "id": "icd-502:1.1:0",
+      "content": "Intelligence Community Directive (ICD) 502 establishes policy for the integrated defense of the Intelligence Community (IC) information environment. It directs IC elements to implement a unified, coordinated approach to protecting IC networks, systems, and information against cyber threats. ICD 502 complements ICD 503 (IC Information Technology Systems Security Risk Management, Certification and Accreditation), which governs the RMF process for IC systems, by providing specific requirements for the defensive architecture and operational security of IC information infrastructure.\n\nThe IC information environment encompasses the networks, systems, services, and data operated by or on behalf of IC elements as defined in the National Security Act. This includes JWICS (Joint Worldwide Intelligence Communications System), IC-NET, and element-specific networks operating at TS/SCI and above. The integrated defense of this environment requires that all IC elements implement boundary protection, threat intelligence sharing, incident response coordination, and supply chain risk management consistent with the requirements of this directive.\n\nDefense-in-depth for SCI systems is a foundational principle of ICD 502. Recognizing that no single security measure is sufficient to defend against sophisticated nation-state adversaries, ICD 502 requires layered defensive architectures that provide multiple overlapping barriers to unauthorized access, data exfiltration, and disruption. Each IC element's system architecture must demonstrate defense-in-depth through documentation in the System Security Plan and network diagrams submitted as part of the IC RMF authorization package.\n\nThe IC Information Technology Enterprise (IC-ITE) initiative, which seeks to consolidate and standardize IC IT infrastructure, is a key context for ICD 502. IC-ITE provides shared services including IC GovCloud, common desktop environments, and shared network infrastructure. Systems operating on IC-ITE infrastructure inherit boundary protection controls from the IC-ITE common control providers, but element-level system owners remain responsible for the security controls specific to their authorization boundary.\n\nFor IC systems undergoing RMF authorization, ICD 502 requirements must be reflected in SSP implementation statements for SC-7 (Boundary Protection), AC-4 (Information Flow Enforcement), CA-3 (Interconnection Security Agreements), and IR-4/IR-8 (Incident Handling and Incident Response Plan) in addition to the base NIST SP 800-53 requirements.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "1.1",
+        "sectionTitle": "Purpose and IC Information Environment",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["SC-7", "AC-4", "CA-3", "IR-4", "IR-8"],
+        "families": ["SC", "AC", "CA", "IR"],
+        "chunkIndex": 0,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["icd 502", "ic information environment", "integrated defense", "jwics", "ic-ite", "defense-in-depth", "sci systems", "boundary protection", "icd 503", "ic elements", "odni"]
+      }
+    },
+    {
+      "id": "icd-502:network-defense:1",
+      "content": "Network defense requirements under ICD 502 mandate that all IC elements implement perimeter defense and boundary protection measures that reflect the unique threat environment faced by the IC. IC networks carry the most sensitive intelligence information in the government and are the primary targets of nation-state adversaries conducting cyber espionage and destructive attacks.\n\nIC enclave boundaries must be defined and documented, with explicit controls governing all data flows across boundaries. Every connection between IC enclaves operating at different classification levels, or between IC enclaves and non-IC networks, must be mediated by an approved Cross-Domain Solution (CDS) from the UCDMO (Unified Cross Domain Management Office) approved products list. Connections not mediated by an approved CDS are prohibited, regardless of whether a physical separation exists.\n\nCross-Domain Solutions are the technical enforcement point for IC information flow policy. ICD 502 requires that all CDSs operating in IC environments be approved by the UCDMO and accredited for the specific data flows they support. CDS accreditation is separate from the accreditation of the systems on either side of the CDS and must be maintained through periodic re-accreditation. Each CDS must be documented in the SSP, including the UCDMO accreditation number, the approved data flows (by data type and direction), and the review process for CDS filter policies.\n\nHAIPE (High Assurance Internet Protocol Encryptor) deployment is required for all IC classified traffic traversing unclassified infrastructure. NSA-approved HAIPE devices encrypt IP traffic at the network layer, ensuring that classified information cannot be intercepted during transit. Common HAIPE implementations in IC environments include the KG-175 TACLANE family and the KG-245A. HAIPE key management is handled through KMI (Key Management Infrastructure), and NSA Type 1 cryptographic material used in HAIPEs is controlled as COMSEC material.\n\nBoundary protection documentation in the SSP must include: a network diagram showing all enclave boundaries and the CDSs or firewalls controlling data flow at each boundary; the firewall rule set or rule change management process; the approved ports, protocols, and services at each boundary; the CDS identification and accreditation status; and the monitoring approach for detecting unauthorized boundary crossings. SC-7 enhanced requirements for HIGH-impact systems include managed interfaces, deny-by-default, and fail-secure configurations at all enclave boundaries.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "network-defense",
+        "sectionTitle": "Network Defense Requirements",
+        "parentSection": "2",
+        "parentTitle": "Network Defense",
+        "controlRefs": ["SC-7", "AC-4", "SC-8", "CA-3"],
+        "families": ["SC", "AC", "CA"],
+        "chunkIndex": 1,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["ic enclave boundary", "cross-domain solution", "cds", "ucdmo", "haipe", "kg-175", "taclane", "boundary protection", "sc-7", "perimeter defense", "data flow enforcement", "kmi"]
+      }
+    },
+    {
+      "id": "icd-502:threat-intelligence:2",
+      "content": "Threat intelligence integration is a distinctive element of ICD 502's approach to IC network defense. IC elements have privileged access to classified threat intelligence that can significantly enhance the effectiveness of defensive measures if properly integrated into security operations. ICD 502 directs IC elements to use threat intelligence to prioritize security control implementation, tune detection capabilities, and inform incident response priorities.\n\nThe Cyber Threat Intelligence Integration Center (CTIIC), established by the DNI, serves as the primary vehicle for integrating threat intelligence across IC elements and sharing IC threat information with appropriate Federal partners. CTIIC synthesizes intelligence from IC sources and provides strategic, operational, and tactical threat information to IC CISOs and security operations teams. IC elements must establish processes for receiving and acting on CTIIC threat intelligence products within their security operations workflow.\n\nIC-ISAC (IC Information Sharing and Analysis Center) provides threat information sharing among IC elements at the operational and tactical levels. IC elements participate in IC-ISAC by sharing indicators of compromise (IOCs), TTPs (Tactics, Techniques, and Procedures) observed on their networks, and defensive actions taken in response to threats. Shared threat data enables IC elements to benefit from each other's defensive experience and respond faster to campaigns that target multiple IC elements simultaneously.\n\nThreat-informed defense applies intelligence about specific adversaries' capabilities, targeting interests, and preferred TTPs to prioritize which security controls are most critical for a given system. For IC systems, the threat-informed defense approach means that security control selection and enhancement should be informed by current intelligence about adversary capabilities and interest in the types of information the system processes. MITRE ATT&CK framework provides a structured taxonomy for mapping threat intelligence to defensive controls.\n\nThreat feeds integration into SIEM enables automated correlation of network traffic, system events, and access logs against current IOCs from IC threat intelligence sources. IC SIEMs should be configured to receive classified threat feeds via approved secure data transfer mechanisms and alert on matches in near-real-time. For SSP SI-4 (System Monitoring) and IR-4 (Incident Handling) implementation statements, document the threat intelligence sources integrated into the SIEM, the classification level of the feeds, and the process for acting on threat alerts.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "threat-intelligence",
+        "sectionTitle": "Threat Intelligence Integration",
+        "parentSection": "3",
+        "parentTitle": "Threat Intelligence",
+        "controlRefs": ["IR-4", "IR-6", "SC-7", "AC-4"],
+        "families": ["IR", "SC", "AC"],
+        "chunkIndex": 2,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["ctiic", "ic-isac", "threat intelligence", "threat-informed defense", "ioc", "ttp", "mitre attack", "siem integration", "threat feeds", "ic threat sharing", "cyber threat intelligence"]
+      }
+    },
+    {
+      "id": "icd-502:incident-response:3",
+      "content": "IC cyber incident response under ICD 502 requires coordination among IC element CIRTs (Computer Incident Response Teams), the IC CIRT, NCSC (National Counterintelligence and Security Center), and external partners as appropriate. The classified nature of IC information and the sensitivity of IC networks require specialized incident handling procedures that go beyond standard Federal incident response requirements.\n\nIC-wide incident categorization uses a classification scheme that accounts for both the severity of the incident and the sensitivity of the information or systems affected. Incidents involving SCI systems or SCI-bearing data require immediate escalation to IC leadership and NSA's IAD (Information Assurance Directorate) for technical response support. The IC Incident Reporting Framework defines mandatory reporting timelines: significant incidents involving potential compromise of SCI must be reported to the DNI and NSA within one hour of discovery; all other reportable incidents must be reported within 24 hours.\n\nClassified incident handling introduces requirements not present in standard (unclassified) incident response. All incident documentation, including evidence collection, forensic analysis, and reporting, must be handled at the classification level appropriate to the information involved. Incident response tools and forensic workstations used on SCI networks must themselves be accredited for SCI processing. Incident documentation may not be transferred to unclassified systems for reporting or analysis without an approved CDS transfer.\n\nThe 72-hour reporting requirement for significant incidents aligns with Presidential Policy Directive 41 (PPD-41), which establishes the Federal government's cyber incident coordination policy. For IC elements, the significant incident threshold is lower than for civilian agencies, reflecting the greater sensitivity of IC information. IC elements must report to NCSC, the IC Inspector General, and relevant element leadership within the specified timeframe.\n\nCoordination with the IC IG is required when incidents involve potential insider threat activity, unauthorized disclosure of classified information, or violations of IC policies and directives. The IC IG has independent investigative authority and may conduct parallel investigations alongside technical incident response. ISSOs must ensure that evidence preservation procedures are followed and that incident response activities do not inadvertently destroy evidence needed for IG or law enforcement investigations. SSP IR-4 and IR-6 implementation statements must reference the IC incident reporting framework, the IC CIRT coordination process, and the procedures for classified incident documentation.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "incident-response",
+        "sectionTitle": "IC Cyber Incident Response",
+        "parentSection": "4",
+        "parentTitle": "Incident Response",
+        "controlRefs": ["IR-4", "IR-6", "IR-8"],
+        "families": ["IR"],
+        "chunkIndex": 3,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["ic cirt", "ncsc", "incident response", "classified incident handling", "72-hour reporting", "ppd-41", "ic ig", "sci incident", "evidence preservation", "incident reporting framework", "nsa iad"]
+      }
+    },
+    {
+      "id": "icd-502:cds-requirements:4",
+      "content": "Cross-Domain Solution (CDS) requirements for IC environments are among the most rigorous in the Federal government, reflecting the extreme sensitivity of IC information and the risk of inadvertent or covert disclosure of SCI across domain boundaries. ICD 502 establishes policy for CDS deployment and management; detailed technical requirements are provided by NSA and the UCDMO.\n\nThe UCDMO (Unified Cross Domain Management Office) is responsible for maintaining the IC and DoD approved products list for CDSs and for establishing the accreditation requirements for each product. Only UCDMO-listed CDSs may be deployed to mediate data flows between IC enclaves or between IC and non-IC networks. The UCDMO approval process for a new CDS product involves extensive security evaluation by NSA and government testing laboratories and typically requires 12–24 months. Emergency exceptions to the approved products list require written approval from NSA and the DNI CISO.\n\nCDS categories address different use cases. Guards provide bidirectional or unidirectional data transfer with active content filtering and inspection. Data diodes provide strictly unidirectional data transfer, physically preventing any return path. Filters apply content-based rules to permit only approved data types to pass. Each category has different assurance properties and is appropriate for different risk environments. For transfers from lower to higher classification domains (up-writes), guards with active filtering are required. For transfers from higher to lower classification domains (down-writes), guards with multiple independent filter layers and human review are typically required.\n\nCDS accreditation is separate from system accreditation and requires a dedicated authorization package that documents the CDS hardware and software configuration, the filter policies and their implementation, the results of security testing, and the operational procedures for managing the CDS. IC CDS accreditation packages are reviewed by NSA and the UCDMO in addition to the element AO.\n\nHigh-assurance transfer requirements for IC CDS include: XML/data tagging to identify and label data elements before transfer; filter policies that explicitly deny unlabeled or improperly labeled content; logging of all transfer attempts (approved and rejected); and regular review of CDS logs by trained CDS administrators. Content labels must accurately reflect the classification and handling requirements of the data, and the CDS filter policy must enforce those labels by permitting only data meeting the approved transfer criteria. SSP AC-4 and SC-7 implementation statements must document the specific CDS products in use, their UCDMO accreditation numbers, the approved data flows, and the CDS log review schedule.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "cds-requirements",
+        "sectionTitle": "Cross-Domain Solution Requirements",
+        "parentSection": "5",
+        "parentTitle": "Cross-Domain Solutions",
+        "controlRefs": ["AC-4", "SC-7", "SC-8"],
+        "families": ["AC", "SC"],
+        "chunkIndex": 4,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["cross-domain solution", "cds", "ucdmo", "guard", "data diode", "filter", "cds accreditation", "up-write", "down-write", "xml data tagging", "cds log review", "nsa", "ic cds"]
+      }
+    },
+    {
+      "id": "icd-502:supply-chain:5",
+      "content": "Supply chain risk management (SCRM) for IC systems addresses the risk that adversaries may compromise the hardware, software, or services used in IC information systems during design, manufacture, distribution, or maintenance. ICD 502 requires IC elements to implement SCRM measures to reduce the likelihood of counterfeit components, malicious code insertion, and unauthorized access through the supply chain.\n\nIC SCRM policy recognizes that nation-state adversaries, particularly China and Russia, have both the capability and the demonstrated intent to target the IC supply chain. Incidents such as discovered implants in network hardware and firmware-level persistence mechanisms demonstrate that supply chain attacks are not theoretical risks. IC elements must treat supply chain as an attack vector requiring the same risk management rigor as network-based attacks.\n\nHardware and software supply chain threats include: counterfeit or substandard components that fail earlier or have undisclosed capabilities; hardware implants installed during manufacture or distribution; malicious code injected into software during development, build, or distribution; and compromised vendor personnel who have authorized access to IC systems for maintenance or support. Each of these threat vectors requires specific countermeasures.\n\nThe HACS (High Assurance Component Sourcing) program, managed by NSA, provides vetted sources for critical hardware components used in IC systems. HACS-approved suppliers have undergone security vetting, and their components have been evaluated for counterfeit indicators and malicious modifications. IC elements acquiring hardware for systems processing TS/SCI information should use HACS-approved sources for critical components (microprocessors, cryptographic hardware, networking components).\n\nSSP supply chain documentation for SR (Supply Chain Risk Management) control family implementation must address: the SCRM plan for the system; the procurement sources for critical components; the receiving inspection and testing procedures for incoming hardware; the software assurance practices applied to acquired software (code review, binary analysis, secure build pipeline); and the vendor access control procedures for maintenance and support personnel.\n\nIC-approved vendor lists specify suppliers that have been vetted for use in specific IC system categories. The use of unapproved vendors for critical components requires AO approval and documentation of the SCRM risk acceptance rationale. For SR-3 (Supply Chain Controls and Processes) and SA-12 (Supply Chain Protection) implementation statements, document the sourcing requirements, receiving inspection procedures, software assurance activities, and vendor access management procedures for the specific system.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "supply-chain",
+        "sectionTitle": "IC Supply Chain Risk Management",
+        "parentSection": "6",
+        "parentTitle": "Supply Chain",
+        "controlRefs": ["SA-12", "SR-1", "SR-3"],
+        "families": ["SA", "SR"],
+        "chunkIndex": 5,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["scrm", "supply chain risk management", "hacs", "counterfeit components", "hardware implant", "malicious code insertion", "ic approved vendor", "software assurance", "sr-3", "sa-12", "receiving inspection", "vendor access control"]
+      }
+    },
+    {
+      "id": "icd-502:insider-threat:6",
+      "content": "The IC insider threat program reflects the heightened risk that cleared IC personnel with authorized access to SCI systems may misuse that access to cause damage to national security. Incidents such as the Manning and Snowden disclosures demonstrated that insider threats from trusted insiders with authorized access represent a catastrophic risk to IC information security programs.\n\nNCTC NITTF (National Insider Threat Task Force) requirements for IC elements, codified in ICD 502 and supplementary NCSC guidance, mandate that each IC element establish an Insider Threat Program (ITP) with designated Insider Threat Program Senior Official (ITPSO) responsibilities. IC element ITPs must include: user activity monitoring (UAM) on IC networks, data loss prevention (DLP) capabilities, anomaly detection and behavioral analytics, security awareness training specific to insider threat indicators, and a reporting mechanism for employees to report concerning behavior.\n\nUser Activity Monitoring (UAM) on IC networks is mandatory under ICD 502 for all SCI processing environments. UAM involves automated collection and analysis of user activity on systems processing SCI, including keystrokes, application use, file access, print activity, removable media use, and network activity. UAM data is used to detect anomalous behavior patterns that may indicate insider threat activity, such as excessive data aggregation, access to data outside normal work patterns, or attempts to exfiltrate data via unauthorized channels. UAM collection requires explicit user notification through system banners and user agreements.\n\nDLP (Data Loss Prevention) capabilities monitor data in motion, at rest, and in use to detect and prevent unauthorized exfiltration of SCI from IC network boundaries. DLP policies for IC systems must address email, removable media, printing, web uploads, and network file transfer. DLP should be integrated with CDS controls to ensure that data leaving the IC enclave through approved channels is appropriately labeled and meets transfer policy requirements.\n\nPrivileged user monitoring receives particular attention in ICD 502 because privileged users (system administrators, database administrators, security personnel) have elevated access that, if abused, can cause far greater damage than standard user access. Enhanced monitoring requirements for privileged users include full session recording, stricter anomaly thresholds, and mandatory two-person review for certain sensitive administrative operations.\n\nFor RMF SSP implementation of AC-2, AC-6, and AU-12 (Audit Record Generation), document the UAM solution in use, the DLP product and policy scope, the privileged user monitoring procedures, the insider threat reporting mechanism, and the integration of UAM data with the SIEM for anomaly detection.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "insider-threat",
+        "sectionTitle": "IC Insider Threat Program",
+        "parentSection": "7",
+        "parentTitle": "Insider Threat",
+        "controlRefs": ["AC-2", "AC-6", "IR-4", "IR-6"],
+        "families": ["AC", "IR"],
+        "chunkIndex": 6,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["insider threat", "nittf", "itpso", "uam", "user activity monitoring", "dlp", "data loss prevention", "privileged user monitoring", "anomaly detection", "sci insider threat", "snowden", "behavioral analytics"]
+      }
+    },
+    {
+      "id": "icd-502:ssp-boundary:7",
+      "content": "SSP documentation for IC boundary controls must satisfy both the NIST SP 800-53 requirements for SC-7 (Boundary Protection) and the additional IC-specific requirements of ICD 502. IC authorization packages reviewed by NSA, ODNI, and element AOs must demonstrate thorough documentation of the enclave architecture, all boundary control points, and the security measures applied at each boundary.\n\nSC-7 (Boundary Protection) implementation for IC enclaves must specify: a complete list of managed interfaces at the enclave boundary; the specific CDS products (with UCDMO accreditation numbers and approved data flows) mediating cross-domain transfers; the firewall and router ACL configuration management process; the boundary monitoring and alerting capabilities; and the fail-secure behavior of boundary devices in the event of hardware or software failure. The SC-7 implementation must explicitly address both the internal (SCI enclave to SCI enclave) and external (SCI enclave to non-SCI) boundaries of the system.\n\nCDS documentation in IC authorization packages requires a dedicated CDS appendix to the SSP that includes: the CDS product identification (vendor, model, UCDMO accreditation number); the classification levels on each side of the CDS; the approved data flows (data types, formats, directions); the filter policy configuration; the log management approach; and the maintenance and patching procedures for the CDS. The CDS appendix is treated as a controlled portion of the authorization package and may be classified if the existence of specific data flows is sensitive.\n\nNetwork diagram requirements for IC authorization packages are more detailed than for standard DoD systems. IC network diagrams must show: all physical and logical interfaces at each enclave boundary; IP addressing scheme with subnet assignments; all boundary control devices (firewalls, routers, CDSs, HAIPEs); all interconnections with external systems with ISA/MOU references; and the data flow labels showing the classification and handling requirements of data traversing each path. Network diagrams for TS/SCI systems are typically classified at least SECRET.\n\nInterconnection Security Agreements (ISAs) and Memoranda of Understanding (MOUs) are required for all system interconnections involving IC systems. ISAs document the security requirements governing the interconnection, the technical controls implemented by each side, and the responsibilities of each party. CA-3 (System Interconnections) implementation must list all interconnections, reference each ISA/MOU by document number and date, and describe the process for reviewing and updating ISAs when system configurations change. JWICS and SIPRNET connections require DISA-issued connection approvals in addition to element-level ISAs.",
+      "metadata": {
+        "docId": "icd-502",
+        "docTitle": "ICD 502 — Integrated Defense of the Intelligence Community Information Environment",
+        "docType": "IC_POLICY",
+        "section": "ssp-boundary",
+        "sectionTitle": "SSP Documentation for IC Boundary Controls",
+        "parentSection": "8",
+        "parentTitle": "SSP Boundary Documentation",
+        "controlRefs": ["SC-7", "AC-4", "AC-17", "CA-3", "CA-9"],
+        "families": ["SC", "AC", "CA"],
+        "chunkIndex": 7,
+        "chunkTotal": 8,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["sc-7 implementation", "cds documentation", "ic authorization package", "network diagram", "isa mou", "jwics connection", "siprnet interconnection", "boundary protection ssp", "ucdmo accreditation", "ca-3", "managed interfaces", "fail-secure"]
+      }
+    }
+  ]
+}

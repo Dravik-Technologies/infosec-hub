@@ -1,0 +1,161 @@
+{
+  "docId": "cnssi-1253",
+  "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+  "docType": "CNSSI",
+  "version": "CNSSI No. 1253, March 2014 (with Change 2, March 2015)",
+  "source": "https://www.cnss.gov/CNSS/issuances/Instructions.cfm",
+  "chunks": [
+    {
+      "id": "cnssi-1253:1.1:0",
+      "content": "CNSSI 1253 provides security categorization and security control selection guidance specifically tailored for National Security Systems (NSS). While FIPS 199 (Standards for Security Categorization of Federal Information and Information Systems) and FIPS 200 (Minimum Security Requirements for Federal Information and Information Systems) establish the baseline framework for all Federal information systems, they do not fully address the unique threat environments, classification requirements, and mission sensitivities applicable to NSS. CNSSI 1253 supplements FIPS 199 and FIPS 200 with NSS-specific guidance and is mandatory for all NSS subject to FISMA.\n\nAny Federal system meeting the definition of an NSS under 44 U.S.C. § 3552(b)(6) — formerly 44 U.S.C. § 3542 — must apply CNSSI 1253 rather than relying solely on standard FIPS 199/200 guidance. NSS include systems operated by or on behalf of the Department of Defense (DoD) and Intelligence Community (IC) elements that: involve intelligence activities; involve cryptologic activities related to national security; involve command and control of military forces; involve equipment that is an integral part of a weapon or weapons system; or are critical to the direct fulfillment of military or intelligence missions.\n\nCNSSI 1253 aligns directly with NIST SP 800-53, providing NSS-specific tailoring guidance for the full NIST SP 800-53 control catalog. The NIST SP 800-53 control baselines (Low, Moderate, High) serve as the starting point for NSS control selection, to which CNSSI 1253 applies NSS-specific modifications, additional required controls, and parameter values that differ from the NIST-specified values. NSS programs using automated compliance tools or governance, risk, and compliance (GRC) platforms must ensure those tools support CNSSI 1253 tailoring in addition to standard NIST SP 800-53 baselines.\n\nThe relationship between CNSSI 1253 and NIST SP 800-53 is that of a supplement and a base: NIST SP 800-53 provides the control catalog and baseline structure; CNSSI 1253 provides the NSS-specific guidance for selecting and tailoring those controls. SSP authors should document the applicable NIST SP 800-53 control ID for each control in their security plan, along with the CNSSI 1253 tailoring applied.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Relationship to FIPS 199/200",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["RA-2", "PL-2", "CA-6"],
+        "families": ["RA", "PL", "CA"],
+        "chunkIndex": 0,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["cnssi 1253", "nss", "national security systems", "fips 199", "fips 200", "nist sp 800-53", "categorization", "fisma", "dod", "ic", "tailoring", "control selection", "44 usc 3552", "nss definition", "supplement"]
+      }
+    },
+    {
+      "id": "cnssi-1253:categorization:1",
+      "content": "CNSSI 1253 applies the same Confidentiality/Integrity/Availability (C/I/A) framework established by FIPS 199 for security categorization of NSS, but provides NSS-specific definitions of impact levels that reflect the national security consequences of adverse events, not merely the organizational or operational impacts addressed by FIPS 199.\n\nFor Confidentiality, CNSSI 1253 establishes that any system processing information classified at any level — Confidential, Secret, or Top Secret — must be assigned a HIGH confidentiality impact value. The classification of information is itself a determination that its unauthorized disclosure could cause damage (Confidential), serious damage (Secret), or exceptionally grave damage (Top Secret) to national security. Therefore, for classified NSS, there is no need to independently assess the confidentiality impact; the classification designation drives the HIGH assignment. For unclassified NSS processing Controlled Unclassified Information (CUI) or Sensitive but Unclassified (SBU) information, the standard FIPS 199 confidentiality impact determination applies.\n\nFor Integrity, NSS-specific impact determination must account for the potential adverse mission impact of unauthorized modification of the information or systems involved. For NSS supporting time-critical military or intelligence operations — such as targeting systems, command and control networks, intelligence collection management systems, and force tracking systems — unauthorized modification of data or system configurations could result in catastrophic mission failure, loss of life, or grave damage to national security. These systems must be assigned HIGH integrity impact regardless of whether the standard FIPS 199 analysis would yield a lower result. CNSSI 1253 directs NSS owners to conduct a mission impact analysis as part of the integrity determination.\n\nFor Availability, mission criticality drives the NSS-specific determination. Systems that are the sole or primary means of performing a critical national security function — such as a single intelligence collection platform, a primary key management system, or a critical infrastructure protection monitoring system — must be assessed for their contribution to mission success and the consequences of extended unavailability. NSS supporting time-sensitive operations where there is no viable alternative capability must be assigned HIGH availability.\n\nThe system security categorization must be expressed as a security category in the form SC = {(confidentiality, impact), (integrity, impact), (availability, impact)}, consistent with FIPS 199 format. The overall impact level is the highest of the three individual values. The SSP must include a categorization rationale that documents the specific factors considered and the data sources used for each impact determination.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "categorization",
+        "sectionTitle": "NSS Security Categorization",
+        "parentSection": "2",
+        "parentTitle": "Security Categorization",
+        "controlRefs": ["RA-2", "CA-6", "PL-2"],
+        "families": ["RA", "CA", "PL"],
+        "chunkIndex": 1,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["security categorization", "cia triad", "confidentiality", "integrity", "availability", "fips 199", "nss categorization", "impact levels", "classified", "high confidentiality", "mission impact", "mission criticality", "sc format", "categorization rationale", "nss"]
+      }
+    },
+    {
+      "id": "cnssi-1253:information-types:2",
+      "content": "NIST SP 800-60 (Guide for Mapping Types of Information and Information Systems to Security Categories) provides a comprehensive taxonomy of Federal information types and their associated security category recommendations. However, SP 800-60 was developed primarily for civilian Federal agencies and does not include many of the information types unique to national security, defense, and intelligence operations. CNSSI 1253 supplements SP 800-60 by identifying NSS-specific information types and providing guidance for categorizing mission-critical NSS data that falls outside the SP 800-60 taxonomy.\n\nNSS-specific information types identified in CNSSI 1253 and its annexes include: Intelligence Sources and Methods information — information whose disclosure could identify intelligence collection programs, sources, or methods and that is therefore treated as at minimum SECRET with HIGH confidentiality; Military Operations and Planning information — information supporting the planning, execution, and assessment of military operations, including operational security-sensitive data that could provide adversaries with intelligence about force dispositions, capabilities, or intentions; Cryptographic keying material and cryptographic system design information — information that, if disclosed, could compromise the security of cryptographic systems protecting NSS; and Nuclear Command, Control, and Communications (NC3) information — information related to nuclear command authority, launch control, and weapon system status, which carries the highest possible sensitivity designations.\n\nFor NSS whose primary mission involves processing a single dominant information type, the categorization is relatively straightforward — the security category reflects the sensitivity of that information type. For NSS that process multiple information types across a range of sensitivity levels, CNSSI 1253 directs the use of a high-water mark: the system's overall categorization for each C/I/A dimension reflects the highest impact value for any information type processed by the system. There is no averaging or weighting; the most sensitive information type drives the system-level categorization.\n\nSSP authors must document all significant information types processed by the system in the security plan, including a brief description of each type, the applicable security category for each type (drawing on SP 800-60 where applicable and CNSSI 1253 annexes for NSS-specific types), and the resulting system-level categorization. This documentation allows reviewers to verify the categorization determination and provides essential context for control tailoring decisions. Programs processing SCI or SAP information must use the classification and handling designations applicable to the specific compartment or program as the basis for categorization documentation.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "information-types",
+        "sectionTitle": "NSS Information Types",
+        "parentSection": "3",
+        "parentTitle": "Information Type Taxonomy",
+        "controlRefs": ["RA-2", "SI-12"],
+        "families": ["RA", "SI"],
+        "chunkIndex": 2,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["information types", "nist sp 800-60", "nss information types", "intelligence sources methods", "military operations", "cryptographic keying material", "nc3", "high-water mark", "categorization", "sci", "sap", "classification", "ssp documentation", "mission data", "information taxonomy"]
+      }
+    },
+    {
+      "id": "cnssi-1253:control-selection:3",
+      "content": "CNSSI 1253 provides NSS-specific security control baselines for Low, Moderate, and High impact NSS that build upon the NIST SP 800-53 baselines while incorporating controls and parameters specifically required to address the threat environment and mission requirements of national security operations. SSP authors working on NSS must use the CNSSI 1253 baselines, not the standard NIST SP 800-53 baselines, as their starting point for control selection.\n\nThe CNSSI 1253 High baseline — applicable to all classified NSS and most mission-critical defense and intelligence systems — expands significantly on the NIST SP 800-53 High baseline by adding NSS-required controls and increasing parameter values. Key differences between the CNSSI 1253 High baseline and the NIST SP 800-53 High baseline include: more stringent identification and authentication requirements (e.g., multifactor authentication required for all users, including privileged and non-privileged users, with no exceptions for low-risk access scenarios); enhanced audit and accountability requirements mandating audit of all administrative actions and all access to classified data; expanded personnel security controls requiring more thorough personnel screening and suitability determinations; and additional supply chain risk management controls not included in the standard NIST baselines.\n\nFor certain controls, CNSSI 1253 specifies NSS-specific parameter values that supersede the NIST SP 800-53 parameter assignments. For example, the AC-2 Account Management control includes parameter specifications for account review frequency — NIST SP 800-53 specifies the frequency as an organization-defined value; CNSSI 1253 may mandate a specific frequency (e.g., at least quarterly) for NSS. Similarly, IA-5 Authenticator Management parameters for password complexity, length, and reuse restrictions are more stringent for NSS than the NIST-specified minimums.\n\nThe control selection process for NSS begins with the CNSSI 1253 baseline for the system's overall impact level, then applies applicable overlays (see Overlays section), then performs system-specific tailoring to add controls for specific threats identified in the system's threat assessment or remove (with documented justification and AO approval) controls that are not applicable to the system's operational environment. The final selected control set, with tailoring decisions documented, must be approved by the AO and included in the system security plan.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "control-selection",
+        "sectionTitle": "NSS Control Selection",
+        "parentSection": "4",
+        "parentTitle": "Control Selection",
+        "controlRefs": ["AC-2", "IA-2", "CA-6", "PL-2"],
+        "families": ["AC", "IA", "CA", "PL"],
+        "chunkIndex": 3,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["control selection", "cnssi 1253 baselines", "nist sp 800-53", "high baseline", "nss controls", "parameter values", "tailoring", "account management", "authenticator management", "nss-specific", "overlays", "ao approval", "ssp", "control parameters", "national security"]
+      }
+    },
+    {
+      "id": "cnssi-1253:overlays:4",
+      "content": "CNSSI 1253 defines the concept of security overlays — predefined sets of security control tailoring guidance for specific technologies, environments, missions, or threat conditions that are applied on top of the base security control baseline to address specialized security requirements. Overlays allow common NSS-specific security requirements to be defined once and applied consistently across multiple systems, rather than requiring each SSP author to independently derive tailoring for the same conditions.\n\nThe Intelligence Overlay is applicable to all IC systems and systems of non-IC elements that process intelligence information. The Intelligence Overlay adds controls and control enhancements addressing the unique threats to intelligence sources and methods, access control requirements for compartmented information, and the need to protect intelligence operations from counterintelligence threats. The Intelligence Overlay is mandatory for all IC systems and must be applied before system-specific tailoring. The specific controls added by the Intelligence Overlay are published by the IC CIO and are classified or sensitive in some instances.\n\nThe DoD Overlay is applicable to all NSS operated by or on behalf of DoD Components, including defense IC elements. The DoD Overlay reflects DoD-specific requirements derived from DoDI 8500.01 (Cybersecurity) and other DoD cybersecurity policy, translating DoD policy requirements into specific NIST SP 800-53 control selections, enhancements, and parameter values. The DoD Overlay is mandatory for all DoD NSS and is maintained by the DoD CIO/DCSA. Defense IC elements apply both the DoD Overlay and the Intelligence Overlay; where the two overlays specify different requirements for the same control, the more stringent requirement applies.\n\nThe Privacy Overlay is applicable to NSS that collect, process, maintain, or disseminate information about individuals, including PII, Privacy Act-protected information, and information in systems of records. The Privacy Overlay adds controls from the PT (PII Processing and Transparency) and other privacy-related control families to the base NSS baseline. The Privacy Overlay is not limited to unclassified systems; NSS processing both classified information and PII about individuals must apply the Privacy Overlay in addition to the applicable classification-driven overlays.\n\nThe Industrial Control Systems (ICS) Overlay applies to NSS that incorporate SCADA systems, distributed control systems, programmable logic controllers, or other industrial control system components. The ICS Overlay adapts standard IT security controls for the operational characteristics of ICS environments, where the availability of process control functions may take precedence over strict security controls that could interrupt automated processes. SSP authors working on hybrid IT/ICS NSS must carefully document which ICS Overlay tailoring decisions apply to which system components.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "overlays",
+        "sectionTitle": "NSS Overlays",
+        "parentSection": "5",
+        "parentTitle": "Overlays",
+        "controlRefs": ["PL-2", "RA-2", "CA-6"],
+        "families": ["PL", "RA", "CA"],
+        "chunkIndex": 4,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["overlays", "intelligence overlay", "dod overlay", "privacy overlay", "ics overlay", "ic cio", "dod cio", "nss overlays", "tailoring", "control enhancements", "pii", "industrial control systems", "scada", "cnssi 1253 overlays", "mandatory overlays"]
+      }
+    },
+    {
+      "id": "cnssi-1253:classified-tailoring:5",
+      "content": "Beyond the baseline overlays, CNSSI 1253 provides tailoring guidance specifically for NSS that process classified national security information. Classified systems require security controls that go beyond protecting against typical cyber threats; they must also protect against insider threats with access to classified environments, technical collection against classified networks, and the aggregation of sensitive data that individually may appear innocuous but collectively reveals classified activities or capabilities.\n\nFor classified NSS at the Top Secret or SCI level, CNSSI 1253 mandates control enhancements addressing: (1) enhanced identification and authentication — all privileged users must use hardware-based multifactor authentication such as a PIV-compliant smart card or equivalent NSA-approved authenticator; non-privileged users accessing TOP SECRET systems must also use multifactor authentication, with no password-only access permitted; (2) enhanced audit and accountability — audit records must capture sufficient detail to reconstruct any classified data access event, including the user identity, the specific data accessed, the time and duration of access, and the workstation or session identifier; audit records must be protected at the same classification level as the most sensitive data on the system; (3) enhanced system and communications protection — all data in transit on classified NSS must be protected using NSA-approved cryptographic algorithms and products (CNSA Suite as specified in CNSSP 15); and (4) enhanced media protection — all classified media must be tracked in an accountability system, and all sanitization must be performed using NSA-approved methods.\n\nSystems processing multiple classification levels or multiple compartments — multi-level security (MLS) systems — face additional control requirements. MLS systems must implement mandatory access controls enforcing the lattice-based classification hierarchy, ensuring that users at a lower classification level cannot read data classified at a higher level and cannot write data down to a lower classification level in ways that could disclose classified information. The security kernel or security policy enforcement mechanism in an MLS system must be evaluated and certified by an NSA-approved Common Criteria evaluation laboratory at Evaluation Assurance Level (EAL) 4 or higher for most classified applications, with higher EAL requirements for some mission-critical systems.\n\nSSP authors documenting classified NSS must ensure that the implementation statements for IA-2, IA-5, AU-2, AU-3, SC-8, SC-13, and SC-28 specifically address the classified environment requirements, cite the applicable NSA-approved products and configurations, and reference the CNSA Suite compliance required by CNSSP 15.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "classified-tailoring",
+        "sectionTitle": "Classified System Control Tailoring",
+        "parentSection": "6",
+        "parentTitle": "Classified Tailoring",
+        "controlRefs": ["AC-2", "IA-2", "SC-13", "SC-28", "SI-12"],
+        "families": ["AC", "IA", "SC", "SI"],
+        "chunkIndex": 5,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["classified systems", "top secret", "sci", "mls", "multi-level security", "mandatory access control", "common criteria", "eal", "cnsa suite", "nsa approved", "piv", "smart card", "audit records", "classified tailoring", "ia-2"]
+      }
+    },
+    {
+      "id": "cnssi-1253:nss-determination:6",
+      "content": "Determining whether a system meets the statutory definition of a National Security System is a critical first step in the security categorization process, because the determination drives whether CNSSI 1253 (for NSS) or standard FIPS 199/200 and NIST SP 800-53 guidance (for non-NSS Federal systems) applies. An incorrect determination — failing to classify an NSS as such — can result in significantly inadequate security controls being applied to systems that present national security risks.\n\nUnder 44 U.S.C. § 3552(b)(6), a system is an NSS if it is operated by or on behalf of a Federal agency and: (1) involves intelligence activities; (2) involves cryptologic activities related to national security; (3) involves command and control of military forces; (4) involves equipment that is an integral part of a weapon or weapons system; or (5) is critical to the direct fulfillment of military or intelligence missions. Additionally, systems are designated NSS if they are protected at all times by procedures established for information that has been specifically authorized under criteria established by an Executive Order or an Act of Congress to be kept classified in the interest of national defense or foreign policy.\n\nSystems that merely support military or intelligence agencies in administrative or business functions — human resources systems, financial management systems, logistics systems — are not automatically NSS. The system must be directly involved in intelligence, cryptologic, command and control, weapons, or critical mission functions. However, even administrative systems may be designated NSS if the loss of their availability or integrity would directly and adversely affect the fulfillment of a military or intelligence mission. The determination must be made by the agency head or a designated senior official with appropriate authority and must be documented.\n\nFor DoD programs, DoDI 8510.01 provides additional guidance on NSS determination within the DoD context. All DoD systems processing classified information are generally treated as NSS; unclassified DoD systems may or may not be NSS depending on their mission role. For IC programs, essentially all systems are NSS by virtue of their involvement in intelligence activities.\n\nSSP authors must document the NSS determination in the security plan, citing the specific statutory criterion satisfied and the senior official who made or concurred in the determination. This documentation is reviewed during security control assessments to verify that the correct guidance — CNSSI 1253 for NSS, or NIST SP 800-53 alone for non-NSS — was applied.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "nss-determination",
+        "sectionTitle": "NSS vs. Non-NSS Determination",
+        "parentSection": "7",
+        "parentTitle": "NSS Determination",
+        "controlRefs": ["RA-2", "CA-6", "PL-2"],
+        "families": ["RA", "CA", "PL"],
+        "chunkIndex": 6,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["nss determination", "44 usc 3552", "national security system", "definition", "intelligence activities", "cryptologic", "command control", "weapon system", "military mission", "dodi 8510.01", "fisma", "nss criteria", "ssp documentation", "classified", "determination"]
+      }
+    },
+    {
+      "id": "cnssi-1253:monitoring:7",
+      "content": "CNSSI 1253 establishes continuous monitoring requirements for NSS that build upon and supplement the NIST SP 800-137 Information Security Continuous Monitoring (ISCM) guidance. NSS continuous monitoring must address the heightened threat environment facing national security assets and must provide NSS authorizing officials with timely, accurate, and actionable information about the security posture of their systems.\n\nNSS programs shall develop and maintain an ISCM strategy and plan that covers all authorized NSS within the program. The ISCM plan must define: the monitoring frequencies for each control and control family (differentiating between controls that can be monitored through automated means and those requiring manual assessment); the specific tools, techniques, and metrics used to assess ongoing control effectiveness; the reporting chain for communicating monitoring results to the AO and organizational leadership; and the process for responding to monitoring findings that indicate degraded security posture or new vulnerabilities.\n\nFor NSS, the continuous monitoring program must include automated monitoring of security-relevant events using Security Information and Event Management (SIEM) systems or equivalent capabilities. SIEM platforms for classified NSS must themselves be authorized NSS or components of authorized NSS, and the data they collect — including aggregated audit logs from classified systems — must be protected at the appropriate classification level. Automated alerting based on defined threshold conditions must be implemented for critical security events including: unauthorized access attempts, account management events for privileged accounts, changes to security configurations, and detection of malware or anomalous network behavior.\n\nCNSS reporting requirements mandate that NSS owners report certain categories of security events and compliance status information to CNSS through established reporting channels. Reportable events include significant security incidents, ATO decisions and expiration dates, and annual compliance attestations. The specific reporting requirements and formats are defined in CNSS issuances and implementing instructions from the NSS program office.\n\nFor NSS authorized under ongoing authorization (as opposed to fixed-term ATO), the continuous monitoring program is the primary mechanism by which the AO maintains visibility into the system's security posture. NSS ISSMs must ensure that monitoring data is collected, analyzed, and reported at frequencies sufficient to support the AO's ongoing risk management responsibilities, and must escalate significant findings to the AO within timeframes specified in the ISCM plan.",
+      "metadata": {
+        "docId": "cnssi-1253",
+        "docTitle": "CNSSI 1253 — Security Categorization and Control Selection for National Security Systems",
+        "docType": "CNSSI",
+        "section": "monitoring",
+        "sectionTitle": "Continuous Monitoring for NSS",
+        "parentSection": "8",
+        "parentTitle": "Continuous Monitoring",
+        "controlRefs": ["CA-7", "CA-5", "SI-12", "RA-3"],
+        "families": ["CA", "SI", "RA"],
+        "chunkIndex": 7,
+        "chunkTotal": 8,
+        "applicability": ["NSS", "DOD", "IC", "HIGH", "SCI", "SAP"],
+        "keywords": ["continuous monitoring", "iscm", "nist sp 800-137", "nss monitoring", "siem", "automated monitoring", "cnss reporting", "ongoing authorization", "security posture", "audit logs", "monitoring frequencies", "control effectiveness", "issm", "nss", "security events"]
+      }
+    }
+  ]
+}

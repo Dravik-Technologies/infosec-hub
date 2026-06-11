@@ -1,0 +1,199 @@
+{
+  "docId": "dod-5200-01",
+  "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+  "docType": "DOD_POLICY",
+  "version": "DoD Manual 5200.01, Volumes 1–4, February 2012 (as amended through 2020)",
+  "source": "https://www.esd.whs.mil/Portals/54/Documents/DD/issuances/dodm/520001_vol1.pdf",
+  "chunks": [
+    {
+      "id": "dod-5200-01:1.1:0",
+      "content": "DoD Manual 5200.01 establishes the DoD Information Security Program (ISP) and provides comprehensive policy and procedures for the classification, safeguarding, and declassification of national security information within the Department of Defense. The manual implements Executive Order 13526, Classified National Security Information (December 2009), the Atomic Energy Act of 1954, and the National Industrial Security Program Operating Manual (NISPOM). It is published in four volumes addressing classification and declassification, marking, handling, and controlled unclassified information respectively.\n\nThe scope of the DoD ISP encompasses all DoD Components, including the Military Departments, the Office of the Secretary of Defense, the Joint Chiefs of Staff, the Combatant Commands, the Office of the Inspector General, the Defense Agencies, the DoD Field Activities, and all other organizational entities within the Department. The program also applies to all cleared defense contractors, subcontractors, licensees, grantees, and any other non-DoD entities that handle, process, store, or transmit DoD classified information under the National Industrial Security Program.\n\nThe Director of the Information Security Oversight Office (ISOO) within the National Archives and Records Administration (NARA) provides oversight of the DoD ISP and issues implementing directives consistent with EO 13526. The Under Secretary of Defense for Intelligence and Security (USD(I&S)) serves as the Senior Agency Official (SAO) responsible for program oversight within DoD. Each DoD Component head designates a Senior Agency Official to oversee the Component's information security program and report annually to the USD(I&S).\n\nFor RMF implementation purposes, system owners and ISSOs must ensure that systems handling classified information comply with the DoD ISP in addition to NIST SP 800-53 technical controls. The information security requirements in this manual directly inform implementation of control families including Media Protection (MP), Physical and Environmental Protection (PE), Personnel Security (PS), and Awareness and Training (AT). Any system processing classified information at any level must document its compliance with classification handling, marking, storage, and transmission requirements in the System Security Plan.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Scope",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["MP-1", "PE-2", "PS-3", "AT-2", "AC-3"],
+        "families": ["MP", "PE", "PS", "AT", "AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH", "SCI", "SAP"],
+        "keywords": ["dod information security program", "eo 13526", "classified national security information", "isoo", "nispom", "cleared contractor", "senior agency official", "usd(i&s)", "rmf", "system security plan"]
+      }
+    },
+    {
+      "id": "dod-5200-01:classification-levels:1",
+      "content": "The DoD Information Security Program recognizes three levels of classification for national security information: TOP SECRET, SECRET, and CONFIDENTIAL. Information is classified TOP SECRET when its unauthorized disclosure could reasonably be expected to cause exceptionally grave damage to national security. SECRET information, if disclosed without authorization, could reasonably be expected to cause serious damage to national security. CONFIDENTIAL information is that whose unauthorized disclosure could reasonably be expected to cause damage to national security. No other terms or designations are used to identify DoD classified information except as authorized under law or EO 13526.\n\nOriginal Classification Authority (OCA) is the authority held by designated officials to originally classify information in the first instance. The USD(I&S) maintains a list of DoD OCAs. Derivative Classification involves incorporating, paraphrasing, restating, or generating classified information in a new form by using a source document or a security classification guide (SCG). Personnel performing derivative classification must be trained on the process, understand how to use classification guides, and apply the concept of the highest classification of information compiled, not merely the highest classification of any individual element.\n\nClassification guides (SCGs) are the primary reference for derivative classifiers. An SCG specifies elements of information associated with specific programs, systems, plans, and projects that require classification protection, the specific classification level for each element, the reason for classification using one of the categories specified in EO 13526 Section 1.4, and the duration of classification. DoD requires that security classification guides be reviewed at least every five years and updated as necessary.\n\nThe duration of classification is generally established as ten years or upon occurrence of a specific event, unless the OCA determines that exceptional circumstances warrant a longer period not to exceed 25 years for information originally classified after the effective date of EO 13526. When implementing MP-3 (Media Marking) and related media protection controls, SSP authors must document that all classified media is marked with the appropriate classification level, special handling caveats, and declassification instructions consistent with this manual.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "classification-levels",
+        "sectionTitle": "Classification Levels and Authority",
+        "parentSection": "2",
+        "parentTitle": "Classification",
+        "controlRefs": ["MP-3", "MP-4", "AC-3", "PS-3", "AT-2"],
+        "families": ["MP", "AC", "PS", "AT"],
+        "chunkIndex": 1,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH", "SCI", "SAP"],
+        "keywords": ["top secret", "secret", "confidential", "original classification authority", "derivative classification", "security classification guide", "oca", "classification duration", "eo 13526", "media marking"]
+      }
+    },
+    {
+      "id": "dod-5200-01:declassification:2",
+      "content": "EO 13526 Section 3.3 establishes automatic declassification as the primary mechanism for releasing classified information that no longer requires protection. Under automatic declassification, classified information that is more than 25 years old and has been determined to have permanent historical value under Title 44 of the United States Code is automatically declassified on December 31 of the year that is 25 years from the date of its original classification, unless the information falls within one of the exemption categories listed in EO 13526 Section 3.3(b).\n\nSystematic declassification review is conducted by agencies for classified information under their jurisdiction at the time the information is approaching automatic declassification. Agencies must review 25-year-old permanently valuable records and determine whether they qualify for any exemption before the automatic declassification date. DoD components must establish systematic review programs and submit annual reports to ISOO on their declassification activities.\n\nMandatory Declassification Review (MDR) is available to any individual who believes that classified information can be declassified and is in the public interest. MDR requests must be submitted in writing to the originating agency, must reasonably describe the information sought, and must be processed within one year unless the volume or complexity of the request makes that impossible. Requestors who disagree with the agency's decision may appeal to the Interagency Security Classification Appeals Panel (ISCAP).\n\nSeveral categories of information are exempt from automatic declassification, including Restricted Data (RD) and Formerly Restricted Data (FRD) under the Atomic Energy Act, information that would reveal the identity of a confidential human source, information the release of which would impair the United States' ability to conduct intelligence operations, and information explicitly exempted by statute. The National Security Information (NSI) exemption categories require specific documentation by the OCA when originally classifying information with the intent to claim a 25-year exemption.\n\nFor RMF control PS-4 (Personnel Termination) and MP-6 (Media Sanitization), DoD components must ensure that declassification procedures are incorporated into personnel offboarding checklists and that media containing classified information that is no longer required to be protected is properly sanitized or destroyed in accordance with NSA/CSS approved procedures before being released from accountability.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "declassification",
+        "sectionTitle": "Declassification and Downgrading",
+        "parentSection": "3",
+        "parentTitle": "Declassification",
+        "controlRefs": ["MP-6", "PS-4", "IR-6", "MP-3"],
+        "families": ["MP", "PS", "IR"],
+        "chunkIndex": 2,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH"],
+        "keywords": ["automatic declassification", "systematic review", "mandatory declassification review", "eo 13526", "restricted data", "formerly restricted data", "iscap", "isoo", "mdr", "declassification exemption"]
+      }
+    },
+    {
+      "id": "dod-5200-01:marking:3",
+      "content": "Proper marking of classified information is essential for informing holders of the protection required, providing the basis for downgrading or declassification decisions, and identifying the source of the classification determination. DoD Manual 5200.01 Volume 2 provides comprehensive marking requirements that must be reflected in SSP implementation statements for media protection and access control.\n\nClassified documents must display an overall (banner line) classification marking at the top and bottom of the outside of the front and back cover, title page, first page, and last page. Each section, part, or portion of a document that is classified must be marked individually (portion marking) with the highest classification of that portion in parentheses preceding the portion. Documents containing information from multiple sources at different classification levels must carry the highest overall classification.\n\nThe Classification Authority Block (CAB) appears on the face of each originally classified document and contains: the identity of the OCA or the derivative classification source, the reason for classification using a category code (1.4a through 1.4h), and the declassification instruction. Derivative classifiers must include the SCG number and date or the source document identification in place of classification reason.\n\nDissemination control markings restrict the sharing of information beyond normal access rules. NOFORN (NF) means the information may not be released to foreign nationals. PROPIN (PP) warns that proprietary information is contained in the document. RELTO (REL TO) specifies the countries to which the information may be released. ORCON (OC) means the originator controls dissemination and reproduction. EYES ONLY restricts access to specifically named individuals. These markings are placed below the classification marking on the banner line.\n\nSCI information receives additional markings from the Director of National Intelligence authorities and the applicable SCI control system (e.g., HCS, TK, G, SI). SAP information is marked SPECIAL ACCESS REQUIRED followed by the program nickname in parentheses. CUI markings on DoD documents follow NARA CUI guidance and appear as CUI or with specific CUI category designators. For RMF purposes, the SSP must document the marking requirements applicable to all output produced by the system, including printed output, electronic labels for removable media, and email subject line markings.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "marking",
+        "sectionTitle": "Marking Requirements",
+        "parentSection": "4",
+        "parentTitle": "Marking",
+        "controlRefs": ["MP-3", "AC-3", "AC-4", "MP-4"],
+        "families": ["MP", "AC"],
+        "chunkIndex": 3,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH", "SCI", "SAP"],
+        "keywords": ["banner line", "portion marking", "classification authority block", "noforn", "propin", "relto", "orcon", "sci markings", "sap markings", "cui markings", "dissemination controls", "derivative classification"]
+      }
+    },
+    {
+      "id": "dod-5200-01:safeguarding:4",
+      "content": "Safeguarding classified information requires physical, procedural, and technical measures designed to prevent unauthorized access, compromise, or disclosure. DoD Manual 5200.01 establishes minimum safeguarding standards that apply to all DoD and cleared contractor facilities handling classified information.\n\nClassified information must be stored in GSA-approved security containers (safes, vaults, or secure rooms) when not in use. TOP SECRET information requires storage in a GSA-approved Class 6 container, a vault, or a secure room meeting the requirements of ICD 705 or JAFAN 6/9. SECRET information may be stored in a GSA-approved container, a SECRET vault, or a secure room with supplemental controls as specified by the Component's Senior Agency Official. CONFIDENTIAL information may be stored in a GSA-approved container or a secure room meeting applicable requirements.\n\nAccess to classified information is restricted to those individuals with both a favorable personnel security determination at the required level and a verifiable need-to-know. Need-to-know is the determination that a prospective recipient requires access to a specific classified information in order to perform or assist in a lawful and authorized governmental function. Supervisors and security personnel are responsible for limiting access to classified information to those who have a legitimate need. Access rosters and need-to-know justifications must be documented and periodically reviewed.\n\nEnd-of-day security checks are required in all spaces where classified information is used or stored. These checks verify that classified material has been properly secured, containers are locked, and no classified material has been left unattended. A two-person team approach or designated security officer may conduct end-of-day checks; results are recorded in a security check log.\n\nOpen storage refers to the storage of classified information in a space where the information is not in a security container during working hours. Open storage is authorized for SECRET and below only in areas that meet physical security requirements including IDS, access control, and appropriate construction standards. Closed storage requires all classified material to be secured in GSA-approved containers or vaults at all times. Combination and key control procedures require that combinations be memorized (not recorded in plain text), changed when an individual with knowledge departs, and safeguarded at the same classification level as the highest-classified material secured by the lock. For MP-2 and PE-3 control implementation statements, document the specific container types, combination change procedures, and end-of-day check logs maintained for classified system components.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "safeguarding",
+        "sectionTitle": "Safeguarding Classified Information",
+        "parentSection": "5",
+        "parentTitle": "Safeguarding",
+        "controlRefs": ["MP-2", "MP-4", "PE-2", "PE-3", "AC-3"],
+        "families": ["MP", "PE", "AC"],
+        "chunkIndex": 4,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH", "SCI"],
+        "keywords": ["gsa-approved container", "open storage", "closed storage", "need-to-know", "end-of-day check", "combination control", "key control", "top secret storage", "vault", "secure room", "access control"]
+      }
+    },
+    {
+      "id": "dod-5200-01:transmission:5",
+      "content": "The transmission of classified information outside a cleared facility or secure area requires specific approved methods dependent on the classification level. Unauthorized or improper transmission is one of the most common sources of classified information compromise and must be addressed in SSP control implementations for SC-8 (Transmission Confidentiality and Integrity) and MP-5 (Media Transport).\n\nTOP SECRET information may only be transmitted via approved electronic means using NSA-approved Type 1 encryption, by cleared courier, or through official government channels with appropriate accountability. TOP SECRET courier authorization is required for personnel physically transporting TS material and requires written authorization from the Component head or designee. A receipt system must be maintained for all TS transmissions to establish an unbroken chain of custody. The Defense Courier Service (DCS) provides secure transportation of classified material for DoD components when organic courier capability is unavailable.\n\nSECRET information may be transmitted via NSA-approved encrypted communications, cleared courier, or U.S. Postal Service Registered Mail when sent within the United States, its territories, or its possessions. Transmission of SECRET via USPS requires double-wrapping with the inner package addressed, marked, and classified, and the outer package bearing no classification markings. First-class mail or express mail delivery services may be used for CONFIDENTIAL transmissions when Registered Mail is not available.\n\nElectronic transmission of classified information requires the use of NSA-approved encryption. For SECRET and above, NSA-certified Type 1 cryptographic equipment is required. Secure facsimile (SECFAX) transmission requires STU-III or STE equipment operating in secure mode. Secure Voice communications require approved VOSIP or other NSA-certified secure voice devices. Classified email transmission requires S/MIME certificates issued through the External Certificate Authority (ECA) at appropriate assurance levels for the classification involved, operating over approved classified networks (SIPRNET for SECRET, JWICS for TS/SCI).\n\nHand-carrying classified material across international borders requires advance authorization from the Component head and may require host nation notification for SECRET and above. Personnel hand-carrying TS must have written courier orders and maintain constant control of the material at all times. The material may not be placed in checked baggage and must accompany the courier in carry-on at all times during travel. For SSP MP-5 implementation statements, document the approved transmission methods, courier procedures, receipting systems, and encryption requirements for each classification level handled by the system.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "transmission",
+        "sectionTitle": "Transmission of Classified Information",
+        "parentSection": "6",
+        "parentTitle": "Transmission",
+        "controlRefs": ["MP-5", "SC-8", "SC-10", "AC-4"],
+        "families": ["MP", "SC", "AC"],
+        "chunkIndex": 5,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH", "SCI"],
+        "keywords": ["courier", "top secret transmission", "secret transmission", "nsa type 1 encryption", "secfax", "ste", "siprnet", "jwics", "secure voice", "hand-carry", "media transport", "registered mail"]
+      }
+    },
+    {
+      "id": "dod-5200-01:destruction:6",
+      "content": "The destruction and sanitization of classified information requires the use of approved methods and equipment to prevent reconstruction of the information. DoD Manual 5200.01 establishes minimum destruction standards that directly inform SSP implementation statements for MP-6 (Media Sanitization).\n\nApproved destruction methods for classified information include: burning in an approved device, chemical decomposition or pulping, melting, shredding using NSA-approved equipment, and disintegration. The method selected must reduce the classified material to a form that precludes reconstruction of the information to a degree that a determined intelligence effort could not reasonably be expected to reconstruct the information. NSA/CSS has published the Evaluated Products List (EPL) for media destruction equipment, which specifies approved shredders by particle size for different classification levels. For TOP SECRET paper documents, cross-cut shredders producing particles no larger than 1 mm x 5 mm are required. For SECRET and below, cross-cut shredders producing particles no larger than 2 mm x 15 mm meet the requirement.\n\nElectronic media destruction and sanitization requires different approaches based on media type and classification level. NSA/CSS publishes the Media Destruction Guidance (MDG) and Evaluated Products List for media sanitization. For magnetic media containing TS information, degaussing with NSA-approved equipment must be followed by physical destruction. SECRET magnetic media may be degaussed using an NSA-approved degausser operating at sufficient field strength to overwrite residual data, or physically destroyed. Flash media (SSDs, USB drives, SD cards) containing classified information must be physically destroyed because overwrite and degaussing methods are ineffective due to wear-leveling and encryption key remnants.\n\nAccountability requirements for destruction include: a two-person witness requirement for TOP SECRET destruction, documentation of what was destroyed (by document or batch description), the method of destruction, the date, and the identity of the individuals who destroyed and witnessed the destruction. Certificates of Destruction (CDs) are required for TOP SECRET material and for any classified material subject to special accountability. For SECRET and CONFIDENTIAL material, a destruction log recording batch destructions is generally sufficient. Cleared contractors must retain destruction records for three years.\n\nFor ISSO implementation of MP-6 control statements, the SSP must identify the specific NSA/CSS EPL-approved destruction equipment in use, the procedures for each media type (paper, magnetic, optical, flash), the two-person integrity requirement for TS, the certificate of destruction process, and the schedule for routine destruction of classified waste. Improper destruction is a security violation requiring reporting.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "destruction",
+        "sectionTitle": "Destruction and Sanitization",
+        "parentSection": "7",
+        "parentTitle": "Destruction",
+        "controlRefs": ["MP-6", "MP-7", "MP-4", "PE-2"],
+        "families": ["MP", "PE"],
+        "chunkIndex": 6,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH", "SCI", "SAP"],
+        "keywords": ["media sanitization", "destruction", "degaussing", "shredding", "nsa epl", "certificate of destruction", "two-person integrity", "flash media", "magnetic media", "media destruction guidance", "mp-6"]
+      }
+    },
+    {
+      "id": "dod-5200-01:violations:7",
+      "content": "Security violations and incidents involving classified information require prompt reporting, investigation, and remediation. The distinction between a security violation and a security infraction is important for determining the appropriate response. A security violation is any knowing, willful, or negligent action that could reasonably be expected to result in an unauthorized disclosure of classified information. A security infraction is an administrative departure from the requirements of security regulations that does not involve the loss, suspected compromise, or unauthorized disclosure of classified information.\n\nAll personnel who discover or suspect a security violation must immediately report the matter to their security officer. The security officer initiates a preliminary inquiry within 72 hours of the report, gathers available facts, assesses the scope of any potential compromise, and submits a Security Violation Report through the Component chain of command. For incidents involving possible compromise of TOP SECRET information, immediate notification to the Component's Senior Agency Official and, in some cases, USD(I&S) is required.\n\nDamage assessments are conducted when classified information is known or suspected to have been compromised. The original classification authority, as the entity with the most knowledge of the information's sensitivity and current national security implications, is responsible for conducting the damage assessment. The assessment must determine whether the information is still valid, whether current or future operations were affected, and whether personnel are at risk. Damage assessments are conducted by the originating agency when compromise of another agency's information is involved.\n\nAdministrative and disciplinary actions for security violations range from informal counseling for inadvertent minor infractions to adverse personnel actions, loss of security clearance, and referral to law enforcement for willful violations. Administrative sanctions must be fair, consistent, and commensurate with the severity of the violation. Repeated infractions may warrant more severe action even if individually minor. Supervisors are responsible for ensuring that subordinates understand that security violations have personal consequences.\n\nFor RMF IR-6 (Incident Reporting) implementation statements, document the specific procedures for reporting security violations, the chain of notification, the preliminary inquiry process, and the interface with the Component security officer and SAO. The SSP should also reference the applicable Security Violation Reporting procedures and how security incidents feed back into the risk management process for the system.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "violations",
+        "sectionTitle": "Security Violations and Incidents",
+        "parentSection": "8",
+        "parentTitle": "Security Violations",
+        "controlRefs": ["IR-6", "IR-4", "AT-2", "PS-4"],
+        "families": ["IR", "AT", "PS"],
+        "chunkIndex": 7,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH"],
+        "keywords": ["security violation", "security infraction", "preliminary inquiry", "damage assessment", "incident reporting", "compromise", "unauthorized disclosure", "administrative action", "security officer", "ir-6"]
+      }
+    },
+    {
+      "id": "dod-5200-01:cleared-industry:8",
+      "content": "Cleared defense contractors (CDCs) that handle DoD classified information are subject to the National Industrial Security Program Operating Manual (NISPOM) and the requirements of DoD Manual 5200.01. The legal authority for the NISPOM derives from EO 12829 (National Industrial Security Program) as amended, which establishes government-wide requirements for protecting classified information disclosed to contractors.\n\nThe DD Form 254 (Contract Security Classification Specification) is the vehicle through which the government specifies the classification requirements for a classified contract. The DD Form 254 identifies the highest classification level involved, the categories of classified information to be accessed, the storage requirements, any special access requirements (SCI, SAP), and the applicable SCGs. The Contracting Officer's Representative (COR) and the Program Security Officer (PSO) collaborate to prepare the DD Form 254. Contractors must not perform classified work until a valid DD Form 254 has been issued.\n\nFacility clearances (FCLs) are required for contractor facilities that will store or process classified information. The Defense Counterintelligence and Security Agency (DCSA), formerly the Defense Security Service (DSS), administers the National Industrial Security Program and issues FCLs. The facility must meet physical security requirements appropriate to the highest classification level, have a cleared Facility Security Officer (FSO) who has completed required FSO training, and maintain an adequate personnel security program for their cleared employees.\n\nForeign Ownership, Control, or Influence (FOCI) is a key concern in cleared industry. A company is under FOCI when a foreign interest has the ability to direct or decide matters affecting the management or operations of the company in a manner that could adversely affect classified contracts or classified information. DCSA assesses FOCI as part of the FCL process and may require mitigation measures such as Security Control Agreements (SCAs), Special Security Agreements (SSAs), Proxy Agreements, or Board Resolutions depending on the degree and nature of foreign involvement.\n\nFor RMF PS-3 (Personnel Screening) and PS-7 (External Personnel Security) implementation statements for systems operated by or interfacing with cleared contractors, document the facility clearance level, the FSO contact and responsibilities, the procedures for verifying clearances of contractor personnel, and the DCSA oversight relationship. Reference the applicable DD Form 254 number and any FOCI mitigation agreements that affect system access.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "cleared-industry",
+        "sectionTitle": "Cleared Contractor Requirements",
+        "parentSection": "9",
+        "parentTitle": "National Industrial Security Program",
+        "controlRefs": ["PS-3", "PS-7", "MP-2", "PE-3", "AC-3"],
+        "families": ["PS", "MP", "PE", "AC"],
+        "chunkIndex": 8,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "CLEARED_INDUSTRY", "HIGH"],
+        "keywords": ["nispom", "dd form 254", "facility clearance", "fso", "dcsa", "foci", "cleared contractor", "security control agreement", "national industrial security program", "contractor security"]
+      }
+    },
+    {
+      "id": "dod-5200-01:sap-sci:9",
+      "content": "Special Access Programs (SAPs) and Sensitive Compartmented Information (SCI) represent classified information requiring enhanced protection measures beyond those applied to collateral classified information. Both SAPs and SCI have their own authorization and control structures, access procedures, and physical security requirements that supplement the baseline requirements of DoD Manual 5200.01.\n\nSCI is classified information concerning or derived from intelligence sources, methods, or analytical processes that requires handling within formal access control systems established by the Director of National Intelligence (DNI). SCI is not a classification level but a category of information with its own control systems (compartments). Access to SCI requires both a TS/SCI clearance determination and a formal read-in to the specific SCI compartment. The Senior Intelligence Officer (SIO) of each DoD component administers SCI access at the component level. SCI must be handled and stored in facilities accredited as Sensitive Compartmented Information Facilities (SCIFs) meeting the requirements of ICD 705.\n\nSAPs provide enhanced compartmented protection for programs with particular vulnerabilities or sensitivities beyond those addressed by collateral classification. SAPs are established by the Secretary of Defense with the concurrence of the DNI for programs involving intelligence activities. SAPs are categorized as acknowledged (existence is unclassified, content is classified), unacknowledged (both existence and content are classified), and waived (Congressional notification requirements waived). The Office of the Under Secretary of Defense for Acquisition and Sustainment (USD(A&S)) oversees DoD Acquisition SAPs; USD(I&S) oversees DoD Intelligence SAPs.\n\nAccess to SAP information requires a formal read-in briefing, signing an access agreement (non-disclosure agreement specific to the program), and a need-to-know determination by the Program Security Officer (PSO). Personnel being read out of a program receive a debriefing and sign an acknowledgment of their continuing obligations. SAP markings include SPECIAL ACCESS REQUIRED (SAR) followed by the program nickname in parentheses, e.g., SPECIAL ACCESS REQUIRED (PROGRAM X). SAP information is stored in SAP facilities (SAPFs) meeting requirements established by USD(I&S).\n\nFor RMF implementation in SAP or SCI environments, the SSP must document the specific program office's security requirements, reference the applicable SAPCO guidance or SCI system security requirements, identify the SAPF or SCIF accreditation, and describe the read-in/read-out procedures as compensating controls for personnel security. CM-5, AC-2, and AC-3 implementation statements must describe how access is limited to read-in personnel, and PE-2 and PE-3 must reference the SAPF or SCIF accreditation.",
+      "metadata": {
+        "docId": "dod-5200-01",
+        "docTitle": "DoD Manual 5200.01 — DoD Information Security Program",
+        "docType": "DOD_POLICY",
+        "section": "sap-sci",
+        "sectionTitle": "SAP and SCI Information Security",
+        "parentSection": "10",
+        "parentTitle": "Special Programs",
+        "controlRefs": ["AC-2", "AC-3", "PE-2", "PE-3", "PS-3", "PS-4"],
+        "families": ["AC", "PE", "PS"],
+        "chunkIndex": 9,
+        "chunkTotal": 10,
+        "applicability": ["DOD", "SAP", "SCI", "HIGH"],
+        "keywords": ["special access program", "sap", "sci", "sensitive compartmented information", "sapf", "scif", "read-in", "read-out", "program security officer", "sio", "sar marking", "icd 705"]
+      }
+    }
+  ]
+}

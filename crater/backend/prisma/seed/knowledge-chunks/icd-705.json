@@ -1,0 +1,180 @@
+{
+  "docId": "icd-705",
+  "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+  "docType": "IC_POLICY",
+  "version": "ICD 705, 26 May 2010 (with IC Tech Spec for ICD/ICS 705)",
+  "source": "https://www.dni.gov/files/documents/icd/icd_705.pdf",
+  "chunks": [
+    {
+      "id": "icd-705:1.1:0",
+      "content": "ICD 705 establishes the Intelligence Community (IC) policy for the construction, accreditation, and operation of Sensitive Compartmented Information Facilities (SCIFs). A SCIF is an accredited area, room, group of rooms, buildings, or installation where SCI may be stored, used, discussed, or electronically processed. ICD 705 applies to all IC elements and to all entities that construct, modify, or operate SCIFs on behalf of IC elements, including contractors and allied foreign partners operating under formal SCIF agreements.\n\nThis directive supersedes all prior SCIF construction and accreditation guidance issued under DCI authority, including DCID 1/21 (Physical Security Standards for Sensitive Compartmented Information Facilities) and associated technical specifications. IC elements shall apply ICD 705 and the companion IC Technical Specification for ICD/ICS 705 to all new SCIF construction, renovation, and expansion projects, and shall assess existing SCIFs against ICD 705 requirements on a risk-managed basis as directed by their Cognizant Security Authority (CSA).\n\nSCIFs must be designed, constructed, and accredited to protect SCI from disclosure through physical, acoustic, electronic, and visual means. The threat environment addressed by ICD 705 includes human intelligence (HUMINT) collection against the SCIF, technical surveillance measures such as audio and video eavesdropping devices, signals intelligence (SIGINT) collection of compromising emanations, and forced or clandestine physical entry. ICD 705 requirements are therefore both physical security requirements and technical security requirements, and must be addressed together.\n\nThe IT systems within SCIFs are separately authorized under ICD 503 and CNSSI 1253. However, the physical security of the SCIF directly supports the IT security of the systems within it, and SCIF accreditation status is a prerequisite for IT system authorization for SCI systems. SSP authors must document the SCIF accreditation details — including the CSA, accreditation date, accreditation number, and any accreditation conditions — in the physical and environmental protection section of the system security plan.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Scope",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["PE-1", "PE-17", "PE-3"],
+        "families": ["PE"],
+        "chunkIndex": 0,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["icd 705", "scif", "sci facility", "accreditation", "csa", "physical security", "dcid 1/21", "ic policy", "sensitive compartmented information", "scif construction", "ic elements", "scope", "contractor scif", "ssp", "pe controls"]
+      }
+    },
+    {
+      "id": "icd-705:accreditation:1",
+      "content": "SCIF accreditation is the formal determination by the Cognizant Security Authority (CSA) that a facility meets the physical, technical, and procedural requirements of ICD 705 and the IC Technical Specification for ICD/ICS 705, and is therefore authorized for the use, discussion, storage, or electronic processing of SCI. Accreditation is not a one-time event; it must be maintained through ongoing compliance and is subject to revalidation upon significant modifications to the facility or changes in the threat environment.\n\nThe CSA for most U.S. Government SCIFs is the head of the IC element responsible for the facility or a designated Accrediting Official with delegated authority. For contractor SCIFs, the CSA is typically the Government Contracting Activity (GCA) customer component. The CSA is responsible for approving SCIF construction projects prior to commencement, reviewing construction in progress at defined milestones, conducting or overseeing the final inspection and accreditation survey, issuing the formal accreditation decision, and maintaining accreditation records.\n\nThe SCIF accreditation process begins with the submission of a Fixed Facility Checklist (FFC) to the CSA. The FFC is a standardized form that documents the facility's location, dimensions, construction characteristics, access control measures, electronic security systems, TEMPEST mitigations, and other security features. The FFC must be completed by the SCIF Accreditation Manager or a qualified Physical Security Specialist and must be accompanied by construction drawings, floor plans, and supporting documentation. The CSA reviews the FFC and associated documentation to determine whether the proposed facility design meets ICD 705 requirements before approving construction.\n\nFor temporary SCIFs and expanded SCIFs (ESCIFs), the accreditation process is abbreviated but must still include CSA approval and documentation of the specific mitigations in place. Temporary SCIFs may be authorized for short-duration operations at locations where permanent SCIF construction is impractical, subject to additional security measures specified by the CSA. ESCIFs may be temporarily established adjacent to existing SCIFs to accommodate overflow requirements.\n\nOnce accredited, a SCIF shall maintain continuous compliance with all accreditation conditions. Any modification to the SCIF's physical structure, access control systems, electronic security systems, or use that could affect the facility's security posture must be reported to the CSA prior to implementation. Unauthorized modifications may result in suspension or revocation of SCIF accreditation. The SCIF Accreditation Manager shall conduct and document annual self-inspections using the FFC and report results to the CSA.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "accreditation",
+        "sectionTitle": "SCIF Accreditation Process",
+        "parentSection": "2",
+        "parentTitle": "Accreditation",
+        "controlRefs": ["PE-1", "PE-2", "PE-3", "IR-6"],
+        "families": ["PE", "IR"],
+        "chunkIndex": 1,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["scif accreditation", "csa", "fixed facility checklist", "ffc", "accrediting official", "scif manager", "contractor scif", "temporary scif", "escif", "construction approval", "accreditation conditions", "self-inspection", "ic scif", "scif modification"]
+      }
+    },
+    {
+      "id": "icd-705:construction:2",
+      "content": "ICD 705 and the IC Technical Specification for ICD/ICS 705 establish detailed physical construction standards for SCIFs that must be satisfied to achieve and maintain accreditation. These standards address the structural integrity of the SCIF perimeter, sound attenuation properties of the construction, and resistance to forced entry and clandestine penetration.\n\nWalls, floors, and ceilings forming the SCIF perimeter (the \"SCI boundary\") must be constructed to extend from true floor to true ceiling — that is, from the concrete structural floor to the concrete structural ceiling above, or equivalent solid construction. Walls that terminate at a dropped acoustic tile ceiling do not form a complete SCI boundary and must be supplemented with a hardened ceiling overlay or an electronic intrusion detection system covering the full floor plate above the dropped ceiling. Wall construction must provide a minimum Sound Transmission Class (STC) rating sufficient to prevent inadvertent disclosure of SCI conversations to individuals outside the perimeter, as specified in the IC Technical Specification. For most office SCIFs, a minimum STC rating of 45 is required; higher ratings or supplemental sound masking are required when the SCIF is located adjacent to uncontrolled spaces in high-threat environments.\n\nDoors providing access to SCIFs must meet forced-entry resistance standards specified in the IC Technical Specification. Vault-type doors are required for open-storage SCIFs. Hinges, frames, and door hardware must be compatible with the door's security rating. All doors in the SCIF perimeter, including emergency egress doors, must be alarmed and monitored by the intrusion detection system. Door frames must be anchored to the structural members of the wall at intervals specified in the Technical Specification.\n\nWindows within the SCI boundary pose acoustic and optical security challenges. Windows in the SCIF perimeter are strongly discouraged and must meet stringent requirements when present, including minimum STC ratings, forced-entry resistance, and optical obscuring treatments that prevent visual observation of classified activities from outside the facility. Window treatments must not compromise sound attenuation properties.\n\nUtility penetrations through the SCIF perimeter — including electrical conduits, HVAC ducts, plumbing, and telecommunications pathways — must be sealed to the same standard as the surrounding wall. HVAC ducts entering the SCIF must incorporate baffles or other sound-attenuating measures when the duct diameter exceeds the threshold specified in the Technical Specification. All penetrations must be documented on the construction drawings and inspected by the CSA or CSA representative during the accreditation survey.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "construction",
+        "sectionTitle": "Physical Construction Standards",
+        "parentSection": "3",
+        "parentTitle": "Construction Requirements",
+        "controlRefs": ["PE-3", "PE-19", "PE-6"],
+        "families": ["PE"],
+        "chunkIndex": 2,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["scif construction", "stc rating", "sound transmission class", "forced entry", "scif perimeter", "sci boundary", "wall construction", "vault door", "hvac", "utility penetrations", "windows", "acoustic", "construction standards", "ic technical specification", "physical security"]
+      }
+    },
+    {
+      "id": "icd-705:access-control:3",
+      "content": "Access control for SCIFs must ensure that only properly cleared and appropriately authorized individuals are permitted entry, and that all access events are recorded and accountable. ICD 705 establishes a layered approach to access control combining physical barriers, electronic systems, procedural controls, and personnel security measures.\n\nAll individuals entering a SCIF must possess, at minimum, a Top Secret clearance with SCI access eligibility. Entry into specific SCI compartments within the SCIF may require additional access authorizations. SCIFs must maintain an access roster — an official list of all individuals authorized unescorted access — that is reviewed and updated at least annually or when personnel changes occur. The access roster must be approved by the SCIF Accreditation Manager and must be available for CSA inspection.\n\nAccess control systems for SCIFs must incorporate a minimum of two-person access control (two individuals present to observe entry) for the most sensitive configurations, or electronic access control systems that authenticate individual identity prior to granting entry. Acceptable electronic access control mechanisms include combination locks (meeting GSA-approved specifications), electronic keypads with PIN authentication, card reader systems, and biometric systems. For vault-type SCIF doors, combination locks conforming to Federal Specification FF-L-2740 or its successor are required. Combinations must be changed at initial occupancy, whenever an individual with knowledge of the combination departs or is removed from access, and at intervals not to exceed one year.\n\nIntrusion Detection Systems (IDS) are a mandatory element of SCIF access control. The IDS must monitor all SCIF entry points, all perimeter walls (when warranted by the threat environment or construction deficiencies), and all areas within the SCIF where SCI is stored or processed during non-duty hours. The IDS must be capable of distinguishing between authorized entry and intrusion, providing immediate alarm notification to a continuously monitored alarm station, and generating an auditable record of all alarm events. The alarm monitoring station must be staffed 24 hours per day, 7 days per week, and must be capable of dispatching a response force within 15 minutes of alarm annunciation.\n\nVisitor control procedures must ensure that visitors to the SCIF are verified for appropriate access authorization before entry, escorted at all times while within the SCIF unless the visitor holds applicable SCI access authorization, and logged in the visitor control register with name, organization, purpose of visit, time in, time out, and escort name. Visitor logs must be retained for a minimum of two years.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "access-control",
+        "sectionTitle": "Access Control Requirements",
+        "parentSection": "4",
+        "parentTitle": "Access Control",
+        "controlRefs": ["PE-2", "PE-3", "PE-6", "IR-6", "PS-3"],
+        "families": ["PE", "IR", "PS"],
+        "chunkIndex": 3,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["access control", "scif access", "ids", "intrusion detection", "combination lock", "access roster", "visitor control", "electronic access control", "biometric", "two-person access", "alarm monitoring", "sci access", "escort", "ff-l-2740", "scif security"]
+      }
+    },
+    {
+      "id": "icd-705:acoustic:4",
+      "content": "Acoustic security is one of the most critical and technically demanding aspects of SCIF design and accreditation. SCI discussions within the SCIF must be protected from eavesdropping by individuals outside the facility, whether through direct listening, through audio recording devices placed near or within the facility, or through technical collection of audio signals transmitted through structural elements.\n\nThe IC Technical Specification for ICD/ICS 705 defines Sound Group ratings that correlate with the threat environment and accreditation level of the SCIF. Sound Group 1 (SG-1) through Sound Group 5 (SG-5) represent increasing levels of acoustic protection, with corresponding construction requirements and minimum STC ratings for walls, floors, ceilings, doors, and other perimeter elements. The CSA assigns the required Sound Group for a SCIF based on the threat environment, the building construction type, the proximity of uncontrolled spaces, and the sensitivity of the SCI to be processed. SCIFs in high-threat environments or located adjacent to areas accessible by foreign nationals require higher Sound Group ratings.\n\nSound masking systems are frequently required by the CSA to supplement structural acoustic attenuation, particularly when the building construction does not meet the minimum STC requirements for the assigned Sound Group or when the SCIF is in a location where external acoustic collection is a credible threat. Sound masking systems generate broadband noise at or near the SCIF perimeter to prevent intelligible audio collection from outside the facility. Sound masking systems must be specifically approved by the CSA, must achieve the minimum audio masking level specified by the Technical Specification, and must be maintained in continuous operation during SCIF occupancy. Sound masking systems shall not introduce radio frequency (RF) emissions that could be exploited by adversaries.\n\nTechnical Surveillance Countermeasures (TSCM) inspections are a key element of maintaining acoustic and electronic security for accredited SCIFs. TSCM inspections are designed to detect the presence of unauthorized electronic surveillance devices — microphones, transmitters, and other eavesdropping equipment — that may have been clandestinely installed within the SCIF. The frequency of TSCM inspections is determined by the CSA based on threat assessments and the SCIF's sensitivity, but SCIFs in high-threat environments shall receive TSCM inspections at least annually and following any significant construction, renovation, or unaccounted-for access by uncleared personnel. TSCM inspections must be conducted by personnel specifically trained and certified in TSCM techniques and must be documented with findings reported to the CSA.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "acoustic",
+        "sectionTitle": "Acoustic Security",
+        "parentSection": "5",
+        "parentTitle": "Acoustic Requirements",
+        "controlRefs": ["PE-19", "PE-3", "IR-6"],
+        "families": ["PE", "IR"],
+        "chunkIndex": 4,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["acoustic security", "sound masking", "tscm", "technical surveillance countermeasures", "sound group", "stc rating", "eavesdropping", "scif acoustic", "audio security", "masking system", "inspection", "ic technical spec", "csa", "scif", "high threat"]
+      }
+    },
+    {
+      "id": "icd-705:tempest:5",
+      "content": "TEMPEST, or compromising emanations, refers to unintentional intelligence-bearing signals that, if intercepted and analyzed, could disclose classified information. TEMPEST threats are applicable to any electronic equipment that processes classified information; the signals can propagate as radio frequency (RF) emissions, conducted emissions on power and signal lines, and acoustic emissions from devices such as printers and keyboards. ICD 705 and the IC Technical Specification establish TEMPEST requirements for SCIFs that must be reflected in both the facility accreditation and the IT system authorization.\n\nRED/BLACK separation is the foundational TEMPEST concept applied within SCIFs. RED equipment refers to all devices that process, store, or transmit classified plaintext information — including servers, workstations, secure telephones, and cryptographic equipment operating on the classified side. BLACK equipment refers to unclassified equipment, including equipment carrying encrypted SCI traffic. RED equipment must be physically separated from BLACK equipment by the minimum separation distances specified in NSA-approved TEMPEST guidance (NSTISSAM TEMPEST/2-95 and successor documents) or must be shielded to prevent compromising emanations from coupling into BLACK circuits.\n\nSCIF construction may include RF shielding (a Faraday cage) when the threat environment warrants it or when the SCIF is to be used with equipment that generates significant compromising emanations. RF shielded rooms must meet the shielding effectiveness requirements specified in NSA or CSA guidance and must be tested and certified following construction and after any penetrations are made to the shield. Maintaining the integrity of RF shield penetrations — power filters, signal line filters, waveguide-below-cutoff penetrations — is a continuous operational requirement.\n\nEquipment placement within the SCIF must comply with the TEMPEST Zoning approach defined in the IC Technical Specification. Equipment is placed in Zones 0, 1, or 2 based on the equipment's TEMPEST zone rating, the construction of the SCIF perimeter, and the minimum separation distances required. Zone 0 is the most protected area, Zone 2 is nearest the perimeter. RED equipment must be sited in zones appropriate to its TEMPEST rating.\n\nAll IT equipment deployed in SCIFs must have a TEMPEST review or certification that is appropriate for the SCIF's threat environment. NSA-certified TEMPEST-tested equipment may be required for systems in high-threat environments. SSP authors must document the TEMPEST review status of all RED equipment in the system security plan under PE-19 (Information Leakage), including the equipment's NSA certification number or test report reference, the TEMPEST zone assignment, and any compensating measures applied.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "tempest",
+        "sectionTitle": "TEMPEST and Emanations Security",
+        "parentSection": "6",
+        "parentTitle": "Technical Security",
+        "controlRefs": ["PE-19", "SC-8", "PE-3"],
+        "families": ["PE", "SC"],
+        "chunkIndex": 5,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["tempest", "compromising emanations", "red black separation", "rf shielding", "faraday cage", "tempest zoning", "nsa tempest", "nstissam", "equipment placement", "scif tempest", "signal security", "power line filtering", "emanations", "pe-19", "classified equipment"]
+      }
+    },
+    {
+      "id": "icd-705:electronic-security:6",
+      "content": "Electronic security systems within SCIFs must meet IC-specific standards for intrusion detection, alarm monitoring, and annunciation that exceed typical commercial security system requirements. The continuous, reliable operation of electronic security systems is essential because SCIFs often store or process information whose compromise could result in grave damage to national security.\n\nIntrusion Detection Systems (IDS) for SCIFs must meet the standards specified in ICD 705 and the IC Technical Specification, which incorporate requirements derived from Underwriters Laboratories (UL) standards for high-security IDS as well as IC-specific requirements. The IDS must provide point protection for all SCIF entry doors and volumetric protection covering all interior spaces of the SCIF. Motion detection sensors (passive infrared, microwave, dual technology, or approved alternatives) must be positioned to detect the presence of any individual in the SCIF during non-duty hours. All IDS sensors must be on a supervised circuit that detects tampering, short circuits, and open circuits.\n\nThe IDS must be connected to a continuously monitored alarm monitoring station via a secure communications path. For government-owned SCIFs, the alarm monitoring station is typically a government guard force operations center. For contractor SCIFs, the alarm monitoring station may be a cleared commercial central station approved by the CSA, provided the station holds the appropriate clearance level and meets CSA response time and personnel security requirements. The alarm monitoring station must maintain records of all alarm events, including the date and time of the alarm, the type of alarm (intrusion, tamper, door held open, loss of supervision), the identity of the individual who reset or responded to the alarm, and the disposition of the alarm.\n\nAnnunciator panels within the SCIF must provide local alarm indication, allowing security personnel inside the SCIF to identify the specific sensor that activated. Annunciator panels must display sensor status in real time and must be capable of local arming and disarming with appropriate authentication. For SCIFs with multiple rooms or compartments, zone-based annunciation allows SCIF personnel to manage access to specific areas independently.\n\nElectronic security systems must be tested at installation, following any modification, and at regular intervals not to exceed 12 months. Test results must be documented and retained for CSA inspection. IDS system maintenance must be performed by personnel with appropriate clearances when the SCIF is occupied or open, and must be coordinated with the SCIF Accreditation Manager.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "electronic-security",
+        "sectionTitle": "Electronic Security Systems",
+        "parentSection": "7",
+        "parentTitle": "Electronic Security",
+        "controlRefs": ["PE-6", "PE-3", "IR-6"],
+        "families": ["PE", "IR"],
+        "chunkIndex": 6,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["ids", "intrusion detection", "alarm monitoring", "annunciator", "electronic security", "scif ids", "alarm station", "motion detection", "tamper detection", "alarm records", "scif electronic", "guard force", "ul standards", "sensor coverage", "ic scif"]
+      }
+    },
+    {
+      "id": "icd-705:sapf:7",
+      "content": "Special Access Program Facilities (SAPFs) are SCIFs that have been specifically accredited to store, use, discuss, or process Special Access Program (SAP) information. SAPFs must meet all ICD 705 SCIF requirements as a baseline and must additionally satisfy supplemental requirements established by the relevant Program Security Officer (PSO) and coordinated with the Special Access Program Central Office (SAPCO) of the cognizant DoD Component or IC element.\n\nSAPF accreditation is distinct from SCIF accreditation. A facility may be a fully accredited SCIF under ICD 705 but not an accredited SAPF. SAPF accreditation requires coordination between the SCIF CSA and the SAP PSO, who together determine the additional security measures required to protect the specific SAP information to be processed in the facility. These additional measures commonly include enhanced access control to limit SAPF access to personnel with program-specific accesses, additional visitor control procedures for personnel who hold SCI access but not program access, enhanced documentation and accountability requirements for SAP materials within the facility, and physical barriers or segregated areas within the SCIF to create a SAPF boundary within the larger SCIF.\n\nNeed-to-know controls are particularly stringent for SAPFs. Even personnel who are cleared at the TS/SCI level and who have unescorted access to the enclosing SCIF do not automatically have access to the SAPF or the SAP information within it. Access to the SAPF requires a formal read-in by the PSO and a need-to-know determination by the program. Access rosters for SAPFs must list only individuals who have been formally read into the specific program and must be maintained separately from the general SCIF access roster.\n\nSAP IT systems within SAPFs are subject to both ICD 503 authorization requirements and SAP-specific authorization requirements. The authorization of a SAP IT system typically requires coordination between the system's AO (who may be a defense IC element SISO or program AO), the PSO, and the SAPCO. The program's Computer Security Officer (CSO) or ISSM is responsible for ensuring the SAP IT system authorization package addresses both standard IC RMF requirements and SAP-specific security requirements.\n\nSSP authors documenting SAP IT systems must consult with the PSO regarding classification guidance and security requirements specific to the program, as some program-specific requirements may not be releasable to personnel who are not read into the program. The SSP must be handled at the program classification level and shall not reference specific SAP nicknames in documents below the program's classification and handling requirements.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "sapf",
+        "sectionTitle": "Special Access Program Facility Requirements",
+        "parentSection": "8",
+        "parentTitle": "SAPF",
+        "controlRefs": ["PE-2", "PE-3", "PS-3", "MP-5"],
+        "families": ["PE", "PS", "MP"],
+        "chunkIndex": 7,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["sapf", "special access program facility", "sap", "pso", "sapco", "program security officer", "sap accreditation", "need-to-know", "read-in", "sap it system", "program authorization", "cso", "issm", "sap ssp", "access control"]
+      }
+    },
+    {
+      "id": "icd-705:open-storage:8",
+      "content": "Open storage refers to the storage of SCI material — documents, media, hardware, and other classified items — within a SCIF without individual item-level protection (e.g., without placing items in locked containers or approved storage devices). Open storage is authorized only for SCIFs that have received specific CSA approval and that meet the heightened physical and electronic security requirements for open-storage accreditation.\n\nOpen storage authorization requires that the SCIF meet construction standards sufficient to protect the SCI material without relying on individual storage containers, meaning the facility itself becomes the primary security barrier for all SCI within it. Facilities seeking open storage authorization must demonstrate: (1) construction meeting the highest applicable Sound Group and forced-entry resistance requirements; (2) continuous IDS coverage with monitored alarm response; (3) access control limiting entry to personnel with appropriate SCI access; and (4) periodic physical security inspections validating ongoing compliance.\n\nSCI material stored in open-storage areas may include printed documents, portable media, equipment with removable classified storage, and classified hardware assemblies. All SCI material in open storage must be properly marked, protected from inadvertent viewing by unauthorized personnel, and accounted for in the facility's classified material accountability system. At the end of each duty day or when the SCIF is unoccupied, all SCI material must either be secured in approved storage containers or remain in areas that are part of the approved open-storage authorization.\n\nCombination locks on containers within the SCIF are required for SCI material that is not under open-storage authorization. GSA-approved combination padlocks and built-in combination locks on GSA-approved security containers meeting Class 6 standards are required for most SCI storage applications. Combinations must be set to a non-manufacturer default upon initial use, changed when an individual with knowledge of the combination is transferred or removed from access, and changed at intervals not to exceed one year. Written combinations must be protected at the same level as the highest classification of the material secured in the container.\n\nClassification levels of stored material determine the storage container requirements. Top Secret SCI material requires GSA-approved security containers meeting Class 6 standards. Secret SCI material may be stored in Class 5 or better containers within an accredited SCIF. In all cases, the combination to the storage container must be protected at or above the classification level of the information it secures. SSP authors should document storage requirements under MP-4 (Media Storage) and PE-2 (Physical Access Authorizations) as applicable.",
+      "metadata": {
+        "docId": "icd-705",
+        "docTitle": "ICD 705 — Sensitive Compartmented Information Facilities",
+        "docType": "IC_POLICY",
+        "section": "open-storage",
+        "sectionTitle": "Co-utilization and Open Storage Requirements",
+        "parentSection": "9",
+        "parentTitle": "Storage and Co-utilization",
+        "controlRefs": ["MP-5", "PE-2", "PE-3", "SC-8"],
+        "families": ["MP", "PE", "SC"],
+        "chunkIndex": 8,
+        "chunkTotal": 9,
+        "applicability": ["IC", "NSS", "SCI", "SAP", "DOD", "HIGH"],
+        "keywords": ["open storage", "scif storage", "gsa container", "combination lock", "sci material", "classified storage", "class 6 container", "media storage", "combination protection", "material accountability", "scif open storage", "csa approval", "classified material", "mp-4", "storage requirements"]
+      }
+    }
+  ]
+}

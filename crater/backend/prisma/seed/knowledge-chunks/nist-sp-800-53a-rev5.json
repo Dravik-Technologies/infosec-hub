@@ -1,0 +1,484 @@
+{
+  "docId": "nist-sp-800-53a-rev5",
+  "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+  "docType": "NIST_SUPPLEMENT",
+  "version": "Rev 5 January 2022",
+  "source": "https://doi.org/10.6028/NIST.SP.800-53Ar5",
+  "chunks": [
+    {
+      "id": "nist-sp-800-53a-rev5:1.1:0",
+      "content": "NIST Special Publication 800-53A, Revision 5 provides guidelines for building effective security and privacy assessment plans and conducting assessments of the security and privacy controls employed within federal information systems and organizations. The publication supports the implementation of the Risk Management Framework (RMF) by providing assessment procedures for each of the controls contained in NIST SP 800-53, Revision 5, Security and Privacy Controls for Information Systems and Organizations.\n\nThe assessment objectives defined in this publication are designed to determine whether security and privacy controls are: (1) implemented correctly — the control has been implemented in accordance with the approved System Security Plan and meets the stated implementation requirement; (2) operating as intended — the control is functioning in the manner described in the SSP and is producing the expected outcomes; and (3) producing the desired outcome with respect to meeting the stated security and privacy requirements for the system.\n\nThe scope of this publication applies to all federal information systems subject to FISMA and to all organizations designated by applicable law, regulation, executive order, or policy as responsible for protecting federal information. The assessment guidelines are also applicable to state, local, and tribal governments and private sector organizations that voluntarily adopt the NIST Cybersecurity Framework or that are required to demonstrate security and privacy control effectiveness by contractual or regulatory obligation.\n\nAssessment results from assessments conducted using NIST SP 800-53A are used to: determine the overall effectiveness of implemented controls; identify weaknesses and deficiencies in control implementation; provide essential inputs to the authorization decision; support continuous monitoring activities; and inform the development and maintenance of Plans of Action and Milestones (POA&Ms). Assessments conducted at all impact levels (Low, Moderate, High) follow the same foundational methodology, with depth and coverage scaled to the impact level and the criticality of the system's mission.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Applicability",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["CA-2", "CA-7", "RA-3", "PM-4"],
+        "families": ["CA", "RA", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["assessment-objectives", "implemented-correctly", "operating-as-intended", "desired-outcome", "fisma", "nist-800-53", "poam", "authorization-decision", "continuous-monitoring", "weaknesses", "deficiencies", "privacy-controls", "impact-level", "depth", "coverage"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:2.1:0",
+      "content": "NIST SP 800-53A Rev 5 defines a structured assessment methodology that employs three primary assessment methods: Examine, Interview, and Test. Together, these methods provide assessors with a comprehensive toolkit for gathering objective evidence about the implementation and effectiveness of security and privacy controls.\n\nExamine: The examine method involves reviewing, inspecting, observing, studying, or analyzing assessment objects. Examination is used to verify the existence and content of policies, procedures, plans, system design documentation, configuration settings, operational logs, audit records, and other artifacts. Examination activities include reviewing SSP implementation statements, checking configuration file contents against approved baselines, inspecting audit log formats and content, reviewing access control lists, examining training records and completion certificates, and analyzing network architecture diagrams against the documented authorization boundary.\n\nInterview: The interview method involves conducting discussions with individuals or groups of individuals to facilitate understanding, achieve clarification, or identify the location of evidence. Interviews are used to assess the knowledge, skills, and abilities of personnel responsible for implementing and operating controls; to verify that procedures are understood and followed; and to identify discrepancies between documented procedures and actual practice. Interviewees typically include system owners, ISSOs, system administrators, security engineers, configuration managers, incident handlers, and end users.\n\nTest: The test method involves exercising one or more assessment objects under specific conditions to compare actual with expected behavior. Testing is used to verify the technical effectiveness of controls that cannot be adequately assessed through examination or interview alone. Testing activities include executing vulnerability scanners, running penetration tests, verifying authentication mechanisms, testing backup and recovery procedures, exercising incident response procedures through tabletop exercises or simulations, and validating encryption configurations.\n\nThe selection and combination of assessment methods depends on the nature of the control being assessed, the required depth and coverage, and the available assessment resources and time. Assessors select methods that provide sufficient evidence to make defensible determinations about control effectiveness.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.1",
+        "sectionTitle": "Assessment Methodology — Examine, Interview, Test Methods",
+        "parentSection": "2",
+        "parentTitle": "Assessment Methodology",
+        "controlRefs": ["CA-2", "CA-7"],
+        "families": ["CA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["examine", "interview", "test", "assessment-methods", "vulnerability-scanner", "penetration-test", "audit-logs", "configuration", "access-control-lists", "tabletop-exercise", "encryption", "backup-recovery", "incident-response-test", "assessment-evidence", "defensible"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:2.2:0",
+      "content": "NIST SP 800-53A Rev 5 defines four categories of assessment objects that are the targets of assessment activities: specifications, mechanisms, activities, and individuals.\n\nSpecifications are document-based artifacts that describe the intended behavior of a system or control. Assessment of specifications involves examining policies, procedures, plans, system design documentation, security architectures, rules of behavior, service agreements, privacy notices, and other formal documents to determine whether they contain the required content, are consistent with applicable requirements, and accurately describe the control implementation. Key questions for specifications assessment include: Does the policy exist? Is it current? Has it been approved at the appropriate level? Does it cover all required elements?\n\nMechanisms are hardware, software, or firmware safeguards or countermeasures employed within an information system. Assessment of mechanisms involves testing or examining technical security features such as access control software, authentication systems, audit logging components, encryption modules, intrusion detection systems, and configuration management tools. Mechanism assessments verify that the mechanism is present, properly configured, and operating as intended.\n\nActivities are protection-related actions supporting a system that involve people. Assessment of activities includes examining configuration management change control processes, incident response activities, patch management processes, backup and recovery procedures, training activities, and supply chain risk management activities. Activity assessments verify that required processes are being executed and that personnel are performing their assigned security responsibilities.\n\nIndividuals are people who apply specifications, mechanisms, and activities to protect a system. Assessment of individuals involves interviewing personnel to assess their understanding of security policies, their knowledge of the controls they are responsible for implementing or operating, and their awareness of the threats and vulnerabilities relevant to their roles. Individual assessments are particularly important for controls with significant human-dependent components such as incident response, security awareness training, and insider threat programs.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.2",
+        "sectionTitle": "Assessment Objects — Specifications, Mechanisms, Activities, Individuals",
+        "parentSection": "2",
+        "parentTitle": "Assessment Methodology",
+        "controlRefs": ["CA-2", "CA-7", "AT-2", "AT-3"],
+        "families": ["CA", "AT"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["specifications", "mechanisms", "activities", "individuals", "assessment-objects", "policies", "procedures", "hardware", "software", "firmware", "configuration-management", "patch-management", "insider-threat", "authentication", "intrusion-detection"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:2.3:0",
+      "content": "Building an effective Security Assessment Plan (SAP) requires assessors to select assessment procedures from NIST SP 800-53A, determine the depth and coverage of each assessment procedure, and sequence assessment activities to make efficient use of available resources.\n\nAssessment procedure selection begins with the set of controls documented in the approved System Security Plan. For each selected and tailored control, NIST SP 800-53A provides one or more assessment procedures that describe the assessment methods, assessment objects, and assessment objectives. Assessors select the assessment procedures corresponding to each control and then apply depth and coverage judgments to calibrate the rigor of the assessment to the system's impact level and the organization's risk tolerance.\n\nDepth refers to the rigor and thoroughness of the assessment and is characterized as basic, focused, or comprehensive. Basic depth involves executing the minimum set of assessment activities needed to make a determination about control effectiveness, relying primarily on examination of documentation and limited interviews. Focused depth adds more thorough examination and more extensive interviews, verifying that documented procedures are actually being followed in practice. Comprehensive depth adds technical testing to examination and interviews, verifying that technical mechanisms function as intended under a variety of conditions including adversarial conditions.\n\nCoverage refers to the scope of the assessment in terms of the number of assessment objects selected for assessment within each assessment object category (specifications, mechanisms, activities, individuals). Coverage is characterized as basic (small representative sample), focused (larger representative sample), or comprehensive (exhaustive or near-exhaustive coverage). For High impact systems, comprehensive depth and coverage are generally required for controls that protect the most critical information. For Low impact systems, basic depth and coverage may be sufficient for many controls.\n\nThe SAP documents the selected assessment procedures, depth, and coverage determinations, and must be approved by the system owner and AO before assessments commence.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.3",
+        "sectionTitle": "Building Assessment Plans — Depth, Coverage, Procedure Selection",
+        "parentSection": "2",
+        "parentTitle": "Assessment Methodology",
+        "controlRefs": ["CA-2", "CA-7", "RA-5"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["sap", "assessment-plan", "depth", "coverage", "basic", "focused", "comprehensive", "assessment-procedures", "representative-sample", "exhaustive", "high-impact", "low-impact", "adversarial", "technical-testing", "rigor"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:2.4:0",
+      "content": "The Security Assessment Report (SAR) is the primary deliverable of the assessment process and provides the system owner, authorizing official, and other organizational officials with a complete record of the assessment activities, findings, and conclusions. The SAR must be structured, complete, accurate, and presented in a manner that enables the AO to make an informed, risk-based authorization decision.\n\nThe SAR structure must include the following components: (1) an executive summary providing a high-level overview of the assessment scope, key findings, and the assessor's overall risk determination; (2) the assessment methodology section describing the assessment methods employed, the assessment team composition, and any limitations or constraints on the assessment; (3) a system description summary restating the system boundary and key characteristics relevant to the assessment; (4) a detailed findings section presenting the assessment result for each assessed control, including the assessment methods used, the assessment objects examined, interviewed, or tested, the specific evidence collected, and the determination of Satisfied (S) or Other Than Satisfied (OTS); (5) a risk summary providing the assessor's risk determinations for all OTS findings, categorized by severity (Critical, High, Moderate, Low, Informational); and (6) an appendices section containing supporting evidence, screenshots, scan results, interview notes, and other raw assessment artifacts.\n\nFor each OTS finding, the SAR must document: the finding title and unique identifier; the affected control ID and control requirement; the specific deficiency observed (what is missing, incorrect, or not operating as intended); the assessment evidence supporting the finding; the potential impact of the deficiency on the system's confidentiality, integrity, or availability; the assessor's risk rating; and initial remediation recommendations. Findings must be written with sufficient specificity to enable the system owner to understand exactly what needs to be remediated and to enable a subsequent assessor to verify that remediation is complete.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.4",
+        "sectionTitle": "Security Assessment Report (SAR) — Structure and Content Requirements",
+        "parentSection": "2",
+        "parentTitle": "Assessment Methodology",
+        "controlRefs": ["CA-2", "CA-5", "RA-3"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["sar", "assessment-report", "executive-summary", "findings", "satisfied", "other-than-satisfied", "risk-determination", "severity", "critical", "high", "moderate", "low", "remediation", "evidence", "authorization-decision"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:AC:0",
+      "content": "Access Control (AC) family assessment procedures under NIST SP 800-53A Rev 5 cover the assessment of controls governing user accounts, access permissions, least privilege, separation of duties, remote access, and wireless access. The AC family is among the highest-priority control families and is assessed at comprehensive depth for Moderate and High impact systems.\n\nAC-1 (Policy and Procedures): Assessors examine the access control policy for existence, currency (reviewed within the defined frequency), approval at the appropriate organizational level, dissemination to affected personnel, and completeness of required elements including scope, roles, responsibilities, and compliance requirements. Assessors also examine access control procedures to verify they address the implementation of all AC controls selected for the system.\n\nAC-2 (Account Management): Assessors examine account management policies, procedures, and documented account types; interview system administrators and ISSOs to verify account management processes; and test the account management system by requesting evidence of account creation, modification, disabling, and removal actions. Assessors verify that accounts are created only for authorized users, that accounts are reviewed at the defined frequency, and that inactive accounts are disabled within the required timeframe. Assessors specifically examine privileged accounts to verify that administrative access is commensurate with job responsibilities and that the principle of least privilege is enforced.\n\nAC-3 (Access Enforcement): Assessors test access control mechanisms by attempting to access resources with accounts of varying privilege levels to verify that access is enforced in accordance with access control policies. Assessors examine access control lists, role definitions, and permission assignments to verify consistency with the principle of least privilege.\n\nAC-17 (Remote Access): Assessors examine remote access policies, examine VPN and remote desktop configurations, interview administrators, and test remote access mechanisms to verify that remote access is authorized, encrypted, monitored, and controlled. Multifactor authentication for remote access is verified as implemented and enforced.\n\nAC-22 (Publicly Accessible Content): Assessors verify that publicly accessible system content is reviewed and approved before posting and that procedures exist to remove non-public information inadvertently posted to public-facing interfaces.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "AC",
+        "sectionTitle": "AC Family Assessment — Access Control Procedures and Evidence",
+        "parentSection": "AC",
+        "parentTitle": "Access Control",
+        "controlRefs": ["AC-1", "AC-2", "AC-3", "AC-6", "AC-17", "AC-22"],
+        "families": ["AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["access-control", "account-management", "least-privilege", "remote-access", "vpn", "multifactor-authentication", "access-enforcement", "privileged-accounts", "separation-of-duties", "inactive-accounts", "access-control-lists", "role-definitions", "permission-assignments", "publicly-accessible", "wireless-access"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:IA:0",
+      "content": "Identification and Authentication (IA) family assessment procedures under NIST SP 800-53A Rev 5 address the identification of users, processes, and devices, and the authentication of those entities before granting access to organizational information systems. IA controls are foundational to access control and are assessed rigorously at all impact levels.\n\nIA-1 (Policy and Procedures): Assessors examine the identification and authentication policy for completeness, currency, and approval; and examine IA procedures to verify coverage of all selected IA controls.\n\nIA-2 (Identification and Authentication — Organizational Users): Assessors test the authentication mechanism by attempting to authenticate with valid and invalid credentials to verify that the system correctly identifies and authenticates users before granting access. For systems with multifactor authentication requirements, assessors verify that MFA is enforced for all access including local and network access, and specifically that MFA is required for privileged accounts (IA-2(1)) and non-privileged accounts (IA-2(2)). For PIV-enabled environments, assessors verify that the system accepts and validates PIV credentials in accordance with FIPS 201.\n\nIA-3 (Device Identification and Authentication): Assessors verify that the system identifies and authenticates devices before establishing connections. This is particularly important for industrial control systems, IoT devices, and network infrastructure components. Assessors examine device certificates, 802.1X network access control configurations, and device management records.\n\nIA-5 (Authenticator Management): Assessors examine password policies to verify minimum length, complexity, history, maximum age, and temporary password management requirements. For token-based authenticators, assessors verify token provisioning, revocation, and loss/compromise procedures. Assessors examine PKI certificate management procedures including certificate issuance, renewal, revocation, and validation.\n\nIA-8 (Identification and Authentication — Non-Organizational Users): Assessors verify that non-organizational users (contractors, partners, external users) are identified and authenticated using approved mechanisms and that their access is controlled and monitored in accordance with the access control policy.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "IA",
+        "sectionTitle": "IA Family Assessment — Identification and Authentication Procedures",
+        "parentSection": "IA",
+        "parentTitle": "Identification and Authentication",
+        "controlRefs": ["IA-1", "IA-2", "IA-3", "IA-5", "IA-8"],
+        "families": ["IA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["identification", "authentication", "multifactor-authentication", "mfa", "piv", "fips-201", "password-policy", "pki", "certificate-management", "device-authentication", "802-1x", "privileged-accounts", "non-organizational-users", "authenticator-management", "token-based"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:AU:0",
+      "content": "Audit and Accountability (AU) family assessment procedures under NIST SP 800-53A Rev 5 address the generation, review, analysis, reporting, and protection of audit records. The AU family is assessed to ensure that the system creates a sufficient audit trail to support accountability, incident investigation, and forensic analysis.\n\nAU-1 (Policy and Procedures): Assessors examine the audit and accountability policy for completeness and currency, and examine AU procedures to verify coverage of all selected AU controls.\n\nAU-2 (Event Logging): Assessors examine the list of auditable events defined by the organization to verify that it includes the minimum required events (authentication successes and failures, object access, account management changes, use of privileged functions, policy changes, and system startup/shutdown). Assessors interview system administrators to verify that the event list was developed in coordination with relevant stakeholders and that audit events are reviewed at the defined frequency.\n\nAU-3 (Content of Audit Records): Assessors examine a sample of audit records to verify that each record contains the required information fields: date and time, event type, user identity, source of event (device, IP address), outcome of event (success/failure), and any other organization-defined fields. Assessors verify that timestamps are synchronized to an authoritative time source (per AU-8).\n\nAU-6 (Audit Record Review, Analysis, and Reporting): Assessors examine audit review procedures, interview personnel responsible for audit review, and examine records of audit reviews to verify that reviews are conducted at the required frequency and that identified anomalies are reported to appropriate officials. Automated audit analysis tools (SIEM systems) are examined to verify their configuration and that alerts are generated for defined triggering conditions.\n\nAU-9 (Protection of Audit Information): Assessors verify that audit records are protected from unauthorized access, modification, and deletion through access controls, integrity verification mechanisms, and backup of audit logs to a separate system.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "AU",
+        "sectionTitle": "AU Family Assessment — Audit and Accountability Procedures",
+        "parentSection": "AU",
+        "parentTitle": "Audit and Accountability",
+        "controlRefs": ["AU-1", "AU-2", "AU-3", "AU-6", "AU-8", "AU-9"],
+        "families": ["AU"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["audit-records", "event-logging", "siem", "audit-review", "timestamps", "time-synchronization", "audit-protection", "privileged-functions", "authentication-failures", "forensic-analysis", "accountability", "audit-trail", "anomalies", "audit-content", "backup-logs"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:CM:0",
+      "content": "Configuration Management (CM) family assessment procedures under NIST SP 800-53A Rev 5 address the establishment and maintenance of baseline configurations, change control processes, and configuration monitoring for organizational information systems. CM controls ensure that systems are deployed and maintained in secure, known configurations.\n\nCM-2 (Baseline Configuration): Assessors examine the documented baseline configurations for all system components to verify that they exist, are current, include required security settings, and are stored in a protected repository. Assessors compare a sample of running system configurations against the documented baseline to identify unauthorized deviations. Configuration deviation reports from automated scanning tools (SCAP, STIG checklists) are examined to assess the scope and severity of configuration drift.\n\nCM-3 (Configuration Change Control): Assessors examine the change control process documentation and review a sample of recent change requests to verify that changes undergo security impact analysis, are approved by the appropriate authority, are tested before deployment, and are documented after implementation. Assessors interview configuration managers and change control board members to verify understanding of the process.\n\nCM-6 (Configuration Settings): Assessors examine the organization's configuration settings (benchmarks, STIGs, CIS baselines) and verify that they are applied to all system components. Automated SCAP/STIG compliance scan results are examined to assess compliance with required configuration settings. Exceptions to required configuration settings (deviations from STIGs) must be documented with risk acceptance rationale.\n\nCM-7 (Least Functionality): Assessors verify that systems are configured to provide only the services, ports, protocols, and functions necessary for operation. Port scan results and service inventories are examined to identify unnecessary services and open ports. Assessors verify that prohibited software (peer-to-peer, personal storage) is not present on organizational systems.\n\nCM-8 (System Component Inventory): Assessors examine the system component inventory to verify completeness, accuracy, and currency, and compare it against actual system components identified through network scanning.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "CM",
+        "sectionTitle": "CM Family Assessment — Configuration Management Procedures",
+        "parentSection": "CM",
+        "parentTitle": "Configuration Management",
+        "controlRefs": ["CM-2", "CM-3", "CM-6", "CM-7", "CM-8"],
+        "families": ["CM"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["baseline-configuration", "change-control", "configuration-drift", "scap", "stig", "cis", "least-functionality", "port-scan", "services", "protocols", "component-inventory", "configuration-settings", "security-impact-analysis", "deviations", "prohibited-software"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:CA:0",
+      "content": "Assessment, Authorization, and Monitoring (CA) family assessment procedures under NIST SP 800-53A Rev 5 address the processes by which organizations assess control effectiveness, authorize systems, manage connections, monitor the ongoing security posture of information systems, and conduct penetration testing.\n\nCA-2 (Control Assessments): Assessors verify that the organization has a documented assessment policy and that assessments are conducted at the defined frequency, using qualified assessors with appropriate independence, and in accordance with an approved assessment plan. Evidence includes the assessment plan, assessment report, and records of assessor qualifications.\n\nCA-3 (Information Exchange): Assessors examine all active Interconnection Security Agreements (ISAs), Memoranda of Understanding (MOUs), and data sharing agreements to verify they are current, properly approved, and accurately describe the nature of the data exchanged, the security requirements, and the responsibilities of each party. Assessors also verify that connections are authorized and operating within the parameters established in the agreement.\n\nCA-5 (Plan of Action and Milestones): Assessors examine the POA&M to verify that it includes all identified control deficiencies, that each entry includes required elements (description, resources, milestones, responsible party, planned completion date), and that the POA&M is reviewed and updated at the required frequency. Assessors verify that overdue POA&M items are escalated to the AO.\n\nCA-7 (Continuous Monitoring): Assessors examine the system's continuous monitoring strategy and plan, interview the ISSO and system owner, and examine records of ongoing monitoring activities. Assessors verify that automated scanning tools are operational, that scan results are reviewed and acted upon, and that significant changes to the security posture are reported to the AO.\n\nCA-8 (Penetration Testing): Assessors verify that penetration testing is conducted at the required frequency and scope, by qualified personnel, and that penetration test findings are tracked to remediation. Penetration test reports are reviewed for scope adequacy and finding completeness.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "CA",
+        "sectionTitle": "CA Family Assessment — Assessment, Authorization, Monitoring Procedures",
+        "parentSection": "CA",
+        "parentTitle": "Assessment, Authorization, and Monitoring",
+        "controlRefs": ["CA-2", "CA-3", "CA-5", "CA-7", "CA-8"],
+        "families": ["CA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["ca-2", "ca-3", "ca-5", "ca-7", "ca-8", "isa", "mou", "poam", "continuous-monitoring", "penetration-testing", "assessor-independence", "interconnection", "data-sharing", "ongoing-monitoring", "security-posture"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:SI:0",
+      "content": "System and Information Integrity (SI) family assessment procedures under NIST SP 800-53A Rev 5 address the monitoring of information systems for malicious code, the timely application of security patches, the monitoring of system alerts, and the protection of information at rest and in transit from unauthorized modification.\n\nSI-2 (Flaw Remediation): Assessors examine the patch management policy and procedures, review patch management system records and reports, and interview system administrators to verify that security patches are applied within the defined timeframe after release. Assessors examine a sample of systems to verify that current patches are applied and that unpatched vulnerabilities are tracked in the POA&M. Automated vulnerability scan results are examined to assess the extent of unpatched vulnerabilities.\n\nSI-3 (Malicious Code Protection): Assessors verify that malicious code protection mechanisms (anti-virus, endpoint detection and response) are deployed on all applicable systems, are configured to update signatures automatically, and are configured to scan files at defined frequency. Assessors examine centralized malware detection console reports to verify that alerts are reviewed and acted upon.\n\nSI-4 (System Monitoring): Assessors examine the system monitoring strategy, review SIEM or equivalent tool configurations, examine system monitoring reports and logs, and interview security operations personnel to verify that system monitoring is conducted in accordance with the monitoring plan. Assessors verify that monitoring covers both external threats (intrusion detection) and internal threats (insider threat detection), and that monitoring events are correlated with the audit events defined in AU-2.\n\nSI-7 (Software, Firmware, and Information Integrity): Assessors verify that integrity verification tools are deployed to detect unauthorized modification of software, firmware, and system configuration. File integrity monitoring (FIM) tool configurations and alerts are examined. Assessors verify that integrity checks are performed at the defined frequency.\n\nSI-12 (Information Management and Retention): Assessors verify that information is retained in accordance with applicable laws, regulations, and organizational requirements, and that information is disposed of securely at the end of its retention period.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "SI",
+        "sectionTitle": "SI Family Assessment — System and Information Integrity Procedures",
+        "parentSection": "SI",
+        "parentTitle": "System and Information Integrity",
+        "controlRefs": ["SI-2", "SI-3", "SI-4", "SI-7", "SI-12"],
+        "families": ["SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["flaw-remediation", "patch-management", "malicious-code", "anti-virus", "endpoint-detection", "system-monitoring", "siem", "intrusion-detection", "file-integrity-monitoring", "fim", "software-integrity", "firmware-integrity", "information-retention", "vulnerability-scan", "insider-threat"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:SC:0",
+      "content": "System and Communications Protection (SC) family assessment procedures under NIST SP 800-53A Rev 5 address the protection of communications and system boundaries through encryption, boundary protection, denial of service protection, and network segmentation.\n\nSC-5 (Denial of Service Protection): Assessors verify that the system has mechanisms in place to protect against denial-of-service attacks, including rate limiting, traffic filtering, and failover capabilities. Configuration documentation and testing evidence for DoS protection mechanisms are examined.\n\nSC-7 (Boundary Protection): Assessors examine network architecture diagrams, firewall rule sets, and DMZ configurations to verify that the system boundary is protected by appropriately configured boundary protection mechanisms. Firewall rules are reviewed to verify they implement the principle of least privilege (deny by default), that rules are reviewed at the defined frequency, and that unused rules are removed. Assessors may conduct network scans to verify that only authorized ports and services are accessible from external networks.\n\nSC-8 (Transmission Confidentiality and Integrity): Assessors verify that data in transit is protected using FIPS 140-2 or FIPS 140-3 validated cryptographic mechanisms. TLS configurations are examined for protocol version (TLS 1.2 minimum), cipher suite selection (excluding deprecated ciphers), and certificate validity. Assessors test encrypted channels by examining traffic captures or certificate inspection.\n\nSC-12 (Cryptographic Key Establishment and Management): Assessors examine cryptographic key management procedures and key management system configurations to verify that keys are generated using approved algorithms, stored securely, rotated at required intervals, and revoked when compromised.\n\nSC-28 (Protection of Information at Rest): Assessors verify that sensitive information at rest is protected using FIPS 140-validated encryption. Database encryption configurations, storage encryption configurations, and portable media encryption requirements are examined and tested.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "SC",
+        "sectionTitle": "SC Family Assessment — System and Communications Protection Procedures",
+        "parentSection": "SC",
+        "parentTitle": "System and Communications Protection",
+        "controlRefs": ["SC-5", "SC-7", "SC-8", "SC-12", "SC-28"],
+        "families": ["SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["boundary-protection", "firewall", "dmz", "tls", "encryption", "fips-140", "denial-of-service", "network-segmentation", "cryptographic-key-management", "information-at-rest", "transmission-confidentiality", "cipher-suite", "data-in-transit", "port-filtering", "least-privilege"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:IR:0",
+      "content": "Incident Response (IR) family assessment procedures under NIST SP 800-53A Rev 5 address the organization's capability to prepare for, detect, contain, eradicate, and recover from security incidents involving organizational information systems.\n\nIR-1 (Policy and Procedures): Assessors examine the incident response policy and procedures for completeness, currency, and alignment with current threats. The policy must define incident categories and response priorities, establish the incident response team structure, and include requirements for coordination with law enforcement and external organizations.\n\nIR-2 (Incident Response Training): Assessors examine training records to verify that all personnel with incident response responsibilities have received initial training and refresher training at the required frequency. Training content is reviewed to verify it covers current threats, incident reporting procedures, and the use of incident response tools.\n\nIR-3 (Incident Response Testing): Assessors examine records of incident response exercises and tests (tabletop exercises, functional exercises, full-scale exercises) to verify they are conducted at the required frequency and include all key stakeholders. Exercise reports and after-action reviews are examined to verify that lessons learned are incorporated into plan updates.\n\nIR-4 (Incident Handling): Assessors examine the incident handling procedures, review records of actual incidents handled, and interview incident response team members to verify that incidents are detected, reported, contained, eradicated, and recovered from in accordance with the procedures. Assessors verify that incident response includes forensic evidence preservation procedures and that evidence is collected in a manner that preserves its integrity and admissibility.\n\nIR-6 (Incident Reporting): Assessors verify that incidents are reported to appropriate internal and external entities (US-CERT, CISA, OIG, law enforcement, Inspectors General) within required timeframes. Incident reporting records are examined to verify timeliness and completeness.\n\nIR-8 (Incident Response Plan): Assessors examine the Incident Response Plan for completeness, currency, and approval, and verify that it is distributed to all relevant stakeholders.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "IR",
+        "sectionTitle": "IR Family Assessment — Incident Response Procedures and Evidence",
+        "parentSection": "IR",
+        "parentTitle": "Incident Response",
+        "controlRefs": ["IR-1", "IR-2", "IR-3", "IR-4", "IR-6", "IR-8"],
+        "families": ["IR"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["incident-response", "tabletop-exercise", "incident-handling", "forensic-evidence", "incident-reporting", "us-cert", "cisa", "incident-response-plan", "training", "containment", "eradication", "recovery", "after-action-review", "law-enforcement", "incident-categories"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:RA:0",
+      "content": "Risk Assessment (RA) family assessment procedures under NIST SP 800-53A Rev 5 address the organization's processes for identifying, assessing, and managing risks to organizational operations, assets, individuals, other organizations, and the Nation arising from the operation and use of information systems.\n\nRA-2 (Security Categorization): Assessors examine the security categorization documentation to verify that it is consistent with FIPS 199 and NIST SP 800-60, that it covers all information types processed by the system, and that it has been approved by the system owner, mission/business owner, and AO. The high-water mark principle is verified — the overall system impact level must equal the highest impact level across all three security objectives for any information type.\n\nRA-3 (Risk Assessment): Assessors examine the risk assessment report to verify it is current, comprehensive, covers both security and privacy risks, and has been reviewed and approved by appropriate officials. Assessors verify that the risk assessment addresses specific threats to the system based on current threat intelligence, identifies specific vulnerabilities, and assesses the likelihood and impact of exploitation.\n\nRA-5 (Vulnerability Monitoring and Scanning): Assessors examine vulnerability scanning policies and procedures, review recent vulnerability scan reports, and verify that the scanning tool is configured with current vulnerability signatures. Assessors verify that scan results are reviewed within the required timeframe, that vulnerabilities are prioritized using a risk-based approach (CVSS scores, threat context), and that vulnerability remediation is tracked in the POA&M. Unauthenticated versus authenticated scan results are distinguished and the completeness of scan coverage is assessed.\n\nRA-7 (Risk Response): Assessors verify that risk responses to identified vulnerabilities and risks are appropriate, timely, and consistent with the organizational risk management strategy. The adequacy of interim mitigations for vulnerabilities that cannot be immediately remediated is assessed.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "RA",
+        "sectionTitle": "RA Family Assessment — Risk Assessment Procedures and Evidence",
+        "parentSection": "RA",
+        "parentTitle": "Risk Assessment",
+        "controlRefs": ["RA-2", "RA-3", "RA-5", "RA-7"],
+        "families": ["RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["security-categorization", "fips-199", "nist-800-60", "risk-assessment", "vulnerability-scanning", "cvss", "authenticated-scan", "unauthenticated-scan", "high-water-mark", "threat-intelligence", "vulnerability-remediation", "risk-response", "interim-mitigation", "likelihood", "impact"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:SA-SR:0",
+      "content": "System and Services Acquisition (SA) and Supply Chain Risk Management (SR) family assessment procedures under NIST SP 800-53A Rev 5 address the integration of security and privacy requirements into acquisition processes and the management of supply chain risks.\n\nSA-4 (Acquisition Process): Assessors examine acquisition contracts, statements of work, and system requirements documents to verify that security and privacy functional requirements, strength of mechanism requirements, assurance requirements, and documentation requirements are included in acquisition documents. Assessors verify that security requirements are flowed down to subcontractors and service providers.\n\nSA-8 (Security and Privacy Engineering Principles): Assessors examine system design documentation and security architecture to verify that approved security engineering principles are applied throughout the system development and acquisition process. Evidence includes architecture review board records, security architecture documents, and threat models.\n\nSA-9 (External System Services): Assessors examine the organization's management of external system services, including cloud service providers. Assessors verify that FedRAMP authorizations or equivalent authorizations are in place for cloud services, that ISAs or data sharing agreements govern external service connections, and that the security posture of external services is monitored.\n\nSR-2 (Supply Chain Risk Management Plan): Assessors examine the supply chain risk management plan to verify it is current, approved, and addresses the identification and management of supply chain risks for critical system components. SCRM activities including supplier assessments, counterfeit component detection, and secure delivery procedures are assessed.\n\nSR-11 (Component Authenticity): Assessors verify that procedures exist to detect and prevent counterfeit or tampered components from entering the supply chain, including inspection procedures for hardware components and verification of software integrity before installation.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "SA-SR",
+        "sectionTitle": "SA/SR Family Assessment — System Acquisition and Supply Chain Procedures",
+        "parentSection": "SA",
+        "parentTitle": "System and Services Acquisition",
+        "controlRefs": ["SA-4", "SA-8", "SA-9", "SR-2", "SR-11"],
+        "families": ["SA", "SR"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["acquisition", "supply-chain", "fedramp", "cloud-services", "scrm", "counterfeit", "component-authenticity", "security-engineering", "threat-model", "external-services", "subcontractors", "software-integrity", "hardware-inspection", "architecture-review", "security-requirements"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:AT:0",
+      "content": "Awareness and Training (AT) family assessment procedures under NIST SP 800-53A Rev 5 address the organization's security and privacy awareness and training programs, ensuring that all personnel are equipped with the knowledge and skills required to fulfill their security and privacy responsibilities.\n\nAT-1 (Policy and Procedures): Assessors examine the awareness and training policy and procedures for completeness, currency, and approval. The policy must define training frequencies, required training topics, and roles with specialized training requirements.\n\nAT-2 (Literacy Training and Awareness): Assessors examine security and privacy awareness training materials and records to verify that all users (including contractors and temporary workers) complete initial awareness training before receiving system access and complete refresher awareness training at the required frequency. Training content is reviewed to verify coverage of current threats (phishing, social engineering, insider threat), organizational policies, and reporting requirements. Training completion records are examined for completeness against the current user population.\n\nAT-3 (Role-Based Training): Assessors examine role-based security training records for personnel in security-sensitive roles including system administrators, ISSOs, security engineers, incident handlers, contingency planners, and developers. Training records are verified to show completion of specialized training within the required timeframe of role assignment and periodic refresher training. Training content is reviewed for appropriateness to the role — system administrators should receive training on secure configuration, ISSOs on the RMF process and continuous monitoring, developers on secure coding practices.\n\nAT-4 (Training Records): Assessors examine the training records system to verify that training records are maintained for the required retention period, that records are complete and accurate, and that records are protected from unauthorized modification. Reports of training completion by role are generated and reviewed to identify gaps in training compliance.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "AT",
+        "sectionTitle": "AT Family Assessment — Awareness and Training Procedures",
+        "parentSection": "AT",
+        "parentTitle": "Awareness and Training",
+        "controlRefs": ["AT-1", "AT-2", "AT-3", "AT-4"],
+        "families": ["AT"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["awareness-training", "role-based-training", "phishing", "social-engineering", "insider-threat", "training-records", "secure-coding", "isso-training", "sysadmin-training", "rmf-training", "training-frequency", "contractors", "refresher-training", "completion-records", "security-sensitive-roles"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:MP:0",
+      "content": "Media Protection (MP) family assessment procedures under NIST SP 800-53A Rev 5 address the protection, handling, transportation, and destruction of information system media containing sensitive or classified information. The MP family is especially important for systems processing CUI, classified information, or sensitive national security information.\n\nMP-2 (Media Access): Assessors verify that access to system media (paper, digital) is restricted to authorized individuals and that the access control measures are commensurate with the sensitivity of the information on the media. Access logs for media storage areas are examined.\n\nMP-3 (Media Marking): Assessors examine a sample of digital and physical media to verify proper marking in accordance with applicable classification or sensitivity marking requirements. Marking procedures are reviewed for completeness and currency.\n\nMP-4 (Media Storage): Assessors examine the media storage facilities and procedures to verify that media is stored securely, that environmental controls are appropriate for the media type, and that an inventory of stored media is maintained. For classified or CUI media, storage must meet applicable physical security standards.\n\nMP-5 (Media Transport): Assessors examine media transport procedures and records to verify that media is encrypted, controlled, and tracked during transport. Chain of custody records for media transport are reviewed. Assessors verify that media sent through postal or commercial delivery services is appropriately packaged, encrypted, and tracked.\n\nMP-6 (Media Sanitization): Assessors examine media sanitization procedures and records to verify that media is sanitized in accordance with NIST SP 800-88 before reuse or disposal. Sanitization records must document the method used (overwrite, degauss, physical destruction), the individual performing the sanitization, and the date. For classified media, sanitization requirements are more stringent and may require NSA-approved methods.\n\nMP-7 (Media Use): Assessors verify that the use of portable media (USB drives, external drives, CD/DVD) is controlled and authorized, and that unauthorized media is prevented from being connected to organizational systems.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "MP",
+        "sectionTitle": "MP Family Assessment — Media Protection Procedures and Evidence",
+        "parentSection": "MP",
+        "parentTitle": "Media Protection",
+        "controlRefs": ["MP-2", "MP-3", "MP-4", "MP-5", "MP-6", "MP-7"],
+        "families": ["MP"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "CUI"],
+        "keywords": ["media-protection", "media-marking", "media-storage", "media-transport", "media-sanitization", "nist-800-88", "degauss", "physical-destruction", "portable-media", "usb", "chain-of-custody", "classified-media", "cui-media", "overwrite", "nsa-approved"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:PE:0",
+      "content": "Physical and Environmental Protection (PE) family assessment procedures under NIST SP 800-53A Rev 5 address physical access controls, environmental monitoring, and protection of the facility and physical infrastructure supporting the information system.\n\nPE-2 (Physical Access Authorizations): Assessors examine the list of individuals authorized physical access to system facilities against the current employee/contractor roster to verify that only authorized individuals have access and that access is removed promptly upon departure. Authorization records are reviewed for current approval signatures.\n\nPE-3 (Physical Access Control): Assessors inspect physical access control mechanisms at facility entry points including card readers, biometric systems, locked doors, security guards, and visitor management systems. Access logs are examined to verify that physical access attempts are recorded. Assessors may test physical access mechanisms by attempting entry through unauthorized means (tailgating tests).\n\nPE-6 (Monitoring Physical Access): Assessors verify that physical access monitoring mechanisms (video surveillance, motion sensors) are operational and that monitoring data is reviewed at the required frequency. Video surveillance system configurations, retention periods, and review procedures are assessed.\n\nPE-13 (Fire Protection): Assessors inspect fire detection and suppression systems to verify they are installed, maintained, and tested in accordance with applicable standards. Service and test records for fire suppression systems are reviewed.\n\nPE-14 (Temperature and Humidity Controls): Assessors examine environmental monitoring system configurations and recent environmental data logs to verify that temperature and humidity are maintained within required ranges and that alerts are configured for out-of-range conditions.\n\nPE-17 (Alternate Work Site): For systems where personnel access the system from alternate work sites (telework), assessors verify that alternate work site security requirements are defined and that personnel working from alternate sites comply with those requirements.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "PE",
+        "sectionTitle": "PE Family Assessment — Physical and Environmental Protection Procedures",
+        "parentSection": "PE",
+        "parentTitle": "Physical and Environmental Protection",
+        "controlRefs": ["PE-2", "PE-3", "PE-6", "PE-13", "PE-14", "PE-17"],
+        "families": ["PE"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["physical-access", "card-reader", "biometric", "visitor-management", "video-surveillance", "fire-suppression", "temperature-humidity", "environmental-monitoring", "tailgating", "telework", "alternate-work-site", "access-logs", "physical-access-authorizations", "security-guards", "locked-doors"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:PS:0",
+      "content": "Personnel Security (PS) family assessment procedures under NIST SP 800-53A Rev 5 address the screening of individuals prior to system access, the management of terminations and transfers, and the enforcement of personnel security requirements throughout the employment life cycle.\n\nPS-3 (Personnel Screening): Assessors examine personnel screening procedures and a sample of personnel screening records to verify that background investigations are conducted prior to granting system access and that investigations are commensurate with the sensitivity of the information accessed. For national security positions and positions with access to classified or sensitive national security information, investigators verify that required investigative types (e.g., Tier 5, Single Scope Background Investigation) are conducted and that personnel hold appropriate clearance levels.\n\nPS-4 (Personnel Termination): Assessors examine termination procedures and verify that they include timely revocation of logical and physical access, return of organizational property, and completion of exit briefings. Assessors verify that access revocation is completed within the required timeframe after notification of termination and examine records of recent terminations to confirm compliance.\n\nPS-5 (Personnel Transfer): Assessors examine transfer procedures and verify that access privileges are reviewed and updated when personnel transfer between positions to ensure that previously granted access that is no longer required is revoked. Records of recent personnel transfers are examined for evidence that access reviews were conducted.\n\nPS-6 (Access Agreements): Assessors verify that all personnel with access to organizational information systems have signed appropriate access agreements (Rules of Behavior, acceptable use policies, nondisclosure agreements) before receiving access and that agreements are updated and re-signed at the required frequency.\n\nPS-8 (Personnel Sanctions): Assessors examine the organizational sanctions policy for formal sanctions for violations of established information security policies and procedures, and verify that the sanctions process has been applied consistently to documented violations.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "PS",
+        "sectionTitle": "PS Family Assessment — Personnel Security Procedures and Evidence",
+        "parentSection": "PS",
+        "parentTitle": "Personnel Security",
+        "controlRefs": ["PS-3", "PS-4", "PS-5", "PS-6", "PS-8"],
+        "families": ["PS"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["personnel-screening", "background-investigation", "termination", "transfer", "access-agreements", "rules-of-behavior", "nondisclosure-agreement", "sanctions", "clearance", "ssbi", "tier-5", "access-revocation", "exit-briefing", "access-review", "employment-life-cycle"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:PL:0",
+      "content": "Planning (PL) family assessment procedures under NIST SP 800-53A Rev 5 address the system security plan, the system privacy plan, rules of behavior for system users, and the system's concept of operations. The PL family is foundational to the RMF because the SSP serves as the primary planning document against which the system's security posture is assessed.\n\nPL-2 (System Security and Privacy Plans): Assessors examine the System Security Plan (SSP) and, where applicable, the System Privacy Plan (SPP) for completeness, accuracy, and currency. Each selected control must have an implementation statement that is specific, accurate, and sufficiently detailed for an assessor to verify the described implementation. Assessors compare implementation statements in the SSP against actual system configurations, processes, and mechanisms observed during the assessment to identify inconsistencies. The SSP must be reviewed and approved at the required frequency and must reflect the current state of the system, including any approved changes since the last review.\n\nPL-4 (Rules of Behavior): Assessors examine the rules of behavior document to verify it covers all required topics (acceptable use, prohibited activities, consequences for violations, reporting requirements) and is accessible to all system users. Records of user acknowledgment signatures are examined to verify that all current users have signed the rules of behavior within the required timeframe.\n\nPL-8 (Security and Privacy Architectures): Assessors examine the system's security architecture documentation to verify that it describes how security requirements are allocated to system components and that security architecture decisions are documented and approved by appropriate officials. Security architecture must be consistent with the organization's enterprise security architecture and must be updated to reflect approved system changes.\n\nPL-10 (Baseline Selection): Assessors verify that the appropriate NIST SP 800-53 control baseline was selected based on the system's security categorization and that any deviations from the baseline are documented and approved by the AO.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "PL",
+        "sectionTitle": "PL Family Assessment — Planning Procedures (SSP, Rules of Behavior)",
+        "parentSection": "PL",
+        "parentTitle": "Planning",
+        "controlRefs": ["PL-2", "PL-4", "PL-8", "PL-10"],
+        "families": ["PL"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["ssp", "system-security-plan", "system-privacy-plan", "rules-of-behavior", "security-architecture", "implementation-statements", "baseline-selection", "user-acknowledgment", "acceptable-use", "enterprise-security-architecture", "ssp-currency", "control-coverage", "planning-documents", "concept-of-operations", "ssp-accuracy"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:CP:0",
+      "content": "Contingency Planning (CP) family assessment procedures under NIST SP 800-53A Rev 5 address the organization's ability to sustain operations in the event of disruptions, disasters, or other contingencies. Effective contingency planning ensures that critical systems can be recovered within acceptable time frames.\n\nCP-2 (Contingency Plan): Assessors examine the Contingency Plan (CP) for completeness, currency, and approval. The CP must include: system roles and responsibilities; procedures for activating the contingency plan; alternate processing site information; recovery objectives (RTO, RPO); procedures for recovering system operations; and criteria for reconstituting the system. Assessors verify the CP is reviewed at the required frequency and updated after exercises or actual contingency events.\n\nCP-3 (Contingency Training): Assessors examine contingency training records to verify that all personnel with contingency responsibilities have received initial and refresher training and that training content covers their specific contingency roles.\n\nCP-4 (Contingency Plan Testing): Assessors examine contingency plan test records to verify that tests are conducted at the required frequency, include all key personnel and systems, and result in after-action reports that document lessons learned and required plan updates. For High impact systems, full operational tests (failover to alternate site) are required rather than tabletop exercises alone.\n\nCP-7 (Alternate Processing Site): Assessors verify that an alternate processing site has been identified, contracted, and configured with the capability to support system operations within the required RTO. The alternate site's security posture and physical security controls are assessed to verify equivalence with the primary site.\n\nCP-9 (System Backup): Assessors examine backup procedures and records to verify that backups are performed at the required frequency, that backup media is stored offsite, and that backup integrity is verified. Backup restoration tests are reviewed to verify that restoration can be completed within the RPO.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "CP",
+        "sectionTitle": "CP Family Assessment — Contingency Planning Procedures and Evidence",
+        "parentSection": "CP",
+        "parentTitle": "Contingency Planning",
+        "controlRefs": ["CP-2", "CP-3", "CP-4", "CP-7", "CP-9"],
+        "families": ["CP"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD", "MODERATE", "HIGH"],
+        "keywords": ["contingency-plan", "rto", "rpo", "alternate-processing-site", "backup", "failover", "restoration-test", "contingency-training", "contingency-testing", "tabletop-exercise", "after-action-report", "offsite-storage", "recovery-objectives", "high-impact", "reconstitution"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:MA:0",
+      "content": "Maintenance (MA) family assessment procedures under NIST SP 800-53A Rev 5 address the performance of maintenance on organizational information systems and the control of maintenance tools and personnel to prevent unauthorized access to system information during maintenance activities.\n\nMA-2 (Controlled Maintenance): Assessors examine maintenance procedures and a sample of maintenance records to verify that maintenance activities are scheduled, approved, and documented. Records must include the date, type of maintenance, the individual performing the maintenance, and any changes made to the system. Assessors verify that maintenance that may affect the system's security posture is reviewed by the system owner or ISSO before being performed.\n\nMA-3 (Maintenance Tools): Assessors examine maintenance tool controls to verify that tools are inspected before use to detect tampering or unauthorized modifications, that tools with wireless capabilities are controlled, and that only approved maintenance tools are used on organizational systems.\n\nMA-4 (Nonlocal Maintenance): Assessors verify that nonlocal maintenance (remote maintenance) uses encrypted communications channels, requires multifactor authentication, is terminated after the maintenance session is complete, and is logged for review. Remote maintenance sessions are examined in audit logs to verify they are properly documented and that sessions are not left open after maintenance is complete.\n\nMA-5 (Maintenance Personnel): Assessors examine maintenance personnel authorization records to verify that individuals performing maintenance are authorized and, where applicable, have appropriate clearances for maintenance on systems processing classified or sensitive information. Maintenance personnel without clearances who require access to cleared systems must be escorted and monitored by cleared personnel.\n\nMA-6 (Timely Maintenance): Assessors examine maintenance schedules and records to verify that maintenance is performed within the organization-defined timeframes to prevent system failures due to deferred maintenance.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "MA",
+        "sectionTitle": "MA Family Assessment — Maintenance Procedures and Evidence",
+        "parentSection": "MA",
+        "parentTitle": "Maintenance",
+        "controlRefs": ["MA-2", "MA-3", "MA-4", "MA-5", "MA-6"],
+        "families": ["MA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["maintenance", "controlled-maintenance", "maintenance-tools", "nonlocal-maintenance", "remote-maintenance", "maintenance-personnel", "clearance", "escorted-maintenance", "timely-maintenance", "maintenance-records", "encrypted-communications", "multifactor-authentication", "maintenance-schedule", "tamper-detection", "remote-session"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:POAM:0",
+      "content": "Plan of Action and Milestones (POA&M) integration with the assessment process is a critical element of the RMF and is addressed throughout NIST SP 800-53A Rev 5. The POA&M is not just an administrative artifact — it is the mechanism through which assessment findings are tracked from identification through closure and through which residual risks are communicated to the authorizing official.\n\nFinding disposition begins during the assessment (task A-5) when the assessor and system owner triage OTS findings to determine which will be remediated before authorization and which will be deferred to the POA&M. The triage process must be risk-based: findings that pose the greatest risk and that can feasibly be remediated within the assessment period should be addressed immediately. Findings that require significant resources, long lead-time procurement, or architectural changes are documented in the POA&M with specific, resource-backed remediation plans.\n\nEach POA&M entry must contain: a unique finding identifier; the finding title and description with sufficient specificity to understand the deficiency; the affected control ID; the weakness type (technical, operational, management); the risk rating (Critical, High, Moderate, Low); the responsible office and individual; the resources required for remediation; the scheduled completion date; an interim mitigation description if applicable; and the current status. Findings must be linked to specific assessment evidence in the SAR by finding identifier.\n\nWeakness management through the POA&M includes: tracking remediation progress against scheduled milestones; updating the POA&M when milestones are completed or delayed; reporting overdue items to the AO; closing POA&M items when remediation is verified by reassessment; and escalating persistent or high-risk items that remain open beyond acceptable timeframes. The POA&M is a living document that reflects the current state of the system's known vulnerabilities and planned remediation activities. A POA&M that is current, accurate, and actively managed is a strong indicator of an organization's security program maturity and is viewed favorably by authorizing officials and oversight bodies.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "POAM",
+        "sectionTitle": "POA&M Integration — Finding Disposition and Weakness Management",
+        "parentSection": "POAM",
+        "parentTitle": "POA&M Integration",
+        "controlRefs": ["CA-5", "PM-4", "RA-7"],
+        "families": ["CA", "PM", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["poam", "finding-disposition", "weakness-management", "remediation-tracking", "interim-mitigation", "finding-identifier", "weakness-type", "risk-rating", "scheduled-completion", "reassessment", "overdue", "escalation", "program-maturity", "residual-risk", "remediation-plans"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:ConMon:0",
+      "content": "Ongoing assessment and continuous monitoring procedures under NIST SP 800-53A Rev 5 extend the assessment activities beyond the initial authorization assessment to provide the authorizing official with timely information about the current security and privacy posture of information systems throughout the authorization period.\n\nContinuous monitoring assessment activities are defined in the system's continuous monitoring plan, which is developed in accordance with the organization's continuous monitoring strategy (RMF task P-7). The continuous monitoring plan specifies for each control: the monitoring method (automated scan, manual review, interview, test), the monitoring frequency, the thresholds for triggering escalation, and the responsible parties for monitoring execution and review.\n\nAutomated ongoing assessments leverage security automation technologies including: vulnerability scanners that execute on defined schedules and report results to a centralized management console; configuration compliance scanners (SCAP-validated tools) that compare running configurations against approved baselines and report deviations; security information and event management (SIEM) systems that provide real-time analysis of security events and alerts; and file integrity monitoring (FIM) tools that detect unauthorized modifications to system files and configurations. Automated tool results are reviewed by the ISSO at defined intervals and significant findings are reported to the AO per the continuous monitoring reporting schedule.\n\nManual ongoing assessment activities include: periodic review of audit records and security event logs; tabletop exercises to test incident response and contingency procedures; physical security walkthroughs; access control reviews; and documentation reviews. The frequency of manual assessments is determined by the control volatility (how often the control state changes), the criticality of the control, and the impact of control failure.\n\nContinuous monitoring findings that represent significant changes in the risk posture must be reported to the AO within defined timeframes. The AO reviews significant findings and makes risk-based decisions about whether the authorization remains appropriate, whether additional mitigations are required, or whether conditions on the authorization must be modified.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "ConMon",
+        "sectionTitle": "Ongoing Assessment and Continuous Monitoring Procedures",
+        "parentSection": "ConMon",
+        "parentTitle": "Continuous Monitoring",
+        "controlRefs": ["CA-7", "RA-7", "SI-4", "CM-6", "AU-6"],
+        "families": ["CA", "RA", "SI", "CM", "AU"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["FEDERAL", "RMF", "DOD"],
+        "keywords": ["continuous-monitoring", "ongoing-assessment", "scap", "siem", "fim", "vulnerability-scanner", "monitoring-frequency", "monitoring-plan", "control-volatility", "automated-assessment", "manual-assessment", "audit-records", "physical-walkthrough", "access-review", "significant-findings"]
+      }
+    },
+    {
+      "id": "nist-sp-800-53a-rev5:JSIG:0",
+      "content": "Special Access Program (SAP) system assessments under the Joint SAP Implementation Guide (JSIG) impose additional assessment requirements and considerations beyond those defined in NIST SP 800-53A Rev 5. When assessing SAP information systems, assessors must apply the JSIG as the authoritative source for SAP-specific control overlays, tailoring decisions, and assessment requirements, in addition to the base NIST SP 800-53A procedures.\n\nSAP Assessment Environment: SAP assessments are typically conducted in SCIF (Sensitive Compartmented Information Facility) or SAP Facility (SAPF) environments with strict access controls. Assessors must hold appropriate clearances and program access approvals (PAAs) before being granted access to SAP environments. Assessment activities involving SAP information must comply with handling, storage, and transmission requirements for the applicable classification level and compartment.\n\nJSIG-Specific Control Overlays: The JSIG defines a set of additional controls and control enhancements that are required for SAP systems beyond the NIST SP 800-53 High baseline. Assessors must assess all JSIG-required controls in addition to the controls in the system's approved baseline. JSIG-specific controls address areas such as two-person integrity for certain sensitive operations, enhanced physical security requirements for SAPFs, compartmentalization of access to program information, and additional personnel security requirements.\n\nSAP Assessment Documentation: Authorization packages for SAP systems follow the same basic structure as non-SAP systems (SSP, SAR, POA&M) but may be subject to additional handling requirements, marking, and access restrictions. The SAR for SAP systems must be marked appropriately and stored in approved facilities. Distribution of SAP authorization packages is controlled by the Program Security Officer (PSO).\n\nReciprocity in SAP Environments: The DoD SAP community employs reciprocity procedures that allow an ATO granted by one SAP Cognizant Security Authority (CSA) to be accepted by another CSA without requiring a full independent reassessment. Reciprocity requires that the accepting CSA review the authorization package and determine that the assessment methodology, control coverage, and risk determinations are acceptable. JSIG compliance is a prerequisite for reciprocity consideration within the DoD SAP community.",
+      "metadata": {
+        "docId": "nist-sp-800-53a-rev5",
+        "docTitle": "NIST SP 800-53A Rev 5 Assessing Security and Privacy Controls",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "JSIG",
+        "sectionTitle": "JSIG/SAP Assessment — Additional Considerations for SAP System Assessments",
+        "parentSection": "JSIG",
+        "parentTitle": "SAP Assessments",
+        "controlRefs": ["CA-2", "CA-6", "PE-3", "PS-3", "AC-3"],
+        "families": ["CA", "PE", "PS", "AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 25,
+        "applicability": ["DOD", "SAP", "RMF"],
+        "keywords": ["jsig", "sap", "scif", "sapf", "program-access-approval", "paa", "jsig-controls", "two-person-integrity", "compartmentalization", "program-security-officer", "pso", "reciprocity", "cognizant-security-authority", "csa", "sap-authorization"]
+      }
+    }
+  ]
+}

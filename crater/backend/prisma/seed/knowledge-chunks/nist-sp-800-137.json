@@ -1,0 +1,180 @@
+{
+  "docId": "nist-sp-800-137",
+  "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+  "docType": "NIST_SUPPLEMENT",
+  "version": "SP 800-137, September 2011",
+  "source": "https://doi.org/10.6028/NIST.SP.800-137",
+  "chunks": [
+    {
+      "id": "nist-sp-800-137:1.1:0",
+      "content": "NIST SP 800-137 defines Information Security Continuous Monitoring (ISCM) as maintaining ongoing awareness of information security, vulnerabilities, and threats to support organizational risk management decisions. ISCM shifts the focus from point-in-time compliance assessments to a sustained understanding of the security posture of an information system and its operating environment. Under the RMF, ISCM is the primary activity of the Monitor step (Step 6), directly implemented through control CA-7 (Continuous Monitoring).\n\nISCM serves as the foundation for ongoing authorization. Rather than requiring full security assessments every three years to maintain an ATO, ISCM enables authorizing officials to make ongoing, risk-informed authorization decisions based on a continuously refreshed view of system security posture. When an ISCM program is sufficiently mature, the AO may transition from time-driven reauthorization to event-driven authorization, where new authorization decisions are triggered by significant changes or risk threshold breaches rather than calendar dates.\n\nISCM differs fundamentally from periodic reauthorization in both scope and cadence. Traditional triennial reauthorizations assess all controls comprehensively at a single point in time. ISCM instead assesses different subsets of controls on varying schedules based on control volatility and organizational risk tolerance, providing more frequent visibility into high-priority controls while reducing overall assessment burden. ISCM also integrates automated data feeds, making security posture information available in near-real-time rather than in annual snapshots.\n\nThe relationship between ISCM and the broader RMF is established in NIST SP 800-137 Chapter 1. ISCM activities leverage the outputs of the Select, Implement, and Assess steps to establish the baseline against which ongoing monitoring is measured. The CA-7 control requires organizations to develop an ISCM strategy, establish monitoring frequencies, collect security-related information, analyze the information, report findings to appropriate officials, and initiate response actions as required. For SSP CA-7 implementation statements, document the ISCM strategy document reference, the monitoring frequencies for each control family, the automated tools used, the reporting cadence to the AO, and the procedures for escalating findings that exceed risk tolerance thresholds.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Overview of ISCM",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["CA-7", "CA-2", "RA-3"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["iscm", "continuous monitoring", "ongoing authorization", "ca-7", "monitor step", "rmf", "event-driven authorization", "time-driven reauthorization", "security posture", "risk management"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:iscm-strategy:1",
+      "content": "An effective ISCM strategy defines how the organization will maintain situational awareness of its security posture across all three ISCM tiers: the organizational level (Tier 1), the mission/business process level (Tier 2), and the information system level (Tier 3). The organizational ISCM strategy is developed by the CISO or equivalent senior security official and governs the ISCM programs of all subordinate mission/business owners and system owners.\n\nAt Tier 1 (organizational), the ISCM strategy establishes the organization's risk tolerance, identifies common controls subject to enterprise-level monitoring, defines reporting requirements up to senior leadership and the AO, and allocates resources for ISCM activities. The organizational ISCM strategy must be documented and reviewed annually.\n\nAt Tier 2 (mission/business process), ISCM addresses the specific risks associated with a mission area's information flows, dependencies on shared services, and the security controls governing mission-critical business processes. Mission owners identify the information systems supporting each mission and define acceptable risk thresholds for those systems based on mission criticality.\n\nAt Tier 3 (information system), the system-level ISCM strategy identifies which security controls will be monitored, the frequency and method of monitoring for each, the responsible roles, and how monitoring data will be collected, analyzed, and reported. SP 800-137 recommends categorizing controls by volatility — how likely they are to change over time — and assigning monitoring frequencies accordingly. High-volatility controls (e.g., patch levels, user accounts, configuration settings) require more frequent monitoring (weekly or monthly), while low-volatility controls (e.g., physical access policies, incident response plans) may be monitored annually.\n\nMonitoring frequencies are defined in relation to the organization's risk tolerance and the potential impact of control degradation. For DoD systems, the ISCM strategy must align with DoD Instruction 8510.01 and eMASS configuration for POA&M tracking and control assessment scheduling. The system-level ISCM strategy is typically documented as an annex to the SSP or as a stand-alone ISCM Plan referenced in the SSP's CA-7 implementation statement.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "iscm-strategy",
+        "sectionTitle": "Developing an ISCM Strategy",
+        "parentSection": "2",
+        "parentTitle": "ISCM Strategy",
+        "controlRefs": ["CA-7", "PM-6", "RA-3"],
+        "families": ["CA", "PM", "RA"],
+        "chunkIndex": 1,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["iscm strategy", "iscm tiers", "monitoring frequency", "control volatility", "organizational risk tolerance", "tier 1", "tier 2", "tier 3", "mission owner", "iscm plan", "emass"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:iscm-program:2",
+      "content": "Establishing an ISCM program requires clearly defined roles and responsibilities, documented procedures, and integration with the organization's security and risk management infrastructure. SP 800-137 identifies the following key roles in the ISCM program:\n\nThe Chief Information Security Officer (CISO) or equivalent official is responsible for developing, maintaining, and overseeing the organizational ISCM strategy and program. The CISO ensures that ISCM activities are resourced, that monitoring data flows to senior leadership, and that the program evolves to address new threats and technologies.\n\nThe System Owner is responsible for ensuring that an ISCM program is implemented at the system level, that monitoring activities are conducted according to the ISCM strategy, and that monitoring results are used to update the SSP, POA&M, and security posture reporting.\n\nThe Information System Security Officer (ISSO) is the operational lead for system-level ISCM. The ISSO configures and operates monitoring tools, reviews monitoring data, identifies anomalies or deviations from baselines, initiates response actions, and reports security status to the system owner and AO.\n\nThe Security Control Assessor (SCA) supports ISCM by conducting periodic ongoing assessments of selected controls according to the ISCM schedule. The SCA's ongoing assessment results feed into the SAR and inform the AO's continuous authorization decisions.\n\nISCM program documentation includes the ISCM strategy, monitoring procedures for each assessed control, tool configurations and data collection requirements, reporting templates, and criteria for escalation. SP 800-137 recommends that organizations document their selected controls for ongoing monitoring in an ISCM implementation plan or control monitoring spreadsheet, specifying for each control: the monitoring method (automated, manual, or hybrid), the monitoring frequency, the responsible role, and the data source.\n\nFor CA-7 implementation statements in the SSP, the documentation must specify: the organization's ISCM strategy document and review cycle, the subset of controls selected for ongoing monitoring and their frequencies, the automated tools used for monitoring (e.g., ACAS for vulnerability scanning, SCC for SCAP compliance, HBSS for endpoint monitoring), the reporting schedule to the AO, and the process for updating the POA&M based on monitoring findings.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "iscm-program",
+        "sectionTitle": "Establishing an ISCM Program",
+        "parentSection": "3",
+        "parentTitle": "ISCM Program",
+        "controlRefs": ["CA-7", "CA-5", "PM-6"],
+        "families": ["CA", "PM"],
+        "chunkIndex": 2,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["iscm program", "ciso", "system owner", "isso", "sca", "monitoring procedures", "iscm implementation plan", "control monitoring", "acas", "hbss", "scc", "ongoing monitoring"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:metrics:3",
+      "content": "ISCM metrics and measures provide the quantitative and qualitative data needed to assess the security posture of an information system and communicate that posture to authorizing officials and senior leadership. SP 800-137 identifies three categories of ISCM metrics: security status metrics, implementation metrics, and effectiveness metrics.\n\nSecurity status metrics describe the current state of security controls at a point in time, such as the percentage of systems with current patches applied, the number of open critical vulnerabilities, or the percentage of users with current security awareness training. Status metrics answer the question: what is the current security posture?\n\nImplementation metrics measure the degree to which security controls have been correctly implemented, such as the percentage of systems with STIG settings applied and compliant, the number of unauthorized software instances detected, or the ratio of open POA&M items to closed items. Implementation metrics answer the question: how completely are controls in place?\n\nEffectiveness metrics measure whether implemented controls are producing the desired security outcomes, such as the mean time to detect incidents, mean time to remediate vulnerabilities, or the rate of recurring findings across assessment cycles. Effectiveness metrics answer the question: are our controls working?\n\nAutomated data feeds are essential for scalable ISCM metrics. Organizations should maximize the use of tools that generate machine-readable security data (SCAP output, SIEM data, vulnerability scanner reports) and aggregate this data into dashboards accessible to ISSOs, system owners, and AOs. Security dashboards provide a consolidated view of system security posture, typically displaying open vulnerabilities by severity, POA&M status, compliance percentages by control family, and recent security events.\n\nTrend analysis compares current security metrics against historical baselines to identify degradation in security posture over time. An increase in open critical vulnerabilities, a declining patch compliance rate, or a rising rate of security incidents may indicate systematic issues requiring investigation. For DoD systems using eMASS, trend analysis can be performed on the historical assessment data and POA&M completion rates stored in the system. Reporting to the AO must include not only current status metrics but trend data demonstrating whether security posture is improving, stable, or degrading over time.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "metrics",
+        "sectionTitle": "ISCM Metrics and Measures",
+        "parentSection": "4",
+        "parentTitle": "ISCM Metrics",
+        "controlRefs": ["PM-6", "CA-7", "RA-5"],
+        "families": ["PM", "CA", "RA"],
+        "chunkIndex": 3,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["iscm metrics", "security status metrics", "implementation metrics", "effectiveness metrics", "dashboard", "trend analysis", "automated data feeds", "vulnerability metrics", "patch compliance", "emass", "security posture"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:automation:4",
+      "content": "Automation is essential for achieving the monitoring frequencies required by a mature ISCM program, particularly for large and complex systems. The Security Content Automation Protocol (SCAP) provides the technical framework for automated collection and assessment of configuration and vulnerability data.\n\nSCAP integrates multiple standards: OVAL (Open Vulnerability and Assessment Language) for expressing system configuration information and vulnerability state; XCCDF (Extensible Configuration Checklist Description Format) for expressing security checklists; CVE (Common Vulnerabilities and Exposures) as the standard dictionary of publicly known vulnerabilities; the National Vulnerability Database (NVD) as the repository of CVE-based vulnerability data enriched with CVSS scores; and CCE (Common Configuration Enumeration) for referencing configuration issues.\n\nVulnerability scanning tools use SCAP content to assess systems against known vulnerabilities and generate standardized reports that can be ingested by SIEMs and POA&M management tools. Organizations must maintain current SCAP content (NVD feeds, vendor advisories) to ensure that scanning identifies newly disclosed vulnerabilities. Scanning frequencies for DoD systems under DISA guidance require at minimum weekly vulnerability scanning for internet-facing systems and monthly scanning for internal systems.\n\nConfiguration compliance scanning automates assessment of systems against DISA STIGs or other approved configuration baselines. SCAP Compliance Checker (SCC) and Nessus Professional (via ACAS) are the primary tools used in DoD for SCAP-based compliance scanning. Scan results are expressed as XCCDF result files that identify compliant and non-compliant settings for each STIG rule, enabling automated tracking of configuration drift from the approved baseline.\n\nSIEM (Security Information and Event Management) systems aggregate log data from across the environment and apply correlation rules to identify security events requiring investigation. SIEM integration enables near-real-time detection of incidents, policy violations, and anomalous behavior. SIEM feeds should be integrated with the ISCM dashboard to provide a consolidated view of security posture.\n\nThe CDM (Continuous Diagnostics and Mitigation) program, operated by CISA for civilian Federal agencies, provides SCAP-compliant tools, dashboards, and integration services to automate ISCM at the agency and enterprise level. While CDM is primarily a civilian program, its architecture and tool set inform DoD ISCM implementations. Automated POA&M updates, where vulnerability scanner results are mapped to POA&M items and closure actions automatically update POA&M status, are a key CDM capability.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "automation",
+        "sectionTitle": "Automating ISCM",
+        "parentSection": "5",
+        "parentTitle": "Automation",
+        "controlRefs": ["CA-7", "RA-5", "CM-6", "SI-2", "SI-3"],
+        "families": ["CA", "RA", "CM", "SI"],
+        "chunkIndex": 4,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["scap", "oval", "xccdf", "cve", "nvd", "vulnerability scanning", "configuration compliance scanning", "siem", "cdm", "acas", "scc", "automated monitoring", "configuration drift"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:reporting:5",
+      "content": "ISCM reporting must provide authorizing officials and senior leadership with timely, accurate, and actionable information about system security posture. SP 800-137 recommends that reporting be tailored to the audience: detailed technical metrics for ISSOs and system owners, summary risk metrics for AOs, and strategic risk posture for senior leadership.\n\nThe ISCM reporting cadence to AOs must be defined in the ISCM strategy. At minimum, AOs should receive a monthly or quarterly security status report summarizing open vulnerabilities, POA&M status, significant security events, and changes to system risk posture. This report enables AOs to make informed ongoing authorization decisions without requiring a full assessment package.\n\nSignificant change notifications are required when changes to the system's security posture exceed defined risk thresholds. Triggers for significant change notifications include: discovery of a critical (CAT I or CVSS 9.0+) vulnerability with no available mitigation, a security incident that may have compromised system confidentiality or integrity, a major architectural change to the system, or a significant failure of a critical security control. Significant change notifications must be provided to the AO within defined timeframes (typically 24-72 hours for critical events) and may result in an interim authorization decision or temporary restriction of system operations.\n\nPOA&M updates are a key output of the ISCM process. As monitoring activities identify new findings, they are added to the POA&M with appropriate milestones and responsible parties. As mitigations are implemented, POA&M items are updated toward closure. The POA&M must be reviewed and approved by the system owner and AO at defined intervals (typically monthly) and submitted to DoD oversight systems (eMASS, VRAM) on the schedule prescribed by the AO.\n\nEscalation procedures define the chain of notification for critical findings. If a finding represents an immediate risk to the system or broader network, the ISSO escalates to the system owner and AO immediately. If the system owner determines that the risk warrants suspension of operations, the AO is notified and may issue a DATO. Reporting to CyberStat (for civilian agencies) or equivalent DoD oversight programs requires aggregated ISCM data on compliance posture, POA&M age, and vulnerability trends.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "reporting",
+        "sectionTitle": "Reporting and Response",
+        "parentSection": "6",
+        "parentTitle": "Reporting",
+        "controlRefs": ["CA-7", "CA-5", "IR-4", "IR-6"],
+        "families": ["CA", "IR"],
+        "chunkIndex": 5,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["iscm reporting", "security status report", "significant change notification", "poam updates", "escalation", "dato", "ao reporting", "cyberstat", "risk threshold", "emass"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:control-monitoring:6",
+      "content": "While ISCM encompasses all security controls, certain control families warrant particular attention in ongoing monitoring programs due to their volatility, their direct relationship to known threat vectors, or the availability of automated monitoring tools.\n\nAccess Control (AC): Privileged access reviews should be conducted at minimum monthly to verify that accounts with elevated privileges are still authorized, actively used, and appropriately scoped. Changes to access control lists, group memberships, and role assignments should be logged and reviewed. AC-2 (Account Management) monitoring includes reviewing accounts for timely deactivation after personnel changes, reviewing service and shared accounts for necessity, and verifying that multi-factor authentication requirements are being enforced.\n\nAudit and Accountability (AU): Log review is a critical continuous monitoring activity. AU-6 (Audit Record Review, Analysis, and Reporting) requires that audit records be reviewed on a defined frequency for indicators of malicious activity. Automated SIEM correlation rules can significantly reduce the manual burden of log review by flagging high-priority events for human attention. Log integrity must also be monitored to detect tampering.\n\nConfiguration Management (CM): Configuration drift — the deviation of system configurations from the approved baseline over time — must be detected through automated compliance scanning. CM monitoring includes weekly or monthly SCAP scans against STIG baselines, comparison of current configurations to the approved baseline documented in the SSP, and review of change logs to verify that all changes were authorized.\n\nIdentification and Authentication (IA): Credential audits verify that password policies are being enforced, that PKI certificates are current and not revoked, and that multi-factor authentication is functioning correctly. IA-5 (Authenticator Management) monitoring includes reviewing password age, verifying that default credentials have been changed, and scanning for unauthorized credential stores.\n\nSystem and Information Integrity (SI): Vulnerability and patch status monitoring is one of the highest-value ISCM activities. SI-2 (Flaw Remediation) monitoring involves weekly vulnerability scans, tracking of patch application against IAVA compliance timelines, and monitoring of anti-malware signature currency. SI-3 (Malicious Code Protection) monitoring verifies that endpoint protection agents are active, updated, and reporting into central management consoles.\n\nSystem and Communications Protection (SC): Boundary protection reviews verify that firewall rules, network ACLs, and CDS configurations remain consistent with the approved network diagram and access control policies. SC-7 monitoring includes reviewing firewall rule changes, verifying that unauthorized ports or services have not been opened, and confirming that cross-domain transfer logs are being reviewed.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "control-monitoring",
+        "sectionTitle": "Monitoring Specific Control Families",
+        "parentSection": "7",
+        "parentTitle": "Control Family Monitoring",
+        "controlRefs": ["CA-7", "AC-2", "AU-2", "AU-6", "CM-6", "IA-5", "SI-2", "SI-3", "SC-7"],
+        "families": ["CA", "AC", "AU", "CM", "IA", "SI", "SC"],
+        "chunkIndex": 6,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["privileged access review", "log review", "configuration drift", "credential audit", "patch status", "vulnerability monitoring", "boundary protection review", "continuous monitoring", "siem", "scap scanning"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:dod-iscm:7",
+      "content": "DoD ISCM implementation leverages a suite of enterprise tools and standards that implement SP 800-137 principles within the DoD information environment. Understanding these tools is essential for writing accurate ISCM-related SSP implementation statements for DoD systems.\n\nACAS (Assured Compliance Assessment Solution) is the DoD enterprise vulnerability scanning solution, based on Tenable Security Center and Nessus. ACAS performs automated vulnerability scanning against systems in scope, generates IAVM compliance reports, and produces SCAP-compatible output that can be ingested by eMASS. ACAS scans are used as primary evidence for RA-5 (Vulnerability Monitoring and Scanning) and as supporting evidence for SI-2 (Flaw Remediation). ACAS scan results are organized by IAV (Information Assurance Vulnerability) identifiers that map to DoD IAVM compliance requirements.\n\nHBSS (Host Based Security System) is the DoD enterprise endpoint security platform, based on McAfee ePolicy Orchestrator (ePO) and supporting modules. HBSS provides host-based intrusion prevention (HIPS), data loss prevention (DLP), rogue system detection, and centralized policy enforcement for all managed endpoints. HBSS is required on all DoD endpoints and is the primary implementation vehicle for SI-3 (Malicious Code Protection) and SI-4 (System Monitoring) in the DoD environment.\n\neMASS (Enterprise Mission Assurance Support Service) is the DoD authoritative RMF management tool. eMASS serves as the system of record for authorization packages, control assessment data, POA&M tracking, and ISCM scheduling. ISSOs enter assessment results, update POA&M items, and generate security status reports in eMASS. The eMASS workflow enforces the DoD RMF process and routes authorization packages to the appropriate AO.\n\nDISA STIGs serve as the approved configuration baselines for DoD systems. STIG compliance scanning using SCAP Compliance Checker (SCC) or Nessus ACAS plugins provides automated evidence for CM-6 (Configuration Settings) assessments. STIG findings are categorized as CAT I (critical), CAT II (high/medium), and CAT III (low), with CAT I findings typically requiring remediation within 30 days and serving as potential DATO triggers if unmitigated.\n\nVRAM (Vulnerability Remediation Asset Manager) tracks IAVM compliance for DoD systems and provides commanders and AOs with visibility into enterprise-wide vulnerability remediation status. VRAM integrates with eMASS and ACAS to provide a consolidated view of vulnerability management program health.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "dod-iscm",
+        "sectionTitle": "DoD ISCM Implementation",
+        "parentSection": "8",
+        "parentTitle": "DoD Implementation",
+        "controlRefs": ["CA-7", "RA-5", "SI-2", "SI-3", "CM-6", "AU-2"],
+        "families": ["CA", "RA", "SI", "CM", "AU"],
+        "chunkIndex": 7,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "RMF", "HIGH", "MODERATE", "NSS"],
+        "keywords": ["acas", "hbss", "emass", "disa stigs", "scc", "vram", "iavm", "cat i findings", "endpoint security", "vulnerability scanning", "dod iscm", "tenable", "mcafee epo"]
+      }
+    },
+    {
+      "id": "nist-sp-800-137:ongoing-authorization:8",
+      "content": "Ongoing authorization (OA) represents the transition from periodic, event-driven reauthorization to a continuous authorization model where the AO maintains an active view of system risk posture and makes rolling authorization decisions based on ISCM data. SP 800-137, in conjunction with NIST SP 800-37 Rev. 2, provides the framework for this transition.\n\nThe criteria for transitioning from time-driven to event-driven authorization include: a mature, functioning ISCM program with automated data collection and AO dashboard access; defined risk tolerance thresholds with escalation procedures; a demonstrated history of consistent ISCM execution; and AO confidence in the completeness and accuracy of ISCM reporting. Organizations should not attempt ongoing authorization before their ISCM program has matured sufficiently to provide reliable, comprehensive security posture visibility.\n\nRisk tolerance thresholds define the boundaries within which ongoing authorization operates. The AO and system owner collaboratively define maximum acceptable levels for metrics such as: number of open critical vulnerabilities, percentage of systems with current patches, POA&M items exceeding milestone dates, and detection of unauthorized configuration changes. When a threshold is exceeded, the ISSO must notify the AO, who then decides whether to restrict operations, accept the temporary increase in risk, or require immediate remediation before normal operations can continue.\n\nThe AO dashboard for ongoing authorization must provide at minimum: current open vulnerability counts by severity, POA&M status summary (on track, at risk, overdue), recent significant security events, compliance posture by STIG family, and trend data for each of these metrics. The dashboard must be accessible to the AO and AODR in near-real-time, with data refreshed at least daily from automated ISCM tools.\n\nFormal authorization versus ongoing authorization represents a spectrum. Even under ongoing authorization, the AO must review and re-sign the authorization decision at defined intervals (typically every three years at maximum, per DoD policy) or when significant changes occur that materially alter the system's risk posture. Conditions requiring full reauthorization include: major architectural changes crossing authorization boundaries, changes to system categorization, changes to applicable security control baselines, discovery of pervasive security failures across multiple control families, or a significant incident that compromises system integrity. The SSP's CA-7 implementation statement must document which model (time-driven or ongoing) is in use, the dashboard and reporting setup, and the threshold conditions requiring escalation to the AO.",
+      "metadata": {
+        "docId": "nist-sp-800-137",
+        "docTitle": "NIST SP 800-137 — Information Security Continuous Monitoring for Federal Information Systems and Organizations",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "ongoing-authorization",
+        "sectionTitle": "Ongoing Authorization Under ISCM",
+        "parentSection": "9",
+        "parentTitle": "Ongoing Authorization",
+        "controlRefs": ["CA-7", "CA-6", "RA-3"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 8,
+        "chunkTotal": 9,
+        "applicability": ["DOD", "FEDERAL", "RMF", "HIGH", "MODERATE", "LOW", "NSS", "IC"],
+        "keywords": ["ongoing authorization", "event-driven authorization", "time-driven authorization", "risk tolerance threshold", "ao dashboard", "iscm maturity", "reauthorization triggers", "authorization decision", "full reauthorization", "ca-7"]
+      }
+    }
+  ]
+}

@@ -5,7 +5,7 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -65,10 +65,10 @@ services:
   crater-api:
     build:
       context: .
-      dockerfile: emass-app/server/Dockerfile
+      dockerfile: crater/server/Dockerfile
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "${CRATER_API_PORT:-3001}:3001"
     environment:
       PORT: 3001
       NODE_ENV: production
@@ -85,11 +85,11 @@ services:
   # ── CRATER UI — eMASS RMF frontend via nginx (port 3003) ───────────────────
   crater-ui:
     build:
-      context: ./emass-app
+      context: ./crater
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "3003:3003"
+      - "${CRATER_UI_PORT:-3003}:3003"
     depends_on:
       - crater-api
 

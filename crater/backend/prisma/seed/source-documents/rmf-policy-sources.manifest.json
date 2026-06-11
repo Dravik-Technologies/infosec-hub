@@ -1,0 +1,42 @@
+[
+  {
+    "docId": "dod-8500-01",
+    "docTitle": "DoDI 8500.01 Cybersecurity",
+    "docType": "DOD_POLICY",
+    "source": "https://nsarchive.gwu.edu/sites/default/files/documents/2692131/Document-23.pdf",
+    "sourceFile": "backend/prisma/seed/source-documents/dod-8500-01.pdf",
+    "textFile": "backend/prisma/seed/source-documents/dod-8500-01.txt",
+    "chunkFile": "backend/prisma/seed/knowledge-chunks/dod-8500-01.json",
+    "chunkCount": 54
+  },
+  {
+    "docId": "dod-8510-01",
+    "docTitle": "DoDI 8510.01 Risk Management Framework for DoD Systems",
+    "docType": "DOD_POLICY",
+    "source": "https://rmf.org/wp-content/uploads/2022/07/851001p-1.pdf",
+    "sourceFile": "backend/prisma/seed/source-documents/dod-8510-01.pdf",
+    "textFile": "backend/prisma/seed/source-documents/dod-8510-01.txt",
+    "chunkFile": "backend/prisma/seed/knowledge-chunks/dod-8510-01.json",
+    "chunkCount": 30
+  },
+  {
+    "docId": "jsig-2016",
+    "docTitle": "Joint Special Access Program (SAP) Implementation Guide (JSIG), 11 April 2016",
+    "docType": "JSIG",
+    "source": "https://www.dcsa.mil/Portals/69/documents/io/rmf/JSIG_2016April11_Final_%2853Rev4%29.pdf",
+    "sourceFile": "backend/prisma/seed/source-documents/jsig-2016.pdf",
+    "textFile": "backend/prisma/seed/source-documents/jsig-2016.txt",
+    "chunkFile": "backend/prisma/seed/knowledge-chunks/jsig-2016.json",
+    "chunkCount": 555
+  },
+  {
+    "docId": "dcsa-daapm-v2-2",
+    "docTitle": "DCSA Assessment and Authorization Process Manual Version 2.2",
+    "docType": "DAAG",
+    "source": "https://www.dcsa.mil/Portals/128/Documents/IS/DCSA%20Assessment%20and%20Authorization%20Process%20Manual%20Version%202.2.pdf",
+    "sourceFile": "backend/prisma/seed/source-documents/dcsa-daapm-v2.2.pdf",
+    "textFile": "backend/prisma/seed/source-documents/dcsa-daapm-v2-2.txt",
+    "chunkFile": "backend/prisma/seed/knowledge-chunks/dcsa-daapm-v2-2.json",
+    "chunkCount": 149
+  }
+]

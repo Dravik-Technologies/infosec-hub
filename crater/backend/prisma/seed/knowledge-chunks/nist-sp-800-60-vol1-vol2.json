@@ -1,0 +1,237 @@
+{
+  "docId": "nist-sp-800-60",
+  "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+  "docType": "NIST_SUPPLEMENT",
+  "version": "Rev 1, August 2008",
+  "source": "https://doi.org/10.6028/NIST.SP.800-60v1r1",
+  "chunks": [
+    {
+      "id": "nist-sp-800-60:1.1:0",
+      "content": "NIST SP 800-60 provides guidance to federal agencies for mapping types of information and information systems to security categories as defined by FIPS Publication 199. The security category of an information type is determined by the potential impact of a loss of confidentiality, integrity, or availability on organizational operations, organizational assets, individuals, other organizations, and the Nation. Security categories of information types form the basis for determining the security category of the information system that processes those information types.\n\nPurpose: The purpose of this guideline is to assist federal agencies in making security categorization decisions for their information and information systems. Proper categorization is foundational to the RMF process — errors in categorization result in either over-protection (wasted resources) or under-protection (unacceptable risk). This guideline provides provisional assignments of security categories and impact levels for standard federal information types, which agencies may adjust based on local mission requirements and operational context.\n\nScope: NIST SP 800-60 applies to all federal information systems covered by FISMA. Volume 1 describes the methodology for mapping information types to security categories. Volume 2 provides the provisional security impact level assignments for information types organized by mission-based categories and management and support functions. Agencies must review the provisional assignments and adjust them as necessary to reflect the actual impact of loss on their specific mission and operational context.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "1.1",
+        "sectionTitle": "Purpose and Scope",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["RA-2"],
+        "families": ["RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "RMF", "FEDERAL", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["categorization", "information", "types", "security", "categories", "fips", "199", "impact", "levels", "mapping", "provisional", "confidentiality", "integrity", "availability", "mission"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:2.1:0",
+      "content": "Security Categorization Methodology. The process for categorizing information and information systems involves three major activities: (1) identifying the information types associated with the system; (2) selecting the provisional security impact levels for the identified information types from the tables in Volume 2; and (3) reviewing the provisional impact levels and adjusting them as necessary to reflect organizational mission requirements and the operational environment.\n\nIdentifying Information Types: Information types should be identified using a structured approach that examines the mission functions and business operations supported by the system. Organizations should: (a) review the mission and business functions supported by the system; (b) identify the distinct types of information processed, stored, or transmitted; (c) map each information type to the applicable category in Volume 2; and (d) document the information types in the SSP or equivalent documentation. Multiple information types may be applicable to a single system.\n\nProvisional Security Impact Levels: Volume 2 provides provisional impact level assignments for confidentiality, integrity, and availability for each information type. These provisional assignments represent a consensus view of the typical sensitivity of each information type for average federal systems. Agencies must review the provisional assignments in the context of their specific missions — a type designated Moderate provisionally may require HIGH categorization in a particular mission context if the consequences of loss or corruption would be significantly greater than average.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.1",
+        "sectionTitle": "Security Categorization Methodology",
+        "parentSection": "2",
+        "parentTitle": "Categorization Methodology",
+        "controlRefs": ["RA-2"],
+        "families": ["RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "RMF", "FEDERAL", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["methodology", "provisional", "impact", "levels", "information", "types", "review", "adjust", "mission", "confidentiality", "integrity", "availability", "identify", "mapping", "operational"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:2.2:0",
+      "content": "Adjusting Provisional Impact Levels. Organizations must review the provisional security impact levels in Volume 2 and adjust them upward or downward based on the specific circumstances of their mission and operating environment. Adjustments must be documented with justification.\n\nFactors that may justify increasing an impact level above the provisional assignment include: (1) the information type is particularly sensitive given the mission context — for example, law enforcement intelligence that has provisional LOW confidentiality may be HIGH for a particular agency; (2) the system processes a large aggregation of information types, making the aggregate impact higher than any individual type; (3) the system is critical infrastructure whose loss of availability would have national-level consequences; (4) specific statutory, regulatory, or contractual requirements mandate a higher protection level.\n\nFactors that may justify decreasing an impact level below the provisional assignment include: (1) the information is already publicly available and loss of confidentiality would have minimal impact; (2) the system processes only a subset of the information type with lower sensitivity; (3) the information type is not critical to agency mission operations.\n\nThe High Water Mark Rule: The security category of an information system is determined by the highest impact level across all information types and all three security objectives. For example, if a system processes information types with Moderate confidentiality, High integrity, and Moderate availability, the overall system categorization is SC = {(C, M), (I, H), (A, M)}, and the overall impact level is HIGH (the high water mark). This high water mark drives the control baseline selection.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "2.2",
+        "sectionTitle": "Adjusting Provisional Impact Levels and High Water Mark",
+        "parentSection": "2",
+        "parentTitle": "Categorization Methodology",
+        "controlRefs": ["RA-2"],
+        "families": ["RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "RMF", "FEDERAL", "LOW", "MODERATE", "HIGH"],
+        "keywords": ["adjust", "provisional", "high", "water", "mark", "aggregate", "justification", "confidentiality", "integrity", "availability", "impact", "categorization", "baseline", "statutory", "critical"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:defense:0",
+      "content": "Defense and Intelligence Information Types (Volume 2 — Mission-Based). The following information types relate to national defense and intelligence activities and are commonly found in DoD, IC, and cleared contractor systems.\n\nDefense and National Security: Information supporting military operations, force readiness, force protection, command and control, and national defense planning. Provisional security categories: Confidentiality — HIGH (loss could enable adversaries to counter military operations or compromise national security); Integrity — HIGH (erroneous information could result in incorrect military decisions with potentially catastrophic consequences); Availability — MODERATE to HIGH (inability to access defense information could impair military readiness and response capabilities).\n\nIntelligence: Information produced by intelligence community members related to foreign governments, organizations, persons, and activities. Provisional categories: C — HIGH; I — HIGH; A — MODERATE to HIGH. Intelligence information is typically classified and subject to additional compartmentation controls beyond standard NIST 800-53 controls.\n\nContraband and Controlled Substance Information: Information related to interdiction and investigation of contraband. Provisional categories: C — MODERATE; I — MODERATE; A — LOW.\n\nLaw Enforcement Criminal Investigation Information: Investigative records, case information, and evidence. Provisional categories: C — HIGH (disclosure could compromise investigations or endanger informants); I — MODERATE to HIGH; A — MODERATE.\n\nBorder and Transportation Security: Information supporting border control, transportation security screening, and critical infrastructure protection. Provisional categories: C — MODERATE to HIGH; I — HIGH; A — MODERATE.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "defense",
+        "sectionTitle": "Defense and Intelligence Information Types",
+        "parentSection": "vol2",
+        "parentTitle": "Volume 2 Information Type Catalog",
+        "controlRefs": ["RA-2", "AC-4", "SC-28"],
+        "families": ["RA", "AC", "SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "HIGH", "NSS", "SAP"],
+        "keywords": ["defense", "intelligence", "national", "security", "military", "operations", "classified", "high", "confidentiality", "integrity", "availability", "law", "enforcement", "border", "transportation"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:financial:0",
+      "content": "Financial and Administrative Information Types (Volume 2). Financial management and administrative information types are commonly found across all federal agencies.\n\nBudget Formulation: Information supporting development of agency budget requests. Provisional categories: C — LOW; I — MODERATE (inaccurate budget data could result in misallocation of resources); A — MODERATE.\n\nAccountability and Auditing: Financial audit records, accounting records, and internal control documentation. Provisional categories: C — LOW; I — HIGH (modification of audit records could enable fraud and undermine accountability); A — LOW to MODERATE.\n\nProcurement and Acquisition: Contract award data, solicitations, source selection information. Provisional categories: C — MODERATE (pre-award source selection information requires protection); I — MODERATE; A — LOW.\n\nHuman Resources and Personnel: Personnel records, performance evaluations, benefits information, payroll data. Provisional categories: C — MODERATE (personnel records contain PII requiring protection); I — MODERATE; A — LOW. When personnel records include security clearance information or sensitive investigative data, the confidentiality level may require HIGH categorization.\n\nHealth and Benefits: Medical records, health information, HIPAA-covered data. Provisional categories: C — HIGH (loss of health information privacy constitutes significant harm to individuals); I — MODERATE to HIGH; A — LOW to MODERATE. Systems processing PHI under HIPAA must comply with both FISMA and HIPAA requirements.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "financial",
+        "sectionTitle": "Financial and Administrative Information Types",
+        "parentSection": "vol2",
+        "parentTitle": "Volume 2 Information Type Catalog",
+        "controlRefs": ["RA-2", "AC-3", "AU-9"],
+        "families": ["RA", "AC", "AU"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "RMF", "FEDERAL", "MODERATE"],
+        "keywords": ["financial", "budget", "procurement", "acquisition", "personnel", "human", "resources", "health", "benefits", "pii", "hipaa", "audit", "accounting", "payroll", "moderate"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:it-management:0",
+      "content": "Information Technology Management Information Types (Volume 2). IT management information types encompass the information produced by and used to manage information systems and technology infrastructure.\n\nSystem Development: Requirements documentation, design specifications, source code, test plans. Provisional categories: C — MODERATE (exposure of system design could enable targeted attacks); I — MODERATE; A — LOW.\n\nLifecycle/Change Management: Change request records, configuration management documentation, patch management logs. Provisional categories: C — LOW to MODERATE; I — MODERATE (unauthorized changes to change records could enable introduction of malicious code); A — LOW.\n\nSystem Maintenance: Maintenance records, diagnostic information, maintenance credentials. Provisional categories: C — MODERATE (maintenance access information could enable unauthorized access); I — MODERATE; A — LOW.\n\nIT Infrastructure: Network topology information, configuration data, vulnerability information, system inventories. Provisional categories: C — MODERATE to HIGH (network topology information is high value for attackers; vulnerability data requires especially careful protection); I — MODERATE; A — MODERATE.\n\nKey Management Information: Cryptographic keys, certificates, PKI infrastructure data. Provisional categories: C — HIGH (compromise of key material could undermine all cryptographic protections); I — HIGH (modification of key material could make encrypted data inaccessible or enable decryption of sensitive data); A — MODERATE to HIGH.\n\nSystem Access: Access control lists, account credentials, role assignments, authentication data. Provisional categories: C — HIGH; I — HIGH; A — MODERATE.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "it-management",
+        "sectionTitle": "Information Technology Management Information Types",
+        "parentSection": "vol2",
+        "parentTitle": "Volume 2 Information Type Catalog",
+        "controlRefs": ["RA-2", "CM-8", "IA-5", "SC-12"],
+        "families": ["RA", "CM", "IA", "SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "RMF", "FEDERAL"],
+        "keywords": ["information", "technology", "management", "system", "development", "configuration", "maintenance", "infrastructure", "key", "management", "cryptographic", "access", "control", "credentials", "vulnerability"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:cui:0",
+      "content": "Controlled Unclassified Information (CUI) Categorization Considerations. Controlled Unclassified Information (CUI) is government-created or government-controlled information that requires safeguarding or dissemination controls in accordance with applicable laws, regulations, and government-wide policies. CUI includes information categories such as: Privacy (PII, PHI), Law Enforcement Sensitive, Legal Privilege, Proprietary Business Information, and numerous other categories.\n\nCUI categorization and information type assignment: CUI does not automatically correspond to a single information type in NIST SP 800-60. Rather, organizations must: (1) identify the CUI categories applicable to each information type in the system; (2) review the CUI Registry at archives.gov/cui for the applicable law, regulation, or government policy governing each category; (3) determine whether the applicable authority requires confidentiality protections beyond the NIST 800-60 provisional assignment; and (4) adjust the security category as necessary.\n\nTypically, CUI requires at minimum MODERATE categorization for confidentiality. CUI categories that are particularly sensitive (CUI//SP-INTEL, CUI//SP-PRVCY for sensitive law enforcement intelligence, CUI related to critical infrastructure) may warrant HIGH confidentiality categorization. For cleared contractor systems, the DCSA DAAG provides additional guidance on categorizing systems that process CUI alongside classified information.\n\nNIST SP 800-171 provides the security requirements for protecting CUI in nonfederal systems, and the requirements map to NIST SP 800-53 controls. CUI handling requirements under 32 CFR Part 2002 (CUI Rule) must be reflected in the information type assignments and resulting security categorization.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "cui",
+        "sectionTitle": "Controlled Unclassified Information Categorization",
+        "parentSection": "2",
+        "parentTitle": "Categorization Methodology",
+        "controlRefs": ["RA-2", "AC-3", "SC-28", "MP-2"],
+        "families": ["RA", "AC", "SC", "MP"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["CUI", "DOD", "MODERATE", "HIGH"],
+        "keywords": ["cui", "controlled", "unclassified", "information", "registry", "pii", "privacy", "law", "enforcement", "sensitive", "confidentiality", "moderate", "high", "nist", "800-171"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:aggregation:0",
+      "content": "Aggregation and the System-Level Security Category. The security category of an information system is not merely the sum of its individual information type categories. Aggregation of multiple information types can increase the overall sensitivity of a system beyond what any single information type would indicate.\n\nAggregation concerns: (1) Combining individually low-sensitivity data elements can produce high-sensitivity aggregate information — for example, combining name, address, date of birth, and financial account numbers creates an identity theft risk greater than any individual element; (2) A system that aggregates large volumes of data from many sources may present higher risk than a system processing the same data types in smaller quantities; (3) Pattern-of-life information derived from combining location, communication, and activity data may be highly sensitive even if individual data points are unclassified.\n\nFor DoD and IC systems, aggregation is a particularly important consideration. Large databases that aggregate information about personnel, facilities, operations, or capabilities may require higher categorization than the provisional assignments for individual information types would suggest. System owners must document aggregation concerns in the SSP and in the security categorization justification.\n\nThe security categorization review must address: (1) what aggregate information can be derived by combining the information types in the system; (2) whether the aggregate sensitivity exceeds any individual information type category; (3) whether the system serves as a single point of failure for mission-critical information access; and (4) whether the loss of availability would prevent access to aggregated critical information needed for time-sensitive operations.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "aggregation",
+        "sectionTitle": "Aggregation and System-Level Security Category",
+        "parentSection": "2",
+        "parentTitle": "Categorization Methodology",
+        "controlRefs": ["RA-2", "RA-3", "SC-28", "AC-4"],
+        "families": ["RA", "SC", "AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "RMF", "FEDERAL", "HIGH"],
+        "keywords": ["aggregation", "system", "category", "combining", "sensitivity", "pattern", "life", "identity", "theft", "aggregate", "failure", "mission", "critical", "availability", "operations"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:health:0",
+      "content": "Health Information Types and HIPAA Considerations. Health information is among the most sensitive categories in NIST SP 800-60 Volume 2, reflecting the high potential for harm to individuals if health information is improperly disclosed.\n\nIndividual Health Information: Identifiable health records, medical histories, diagnoses, treatment plans, and prescription information. Provisional categories: C — HIGH; I — MODERATE to HIGH (modification of health records could result in medical errors with potentially life-threatening consequences); A — MODERATE.\n\nPublic Health and Monitoring: Population health statistics, disease surveillance, public health alert information. Provisional categories: C — LOW to MODERATE; I — MODERATE to HIGH; A — MODERATE.\n\nHealth Care Administration: Claims processing, benefits eligibility, insurance information. Provisional categories: C — MODERATE; I — MODERATE; A — LOW to MODERATE.\n\nHIPAA requirements: Systems that process protected health information (PHI) under HIPAA must comply with the HIPAA Security Rule (45 CFR Part 164, Subpart C) in addition to FISMA and RMF requirements. The HIPAA Security Rule requires administrative safeguards, physical safeguards, and technical safeguards for electronic PHI (ePHI). The NIST SP 800-53 control set, when properly implemented, satisfies the HIPAA Security Rule safeguards requirements. However, organizations must document their HIPAA compliance analysis and ensure that the security controls selected adequately address HIPAA-specific requirements such as audit controls (AU), encryption of ePHI at rest and in transit (SC-8, SC-28), and minimum necessary access (AC-3).",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "health",
+        "sectionTitle": "Health Information Types and HIPAA",
+        "parentSection": "vol2",
+        "parentTitle": "Volume 2 Information Type Catalog",
+        "controlRefs": ["RA-2", "AC-3", "AU-2", "SC-8", "SC-28"],
+        "families": ["RA", "AC", "AU", "SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "FEDERAL", "HIGH"],
+        "keywords": ["health", "hipaa", "phi", "ephi", "medical", "health", "records", "diagnoses", "treatment", "privacy", "administrative", "physical", "technical", "safeguards", "encryption"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:critical-infrastructure:0",
+      "content": "Critical Infrastructure and Key Resources Information Types. Information types associated with critical infrastructure receive special consideration in NIST SP 800-60 because loss or compromise can have cascading national consequences.\n\nEnergy: Information related to electric power generation, transmission, and distribution; oil and gas; and nuclear power. Provisional categories: C — MODERATE to HIGH; I — HIGH (modification of operational data could result in physical damage to infrastructure and harm to the public); A — HIGH (loss of availability could trigger cascading failures across interconnected infrastructure sectors).\n\nTransportation Systems: Air traffic control, railroad, highway, pipeline, and maritime transportation information. Provisional categories: C — MODERATE; I — HIGH; A — HIGH.\n\nCommunications: Telecommunications infrastructure, internet infrastructure, satellite systems. Provisional categories: C — MODERATE to HIGH; I — HIGH; A — HIGH.\n\nWater and Wastewater: Water treatment and distribution systems control information. Provisional categories: C — MODERATE to HIGH; I — HIGH (tampering with water treatment controls could endanger public health); A — HIGH.\n\nDefense Industrial Base: Information about defense contractors, production capacity, supply chain, and technology. Provisional categories: C — HIGH (disclosure of defense production information could benefit foreign adversaries); I — MODERATE; A — MODERATE.\n\nFor systems involving critical infrastructure, organizations should reference NIST Cybersecurity Framework (CSF) alongside NIST SP 800-53 and consider sector-specific security requirements. The Presidential Policy Directive 21 (PPD-21) and Executive Order 13636 establish baseline requirements for critical infrastructure cybersecurity.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "critical-infrastructure",
+        "sectionTitle": "Critical Infrastructure Information Types",
+        "parentSection": "vol2",
+        "parentTitle": "Volume 2 Information Type Catalog",
+        "controlRefs": ["RA-2", "CP-2", "SC-7"],
+        "families": ["RA", "CP", "SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "FEDERAL", "HIGH"],
+        "keywords": ["critical", "infrastructure", "energy", "transportation", "communications", "water", "defense", "industrial", "base", "cascading", "high", "availability", "integrity", "national", "consequences"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:sap-sci:0",
+      "content": "Special Access Program and SCI Information Categorization. Systems processing Special Access Program (SAP) or Sensitive Compartmented Information (SCI) information require categorization above the standard NIST SP 800-60 provisional assignments. Classification adds a layer of protection requirements on top of the NIST 800-53 control baseline.\n\nFor classified systems: (1) The impact level designation under FIPS 199 applies to the unclassified portion of the system's security requirements; (2) Classified information handling requirements are governed by Executive Order 13526, DCID 6/3 (for SCI), and the JSIG (for SAP systems); (3) Systems processing classified information at any level are treated as HIGH impact at minimum for all three security objectives under DoD policy; (4) Additional JSIG or IC Policy overlay controls supplement the NIST 800-53 High baseline.\n\nSAP systems under JSIG: The Joint SAP Implementation Guide (JSIG) Rev 2 provides the authoritative guidance for securing DoD SAP systems. JSIG applies a specialized overlay on top of the NIST SP 800-53 High baseline, adding SAP-specific requirements for: access control (PAR-based access, need-to-know enforcement, access roster maintenance), audit (non-repudiation mandatory, privileged user audit, 3-year retention), media protection (chain-of-custody, compartment-aware sanitization), and incident response (PSO notification within 1 hour).\n\nSCI systems: Intelligence Community Directive 503 (ICD 503) governs IT systems for IC elements. ICD 503 uses a similar risk management framework to NIST 800-37 but with IC-specific roles, processes, and oversight requirements. Categorization for SCI systems must account for the compartment-level sensitivity of the information processed.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "sap-sci",
+        "sectionTitle": "SAP and SCI Information Categorization",
+        "parentSection": "2",
+        "parentTitle": "Categorization Methodology",
+        "controlRefs": ["RA-2", "AC-3", "AU-10", "MP-6"],
+        "families": ["RA", "AC", "AU", "MP"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["SAP", "SCI", "HIGH", "NSS"],
+        "keywords": ["sap", "sci", "special", "access", "program", "classified", "jsig", "icd", "503", "compartment", "need-to-know", "par", "clearance", "high", "baseline"]
+      }
+    },
+    {
+      "id": "nist-sp-800-60:documentation:0",
+      "content": "Documenting the Security Categorization. The security categorization and its justification must be documented in the System Security Plan (SSP) and approved by the Authorizing Official or designated representative before proceeding with control selection.\n\nRequired documentation elements: (1) List of identified information types with their provisional and adjusted impact levels; (2) Justification for any adjustments to provisional impact levels — each adjustment must be documented with a rationale that references the specific mission context or operational requirement that drives the change; (3) The resulting security category of the system expressed in FIPS 199 format: SC = {(confidentiality, impact), (integrity, impact), (availability, impact)}; (4) The overall impact level (the high water mark); and (5) The signature or approval of the Authorizing Official or designated representative confirming the categorization is accepted.\n\nFor DoD systems, the security categorization must be recorded in eMASS and approved by the Authorizing Official. Categorization changes require AO approval and may require reassessment of security controls if the change results in a different baseline.\n\nSpecial categorization considerations for DoD systems: (1) Systems on the Non-Classified IP Router Network (NIPRNet) must be categorized using CNSSI 1253 for NSS or FIPS 199 for non-NSS; (2) SECRET Internet Protocol Router Network (SIPRNet) systems are typically categorized as HIGH; (3) Systems supporting warfighting or command-and-control functions may require HIGH availability regardless of information type provisional assignments; (4) DCSA-cognizant contractor systems follow DCSA DAAG categorization guidance.",
+      "metadata": {
+        "docId": "nist-sp-800-60",
+        "docTitle": "NIST SP 800-60 Vol 1 and Vol 2 Guide for Mapping Types of Information and Information Systems to Security Categories",
+        "docType": "NIST_SUPPLEMENT",
+        "section": "documentation",
+        "sectionTitle": "Documenting the Security Categorization",
+        "parentSection": "2",
+        "parentTitle": "Categorization Methodology",
+        "controlRefs": ["RA-2", "PL-2", "CA-6"],
+        "families": ["RA", "PL", "CA"],
+        "chunkIndex": 0,
+        "chunkTotal": 22,
+        "applicability": ["DOD", "RMF", "FEDERAL"],
+        "keywords": ["documentation", "categorization", "justification", "ssp", "emass", "approval", "authorizing", "official", "niprnet", "siprnet", "cnssi", "1253", "adjustment", "high", "water", "mark"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,180 @@
+{
+  "docId": "nispom-32-cfr-117",
+  "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+  "docType": "DOD_POLICY",
+  "version": "32 CFR Part 117, effective February 2021",
+  "source": "https://www.ecfr.gov/current/title-32/subtitle-A/chapter-I/subchapter-D/part-117",
+  "chunks": [
+    {
+      "id": "nispom-32-cfr-117:1:0",
+      "content": "32 CFR Part 117, National Industrial Security Program Operating Manual (NISPOM), establishes the requirements for the protection of classified information released to or developed by contractors, licensees, grantees, and certificate holders in connection with their performance on classified contracts. The NISPOM is the authoritative document governing the National Industrial Security Program (NISP) for cleared defense contractors and other cleared facilities under the cognizance of the Defense Counterintelligence and Security Agency (DCSA).\n\nApplicability: The NISPOM applies to: (1) contractors, including subcontractors, that have been granted a facility security clearance (FCL) by a Cognizant Security Agency (CSA); (2) contractors that have custody of classified information; (3) contractors that have access to, or use, classified information in connection with a classified contract. The NISPOM does not apply to contractors that solely use facility clearances for physical access to government facilities without possessing classified information.\n\nCognizant Security Agencies (CSAs): The CSAs responsible for implementing the NISP include: DCSA (formerly DSA/DSS) for most cleared defense industry; the Director of National Intelligence (DNI) for elements of the intelligence community; and the Department of Energy (DOE) for nuclear-related cleared contractors. DCSA is the largest CSA and is responsible for assessing and authorizing contractor information systems under its cognizance.\n\nKey obligations under NISPOM: Contractors must: (1) appoint a Facility Security Officer (FSO) who is a U.S. citizen employee responsible for managing the facility's security program; (2) maintain a written security plan describing how classified information will be protected; (3) implement personnel security procedures including clearance verification, security briefings, and debriefings; (4) protect classified information in approved storage facilities; and (5) report security violations and security concerns to DCSA.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "1",
+        "sectionTitle": "Purpose, Scope, and General Provisions",
+        "parentSection": "subpart-a",
+        "parentTitle": "Subpart A — General",
+        "controlRefs": ["PS-1", "PS-3", "PS-4", "PS-5", "PS-6", "PL-2"],
+        "families": ["PS", "PL"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["nispom", "nisp", "dcsa", "cleared", "contractor", "facility", "security", "officer", "fso", "fcl", "clearance", "classified", "cognizant", "csa", "32", "cfr", "117"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:personnel:0",
+      "content": "Personnel Security Requirements. The NISPOM establishes requirements for the security clearance and access procedures that govern personnel access to classified information at cleared contractor facilities.\n\nSecurity Clearances: Personnel security clearances (PCLs) are required for all employees who require access to classified information. PCLs are issued at the level of SECRET or TOP SECRET, with access to Sensitive Compartmented Information (SCI) or Special Access Programs (SAPs) requiring additional accesses beyond the base clearance level. Contractors may not grant classified access to an individual without first verifying that a PCL has been granted.\n\nNeed-to-Know: Having a security clearance does not automatically authorize access to classified information. All access to classified information must be based on a valid need-to-know — the determination that the person requires access to specific classified information in order to perform their assigned duties. Need-to-know must be determined and documented before classified access is granted.\n\nFSO Responsibilities for Personnel Security: The FSO is responsible for: (a) verifying clearance levels before granting access; (b) conducting initial security briefings before granting classified access; (c) maintaining records of clearance levels, access authorizations, and briefing/debriefing records; (d) reporting changes in personnel security status to DCSA; (e) conducting security debriefings when employment terminates or when access is no longer required.\n\nForeign National Considerations: Foreign nationals may not be granted access to classified information without specific approval from the CSA. Contractors with foreign ownership, control, or influence (FOCI) are subject to additional NISPOM requirements and may require a mitigation arrangement (Board resolution, proxy agreement, special security agreement) before a FCL can be granted or maintained.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "personnel",
+        "sectionTitle": "Personnel Security — Clearances and Need-to-Know",
+        "parentSection": "subpart-b",
+        "parentTitle": "Subpart B — Personnel Security",
+        "controlRefs": ["PS-2", "PS-3", "PS-4", "PS-5", "PS-6", "AC-3"],
+        "families": ["PS", "AC"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["personnel", "security", "clearance", "pcl", "need-to-know", "fso", "briefing", "debriefing", "foreign", "national", "foci", "access", "authorization", "classified", "dcsa"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:physical:0",
+      "content": "Physical Security Requirements. The NISPOM establishes requirements for the protection of classified information through physical security measures at cleared contractor facilities.\n\nStorage Requirements: Classified information must be stored in GSA-approved security containers or approved open storage areas (vaults, strong rooms, secure rooms) when not in use. The level of protection required depends on the classification level: (1) CONFIDENTIAL information may be stored in GSA-approved containers rated for at least CONFIDENTIAL; (2) SECRET information must be stored in GSA-approved Class 5 containers or in an approved vault or strong room; (3) TOP SECRET information must be stored in GSA-approved containers in an area approved by the CSA, and continuous protection by a cleared guard or an approved intrusion detection system (IDS) may be required.\n\nAccess Control: Access to areas where classified information is used or stored must be controlled. Approved access control measures include: identification badges, electronic access control systems, security guards, and visitor control procedures. Visitors who are not cleared or whose clearance level does not authorize access to the area must be escorted at all times.\n\nSCIF Requirements: Sensitive Compartmented Information Facilities (SCIFs) and Special Access Program Facilities (SAPFs) must be constructed and accredited in accordance with the applicable IC Technical Specifications (ICD 705) or DoD Physical Security Standards (DoD Manual 5105.21 Vol 2). SCIF/SAPF accreditation is separate from the information system authorization and must be in place before classified IT operations commence.\n\nEnd-of-Day Checks: Cleared contractor facilities must conduct end-of-day security checks to verify that all classified information is properly stored, all classified systems are properly secured or shut down, and no security violations exist.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "physical",
+        "sectionTitle": "Physical Security Requirements",
+        "parentSection": "subpart-c",
+        "parentTitle": "Subpart C — Physical Security",
+        "controlRefs": ["PE-2", "PE-3", "PE-4", "PE-5", "PE-6", "MP-2", "MP-4"],
+        "families": ["PE", "MP"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["physical", "security", "gsa", "containers", "vault", "scif", "sapf", "access", "control", "visitor", "escort", "end-of-day", "intrusion", "detection", "ids", "storage"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:safeguarding:0",
+      "content": "Safeguarding Classified Information. The NISPOM establishes comprehensive requirements for handling, marking, transmitting, and reproducing classified information at cleared contractor facilities.\n\nMarkings: All classified documents must be marked with the overall classification level at the top and bottom of each page. Portion markings must identify the classification level of each classified portion. Documents containing multiple classification levels must carry the overall highest level of classification. SAP and SCI documents require additional compartment markings (e.g., classification, codeword, and handling instructions).\n\nTransmission: Classified information must be transmitted using approved methods: (1) Hand-carry by an appropriately cleared individual; (2) Approved courier services; (3) DoD-approved classified communication systems for electronic transmission; (4) Approved classified overnight delivery services with specified packaging and tracking requirements. Classified information may not be transmitted via commercial electronic mail, unsecured fax, or any non-approved communication system.\n\nReproduction: Classified information may only be reproduced to the minimum extent necessary for mission accomplishment. Reproduction must be recorded, and reproduced copies must receive the same controls as the original. Certain SAP and SCI documents may restrict or prohibit reproduction. Reproduction logs must be maintained.\n\nDestruction: Classified information must be destroyed by approved methods that render recovery infeasible: cross-cut shredding (NSA/CSS EPL listed shredders for appropriate classification levels), burning, disintegrating, pulping, or pulverizing. Electronic media must be sanitized in accordance with NSA/CSS Policy Manual 9-12 and NIST SP 800-88 using NSA-approved methods for the sensitivity level.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "safeguarding",
+        "sectionTitle": "Safeguarding — Marking, Transmission, Reproduction, Destruction",
+        "parentSection": "subpart-d",
+        "parentTitle": "Subpart D — Safeguarding Classified Information",
+        "controlRefs": ["MP-2", "MP-3", "MP-4", "MP-5", "MP-6", "SC-8"],
+        "families": ["MP", "SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["safeguarding", "marking", "classification", "transmission", "reproduction", "destruction", "shredding", "sanitization", "courier", "compartment", "handling", "portion", "marking", "approval", "sap"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:ais:0",
+      "content": "Automated Information System (AIS) Security Requirements. Subpart G of 32 CFR Part 117 addresses the requirements for protecting classified information on automated information systems (AIS) — the predecessor terminology for information systems in current use.\n\nAIS Authorization: Automated information systems that process, store, transmit, or display classified information must be authorized for classified operation by DCSA or the applicable CSA before being placed in operation. The authorization process follows the RMF as prescribed by DCSA DAAPM (Assessment and Authorization Process Manual). The DCSA-designated Authorizing Official (AO) grants authorization to operate based on review of the authorization package.\n\nAIS Security Plan: Contractors must prepare a system security plan for each AIS that processes classified information. The plan must describe: (1) system identification and boundary; (2) the classification level and special handling categories of information processed; (3) the security controls implemented; (4) physical security of the AIS; (5) personnel security requirements; (6) technical security controls; and (7) the continuous monitoring approach.\n\nConfiguration Management: All hardware, firmware, and software on classified AIS must be documented and any changes must be reviewed and approved by the ISSO before implementation. Unauthorized changes to a classified system constitute a security violation. The configuration baseline must be maintained and audited regularly.\n\nRemovable Media: Removable media used with classified AIS (USB drives, external hard drives, optical media) must be classified to the level of the highest-classification information written to the media. Media must be stored, controlled, marked, and sanitized in accordance with NISPOM and NIST SP 800-88. Cross-domain media transfers are prohibited without an approved sanitization procedure and ISSO oversight.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "ais",
+        "sectionTitle": "Automated Information System Security and AIS Authorization",
+        "parentSection": "subpart-g",
+        "parentTitle": "Subpart G — AIS Security",
+        "controlRefs": ["CA-6", "PL-2", "CM-2", "CM-3", "MP-7", "SA-3", "SI-3"],
+        "families": ["CA", "PL", "CM", "MP", "SA", "SI"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["ais", "automated", "information", "system", "authorization", "dcsa", "daapm", "rmf", "ssp", "configuration", "management", "removable", "media", "classified", "isso"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:violations:0",
+      "content": "Security Violations and Reporting. The NISPOM establishes requirements for reporting security violations and security concerns at cleared contractor facilities.\n\nSecurity Violations: A security violation is any knowing, willing, or negligent action that could reasonably be expected to result in an unauthorized disclosure of classified information. Security violations must be reported immediately to the FSO and to DCSA. Examples include: (1) leaving classified information unsecured; (2) unauthorized disclosure of classified information; (3) loss of classified material; (4) unauthorized access to classified systems; (5) connecting classified systems to unclassified networks; (6) using classified information on unclassified systems.\n\nLoss, Compromise, or Suspected Compromise: If classified information is lost, compromised, or suspected of compromise, the FSO must: (1) notify DCSA immediately (within 24 hours of discovery); (2) preserve evidence of the incident for DCSA investigation; (3) take actions to limit further damage; (4) cooperate fully with the DCSA inquiry. The Government Contracting Activity (GCA) and the program manager must also be notified.\n\nCyber Incidents: For incidents involving unauthorized access to or exfiltration of classified data from information systems, contractors must follow DFARS 252.204-7012 reporting requirements in addition to NISPOM reporting. Reports must be submitted to DCSA and to the DoD Cyber Crime Center (DC3) within 72 hours. A cyber incident report must include: the identifier of any compromised system, the method of compromise, and the classified data potentially affected.\n\nSecurity Violations vs. Infractions: Not all deviations from security procedures rise to the level of violations. A security infraction is an administrative deviation that does not reasonably expose classified information to unauthorized disclosure. Infractions are documented and may result in additional security training.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "violations",
+        "sectionTitle": "Security Violations, Incidents, and Reporting",
+        "parentSection": "subpart-h",
+        "parentTitle": "Subpart H — Investigations and Reports",
+        "controlRefs": ["IR-4", "IR-5", "IR-6", "IR-7", "AU-6"],
+        "families": ["IR", "AU"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["violation", "infraction", "reporting", "fso", "dcsa", "loss", "compromise", "cyber", "incident", "dc3", "72", "hours", "dfars", "exfiltration", "unauthorized", "disclosure"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:subcontracting:0",
+      "content": "Subcontracting and Classified Contracts. When a prime contractor requires a subcontractor to have access to classified information, the prime contractor must ensure the subcontractor is properly cleared and that classified information is protected throughout the subcontract.\n\nPrime Contractor Responsibilities: The prime contractor is responsible for: (1) verifying that subcontractors hold the appropriate facility clearance (FCL) before releasing classified information; (2) issuing a Contract Security Classification Specification (DD Form 254) that specifies the classification levels and categories of classified information involved in the subcontract; (3) notifying the CSA of classified subcontracts; (4) monitoring subcontractor compliance with NISPOM requirements; and (5) ensuring classified information is not released to subcontractors before the appropriate clearance is in place.\n\nDD Form 254: The Contract Security Classification Specification (DD Form 254) is the primary vehicle for communicating security requirements from the government to contractors and from prime contractors to subcontractors. The DD Form 254 identifies: (a) the classification levels of information involved; (b) the special access program designations (SAP, SCI) if applicable; (c) the categories of classified information (Restricted Data, Formerly Restricted Data, NATO, etc.); (d) specific security requirements beyond the standard NISPOM. FSOs must maintain copies of all DD Form 254s associated with active classified contracts.\n\nClassified Contract Completion: Upon contract completion, classified information that is no longer needed must be returned to the government, destroyed per NISPOM requirements, or retained with government approval. The GCA and DCSA must be notified of contract completion and any classified information actions taken.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "subcontracting",
+        "sectionTitle": "Subcontracting, DD Form 254, and Classified Contracts",
+        "parentSection": "subpart-f",
+        "parentTitle": "Subpart F — Subcontracting",
+        "controlRefs": ["SA-4", "SA-9", "PS-7", "SR-5", "SR-6"],
+        "families": ["SA", "PS", "SR"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["subcontracting", "prime", "contractor", "dd254", "form", "254", "fcl", "clearance", "classified", "contract", "subcontractor", "restricted", "data", "nato", "sap"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:insider-threat:0",
+      "content": "Insider Threat Program Requirements. 32 CFR Part 117 requires cleared contractor facilities to establish and maintain an insider threat program as a condition of maintaining a facility security clearance.\n\nInsider Threat Program Requirements: Contractors must establish a formal insider threat program that: (1) identifies personnel with access to classified information who may pose an insider threat risk; (2) implements behavioral monitoring and reporting mechanisms; (3) educates employees about insider threat recognition and reporting; (4) provides a process for reporting concerning behaviors; and (5) coordinates with DCSA on insider threat referrals.\n\nInsider Threat Program Hub: Each facility must designate an Insider Threat Program Senior Official (ITPSO) responsible for overseeing the program. The ITPSO coordinates across security, HR, legal, IT, and management to implement a holistic insider threat detection and mitigation capability.\n\nTechnical Controls Supporting Insider Threat Detection: Information systems security controls that support insider threat detection include: (1) User Activity Monitoring (UAM) — recording and reviewing user activities on classified systems, including files accessed, commands executed, and data copied; (2) Data Loss Prevention (DLP) — monitoring and controlling data transfers to removable media, email, and external systems; (3) Behavioral analytics — detecting anomalous user behavior patterns that may indicate insider threat activity; (4) Privileged user monitoring — enhanced monitoring of system administrators and other privileged users who have elevated access.\n\nThe ISSO's role in insider threat: The ISSO must coordinate with the FSO and ITPSO to ensure that technical monitoring capabilities are implemented on classified systems. Audit log reviews must be conducted regularly, and anomalous activities must be reported to the FSO for assessment. User Activity Monitoring must be disclosed to users through system notification banners and user agreements.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "insider-threat",
+        "sectionTitle": "Insider Threat Program Requirements",
+        "parentSection": "subpart-k",
+        "parentTitle": "Subpart K — Insider Threat",
+        "controlRefs": ["AU-6", "AU-10", "AU-12", "AC-2", "SI-4", "PM-12"],
+        "families": ["AU", "AC", "SI", "PM"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["insider", "threat", "itpso", "uam", "user", "activity", "monitoring", "dlp", "behavioral", "analytics", "privileged", "fso", "audit", "classified", "detection"]
+      }
+    },
+    {
+      "id": "nispom-32-cfr-117:international:0",
+      "content": "International Security Requirements. The NISPOM addresses the protection of classified information involved in international programs and foreign government contracts.\n\nForeign Government Information (FGI): Information provided to the United States by a foreign government or international organization in confidence. FGI must be protected as classified at the level equivalent to its sensitivity designation, and its handling must comply with any caveats imposed by the originating government. Contractors handling FGI must ensure that access is limited to those with a valid need-to-know and the appropriate clearance level.\n\nNATO Information: Information classified by the North Atlantic Treaty Organization must be handled in accordance with NATO security requirements, which parallel but may differ from US classification standards. NATO classified information is designated COSMIC TOP SECRET (CTS), NATO SECRET (NS), NATO CONFIDENTIAL (NC), and NATO RESTRICTED (NR). US cleared contractors handling NATO information must be briefed on NATO requirements and must have appropriate storage and handling arrangements in place.\n\nInternational Visits and Meetings: When classified information must be discussed at international visits or meetings, the contractor must coordinate with the appropriate government security authority. International visits to classified contractor facilities by foreign nationals require advance coordination with DCSA and, for SCI or SAP programs, with the program security officer.\n\nInternational Traffic in Arms Regulations (ITAR): Contractors handling defense-related technical information must also comply with ITAR (22 CFR Parts 120-130) requirements for export control. ITAR compliance and NISPOM compliance are separate obligations, but they interact — foreign national access to ITAR-controlled technical data requires both export license authorization and, if the data is classified, the appropriate security clearance.",
+      "metadata": {
+        "docId": "nispom-32-cfr-117",
+        "docTitle": "National Industrial Security Program Operating Manual — 32 CFR Part 117",
+        "docType": "DOD_POLICY",
+        "section": "international",
+        "sectionTitle": "International Security Requirements",
+        "parentSection": "subpart-i",
+        "parentTitle": "Subpart I — International Security Requirements",
+        "controlRefs": ["AC-3", "AC-20", "PS-6", "SC-7"],
+        "families": ["AC", "PS", "SC"],
+        "chunkIndex": 0,
+        "chunkTotal": 18,
+        "applicability": ["SAP", "CLEARED_INDUSTRY", "DOD"],
+        "keywords": ["international", "nato", "foreign", "government", "information", "fgi", "cosmic", "top", "secret", "itar", "export", "control", "visit", "foreign", "national"]
+      }
+    }
+  ]
+}

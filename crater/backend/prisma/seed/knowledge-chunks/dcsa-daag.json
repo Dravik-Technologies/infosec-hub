@@ -1,0 +1,389 @@
+{
+  "docId": "dcsa-daag",
+  "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+  "docType": "DAAG",
+  "version": "DCSA DAAG, current edition (supersedes DAAPM v2.2)",
+  "source": "https://www.dcsa.mil/is-oversight/cybersecurity/",
+  "chunks": [
+    {
+      "id": "dcsa-daag:overview:0",
+      "content": "The DCSA Assessment and Authorization Guide (DAAG) is the authoritative procedural and quality standard document governing Assessment and Authorization (A&A) of information systems (IS) operated by cleared contractors under the National Industrial Security Program (NISP). The DAAG supersedes the DCSA Assessment and Authorization Process Manual (DAAPM v2.2) and represents DCSA's current, definitive requirements for cleared industry cybersecurity practice.\n\nThe DAAG implements NIST SP 800-37 Rev 2 Risk Management Framework within the NISP context, aligned with DoD Instruction 8510.01 and subject to the oversight authority of DCSA as the Cognizant Security Authority (CSA) for cleared industry. All contractors operating classified IS under a Facility Clearance (FCL) must comply with the DAAG regardless of whether they are also subject to program-specific overlays.\n\nThe DAAG establishes quality standards — not just procedural steps. DCSA Authorizing Officials and Security Control Assessors evaluate authorization packages against DAAG quality criteria. A package that follows RMF procedure but produces low-quality, vague, or internally inconsistent artifacts will receive a Denial of Authorization to Operate (DATO) or be returned for revision regardless of procedural compliance. SSP implementation statements, assessment evidence, POA&M entries, and boundary diagrams must meet the DAAG's substantive quality standards to survive SCA review.\n\nFor SSP writers: Every implementation statement must be system-specific, evidence-citable, and internally consistent with the authorization boundary description, network diagram, hardware/software inventory, and PPSM documentation. Generic or boilerplate implementation language that does not reference the actual system architecture, specific roles, specific tools, or the facility environment is a primary deficiency finding in DCSA assessments.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "overview",
+        "sectionTitle": "DAAG Overview and Authority",
+        "parentSection": "1",
+        "parentTitle": "Introduction",
+        "controlRefs": ["CA-1", "CA-2", "CA-6", "PL-2", "RA-2"],
+        "families": ["CA", "PL", "RA"],
+        "chunkIndex": 0,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH", "MODERATE"],
+        "keywords": ["dcsa", "daag", "assessment", "authorization", "nisp", "cleared contractor", "daapm", "cognizant security authority", "csa", "facility clearance", "fcl", "quality standards", "dato", "ato", "sca", "ssp", "authorization package"]
+      }
+    },
+    {
+      "id": "dcsa-daag:roles:0",
+      "content": "DCSA DAAG Roles and Responsibilities for Cleared Contractor IS.\n\nInformation System Security Manager (ISSM): The ISSM is the senior IS security official at the contractor facility and bears primary responsibility for the security posture of all classified IS under DCSA cognizance. ISSM responsibilities include: developing, maintaining, and submitting the authorization package via eMASS; ensuring security controls are implemented and effective; serving as the primary point of contact with the DCSA IS Representative (ISR); reporting security incidents to DCSA within required timeframes; managing the POA&M; performing or overseeing annual self-assessments; and approving user access to classified IS. The ISSM must maintain awareness of DCSA guidance updates and revise the SSP accordingly. Per DCSA DAAG requirements, the ISSM cannot also serve as the SCA for the same IS — those roles must be independent.\n\nInformation System Security Officer (ISSO): The ISSO assists the ISSM and may be delegated specific day-to-day security responsibilities for one or more IS. When an ISSO is designated, the ISSM retains overall responsibility. ISSO duties typically include: user account management, audit log review, media tracking, periodic access reviews, and security awareness activities. The ISSO must be documented in the SSP with defined responsibilities.\n\nDCSA IS Representative (ISR): The ISR is the DCSA-assigned government official who serves as the Authorizing Official (AO) representative. The ISR reviews authorization packages, conducts or oversees assessments, makes authorization recommendations to the AO, and is the government's primary interface with the ISSM. The ISR is NOT a contractor employee — they are DCSA personnel. The ISR may conduct unannounced security inspections at any time.\n\nSecurity Control Assessor (SCA): The SCA conducts independent security control assessments on behalf of the AO. For DCSA-covered systems, DCSA performs or designates the SCA function. The SCA must be independent of the ISSM and the system development team. SCA findings are documented in the Security Assessment Report (SAR), which the AO uses to make the authorization decision.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "roles",
+        "sectionTitle": "ISSM, ISSO, SCA, and DCSA ISR Roles",
+        "parentSection": "3",
+        "parentTitle": "Roles and Responsibilities",
+        "controlRefs": ["CA-2", "CA-7", "PL-2", "AT-3", "IR-6", "PS-3"],
+        "families": ["CA", "PL", "AT", "IR", "PS"],
+        "chunkIndex": 1,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["issm", "isso", "sca", "isr", "dcsa", "authorizing official", "ao", "roles", "responsibilities", "cleared contractor", "nisp", "independent", "assessment", "authorization package", "emass"]
+      }
+    },
+    {
+      "id": "dcsa-daag:is-types:0",
+      "content": "DCSA IS Types and Their Security Requirements. The DAAG classifies classified IS into distinct types that determine baseline security requirements and how the authorization boundary is defined.\n\nStandalone IS: A single workstation or device that is not networked to any other system. Standalone systems require the most restrictive physical and procedural controls because there is no network-based monitoring or centralized logging. Key requirements include: dedicated physical location within the accredited space; no external network connections whatsoever; removable media controls with formal chain-of-custody; documented justification if a printer or other peripheral is connected; and direct physical observation as the primary access control mechanism.\n\nLocal Area Network (LAN): Multiple IS interconnected within a single accredited space. LAN configurations require a documented network topology, server/workstation inventory, centralized authentication (when technically feasible), network-based audit logging, and boundary protection controls at the LAN perimeter. All devices on the LAN must be identified and approved in the SSP hardware inventory.\n\nWide Area Network (WAN) / Multi-Site: Systems spanning multiple contractor facilities. Each facility node requires separate authorization unless a Type Authorization is obtained. WAN connections between facilities must use government-approved encryption (NSA Type 1 or FIPS-validated cryptography). ISAs must document each multi-site connection.\n\nInterconnected System: A classified IS that connects to another classified IS operated by a different organization. Each interconnection requires a formal Memorandum of Agreement (MOA) or Interconnection Security Agreement (ISA) approved by both AOs. The DAAG requires the ISA to specify: data types flowing, protocol and port used, encryption method, system owner contacts, and incident reporting procedures.\n\nPlatform IT (PIT) / Operational Technology: IS embedded in weapons systems, industrial control systems, or operational equipment. PIT systems may not be able to implement standard NIST controls due to operational constraints. The DAAG requires a PIT Determination letter and tailored control set approved by DCSA. Implementation statements for PIT systems must explicitly address why standard controls are infeasible and what compensating controls are applied.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "is-types",
+        "sectionTitle": "IS Types — Standalone, LAN, WAN, Interconnected, PIT",
+        "parentSection": "9",
+        "parentTitle": "Information System Types",
+        "controlRefs": ["SC-7", "CA-3", "CA-9", "PE-3", "AC-17", "SC-8"],
+        "families": ["SC", "CA", "PE", "AC"],
+        "chunkIndex": 2,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["standalone", "lan", "wan", "interconnected", "pit", "platform it", "is type", "network topology", "boundary", "isa", "moa", "encryption", "type authorization", "multi-site", "industrial control"]
+      }
+    },
+    {
+      "id": "dcsa-daag:ssp-requirements:0",
+      "content": "System Security Plan (SSP) Content Requirements and Quality Standards. The DAAG establishes specific quality criteria for SSP content that go beyond simply completing the required sections.\n\nRequired SSP Sections: The SSP must include — System Identification (IS name, IS type, classification level, impact level, location); System Description and Purpose (what the system does and why it is needed); Authorization Boundary (a precise narrative description); System Environment (physical space, access controls, interconnections); System Users (types, clearance levels, access authorizations); Applicable Laws and Regulations; Security Control Implementation Statements for all selected controls; Hardware/Software/Firmware Inventory; Network Topology Diagram; Ports/Protocols/Services listing; User Account listing (with access roles); and Appendices as required.\n\nSSP Quality Standards: DCSA reviewers evaluate SSPs against the following quality criteria: (1) Specificity — implementation statements must name the actual tools, procedures, and responsible roles in use on this system, not generic descriptions; (2) Internal Consistency — the SSP narrative, boundary description, network diagram, hardware inventory, and control statements must all agree; (3) Auditability — every claimed control implementation must be verifiable through identified, obtainable evidence artifacts; (4) Completeness — every selected control must have a substantive implementation statement; (5) Accuracy — claims in the SSP must match the actual system configuration; (6) Currency — the SSP must reflect the current state of the system, not a planned or historic state.\n\nCommon SSP Deficiencies: DCSA assessors most frequently identify these SSP quality failures: (a) 'Copy-paste' implementation statements identical across multiple controls or copied verbatim from NIST guidance; (b) Implementation statements that describe what the control requires rather than how it is implemented; (c) Missing or undocumented hardware/software components; (d) Boundary diagrams that do not match the narrative boundary description; (e) Control statements referencing tools or procedures not mentioned in the hardware/software inventory or procedures documentation; (f) Audit controls that claim logging of events that the identified systems are not configured to generate.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "ssp-requirements",
+        "sectionTitle": "SSP Content Requirements and Quality Standards",
+        "parentSection": "7.4",
+        "parentTitle": "Implement Step",
+        "controlRefs": ["PL-2", "CA-2", "CA-6", "RA-2", "CM-8"],
+        "families": ["PL", "CA", "RA", "CM"],
+        "chunkIndex": 3,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH", "MODERATE"],
+        "keywords": ["ssp", "system security plan", "quality standards", "dcsa", "implementation statement", "internal consistency", "auditability", "completeness", "deficiencies", "boundary diagram", "hardware inventory", "software inventory", "specificity", "copy paste", "authorization package"]
+      }
+    },
+    {
+      "id": "dcsa-daag:boundary:0",
+      "content": "Authorization Boundary Documentation Requirements. The authorization boundary is one of the most consequential elements of the DCSA authorization package — DCSA assessors and ISRs will scrutinize boundary documentation carefully.\n\nBoundary Narrative: The SSP must contain a precise written narrative describing the authorization boundary. The narrative must identify: (1) the physical space(s) in which the IS operates (building, room, accredited area type such as Closed Area or SCIF); (2) all IS components within the boundary (servers, workstations, printers, removable media devices, networking equipment); (3) all external connections crossing the boundary (network connections to other systems, telephone lines, fiber optic links); and (4) explicit statements about what is NOT included in the boundary.\n\nBoundary Diagram: A network topology diagram must accompany the boundary narrative. DCSA requires the diagram to: depict all hardware components identified in the hardware inventory; show all connections between components including their direction (unidirectional vs. bidirectional); label all external connections (ISA references for interconnected systems); show the boundary line demarcating what is authorized from what is not; and indicate the physical location of components where relevant. The diagram must be consistent with both the boundary narrative and the hardware/software inventory. Inconsistencies between the diagram and narrative are a critical finding.\n\nBoundary Integrity Requirement: The authorization boundary must be technically and physically defensible. Any IS component with potential to introduce data into or extract data from the classified IS — including removable media devices, wireless interfaces (even if disabled), modem ports, or Bluetooth — must be addressed in the SSP. Claiming a capability is 'disabled' requires implementation statement evidence of how the disable is enforced, verified, and maintained (e.g., BIOS configuration, physical port blocker, Group Policy, documented configuration baseline).",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "boundary",
+        "sectionTitle": "Authorization Boundary Documentation",
+        "parentSection": "8",
+        "parentTitle": "Authorization Boundaries",
+        "controlRefs": ["PL-2", "SC-7", "CM-8", "CA-3", "CA-9"],
+        "families": ["PL", "SC", "CM", "CA"],
+        "chunkIndex": 4,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["authorization boundary", "boundary narrative", "network diagram", "topology", "boundary integrity", "scif", "closed area", "hardware inventory", "external connections", "isa", "consistency", "removable media", "wireless", "disabled capability", "physical boundary"]
+      }
+    },
+    {
+      "id": "dcsa-daag:hardware-software-inventory:0",
+      "content": "Hardware, Software, and Firmware Inventory Requirements. The DAAG requires a complete, accurate, and current inventory of all hardware, software, and firmware components within the authorization boundary. This inventory is foundational — control implementation statements for CM, SC, SI, and other families will reference components identified here.\n\nHardware Inventory: The hardware inventory must include for each component: manufacturer, model, serial number (or asset tag), operating system (version and patch level), and physical location within the accredited space. All peripherals (printers, scanners, removable media drives, KVM switches, displays) must be individually listed. Generic entries such as 'various workstations' or 'standard printer' are not acceptable to DCSA. The inventory must be dated and must match the authorization boundary diagram.\n\nSoftware Inventory: All software installed on classified IS must be listed with version numbers. The DAAG requires justification for software that is not on the DoD Information Technology Portfolio Repository (DITPR) or otherwise government-approved list. Unapproved or unlicensed software on a classified IS is a finding. Contractors must document the approval basis for each software product (government license, open-source with documented review, internally developed with documented testing). Software version tracking must be integrated with the patch management process.\n\nFirmware: BIOS/UEFI version, network card firmware, drive firmware, and controller firmware must be tracked and updated under the same patch management discipline as operating systems and applications. Outdated firmware with known vulnerabilities is a recurring DCSA finding category.\n\nApproved Products List (APL): For products used in classified IS, DCSA preference is for products evaluated under the Common Criteria (CC) program or listed on the DoD Information Network Approved Products List (DoDIN APL). When non-APL products are used, the ISSM must document the justification and compensating controls. Storage devices (hard drives, SSDs, USB drives) used in classified environments must meet NSA/CSS EPL or equivalent standards for sanitization capabilities when used at the classification level of the IS.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "hardware-software-inventory",
+        "sectionTitle": "Hardware, Software, and Firmware Inventory",
+        "parentSection": "7.4",
+        "parentTitle": "Implement Step",
+        "controlRefs": ["CM-8", "CM-6", "CM-7", "SI-2", "SA-4", "SA-9"],
+        "families": ["CM", "SI", "SA"],
+        "chunkIndex": 5,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["hardware inventory", "software inventory", "firmware", "apl", "approved products list", "serial number", "version", "patch level", "ditpr", "dodin", "common criteria", "unapproved software", "asset tracking", "bios", "uefi", "removable media"]
+      }
+    },
+    {
+      "id": "dcsa-daag:ppsm:0",
+      "content": "Ports, Protocols, and Services Management (PPSM). The DAAG requires explicit documentation and justification of all ports, protocols, and services used on classified IS. PPSM documentation is a mandatory SSP appendix or attachment.\n\nRequired PPSM Content: The PPSM list must identify: (1) all network ports in use (TCP/UDP, port number, inbound/outbound direction); (2) all protocols used (including layer 2 and layer 3 protocols); (3) all services running on the IS (operating system services, application services, scheduled tasks that produce network traffic); (4) the business/mission justification for each port, protocol, or service; and (5) whether each item is approved or requires a waiver. Disabled services must be documented as 'disabled' with evidence reference (e.g., 'Disabled via Group Policy — see CM baseline config reference').\n\nMinimum Functionality Principle: The DAAG applies NIST SP 800-53 CM-7 (Least Functionality) aggressively. Every port, protocol, or service that is not required for the system's classified mission must be disabled and documented as disabled. DCSA assessors will scan or interview to verify that only authorized ports and services are active. Undocumented open ports are a critical or high finding.\n\nDomain Name Service (DNS): If the classified IS uses DNS, the DNS server address, configuration, and data flow must be documented. DNS must resolve only to approved, boundary-internal resources unless a specific ISA authorizes external DNS resolution. Split DNS configurations must be explicitly documented.\n\nSMTP and Remote Access: Email services and remote access protocols (RDP, SSH, VNC) on classified IS require specific justification, strong authentication controls, and explicit AO approval. SSH key management must be documented in the IA section of the SSP. Remote desktop access to classified IS from unclassified hosts is generally prohibited absent specific AO-approved compensating controls.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "ppsm",
+        "sectionTitle": "Ports, Protocols, and Services Management",
+        "parentSection": "7.4",
+        "parentTitle": "Implement Step",
+        "controlRefs": ["CM-7", "SC-7", "SC-8", "AC-17", "CA-3"],
+        "families": ["CM", "SC", "AC", "CA"],
+        "chunkIndex": 6,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["ppsm", "ports", "protocols", "services", "least functionality", "cm-7", "disabled", "dns", "smtp", "rdp", "ssh", "remote access", "minimum functionality", "open ports", "network services", "group policy"]
+      }
+    },
+    {
+      "id": "dcsa-daag:access-control:0",
+      "content": "Access Control (AC) — DCSA DAAG Requirements for Cleared Contractor IS.\n\nAccount Management (AC-2): The DAAG requires the ISSM to maintain a formal user account roster listing every account authorized for the classified IS, including: full name, clearance level, need-to-know determination (documented separately from clearance), account type (standard user, privileged/administrator, service account), and date account was created and last reviewed. Service accounts must have a documented owner and a justification for existence. Quarterly access reviews are required; results must be documented. Accounts for users who have separated, lost their clearance, or no longer have need-to-know must be terminated within one business day.\n\nLeast Privilege and Separation of Duties: ISSM and ISSO accounts must be separate from system administrator accounts. The individual who administers the IS audit logs may not also be a system administrator for the same IS — this separation is required to prevent audit log tampering, and is a priority assessment item. Users must not have more access than required for their specific role.\n\nMulti-User Standalone Systems: When a standalone classified IS is shared among multiple users (multi-user standalone), each user must have a separate, individually authenticated account. Shared accounts or shared passwords are prohibited on any IS where audit accountability is required. User profiles must be configured to prevent cross-user data access.\n\nRemote Access (AC-17): Remote access to classified IS is strongly disfavored by DCSA and requires explicit AO approval. When permitted, remote access must use government-approved VPN with strong authentication (CAC/PIV or approved MFA), must be logged and monitored, and must be limited to specific authorized individuals. The remote access solution must itself be within the authorization boundary or covered by an ISA. Remote access to classified IS from personal devices is prohibited.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "access-control",
+        "sectionTitle": "Access Control DCSA Requirements",
+        "parentSection": "10",
+        "parentTitle": "Security Controls — AC Family",
+        "controlRefs": ["AC-2", "AC-3", "AC-5", "AC-6", "AC-17", "AC-19"],
+        "families": ["AC"],
+        "chunkIndex": 7,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH", "MODERATE"],
+        "keywords": ["access control", "ac-2", "account management", "user roster", "need-to-know", "quarterly review", "service accounts", "separation of duties", "least privilege", "multi-user standalone", "shared accounts", "remote access", "cac", "piv", "vpn", "privileged accounts"]
+      }
+    },
+    {
+      "id": "dcsa-daag:identification-authentication:0",
+      "content": "Identification and Authentication (IA) — DCSA DAAG Requirements.\n\nCAC/PIV Requirement: For all classified IS connected to a government or contractor network, CAC/PIV smart card authentication is the preferred and default authentication mechanism. The DAAG strongly favors CAC/PIV over username/password for interactive logon. Where CAC/PIV is technically infeasible (e.g., certain standalone systems, legacy operating systems), the ISSM must document the technical limitation and implement compensating controls approved by the DCSA ISR. Password-only authentication on networked classified IS requires an approved waiver.\n\nPassword Standards: Where passwords are used, DCSA requires compliance with the most current DoD password standards. Minimum requirements include: 15-character minimum length for privileged accounts, 12-character minimum for standard accounts; complexity requirements (upper, lower, number, special character); maximum 60-day rotation for privileged accounts, 90-day for standard accounts; no reuse of the last 24 passwords; account lockout after 3 failed attempts with a minimum 30-minute lockout or administrator reset required. Passwords must never be stored in plaintext; only approved hashing algorithms are acceptable.\n\nMulti-Factor Authentication (IA-2(1)(2)): MFA is required for all privileged account access to classified IS and for all network access to classified systems. The DAAG treats this as a non-negotiable requirement — lack of MFA for privileged access is a critical finding with no acceptable compensating control short of physical isolation. DCSA assessors will test MFA configuration as a standard assessment task.\n\nIdentifier Management: Default accounts (Administrator, Guest, root) must be renamed or disabled. Generic group accounts that are not individually attributed are prohibited. System service accounts must use managed service account principles — unique credentials, not shared with any human-operated account, and with credentials rotated periodically.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "identification-authentication",
+        "sectionTitle": "Identification and Authentication DCSA Requirements",
+        "parentSection": "10",
+        "parentTitle": "Security Controls — IA Family",
+        "controlRefs": ["IA-2", "IA-2(1)", "IA-2(2)", "IA-5", "IA-5(1)", "IA-4"],
+        "families": ["IA"],
+        "chunkIndex": 8,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH", "MODERATE"],
+        "keywords": ["cac", "piv", "mfa", "multi-factor authentication", "password", "password complexity", "privileged accounts", "account lockout", "ia-2", "ia-5", "default accounts", "identifier management", "service accounts", "compensating controls", "waiver"]
+      }
+    },
+    {
+      "id": "dcsa-daag:audit-accountability:0",
+      "content": "Audit and Accountability (AU) — DCSA DAAG Requirements.\n\nAudit Event Requirements: The DAAG specifies minimum audit events that must be captured on classified IS: user logon and logoff (successful and failed); privileged user actions (account creation, deletion, modification); security policy changes; system startup and shutdown; access to classified data files or directories; changes to audit configuration; and use of removable media. For standalone systems where network-based SIEM is unavailable, local audit logs must be protected from modification by the users being audited.\n\nAudit Log Protection: Audit logs must be stored in a location where standard users — and critically, the system administrator — cannot delete or modify them without detection. This typically requires a separate, protected log repository or a centralized logging server where only the ISSM/ISSO (not system admins) has write access to the log store. DCSA treats failure to segregate audit log custody from system administrator access as a high finding because it destroys the non-repudiation value of the logs.\n\nReview Cadence: The DAAG requires: daily review of system-generated alerts and exception reports; weekly review of privileged user activity logs by the ISSM or ISSO; monthly comprehensive audit log review; and documentation of all reviews (who reviewed, date, findings, actions taken). Evidence of audit log reviews — dated review records with ISSM/ISSO signature or electronic attestation — must be retained and available for SCA examination.\n\nRetention: Audit logs must be retained for a minimum of one year online (immediately accessible) and three years total. For systems processing Restricted Data or Special Access Program information, longer retention may be required by program authority. Retention configuration must be documented in the SSP and confirmed during assessment.\n\nTime Synchronization (AU-8): All IS components must synchronize to an approved time source. Inconsistent timestamps across components impair incident reconstruction and are a standard DCSA finding. The time synchronization server and configuration must be documented.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "audit-accountability",
+        "sectionTitle": "Audit and Accountability DCSA Requirements",
+        "parentSection": "10",
+        "parentTitle": "Security Controls — AU Family",
+        "controlRefs": ["AU-2", "AU-3", "AU-6", "AU-8", "AU-9", "AU-10", "AU-11", "AU-12"],
+        "families": ["AU"],
+        "chunkIndex": 9,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH", "MODERATE"],
+        "keywords": ["audit", "audit log", "au-2", "au-6", "au-9", "audit review", "retention", "non-repudiation", "privileged user activity", "siem", "time synchronization", "ntp", "log protection", "weekly review", "monthly review", "issm", "isso"]
+      }
+    },
+    {
+      "id": "dcsa-daag:configuration-management:0",
+      "content": "Configuration Management (CM) — DCSA DAAG Requirements.\n\nBaseline Configuration and STIGs: All classified IS must have a documented baseline configuration. For DoD/DCSA systems, the baseline must incorporate applicable DISA Security Technical Implementation Guides (STIGs) and/or Security Requirements Guides (SRGs). The ISSM must identify which STIGs apply to each component, document the compliance status of each STIG finding (Open, Not Applicable, Not a Finding), and track open STIG findings in the POA&M. DCSA assessors will request STIG checklists and verify them against the actual system configuration during assessments.\n\nSeverity Category Definitions: STIG findings are categorized as CAT I (Critical — must be mitigated immediately or system cannot be authorized), CAT II (High — must be mitigated or have an approved POA&M with completion date), and CAT III (Medium/Low — addressed in POA&M or accepted with documented risk). No classified IS may be authorized with open CAT I findings unless a DCSA-approved compensating control mitigates the risk and DCSA grants explicit approval.\n\nConfiguration Control Board (CCB): The DAAG requires a formal or semi-formal change management process for classified IS. All hardware, software, and configuration changes must be reviewed before implementation, approved by the ISSM, and documented. Emergency changes must be documented after the fact within a specified timeframe (typically 5 business days). CCB meeting records or change approval documentation must be retained as evidence.\n\nUnauthorized Software Controls: The DAAG treats unauthorized software on classified IS as a serious security incident, not merely a configuration violation. The ISSM must implement application whitelisting or equivalent controls to prevent the installation or execution of unauthorized software. DCSA assessors will test for unauthorized software through scanning and by reviewing installed software against the approved inventory.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "configuration-management",
+        "sectionTitle": "Configuration Management and STIG Compliance",
+        "parentSection": "10",
+        "parentTitle": "Security Controls — CM Family",
+        "controlRefs": ["CM-2", "CM-3", "CM-6", "CM-7", "CM-8", "CM-9", "CM-11"],
+        "families": ["CM"],
+        "chunkIndex": 10,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH", "MODERATE"],
+        "keywords": ["configuration management", "stig", "srg", "baseline configuration", "cat i", "cat ii", "cat iii", "disa", "ccb", "change management", "unauthorized software", "application whitelisting", "open findings", "poam", "configuration control board", "cm-6", "cm-7"]
+      }
+    },
+    {
+      "id": "dcsa-daag:media-protection:0",
+      "content": "Media Protection (MP) — DCSA DAAG Requirements for Classified Media.\n\nMedia Tracking: All removable media (CDs, DVDs, USB drives, external hard drives, tapes) that have ever been connected to a classified IS must be treated as classified at the IS classification level, regardless of what data was actually written to the media. The DAAG requires a formal media accountability log for all removable media: each item must be uniquely identified (label number or asset tag), and each use must be recorded (who used it, which IS it was used on, date, purpose, and disposition). Loss of tracked classified media is a security incident requiring DCSA notification.\n\nMedia Sanitization: Classified media must be sanitized before reuse at a lower classification level or before disposal. Approved methods per NSA/CSS Evaluated Products List (EPL): overwrite tools for magnetic hard drives (DoD 5220.22-M standard or NIST SP 800-88 clear); degaussing for magnetic media; physical destruction (shredding, disintegration) for flash media, SSDs, and optical media. Paper documents must be shredded using NSA-approved cross-cut shredders at minimum. Sanitization must be documented: the media identifier, the method used, the date, and the name and signature of the individual who performed and witnessed the sanitization.\n\nTransportation of Classified Media: Classified media transported outside the accredited space must comply with DoD Manual 5200.01 physical security requirements: double-wrapping for SECRET materials, using authorized courier channels, using appropriate containers. Media transferred between contractor locations must travel in accordance with DCSA-approved transport procedures and be tracked under the media accountability system.\n\nStorage of Classified Media: When not in use, classified media must be stored in GSA-approved security containers at the appropriate classification level. The container combination must be on record with the FSO, changed when a combination-holder departs or when compromise is suspected, and classified containers must be inspected for proper closure at end of each work day.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "media-protection",
+        "sectionTitle": "Media Protection DCSA Requirements",
+        "parentSection": "10",
+        "parentTitle": "Security Controls — MP Family",
+        "controlRefs": ["MP-2", "MP-3", "MP-4", "MP-5", "MP-6", "MP-7"],
+        "families": ["MP"],
+        "chunkIndex": 11,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH"],
+        "keywords": ["media tracking", "removable media", "usb", "sanitization", "degaussing", "nist 800-88", "physical destruction", "classified media", "gsa container", "courier", "media accountability", "overwrite", "shredding", "disposal", "mp-6", "chain of custody"]
+      }
+    },
+    {
+      "id": "dcsa-daag:incident-response:0",
+      "content": "Incident Response and DCSA Reporting Requirements.\n\nDefinition of Reportable Incidents: The DAAG requires immediate DCSA notification for: (1) any actual or suspected unauthorized access to classified information; (2) any actual or suspected compromise of classified IS or classified data; (3) loss, theft, or destruction of classified media; (4) unauthorized presence in a classified processing area; (5) any IS security violation (introduction of unauthorized software, unauthorized connection, unauthorized user access). 'Actual or suspected' means the ISSM must report even if investigation is ongoing — DCSA does not accept 'we needed to confirm it first' as a reason for delayed reporting.\n\nDC3 Cyber Incident Reporting: For cyber incidents affecting classified IS, DCSA requires concurrent notification to the Defense Cyber Crime Center (DC3). The DC3 72-hour reporting requirement applies: within 72 hours of detecting a cyber incident on or affecting a classified IS, the ISSM must submit a cyber incident report to DC3 through the DC3 DIBNet Portal. Delay in DC3 reporting is independently reportable as a compliance violation. The DC3 report must include: incident description, affected systems, data potentially compromised, initial indicators, and containment actions taken.\n\nIS Incident Response Plan: Each classified IS must have a documented Incident Response Plan or procedure that addresses: detection and identification, initial response and containment, DCSA notification procedure (specific contacts and phone numbers), DC3 reporting procedure, evidence preservation, investigation, recovery, and post-incident review. Generic IR plans are not acceptable — the plan must reference the specific IS, the specific DCSA contact, and the specific ISSM responsibilities.\n\nSecurity Violations: The DAAG distinguishes security violations from security infractions. A violation is a failure to comply with rules that could reasonably be expected to result in compromise; an infraction is a technical deviation unlikely to result in compromise. Violations require formal investigation; infractions require corrective action documentation. All incidents, violations, and infractions must be entered in the IS security log.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "incident-response",
+        "sectionTitle": "Incident Response and DCSA/DC3 Reporting",
+        "parentSection": "10",
+        "parentTitle": "Security Controls — IR Family",
+        "controlRefs": ["IR-1", "IR-4", "IR-5", "IR-6", "IR-8", "AU-6"],
+        "families": ["IR", "AU"],
+        "chunkIndex": 12,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["incident response", "dcsa notification", "dc3", "72-hour reporting", "cyber incident", "dibnet", "security violation", "infraction", "classified compromise", "ir plan", "reporting requirement", "ir-6", "dc3 report", "issm", "containment", "evidence preservation"]
+      }
+    },
+    {
+      "id": "dcsa-daag:assessment-process:0",
+      "content": "Security Control Assessment Process — What DCSA SCA Examiners Evaluate.\n\nPre-Assessment Package Review: Before conducting the on-site assessment, the DCSA SCA reviews the authorization package submitted through eMASS. The SCA evaluates: completeness of the SSP (all required sections present); quality of implementation statements (specific, verifiable, internally consistent); currency of hardware/software inventory; adequacy of boundary documentation and diagram; PPSM documentation completeness; STIG checklist availability and completeness; and POA&M status. Pre-assessment deficiencies result in a request for revision before the on-site assessment proceeds, which extends the authorization timeline. ISSMs should expect 2–4 week review cycles for packages with significant deficiencies.\n\nOn-Site Assessment Methods: DCSA SCAs use three primary assessment methods per NIST SP 800-53A: Examine (reviewing documentation, configurations, screenshots, scan results); Interview (discussions with the ISSM, ISSO, system administrators, and users); and Test (direct technical testing of the system including port scans, vulnerability scans, configuration verification). ISSMs should be prepared to demonstrate all claimed controls during the assessment — stating 'it's in the SSP' without being able to demonstrate it is not acceptable.\n\nSCA Evidence Expectations: For each major control area, SCAs expect specific evidence: AC — access roster, account review records, AD/LDAP configuration; IA — MFA configuration screenshots, password policy settings; AU — audit log sample, review records, log storage configuration; CM — STIG checklists, approved software list, change records; MP — media tracking log, sanitization records; IR — IR plan, incident log; SC — network diagram, firewall rules, encryption configuration; SI — vulnerability scan results, patch history.\n\nAssessment Finding Severity: DCSA uses a four-level severity scale: Critical (system cannot operate until resolved; authorization denied or revoked), High (must be mitigated before or as a condition of authorization), Moderate (must be tracked in POA&M with completion date), and Low (documented for risk awareness, may be accepted with justification).",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "assessment-process",
+        "sectionTitle": "SCA Assessment Process and Evidence Expectations",
+        "parentSection": "7.5",
+        "parentTitle": "Assess Step",
+        "controlRefs": ["CA-2", "CA-5", "CA-7", "CA-8", "RA-5"],
+        "families": ["CA", "RA"],
+        "chunkIndex": 13,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["sca", "assessment", "examine", "interview", "test", "evidence", "pre-assessment", "on-site", "emass", "stig checklists", "vulnerability scan", "port scan", "finding severity", "critical", "high", "moderate", "authorization timeline", "800-53a"]
+      }
+    },
+    {
+      "id": "dcsa-daag:sar:0",
+      "content": "Security Assessment Report (SAR) Requirements. The SAR is the SCA's formal documentation of assessment results and is a required component of the authorization package submitted to the AO.\n\nSAR Required Contents: The DAAG requires the SAR to include: assessment scope and methodology; list of controls assessed and assessment methods used; findings table with each finding described, assigned severity, control reference, and recommended disposition; overall risk determination; and the SCA's recommendation to the AO (authorize, authorize with conditions, or do not authorize). The SAR must be dated and signed by the SCA.\n\nFinding Documentation Quality: Each SAR finding must identify: the specific control or requirement that was not met; the evidence (or lack thereof) that supports the finding; the potential impact if unmitigated; the recommended remediation action; and the finding severity. Vague findings such as 'audit logs not adequately reviewed' without specifying what evidence was missing or what specific requirement was unmet are not acceptable DCSA SAR quality. ISSMs receiving vague findings may request clarification from the DCSA ISR.\n\nSAR Disposition and POA&M: For each finding in the SAR, the ISSM must respond with one of: (a) Accept the finding and create a POA&M item with a specific completion date and milestone; (b) Dispute the finding with specific technical evidence showing the control IS implemented; or (c) Accept residual risk with documented justification (available only for low-severity findings). The ISSM response and POA&M update must be submitted through eMASS within 30 days of SAR receipt.\n\nRemediation Evidence: When the ISSM disputes a finding or claims remediation, supporting evidence must be attached in eMASS. Screenshots, configuration exports, scan results, or records bearing the ISSM signature are the expected evidence forms. Verbal claims of remediation without documentary evidence will not be accepted.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "sar",
+        "sectionTitle": "Security Assessment Report Requirements",
+        "parentSection": "7.5",
+        "parentTitle": "Assess Step",
+        "controlRefs": ["CA-2", "CA-5", "CA-7", "RA-3", "PM-4"],
+        "families": ["CA", "RA", "PM"],
+        "chunkIndex": 14,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["sar", "security assessment report", "sca", "findings", "finding severity", "poam", "dispute", "remediation", "emass", "risk determination", "authorization recommendation", "issm response", "evidence", "finding documentation", "30 days"]
+      }
+    },
+    {
+      "id": "dcsa-daag:emass:0",
+      "content": "eMASS — Enterprise Mission Assurance Support Service. eMASS is the mandatory electronic system for submitting, tracking, and managing DCSA authorization packages for cleared industry systems. All NISP A&A documentation for systems under DCSA cognizance must be submitted through eMASS — paper packages or email submissions are not accepted.\n\neMASS Workflow for Cleared Industry: The ISSM initiates the eMASS record for a new IS. Key workflow stages: (1) System registration — ISSM creates the system record, defines the IS type, classification level, and authorization boundary; (2) Control selection — ISSM selects applicable controls and applies DCSA overlays; (3) SSP development — implementation statements, artifacts, and attachments are entered in eMASS; (4) ISSM self-attestation — ISSM attests to completeness and submits; (5) ISR review — DCSA ISR reviews and may return for corrections; (6) SCA assessment — assessment findings documented; (7) AO review and decision; (8) Ongoing monitoring — POA&M updates, change submissions, annual reviews.\n\neMASS Package Quality: DCSA expects eMASS submissions to be complete before they are submitted for ISR review. Submitting an incomplete package to the ISR for 'informal feedback' is not the intended process and results in the package being returned. The ISSM should conduct an internal quality review using the DAAG SSP quality checklist before submitting. All attachments must be properly labeled and must correspond to specific controls or artifacts referenced in the SSP.\n\nControl Implementation Statement Entry: Implementation statements in eMASS must be substantive, not placeholders. Entering 'see attachment' as an implementation statement without a corresponding substantive statement is not acceptable. Statements must be written directly in eMASS with attachments supplementing (not substituting for) the narrative. Character limits in eMASS fields are real constraints — ISSMs should plan statement length accordingly and avoid unnecessary padding.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "emass",
+        "sectionTitle": "eMASS Workflow and Package Submission",
+        "parentSection": "6",
+        "parentTitle": "Enterprise Mission Assurance Support Service",
+        "controlRefs": ["CA-6", "CA-7", "PL-2", "CM-4", "PM-6"],
+        "families": ["CA", "PL", "CM", "PM"],
+        "chunkIndex": 15,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["emass", "enterprise mission assurance support service", "package submission", "workflow", "issm", "isr", "control selection", "self-attestation", "implementation statement", "attachments", "quality review", "dcsa overlay", "system registration", "poam updates"]
+      }
+    },
+    {
+      "id": "dcsa-daag:poam:0",
+      "content": "Plan of Action and Milestones (POA&M) — DCSA DAAG Requirements.\n\nPOA&M Required Fields: Every POA&M item submitted through eMASS must include: weakness description (specific, not generic); specific control reference (NIST 800-53 control ID); scheduled completion date; milestones with intermediate dates for multi-step remediation; resources required; responsible individual (ISSM or delegated ISSO); weakness detection method (how the weakness was identified — STIG finding, SCA finding, self-assessment, continuous monitoring); and current status.\n\nPOA&M Timeliness Standards: DCSA expects POA&M milestone adherence as a key authorization maintenance indicator. Critical/CAT I items must be closed before ATO is granted or immediately upon discovery on an authorized system. High/CAT II items must have milestones not exceeding 30–45 days for single-step remediations and not exceeding 180 days for complex remediations requiring procurement. Moderate/CAT III items may have milestones up to 12 months. POA&M items with scheduled completion dates in the past and no update are an immediate finding — the ISSM must update dates when extensions are needed and document the justification.\n\nPOA&M Closure Evidence: When marking a POA&M item closed in eMASS, the ISSM must attach or reference specific closure evidence: scan results showing the vulnerability is resolved, configuration screenshots showing the control is implemented, updated STIG checklist reflecting the finding as 'Not a Finding', or a dated and signed record showing the procedure was performed. Self-certification by the ISSM without documentary evidence will not be accepted by the DCSA ISR for closure validation.\n\nRisk Acceptance: For POA&M items where remediation is technically infeasible, the ISSM may request risk acceptance from the AO. Risk acceptance requests must include: a description of why remediation is not technically feasible, the compensating controls in place, the residual risk level, and the period for which acceptance is requested. DCSA ISRs rarely approve indefinite risk acceptance — requests should include a feasibility timeline for future remediation.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "poam",
+        "sectionTitle": "POA&M DCSA Requirements and Timeliness",
+        "parentSection": "7.5",
+        "parentTitle": "Assess Step",
+        "controlRefs": ["CA-5", "CA-7", "RA-3", "PM-4", "SI-2"],
+        "families": ["CA", "RA", "PM", "SI"],
+        "chunkIndex": 16,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["poam", "plan of action milestones", "weakness", "scheduled completion", "cat i", "cat ii", "closure evidence", "risk acceptance", "emass", "milestone", "overdue", "remediation", "stig finding", "continuous monitoring", "issm", "dcsa isr"]
+      }
+    },
+    {
+      "id": "dcsa-daag:authorization-types:0",
+      "content": "Authorization Decision Types — ATO, IATO, and DATO.\n\nAuthorization to Operate (ATO): An ATO is granted when the IS has completed the full A&A process, all critical findings are resolved, and the AO determines that the residual risk is acceptable. DCSA ATOs are typically granted for a period of three years. Annual continuous monitoring reviews and self-assessments are required to maintain the ATO. The ATO letter specifies any conditions, including open POA&M items that must be resolved within stated timeframes. An ATO does not mean the IS is fully compliant — it means the AO accepts the current risk posture for the stated period.\n\nInterim Authorization to Operate (IATO): The DAAG permits IATOs only in limited circumstances when: a new system must begin operation before the full A&A process is complete due to mission urgency; or an existing authorized system undergoes a significant change requiring re-authorization and must remain operational during the process. IATOs are granted for 180 days maximum. DCSA grants IATOs sparingly — IATOs are not a mechanism for bypassing A&A quality requirements, and an IATO will not be granted to cover a substandard package.\n\nDenial of Authorization to Operate (DATO): A DATO is issued when the AO determines that the risk posed by the IS is unacceptable. DATO may result from: critical unmitigated findings, a pattern of repeated POA&M failure, loss of ISSM personnel without replacement, significant security incidents, or authorization package fraud. A DATO requires the IS to cease operations immediately. Resuming operations on a system under DATO without AO approval is a serious NISP violation. To clear a DATO, the ISSM must remediate the identified deficiencies and submit a revised package for full re-assessment.\n\nAuthorization Maintenance: All authorization decisions are conditioned on the IS remaining in the configuration described in the approved SSP. Any significant change (new hardware, new software, network reconfiguration, change in classification level, addition of interconnections) must be reported to the DCSA ISR before implementation. Unauthorized changes that void the current authorization are a NISP violation.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "authorization-types",
+        "sectionTitle": "ATO, IATO, and DATO Authorization Decision Types",
+        "parentSection": "7.6",
+        "parentTitle": "Authorize Step",
+        "controlRefs": ["CA-6", "CA-7", "CA-5", "RA-3", "CM-4"],
+        "families": ["CA", "RA", "CM"],
+        "chunkIndex": 17,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["ato", "iato", "dato", "authorization", "denial", "interim authorization", "three years", "180 days", "authorization maintenance", "significant change", "dcsa isr", "residual risk", "cessation of operations", "authorization decision", "conditions"]
+      }
+    },
+    {
+      "id": "dcsa-daag:continuous-monitoring:0",
+      "content": "Continuous Monitoring Requirements — Maintaining Authorization.\n\nAnnual Self-Assessment: The DAAG requires the ISSM to conduct a formal annual security self-assessment of each authorized classified IS. The self-assessment must evaluate all selected security controls, review current STIG compliance against any updated STIGs issued since the last assessment, update the hardware/software inventory, review and update all POA&M items, and verify that all control implementation statements in the SSP remain accurate. Results must be documented and submitted to the DCSA ISR through eMASS. Failure to conduct and submit the annual self-assessment is grounds for DATO.\n\nChange Management as Monitoring: The DAAG treats significant IS changes as a monitoring trigger. The ISSM must notify the DCSA ISR before implementing changes that: add new hardware or software components; change the IS type or authorization boundary; create new network connections or ISAs; change the classification level of information processed; modify authentication mechanisms; or change physical location. Changes implemented without ISR notification may void the ATO and require full re-authorization.\n\nVulnerability and Patch Management: Continuous monitoring includes ongoing vulnerability scanning (at least quarterly for LAN/WAN systems) and patch management. The ISSM must track IAVA (Information Assurance Vulnerability Alert) compliance. DCSA systems must comply with IAVA requirements within mandated timeframes: CAT I (Critical severity) within 21 days; CAT II (High severity) within 30 days; CAT III (Medium/Low) within 60–90 days. Non-compliance with IAVA timelines must be tracked in the POA&M.\n\nAnnual SCA Assessment: In addition to the ISSM self-assessment, DCSA typically conducts an independent SCA assessment of each classified IS on an annual or biennial basis. The ISSM should maintain the authorization package in eMASS in a continuously updated state so that an SCA assessment can begin without requiring a full package revision. Currency of evidence artifacts — dated within 12 months of assessment — is expected.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "continuous-monitoring",
+        "sectionTitle": "Continuous Monitoring and Annual Review",
+        "parentSection": "7.7",
+        "parentTitle": "Monitor Step",
+        "controlRefs": ["CA-7", "CA-5", "RA-5", "SI-2", "CM-3", "CM-4", "AU-6"],
+        "families": ["CA", "RA", "SI", "CM", "AU"],
+        "chunkIndex": 18,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY"],
+        "keywords": ["continuous monitoring", "annual self-assessment", "iava", "patch management", "vulnerability scanning", "change management", "quarterly scan", "stig updates", "authorization maintenance", "ca-7", "emass", "significant change", "hardware inventory update", "annual sca", "dato", "21 days", "30 days"]
+      }
+    },
+    {
+      "id": "dcsa-daag:common-deficiencies:0",
+      "content": "Common DCSA Assessment Deficiencies and How to Avoid Them. DCSA SCA assessors and ISRs consistently identify the following deficiencies across cleared contractor authorization packages. ISSMs and SSP writers who address these areas proactively will significantly reduce assessment cycle time.\n\nTop SSP Quality Deficiencies: (1) Generic implementation statements — 'Access control is implemented in accordance with NIST guidance' tells the assessor nothing. State: who (role/position), what mechanism (tool, setting, procedure), where (this specific IS), and when (review cadence). (2) Boundary diagrams inconsistent with the hardware inventory — every component in the inventory must appear in the diagram; every component in the diagram must be in the inventory. (3) PPSM documentation missing or incomplete — listing a service without justification, or missing services that STIG scanning reveals are running. (4) Audit review records non-existent — claiming AU-6 implementation without a dated review log. (5) POA&M items with past-due milestones and no updates — treat the POA&M as a living document, not a static list.\n\nTop Technical Deficiencies: (1) Default credentials not changed — Administrator/admin/password on any system component. (2) Missing MFA for privileged accounts — this is a critical finding with no workaround. (3) Outdated software with known vulnerabilities — especially browser versions, Java, Office, and operating systems. (4) Open unnecessary ports/services — SSH enabled but not used, SNMP running with default community strings. (5) Audit log storage on the same drive as the operating system without separate log protection.\n\nTop Documentation Deficiencies: (1) SSP last updated at authorization and not touched since — all changes must flow through SSP updates. (2) User access roster not reconciled in the past 90 days. (3) STIG checklists from previous STIG version, not updated when DISA publishes a new version. (4) Incident response plan referencing 'the ISO/ISSO at extension XXXX' with no name or updated contact. (5) Media tracking log with entries that end months before the assessment — the log must be current through the assessment date.",
+      "metadata": {
+        "docId": "dcsa-daag",
+        "docTitle": "DCSA Assessment and Authorization Guide (DAAG)",
+        "docType": "DAAG",
+        "section": "common-deficiencies",
+        "sectionTitle": "Common DCSA Assessment Deficiencies",
+        "parentSection": "appendix",
+        "parentTitle": "Appendices",
+        "controlRefs": ["AC-2", "AU-6", "CM-6", "CM-7", "IA-2", "IR-6", "MP-3", "PL-2", "SC-7"],
+        "families": ["AC", "AU", "CM", "IA", "IR", "MP", "PL", "SC"],
+        "chunkIndex": 19,
+        "chunkTotal": 20,
+        "applicability": ["DCSA", "DOD", "NISP", "CLEARED_INDUSTRY", "HIGH", "MODERATE"],
+        "keywords": ["common deficiencies", "assessment findings", "generic statements", "boundary diagram", "ppsm", "audit review", "poam overdue", "default credentials", "mfa", "outdated software", "open ports", "stig checklist", "access roster", "media log", "ssp currency", "dcsa", "sca findings"]
+      }
+    }
+  ]
+}
