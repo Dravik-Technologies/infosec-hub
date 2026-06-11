@@ -95,7 +95,7 @@ function getLegacyPlatformRole(role) {
 function isHubAdmin(userOrRole) {
   const role = typeof userOrRole === 'string'
     ? userOrRole
-    : userOrRole && userOrRole.role;
+    : userOrRole && (userOrRole.hubRole || userOrRole.role);
   return normalizePlatformRole(role) === 'Hub Admin';
 }
 
