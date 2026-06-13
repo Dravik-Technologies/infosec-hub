@@ -15,6 +15,11 @@ const PORT = process.env.PORT || 8090;
 const DATA_DIR = path.join(__dirname, 'data');
 const JWT_SECRET = process.env.JWT_SECRET || 'nexus-dev-secret-change-in-prod';
 const JWT_TTL = '8h';
+const secureCookies = process.env.COOKIE_SECURE === 'true'
+  ? true
+  : process.env.COOKIE_SECURE === 'false'
+    ? false
+    : process.env.NODE_ENV === 'production';
 const SNAPSHOT_REFRESH_MS = parseInt(process.env.NEXUS_SNAPSHOT_REFRESH_MS || `${6 * 60 * 60 * 1000}`, 10);
 const SNAPSHOT_MAX_AGE_MS = parseInt(process.env.NEXUS_SNAPSHOT_MAX_AGE_MS || `${20 * 60 * 60 * 1000}`, 10);
 const HUB_URL = process.env.HUB_URL || null;
@@ -1033,7 +1038,7 @@ app.get('/auth/sso', async (req, res) => {
       httpOnly: true,
       sameSite: 'lax',
       maxAge: 8 * 60 * 60 * 1000,
-      secure: process.env.NODE_ENV === 'production',
+      secure: secureCookies,
     });
     res.redirect('/');
   } catch (err) {

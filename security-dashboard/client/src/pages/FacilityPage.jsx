@@ -54,10 +54,10 @@ const IDS_STATUSES = ['Operational', 'Degraded', 'Offline', 'Maintenance'];
 const DCSA_RATINGS = ['Commendable', 'Satisfactory', 'Marginal', 'Unsatisfactory'];
 const INSP_STATUSES = ['Scheduled', 'In Progress', 'Completed', 'Overdue'];
 
-function FacilityForm({ fac, onSave, onClose }) {
+function FacilityForm({ fac, siteId, onSave, onClose }) {
   const isEdit = !!fac;
   const blank = {
-    name: '', facilityType: 'SCIF', location: '', siteId: '',
+    name: '', facilityType: 'SCIF', location: '', siteId: siteId || '',
     fclLevel: 'SECRET', fclStatus: 'Active', fclExpires: '',
     complianceScore: '',
     accreditation: { type: 'ICD 705', status: 'Active', expires: '', authority: '' },
@@ -71,7 +71,7 @@ function FacilityForm({ fac, onSave, onClose }) {
     name: fac.name || '',
     facilityType: fac.facilityType || 'SCIF',
     location: fac.location || '',
-    siteId: fac.siteId || '',
+    siteId: fac.siteId || siteId || '',
     fclLevel: fac.fclLevel || 'SECRET',
     fclStatus: fac.fclStatus || 'Active',
     fclExpires: fac.fclExpires || '',
@@ -83,17 +83,56 @@ function FacilityForm({ fac, onSave, onClose }) {
     accessControl: { totalActive: fac.accessControl?.totalActive ?? '' },
   } : blank);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const set = (f, v) => setForm(p => ({ ...p, [f]: v }));
   const setN = (parent, f, v) => setForm(p => ({ ...p, [parent]: { ...(p[parent] || {}), [f]: v } }));
 
+  async function handleDelete() {
+    if (!window.confirm(`Delete facility "${form.name}"? This cannot be undone.`)) return;
+    setDeleting(true);
+    try {
+      const result = await WS.del('facility_security', fac.id);
+      if (result?._wsError) {
+        alert(result.message || 'Delete failed');
+      } else {
+        onSave();
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Failed to delete facility');
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function submit(e) {
     e.preventDefault();
+    if (!form.siteId) {
+      alert('Error: Site ID is required. Please select a site and try again.');
+      return;
+    }
     setSaving(true);
     try {
-      if (isEdit) await WS.patch('facility_security', fac.id, form);
-      else await WS.post('facility_security', form);
+      if (isEdit) {
+        const result = await WS.patch('facility_security', fac.id, form);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      } else {
+        const result = await WS.post('facility_security', form);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      }
       onSave();
+    } catch (err) {
+      console.error('Form submission error:', err);
+      alert(`Error: ${err.message}`);
     } finally { setSaving(false); }
   }
 
@@ -101,7 +140,10 @@ function FacilityForm({ fac, onSave, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
       <div className="ws-card" style={{ width: 'min(700px, 100%)', maxHeight: '90vh', overflowY: 'auto' }}>
         <div className="ws-card-header" style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
-          <h3>{isEdit ? 'Edit Facility' : 'Add Facility'}</h3>
+          <div>
+            <h3>{isEdit ? 'Edit Facility' : 'Add Facility'}</h3>
+            {!isEdit && siteId && <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Site: <strong>{siteId}</strong></div>}
+          </div>
           <button type="button" className="ws-action-btn" onClick={onClose}>Cancel</button>
         </div>
         <form onSubmit={submit}>
@@ -205,11 +247,20 @@ function FacilityForm({ fac, onSave, onClose }) {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end', paddingTop: '0.25rem' }}>
-              <button type="button" className="ws-action-btn" onClick={onClose}>Cancel</button>
-              <button type="submit" disabled={saving} className="ws-action-btn primary" style={{ padding: '0.4rem 1.25rem', width: 'auto' }}>
-                {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Facility'}
-              </button>
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'space-between', paddingTop: '0.25rem' }}>
+              <div>
+                {isEdit && (
+                  <button type="button" className="ws-action-btn" style={{ color: 'var(--red)' }} disabled={deleting} onClick={handleDelete}>
+                    {deleting ? 'Deleting…' : 'Delete'}
+                  </button>
+                )}
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button type="button" className="ws-action-btn" onClick={onClose}>Cancel</button>
+                <button type="submit" disabled={saving || deleting} className="ws-action-btn primary" style={{ padding: '0.4rem 1.25rem', width: 'auto' }}>
+                  {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Add Facility'}
+                </button>
+              </div>
             </div>
           </div>
         </form>
@@ -424,7 +475,7 @@ function FacilityCard({ fac, onEdit, onAddIssue }) {
   );
 }
 
-export default function FacilityPage({ siteId }) {
+export default function FacilityPage({ siteId, user, sites }) {
   const [facilities, setFacilities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -433,11 +484,16 @@ export default function FacilityPage({ siteId }) {
   const [editingFac, setEditingFac] = useState(null);
   const [addingFac, setAddingFac] = useState(false);
   const [addingIssueTo, setAddingIssueTo] = useState(null);
+  const [showSiteWarning, setShowSiteWarning] = useState(false);
+
+  const requiresSiteSelection = Boolean(user?.canSeeAllSites || (user?.siteIds?.length > 1));
+  const readSiteId = siteId || (!requiresSiteSelection ? (user?.primarySiteId || user?.siteIds?.[0] || '') : '');
+  const createSiteId = siteId || user?.primarySiteId || user?.siteIds?.[0] || '';
 
   function load() {
     setLoading(true);
     setLoadError(null);
-    const params = siteId ? { siteId } : {};
+    const params = readSiteId ? { siteId: readSiteId } : {};
     WS.get('facility_security', params).then(d => {
       if (d?._wsError) { setLoadError(d.message); setLoading(false); return; }
       setFacilities(Array.isArray(d) ? d : []);
@@ -445,13 +501,21 @@ export default function FacilityPage({ siteId }) {
     });
   }
 
-  useEffect(() => { load(); }, [siteId]);
+  useEffect(() => { load(); }, [readSiteId]);
 
   function handleSaved() {
     setEditingFac(null);
     setAddingFac(false);
     setAddingIssueTo(null);
     load();
+  }
+
+  function handleAddFacilityClick() {
+    if (requiresSiteSelection && !siteId) {
+      setShowSiteWarning(true);
+      return;
+    }
+    setAddingFac(true);
   }
 
   const facilityTypes = [...new Set(facilities.map(f => f.facilityType).filter(Boolean))];
@@ -476,9 +540,29 @@ export default function FacilityPage({ siteId }) {
 
   return (
     <div className="ws-page">
+      {showSiteWarning && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div className="ws-card" style={{ width: 'min(420px, 100%)' }}>
+            <div className="ws-card-header">
+              <h3>⚠️ Site Required</h3>
+            </div>
+            <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Please select a site from the dropdown menu at the top before adding facilities. Each facility must be assigned to a specific site.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="ws-action-btn primary" onClick={() => setShowSiteWarning(false)}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {(editingFac || addingFac) && (
         <FacilityForm
           fac={editingFac || null}
+          siteId={createSiteId}
           onSave={handleSaved}
           onClose={() => { setEditingFac(null); setAddingFac(false); }}
         />
@@ -502,7 +586,7 @@ export default function FacilityPage({ siteId }) {
               {accIssues.length} accreditation alert{accIssues.length !== 1 ? 's' : ''}
             </span>
           )}
-          <button type="button" className="ws-action-btn primary" onClick={() => setAddingFac(true)}>
+          <button type="button" className="ws-action-btn primary" onClick={handleAddFacilityClick}>
             + Add Facility
           </button>
         </div>

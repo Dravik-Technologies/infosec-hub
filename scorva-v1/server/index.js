@@ -43,6 +43,11 @@ const cveAlertingJob = require('./jobs/cveAlerting');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const isDev = process.env.NODE_ENV !== 'production';
+const secureCookies = process.env.COOKIE_SECURE === 'true'
+  ? true
+  : process.env.COOKIE_SECURE === 'false'
+    ? false
+    : !isDev;
 
 app.use(helmet({ contentSecurityPolicy: false, hsts: false }));
 
@@ -72,7 +77,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: !isDev,
+    secure: secureCookies,
     sameSite: 'lax',
     maxAge: 8 * 60 * 60 * 1000,
   },

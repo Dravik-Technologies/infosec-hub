@@ -24,6 +24,15 @@ function on401() { AUTH.clearAll(); window.location.reload(); }
 
 /* ── Workspace API ── */
 export const WS = {
+  async getSites() {
+    try {
+      const r = await fetch('/api/sites', { headers: AUTH.hdrs(), credentials: 'include' });
+      if (r.status === 401) { on401(); return null; }
+      const body = await r.json();
+      if (!r.ok) return { _wsError: true, status: r.status, message: body?.error || 'Request failed' };
+      return body;
+    } catch { return null; }
+  },
   async get(collection, params = {}) {
     const qs = new URLSearchParams(params).toString();
     const url = `/api/ws/${collection}${qs ? '?' + qs : ''}`;

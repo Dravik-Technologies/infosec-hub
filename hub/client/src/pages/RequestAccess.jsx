@@ -34,7 +34,7 @@ const SECURITY_ROLE_TITLES = {
 const APPS = [
   { id: 'scorva', label: 'SCORVA' },
   { id: 'crater', label: 'CRATER' },
-  { id: 'mash', label: 'MASH' },
+  { id: 'sentinel', label: 'Sentinel' },
   { id: 'lava', label: 'LAVA' },
   { id: 'nexus', label: 'NEXUS' },
 ];

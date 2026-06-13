@@ -1,6 +1,11 @@
 'use strict';
 
-const ALL_APPS = ['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'];
+const APP_ALIASES = {
+  mash: 'sentinel',
+  sentinel: 'sentinel',
+};
+
+const ALL_APPS = ['hub', 'scorva', 'crater', 'sentinel', 'lava', 'nexus'];
 
 /* ── Platform roles (HUB admin authority only) ── */
 const PLATFORM_ROLES = ['Hub Viewer', 'Hub User', 'Hub Admin'];
@@ -41,33 +46,41 @@ const SECURITY_ROLE_TITLES = {
 
 /* ── Default app access per security role ── */
 const SECURITY_ROLE_APPS = {
-  'Executive':               ['hub', 'nexus', 'mash'],
-  'Program Manager':         ['hub', 'nexus', 'mash'],
-  'Facility Security':       ['hub', 'mash'],
-  'Personnel Security':      ['hub', 'mash'],
-  'Activities Security':     ['hub', 'mash'],
-  'Document Control':        ['hub', 'mash'],
-  'Media Control':           ['hub', 'mash'],
-  'Information Security':    ['hub', 'scorva', 'mash', 'nexus'],
+  'Executive':               ['hub', 'nexus', 'sentinel'],
+  'Program Manager':         ['hub', 'nexus', 'sentinel'],
+  'Facility Security':       ['hub', 'sentinel'],
+  'Personnel Security':      ['hub', 'sentinel'],
+  'Activities Security':     ['hub', 'sentinel'],
+  'Document Control':        ['hub', 'sentinel'],
+  'Media Control':           ['hub', 'sentinel'],
+  'Information Security':    ['hub', 'scorva', 'sentinel', 'nexus'],
   'Information Technology':  ['hub', 'scorva', 'lava', 'nexus'],
-  'Corporate Security Admin':['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'],
+  'Corporate Security Admin':['hub', 'scorva', 'crater', 'sentinel', 'lava', 'nexus'],
 };
 
 /* ── Known controlled site list ── */
 const KNOWN_SITES = [
-  { id: 'MTSI-ALX', label: 'MTSI Alexandria' },
-  { id: 'MTSI-HVL', label: 'MTSI Huntsville' },
+  { id: 'MTSI-VA', label: 'MTSI Virginia' },
+  { id: 'MTSI-OH', label: 'MTSI Ohio' },
+  { id: 'MTSI-LV', label: 'MTSI Las Vegas' },
+  { id: 'MTSI-CO', label: 'MTSI Colorado' },
+  { id: 'MTSI-STL', label: 'MTSI St. Louis' },
+  { id: 'MTSI-AL', label: 'MTSI Alabama' },
+  { id: 'MTSI-FL', label: 'MTSI Florida' },
 ];
 
 /* ── The corporate HQ site that grants all-site visibility when paired with an admin role ── */
-const CORP_SITE_ID = 'MTSI-ALX';
+const CORP_SITE_ID = 'MTSI-VA';
 
 /* ── Legacy SCORVA_ROLES kept for backward compatibility only ── */
 const SCORVA_ROLES = ['Viewer', 'ISSO', 'ISSM', 'Site Admin', 'Corporate Admin'];
 
 function normalizeApps(input) {
   const list = Array.isArray(input) ? input : [];
-  return [...new Set(list.map(v => String(v || '').trim().toLowerCase()).filter(Boolean))];
+  return [...new Set(list
+    .map(v => String(v || '').trim().toLowerCase())
+    .map(v => APP_ALIASES[v] || v)
+    .filter(Boolean))];
 }
 
 function ensureHubAccess(apps) {
@@ -167,7 +180,8 @@ function getAllowedApps(user) {
 
 function hasAppAccess(user, appId) {
   if (!user || !appId) return false;
-  return getAllowedApps(user).includes(String(appId).toLowerCase());
+  const normalized = APP_ALIASES[String(appId).toLowerCase()] || String(appId).toLowerCase();
+  return getAllowedApps(user).includes(normalized);
 }
 
 /* ── All-site visibility: user must belong to the corp site AND hold an admin-level role ── */
@@ -196,7 +210,8 @@ function mergeAllowedApps(dod8140, allowedApps) {
 
 function ensureAppAccess(dod8140, appId) {
   const current = getStoredAllowedApps({ dod8140 });
-  const next = current.includes(appId) ? current : current.concat(appId);
+  const normalized = APP_ALIASES[String(appId || '').trim().toLowerCase()] || String(appId || '').trim().toLowerCase();
+  const next = current.includes(normalized) ? current : current.concat(normalized);
   return mergeAllowedApps(dod8140, next);
 }
 
@@ -225,6 +240,7 @@ function getScorvaRole(user) {
 }
 
 module.exports = {
+  APP_ALIASES,
   ALL_APPS,
   PLATFORM_ROLES,
   LEGACY_PLATFORM_ROLE_MAP,

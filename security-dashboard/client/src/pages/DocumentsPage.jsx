@@ -41,7 +41,7 @@ function DocumentForm({ doc, siteId, onSave, onClose }) {
   const blank = {
     docNumber: '', title: '', classification: 'UNCLASSIFIED', program: '',
     status: 'Active', custodian: '', currentLocation: '', accountable: false,
-    version: '1.0', copyCount: 1, dateReceived: '', nextInventory: '',
+    version: '1.0', copyCount: 1, date: '', nextInventory: '',
     reproductionControls: '', notes: '', siteId: siteId || '',
   };
   const [form, setForm] = useState(isEdit ? {
@@ -56,7 +56,7 @@ function DocumentForm({ doc, siteId, onSave, onClose }) {
     accountable: doc.accountable || false,
     version: doc.version || '1.0',
     copyCount: doc.copyCount ?? 1,
-    dateReceived: doc.dateReceived || '',
+    date: doc.date || doc.dateReceived || '',
     nextInventory: doc.nextInventory || '',
     reproductionControls: doc.reproductionControls || '',
     notes: doc.notes || '',
@@ -68,15 +68,40 @@ function DocumentForm({ doc, siteId, onSave, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setSaving(true);
-    const payload = { ...form, copyCount: Number(form.copyCount) };
-    if (isEdit) {
-      await WS.patch('document_control', doc.id, payload);
-    } else {
-      await WS.post('document_control', { ...payload, id: uid(), receipts: [], dispatches: [], destructions: [] });
+    if (!form.siteId) {
+      alert('Error: Site ID is required. Please select a site and try again.');
+      return;
     }
-    setSaving(false);
-    onSave();
+    setSaving(true);
+    try {
+      const payload = { ...form, copyCount: Number(form.copyCount) };
+      console.log('Document payload:', payload);
+      if (isEdit) {
+        const result = await WS.patch('document_control', doc.id, payload);
+        console.log('Patch result:', result);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      } else {
+        const finalPayload = { ...payload, id: uid(), receipts: [], dispatches: [], destructions: [] };
+        console.log('Final document payload:', finalPayload);
+        const result = await WS.post('document_control', finalPayload);
+        console.log('Post result:', result);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      }
+      onSave();
+    } catch (err) {
+      console.error('Form submission error:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -133,7 +158,7 @@ function DocumentForm({ doc, siteId, onSave, onClose }) {
                 <input className="ws-input" value={form.currentLocation} onChange={e => set('currentLocation', e.target.value)} placeholder="Safe, vault, container #" />
               </FormField>
               <FormField label="Date Received">
-                <input className="ws-input" type="date" value={form.dateReceived} onChange={e => set('dateReceived', e.target.value)} />
+                <input className="ws-input" type="date" value={form.date} onChange={e => set('date', e.target.value)} />
               </FormField>
               <FormField label="Next Inventory Date">
                 <input className="ws-input" type="date" value={form.nextInventory} onChange={e => set('nextInventory', e.target.value)} />
@@ -158,7 +183,7 @@ function DocumentForm({ doc, siteId, onSave, onClose }) {
   );
 }
 
-function DocumentDetail({ doc, onClose, onEdit, onSubSaved }) {
+function DocumentDetail({ doc, onClose, onEdit, onSubSaved, onDeleted }) {
   const [subPanel, setSubPanel] = useState(null);
   const [subForm, setSubForm] = useState({});
   const [saving, setSaving] = useState(false);
@@ -197,9 +222,16 @@ function DocumentDetail({ doc, onClose, onEdit, onSubSaved }) {
   async function handleDelete() {
     if (!window.confirm('Delete this document record? This cannot be undone.')) return;
     setDeleting(true);
-    await WS.del('document_control', doc.id);
-    setDeleting(false);
-    onClose();
+    try {
+      const result = await WS.del('document_control', doc.id);
+      if (result?._wsError) {
+        alert(result.message || 'Failed to delete document');
+        return;
+      }
+      onDeleted(doc.id);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -227,7 +259,7 @@ function DocumentDetail({ doc, onClose, onEdit, onSubSaved }) {
               { label: 'Custodian', value: doc.custodian },
               { label: 'Location', value: doc.currentLocation },
               { label: 'Accountable', value: doc.accountable ? 'Yes' : 'No' },
-              { label: 'Date Received', value: fmtDate(doc.dateReceived) },
+              { label: 'Date Received', value: fmtDate(doc.date || doc.dateReceived) },
               { label: 'Next Inventory', value: fmtDate(doc.nextInventory) },
             ].map(({ label, value }) => (
               <div key={label} style={{ background: 'var(--bg-alt)', borderRadius: '0.375rem', padding: '0.5rem 0.65rem' }}>
@@ -466,7 +498,7 @@ function DocumentDetail({ doc, onClose, onEdit, onSubSaved }) {
   );
 }
 
-export default function DocumentsPage({ siteId }) {
+export default function DocumentsPage({ siteId, user, sites }) {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -478,9 +510,14 @@ export default function DocumentsPage({ siteId }) {
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [showSiteWarning, setShowSiteWarning] = useState(false);
+
+  const requiresSiteSelection = Boolean(user?.canSeeAllSites || (user?.siteIds?.length > 1));
+  const readSiteId = siteId || (!requiresSiteSelection ? (user?.primarySiteId || user?.siteIds?.[0] || '') : '');
+  const createSiteId = siteId || user?.primarySiteId || user?.siteIds?.[0] || '';
 
   function loadDocs() {
-    const params = siteId ? { siteId } : {};
+    const params = readSiteId ? { siteId: readSiteId } : {};
     return WS.get('document_control', params).then(d => {
       if (d?._wsError) { setLoadError(d.message); setLoading(false); return; }
       setLoadError(null);
@@ -492,7 +529,7 @@ export default function DocumentsPage({ siteId }) {
   useEffect(() => {
     setLoading(true);
     loadDocs();
-  }, [siteId]);
+  }, [readSiteId]);
 
   function handleSaved() {
     loadDocs().then(() => { setAdding(false); setEditing(null); });
@@ -509,6 +546,20 @@ export default function DocumentsPage({ siteId }) {
     const doc = selected;
     setSelected(null);
     setEditing(doc);
+  }
+
+  function handleDeleted(docId) {
+    setSelected(null);
+    setDocs(prev => prev.filter(d => d.id !== docId));
+    loadDocs();
+  }
+
+  function handleAddDocumentClick() {
+    if (requiresSiteSelection && !siteId) {
+      setShowSiteWarning(true);
+      return;
+    }
+    setAdding(true);
   }
 
   const allPrograms = [...new Set(docs.map(d => d.program).filter(Boolean))].sort();
@@ -533,14 +584,34 @@ export default function DocumentsPage({ siteId }) {
 
   return (
     <div className="ws-page">
-      {adding && <DocumentForm siteId={siteId} onSave={handleSaved} onClose={() => setAdding(false)} />}
-      {editing && <DocumentForm doc={editing} siteId={siteId} onSave={handleSaved} onClose={() => setEditing(null)} />}
+      {showSiteWarning && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div className="ws-card" style={{ width: 'min(420px, 100%)' }}>
+            <div className="ws-card-header">
+              <h3>⚠️ Site Required</h3>
+            </div>
+            <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Please select a site from the dropdown menu at the top before adding documents. Each document record must be assigned to a specific site.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="ws-action-btn primary" onClick={() => setShowSiteWarning(false)}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {adding && <DocumentForm siteId={createSiteId} onSave={handleSaved} onClose={() => setAdding(false)} />}
+      {editing && <DocumentForm doc={editing} siteId={createSiteId} onSave={handleSaved} onClose={() => setEditing(null)} />}
       {selected && !editing && (
         <DocumentDetail
           doc={selected}
           onClose={() => setSelected(null)}
           onEdit={handleEditFromDetail}
           onSubSaved={handleSubSaved}
+          onDeleted={handleDeleted}
         />
       )}
 
@@ -560,7 +631,7 @@ export default function DocumentsPage({ siteId }) {
             </span>
           )}
           <span className="ws-count-badge">{docs.filter(d => d.accountable).length} accountable / {docs.length} total</span>
-          <button className="ws-action-btn primary" onClick={() => setAdding(true)}>+ Add Document</button>
+          <button className="ws-action-btn primary" onClick={handleAddDocumentClick}>+ Add Document</button>
         </div>
       </div>
 

@@ -10,8 +10,13 @@ async function main() {
 
   // ── Sites ──────────────────────────────────────────────────────────────────
   const sites = [
-    { id: 'MTSI-ALX', label: 'MTSI Alexandria' },
-    { id: 'MTSI-HVL', label: 'MTSI Huntsville' },
+    { id: 'MTSI-VA', label: 'MTSI Virginia' },
+    { id: 'MTSI-OH', label: 'MTSI Ohio' },
+    { id: 'MTSI-LV', label: 'MTSI Las Vegas' },
+    { id: 'MTSI-CO', label: 'MTSI Colorado' },
+    { id: 'MTSI-STL', label: 'MTSI St. Louis' },
+    { id: 'MTSI-AL', label: 'MTSI Alabama' },
+    { id: 'MTSI-FL', label: 'MTSI Florida' },
   ];
 
   for (const site of sites) {
@@ -26,34 +31,34 @@ async function main() {
   // ── Users ──────────────────────────────────────────────────────────────────
   const users = [
     {
-      id: 'admin-alx',
+      id: 'admin-mtsi',
       name: 'MTSI Admin',
       username: 'admin',
       email: 'admin@mtsi.com',
       password: 'Admin@12345!',
       role: 'Hub Admin',
-      siteId: 'MTSI-ALX',
-      siteIds: ['MTSI-ALX', 'MTSI-HVL'],
+      siteId: 'MTSI-VA',
+      siteIds: ['MTSI-VA', 'MTSI-OH', 'MTSI-LV', 'MTSI-CO', 'MTSI-STL', 'MTSI-AL', 'MTSI-FL'],
     },
     {
-      id: 'sso-alx',
-      name: 'Alexandria SSO',
-      username: 'alx.user',
-      email: 'user@mtsi-alx.com',
+      id: 'user-va',
+      name: 'Virginia User',
+      username: 'va.user',
+      email: 'user@mtsi-va.com',
       password: 'User@12345!',
       role: 'Hub User',
-      siteId: 'MTSI-ALX',
-      siteIds: ['MTSI-ALX'],
+      siteId: 'MTSI-VA',
+      siteIds: ['MTSI-VA'],
     },
     {
-      id: 'sso-hvl',
-      name: 'Huntsville SSO',
-      username: 'hvl.user',
-      email: 'user@mtsi-hvl.com',
+      id: 'user-al',
+      name: 'Alabama User',
+      username: 'al.user',
+      email: 'user@mtsi-al.com',
       password: 'User@12345!',
       role: 'Hub User',
-      siteId: 'MTSI-HVL',
-      siteIds: ['MTSI-HVL'],
+      siteId: 'MTSI-AL',
+      siteIds: ['MTSI-AL'],
     },
   ];
 
@@ -77,19 +82,24 @@ async function main() {
     console.log(`  User: ${u.name} (${u.username}) → ${u.siteId}`);
   }
 
-  // ── MASH sites ─────────────────────────────────────────────────────────────
-  const mashSites = [
-    { siteId: 'MTSI-ALX', name: 'MTSI Alexandria', location: 'Alexandria, VA', status: 'Active' },
-    { siteId: 'MTSI-HVL', name: 'MTSI Huntsville', location: 'Huntsville, AL', status: 'Active' },
+  // ── Sentinel sites (one per Site) ───────────────────────────────────────────
+  const sentinelSites = [
+    { siteId: 'MTSI-VA', name: 'MTSI Virginia', location: 'Virginia', status: 'Active' },
+    { siteId: 'MTSI-OH', name: 'MTSI Ohio', location: 'Ohio', status: 'Active' },
+    { siteId: 'MTSI-LV', name: 'MTSI Las Vegas', location: 'Las Vegas, NV', status: 'Active' },
+    { siteId: 'MTSI-CO', name: 'MTSI Colorado', location: 'Colorado', status: 'Active' },
+    { siteId: 'MTSI-STL', name: 'MTSI St. Louis', location: 'St. Louis, MO', status: 'Active' },
+    { siteId: 'MTSI-AL', name: 'MTSI Alabama', location: 'Alabama', status: 'Active' },
+    { siteId: 'MTSI-FL', name: 'MTSI Florida', location: 'Florida', status: 'Active' },
   ];
 
-  for (const ms of mashSites) {
+  for (const ss of sentinelSites) {
     await db.mashSite.upsert({
-      where: { siteId: ms.siteId },
-      update: { name: ms.name, location: ms.location, status: ms.status },
-      create: ms,
+      where: { siteId: ss.siteId },
+      update: { name: ss.name, location: ss.location, status: ss.status },
+      create: ss,
     });
-    console.log(`  MashSite: ${ms.name}`);
+    console.log(`  SentinelSite: ${ss.name}`);
   }
 
   console.log('Seeding complete.');

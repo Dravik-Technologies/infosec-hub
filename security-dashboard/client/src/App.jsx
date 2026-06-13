@@ -49,7 +49,7 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
   const activeSection = SECTIONS.find(s => s.id === section) || SECTIONS[0];
   const roleLabel = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Security Staff';
   const siteText = siteId
-    ? sites.find(s => s.id === siteId)?.name || siteId
+    ? getSiteLabel(sites.find(s => s.id === siteId)) || siteId
     : (user?.primarySiteId || user?.siteId || (user?.siteIds?.length > 1 ? `${user.siteIds.length} sites` : user?.siteIds?.[0]) || 'All sites');
   const initials = (user?.initials
     || user?.name?.split(/\s+/).filter(Boolean).slice(0, 2).map(part => part[0]).join('')
@@ -84,7 +84,7 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
               <span>Site:</span>
               <select value={siteId} onChange={e => onSiteChange(e.target.value)}>
                 <option value="">All Sites</option>
-                {sites.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                {sites.map(s => <option key={s.id} value={s.id}>{getSiteLabel(s)}</option>)}
               </select>
             </div>
           )}
@@ -116,6 +116,10 @@ function Header({ user, sites, siteId, onSiteChange, section, onSection, onLogou
       </nav>
     </header>
   );
+}
+
+function getSiteLabel(s) {
+  return s?.label || s?.name || s?.id || '';
 }
 
 export default function App() {
@@ -174,8 +178,8 @@ export default function App() {
 
   useEffect(() => {
     if (!user) return;
-    WS.get('security_workspace_settings').then(s => {
-      if (s?.sites) setSites(s.sites.filter(x => x.active !== false));
+    WS.getSites().then(s => {
+      if (Array.isArray(s?.sites)) setSites(s.sites);
     });
   }, [user]);
 
@@ -198,7 +202,7 @@ export default function App() {
 
   if (!user) return <LoginPage onLogin={handleLogin} />;
 
-  const pageProps = { user, siteId };
+  const pageProps = { user, siteId, sites };
 
   return (
     <div className="ws-shell" data-section={section}>

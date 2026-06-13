@@ -2,14 +2,14 @@
 
 const { randomUUID } = require('crypto');
 const { db } = require('./index');
-const { ALL_APPS } = require('./appAccess');
+const { ALL_APPS, APP_ALIASES } = require('./appAccess');
 
 const DOCUMENT_NAME = 'hub_access_requests';
 const REQUESTABLE_APPS = ALL_APPS.filter(app => app !== 'hub');
 const APP_LABELS = {
   scorva: 'SCORVA',
   crater: 'CRATER',
-  mash: 'MASH',
+  sentinel: 'Sentinel',
   lava: 'LAVA',
   nexus: 'NEXUS',
 };
@@ -23,7 +23,8 @@ function normalizeLower(value) {
 }
 
 function normalizeAppId(value) {
-  const appId = normalizeLower(value);
+  const raw = normalizeLower(value);
+  const appId = APP_ALIASES[raw] || raw;
   return REQUESTABLE_APPS.includes(appId) ? appId : '';
 }
 

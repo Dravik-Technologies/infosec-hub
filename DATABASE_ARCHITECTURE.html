@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security App Factory - Database Architecture</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .section {
+      margin-bottom: 50px;
+    }
+
+    .section h2 {
+      color: #667eea;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #667eea;
+    }
+
+    .entity-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .entity-card {
+      background: #f8f9fa;
+      border-left: 5px solid #667eea;
+      border-radius: 8px;
+      padding: 20px;
+      transition: all 0.3s ease;
+    }
+
+    .entity-card:hover {
+      background: #fff;
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .entity-card h3 {
+      color: #333;
+      font-size: 1.2em;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .entity-card .badge {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: bold;
+    }
+
+    .entity-card .fields {
+      font-size: 0.9em;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .entity-card .field {
+      padding: 4px 0;
+      font-family: 'Courier New', monospace;
+    }
+
+    .field-key {
+      color: #764ba2;
+      font-weight: bold;
+    }
+
+    .field-type {
+      color: #999;
+      font-size: 0.85em;
+    }
+
+    .relationship-diagram {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 30px;
+      margin: 30px 0;
+      border: 2px solid #e9ecef;
+      overflow-x: auto;
+    }
+
+    .erd-box {
+      display: inline-block;
+      background: white;
+      border: 2px solid #667eea;
+      border-radius: 6px;
+      padding: 15px;
+      margin: 0 20px 20px 0;
+      min-width: 200px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .erd-box-title {
+      font-weight: bold;
+      color: #667eea;
+      margin-bottom: 8px;
+      border-bottom: 1px solid #e9ecef;
+      padding-bottom: 6px;
+    }
+
+    .erd-relation {
+      color: #666;
+      font-size: 0.85em;
+      line-height: 1.5;
+      margin: 4px 0;
+    }
+
+    .domain-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .domain-hub { background: #e3f2fd; color: #1976d2; }
+    .domain-scorva { background: #e0f2f1; color: #00897b; }
+    .domain-crater { background: #fff3e0; color: #f57c00; }
+    .domain-mash { background: #f3e5f5; color: #7b1fa2; }
+    .domain-lava { background: #e8f5e9; color: #388e3c; }
+    .domain-nexus { background: #fce4ec; color: #c2185b; }
+    .domain-shared { background: #f5f5f5; color: #616161; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+
+    .stat-box {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 0.9em;
+      opacity: 0.9;
+    }
+
+    .data-flow {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      border-left: 4px solid #667eea;
+    }
+
+    .data-flow h4 {
+      color: #667eea;
+      margin-bottom: 12px;
+    }
+
+    .data-flow p {
+      color: #666;
+      line-height: 1.6;
+      margin: 8px 0;
+    }
+
+    .column-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .column-item {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #e9ecef;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+    }
+
+    .column-item strong {
+      color: #667eea;
+    }
+
+    code {
+      background: #f5f5f5;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      color: #d63384;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #333;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🗄️ Security App Factory</h1>
+      <p>Shared PostgreSQL Database Architecture</p>
+    </div>
+
+    <div class="content">
+      <!-- Overview Stats -->
+      <div class="stats">
+        <div class="stat-box">
+          <div class="stat-number">50+</div>
+          <div class="stat-label">Tables</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">6</div>
+          <div class="stat-label">Domains</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">Multi-Tenant</div>
+          <div class="stat-label">via Site ID</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-number">PostgreSQL 16</div>
+          <div class="stat-label">Technology</div>
+        </div>
+      </div>
+
+      <!-- Core Architecture -->
+      <div class="section">
+        <h2>🔗 Core Architecture</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          All mission apps share a single PostgreSQL database. The <strong>Site</strong> model is the central multi-tenant entity.
+          Every user and resource is scoped to one or more sites for data isolation.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #667eea;">
+            <h3><span class="badge domain-shared">CORE</span> Site</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">
+              Multi-tenant root entity. Every user and resource belongs to a site.
+            </p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id</span> <span class="field-type">String (PK)</span></div>
+              <div class="field"><span class="field-key">label</span> <span class="field-type">String</span></div>
+              <div class="field"><span class="field-key">createdAt, updatedAt</span> <span class="field-type">DateTime</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #667eea;">
+            <h3><span class="badge domain-shared">CORE</span> User</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">
+              Hub-authenticated user. Linked to primary site and array of allowed sites.
+            </p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id</span> <span class="field-type">String (PK)</span></div>
+              <div class="field"><span class="field-key">username, email</span> <span class="field-type">String (UNIQUE)</span></div>
+              <div class="field"><span class="field-key">passwordHash</span> <span class="field-type">String</span></div>
+              <div class="field"><span class="field-key">siteId, siteIds[]</span> <span class="field-type">Site relationship</span></div>
+              <div class="field"><span class="field-key">hubRole, jobRole</span> <span class="field-type">String</span></div>
+              <div class="field"><span class="field-key">status, role, tokenEpoch</span> <span class="field-type">String, Int</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCORVA Domain -->
+      <div class="section">
+        <h2>🎯 SCORVA Domain (Cyber Command Center)</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          NIST SP 800-53 Rev 5 compliance, ATO tracking, continuous monitoring, POAM, asset inventory.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #00897b;">
+            <h3><span class="badge domain-scorva">SCORVA</span> Control</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">NIST control implementation tracking</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, title, family</span></div>
+              <div class="field"><span class="field-key">status</span> (Not Implemented, Partial, Implemented)</div>
+              <div class="field"><span class="field-key">siteId</span> (Foreign Key)</div>
+              <div class="field"><span class="field-key">conmonStatus, conmonGroup, conmonFrequency</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #00897b;">
+            <h3><span class="badge domain-scorva">SCORVA</span> Task</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Compliance and remediation tasks</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, title, type</span></div>
+              <div class="field"><span class="field-key">status, priority</span></div>
+              <div class="field"><span class="field-key">siteId, linkedControls[]</span></div>
+              <div class="field"><span class="field-key">dueDate, assignee</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #00897b;">
+            <h3><span class="badge domain-scorva">SCORVA</span> POAM</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Plan of Action & Milestones</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, title, weakness</span></div>
+              <div class="field"><span class="field-key">status, severity</span></div>
+              <div class="field"><span class="field-key">siteId, controlId, atoId</span></div>
+              <div class="field"><span class="field-key">riskDecision, riskWorkflowState</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #00897b;">
+            <h3><span class="badge domain-scorva">SCORVA</span> AtoPackage</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Authorization to Operate packages</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, system, category</span></div>
+              <div class="field"><span class="field-key">status, issued, expires</span></div>
+              <div class="field"><span class="field-key">siteId, ao</span></div>
+              <div class="field"><span class="field-key">controls, openFindings</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #00897b;">
+            <h3><span class="badge domain-scorva">SCORVA</span> ConMon</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Continuous Monitoring</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, controlId, controlTitle</span></div>
+              <div class="field"><span class="field-key">status, dueDate</span></div>
+              <div class="field"><span class="field-key">siteId (unique with controlId)</span></div>
+              <div class="field"><span class="field-key">reviewOutcome, assignee</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #00897b;">
+            <h3><span class="badge domain-scorva">SCORVA</span> SecurityEvent</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Security event tracking</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, type, severity</span></div>
+              <div class="field"><span class="field-key">status, siteId</span></div>
+              <div class="field"><span class="field-key">source, assetId, description</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CRATER Domain -->
+      <div class="section">
+        <h2>⚙️ CRATER Domain (RMF Automation Engine)</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          RMF automation for compliance documentation and control assessment.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #f57c00;">
+            <h3><span class="badge domain-crater">CRATER</span> ProjectSystem</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">IT system under assessment</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, externalId, name</span></div>
+              <div class="field"><span class="field-key">systemType, organization</span></div>
+              <div class="field"><span class="field-key">siteId, atoStatus</span></div>
+              <div class="field"><span class="field-key">cia: confidentiality, integrity, availability</span></div>
+              <div class="field"><span class="field-key">baseline, systemOwner, isso, issm</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #f57c00;">
+            <h3><span class="badge domain-crater">CRATER</span> ProjectControl</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Control implementation per system</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, projectSystemId, controlId</span></div>
+              <div class="field"><span class="field-key">status, implementationStatement</span></div>
+              <div class="field"><span class="field-key">tailoringRequired, autoFilled</span></div>
+              <div class="field"><span class="field-key">siteId, validatedAt, validatedBy</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #f57c00;">
+            <h3><span class="badge domain-crater">CRATER</span> StandardLibrary</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Standard control templates</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, controlId, controlTitle</span></div>
+              <div class="field"><span class="field-key">family, implementationStatement</span></div>
+              <div class="field"><span class="field-key">tailoringRequired, implementationOrigin</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MASH Domain -->
+      <div class="section">
+        <h2>🛡️ MASH Domain (Security/Sentinel Hub)</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          Physical security, personnel clearances, facility compliance, document control, DD-254 tracking, media control, self-inspections, findings.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #7b1fa2;">
+            <h3><span class="badge domain-mash">MASH</span> MashFacilitySecurity</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Facility compliance & certification</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, siteId, name</span></div>
+              <div class="field"><span class="field-key">fclLevel, fclStatus, fclExpires</span></div>
+              <div class="field"><span class="field-key">complianceScore, kmp, accreditation</span></div>
+              <div class="field"><span class="field-key">alarmIds, accessControl, vulnerabilities</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #7b1fa2;">
+            <h3><span class="badge domain-mash">MASH</span> MashPersonnelSecurity</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Personnel clearance tracking</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, siteId, name, username</span></div>
+              <div class="field"><span class="field-key">clearanceLevel, clearanceStatus, clearancePRD</span></div>
+              <div class="field"><span class="field-key">indocDate, debriefDate, cvStatus</span></div>
+              <div class="field"><span class="field-key">training, caveatAccess, formalAccess</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #7b1fa2;">
+            <h3><span class="badge domain-mash">MASH</span> MashDocumentControl</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Classified document management</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, siteId, docNumber, title</span></div>
+              <div class="field"><span class="field-key">classification, program, copyCount</span></div>
+              <div class="field"><span class="field-key">custodian, lastInventory, nextInventory</span></div>
+              <div class="field"><span class="field-key">receipts, dispatches, destructions</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #7b1fa2;">
+            <h3><span class="badge domain-mash">MASH</span> MashDd254Register</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">DD-254 contract security tracking</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, siteId, contractNumber</span></div>
+              <div class="field"><span class="field-key">programName, customer, primeOrSub</span></div>
+              <div class="field"><span class="field-key">dd254Status, effectiveDate, expirationDate</span></div>
+              <div class="field"><span class="field-key">hasSci, hasSap, cuiRequired</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #7b1fa2;">
+            <h3><span class="badge domain-mash">MASH</span> MashMediaControl</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Classified media tracking</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, siteId, mediaId, type</span></div>
+              <div class="field"><span class="field-key">label, classification, program</span></div>
+              <div class="field"><span class="field-key">status, assignedTo, assignedDate</span></div>
+              <div class="field"><span class="field-key">lastScan, lastApproval, flags, history</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #7b1fa2;">
+            <h3><span class="badge domain-mash">MASH</span> MashSecurityFinding</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Security findings & corrective actions</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, siteId, findingNumber</span></div>
+              <div class="field"><span class="field-key">area, requirement, finding, severity</span></div>
+              <div class="field"><span class="field-key">status, openDate, dueDate, closedDate</span></div>
+              <div class="field"><span class="field-key">corrective, owner, inspectionId</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAVA Domain -->
+      <div class="section">
+        <h2>🔐 LAVA Domain (Network Access Portal)</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          Network access request management, SAAR processing, asset assignment, audit logging.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #388e3c;">
+            <h3><span class="badge domain-lava">LAVA</span> LavaSaar</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">System Access Authorization Request</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, firstName, lastName, email</span></div>
+              <div class="field"><span class="field-key">systemName, systemOwner, classification</span></div>
+              <div class="field"><span class="field-key">accessType, privilegedAccessType</span></div>
+              <div class="field"><span class="field-key">status, approvalWorkflow</span></div>
+              <div class="field"><span class="field-key">yubiKeySerial, accessExpiresAt, revokedAt</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #388e3c;">
+            <h3><span class="badge domain-lava">LAVA</span> LavaSystemRequest</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">System access request registration</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, systemName, systemOwner</span></div>
+              <div class="field"><span class="field-key">ownerEmail, classification</span></div>
+              <div class="field"><span class="field-key">purpose, networkType, status</span></div>
+              <div class="field"><span class="field-key">siteId, assets[] (1:M)</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #388e3c;">
+            <h3><span class="badge domain-lava">LAVA</span> LavaAsset</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Assigned hardware/infrastructure</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, systemRequestId, assetTag</span></div>
+              <div class="field"><span class="field-key">make, model, serialNumber, assetType</span></div>
+              <div class="field"><span class="field-key">status, assignedUser, location</span></div>
+              <div class="field"><span class="field-key">assignmentHistory[] (1:M)</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #388e3c;">
+            <h3><span class="badge domain-lava">LAVA</span> LavaAuditLog</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Access audit trail</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, actor, action</span></div>
+              <div class="field"><span class="field-key">entityType, entityId, details</span></div>
+              <div class="field"><span class="field-key">siteId, createdAt</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Asset Management -->
+      <div class="section">
+        <h2>💾 Asset Management (Cross-Domain)</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          Shared assets for infrastructure tracking across all mission apps.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #666;">
+            <h3><span class="badge domain-shared">SHARED</span> Workstation</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Endpoint device inventory</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, assetTag, hostname</span></div>
+              <div class="field"><span class="field-key">siteId, type, os, ip</span></div>
+              <div class="field"><span class="field-key">classification, status, keyExpiry</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #666;">
+            <h3><span class="badge domain-shared">SHARED</span> YubiKey</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Hardware token tracking</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, serial (UNIQUE), model</span></div>
+              <div class="field"><span class="field-key">status, username, siteId</span></div>
+              <div class="field"><span class="field-key">issued, lastAuth, lostDestroyedDate</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #666;">
+            <h3><span class="badge domain-shared">SHARED</span> License</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Software license management</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, product, vendor</span></div>
+              <div class="field"><span class="field-key">seats, used, status, expires</span></div>
+              <div class="field"><span class="field-key">siteId, cost</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #666;">
+            <h3><span class="badge domain-shared">SHARED</span> Agreement</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Contract & SLA management</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, title, type, category</span></div>
+              <div class="field"><span class="field-key">status, signed, expires</span></div>
+              <div class="field"><span class="field-key">siteId, assignedTo</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #666;">
+            <h3><span class="badge domain-shared">SHARED</span> EvidenceArtifact</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Compliance evidence storage</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, resourceType, resourceId</span></div>
+              <div class="field"><span class="field-key">filename, mimeType, data (Bytes)</span></div>
+              <div class="field"><span class="field-key">siteId, uploadedBy</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #666;">
+            <h3><span class="badge domain-shared">SHARED</span> Tracker</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Custom tracking tables</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, name, description</span></div>
+              <div class="field"><span class="field-key">siteId, controlId, status</span></div>
+              <div class="field"><span class="field-key">columns[], rows[], subtrackers[]</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inspection & Checklist -->
+      <div class="section">
+        <h2>✅ Inspection & Checklist Framework</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          Reusable checklist templates and inspection campaign execution.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #1976d2;">
+            <h3><span class="badge domain-shared">SHARED</span> ChecklistTemplate</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Template definition</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, name, source, version</span></div>
+              <div class="field"><span class="field-key">isActive, sections[] (1:M)</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #1976d2;">
+            <h3><span class="badge domain-shared">SHARED</span> ChecklistSection</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Section grouping</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, templateId, title</span></div>
+              <div class="field"><span class="field-key">sectionCode, sortOrder</span></div>
+              <div class="field"><span class="field-key">items[] (1:M)</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #1976d2;">
+            <h3><span class="badge domain-shared">SHARED</span> ChecklistItem</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Individual checklist question</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, sectionId, itemCode</span></div>
+              <div class="field"><span class="field-key">questionText, nispomRef, riskCategory</span></div>
+              <div class="field"><span class="field-key">evidenceRequired, controlRef, sortOrder</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #1976d2;">
+            <h3><span class="badge domain-shared">SHARED</span> InspectionCampaign</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Campaign execution instance</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, siteId, templateId, name</span></div>
+              <div class="field"><span class="field-key">status, startDate, targetDate, completedAt</span></div>
+              <div class="field"><span class="field-key">sections[], items[] (1:M)</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #1976d2;">
+            <h3><span class="badge domain-shared">SHARED</span> InspectionCampaignItem</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Campaign item responses</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, campaignId, sectionId</span></div>
+              <div class="field"><span class="field-key">status, workNotes, updatedBy</span></div>
+              <div class="field"><span class="field-key">taskId, poamId (linked to remediation)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Infrastructure & Sessions -->
+      <div class="section">
+        <h2>⚡ Infrastructure & Session Management</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          Audit, notifications, data fabric, and session management.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #d32f2f;">
+            <h3><span class="badge domain-shared">SHARED</span> AuditLog</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Immutable action log</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, username, action, resource</span></div>
+              <div class="field"><span class="field-key">detail, siteId, timestamp</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #d32f2f;">
+            <h3><span class="badge domain-shared">SHARED</span> Notification</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">User notifications</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, type, title, message</span></div>
+              <div class="field"><span class="field-key">siteId, read, createdAt</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #d32f2f;">
+            <h3><span class="badge domain-shared">SHARED</span> DataFabricDocument</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Key-value document store</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">name (PK), data (Json)</span></div>
+              <div class="field"><span class="field-key">createdAt, updatedAt</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #d32f2f;">
+            <h3><span class="badge domain-shared">SHARED</span> DataFabricSession</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Transient session tokens</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">token (PK), createdAt, expiresAt</span></div>
+              <div class="field"><span class="field-key">Indexed on expiresAt for cleanup</span></div>
+            </div>
+          </div>
+
+          <div class="entity-card" style="border-left-color: #d32f2f;">
+            <h3><span class="badge domain-shared">SHARED</span> HubSsoToken</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">SSO token store (60s TTL)</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">tokenHash (PK), userData (Json)</span></div>
+              <div class="field"><span class="field-key">expiresAt, consumedAt</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEXUS Analytics -->
+      <div class="section">
+        <h2>📊 NEXUS Analytics (Snapshots)</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          Time-series snapshots for metrics and KPI tracking.
+        </p>
+
+        <div class="entity-grid">
+          <div class="entity-card" style="border-left-color: #c2185b;">
+            <h3><span class="badge domain-nexus">NEXUS</span> NexusSnapshot</h3>
+            <p style="margin-bottom: 10px; color: #666; font-size: 0.9em;">Aggregated metrics at point-in-time</p>
+            <div class="fields">
+              <div class="field"><span class="field-key">id, snapshotAt, siteId</span></div>
+              <div class="field"><span class="field-key">cyberScore, securityScore, programScore</span></div>
+              <div class="field"><span class="field-key">openPoams, authorizedAtos, expiredAtos</span></div>
+              <div class="field"><span class="field-key">openFindings, nominalFacilities, overdueTraining</span></div>
+              <div class="field"><span class="field-key">pendingSaars, meta (Json)</span></div>
+              <div class="field"><span class="field-key">Indexed on (snapshotAt, siteId)</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Multi-Tenant Architecture -->
+      <div class="section">
+        <h2>🏢 Multi-Tenant Architecture</h2>
+
+        <div class="data-flow">
+          <h4>Site Scoping Pattern</h4>
+          <p><strong>Every resource record includes a <code>siteId</code> foreign key</strong> that references the <code>Site</code> table.</p>
+          <p>Users can be assigned to multiple sites via the <code>User.siteIds[]</code> array, enabling:</p>
+          <ul style="margin: 12px 0 0 20px; color: #666;">
+            <li>Corporate admins to see all sites (via <code>canSeeAllSites: true</code>)</li>
+            <li>Site-scoped users to see only their assigned site(s) (filtered by <code>requiredAuth</code> middleware)</li>
+            <li>All data access to be filtered at the database query level, not in application logic</li>
+          </ul>
+        </div>
+
+        <div class="data-flow">
+          <h4>Authorization Model</h4>
+          <ul style="margin: 12px 0 0 20px; color: #666;">
+            <li><strong>Hub Role:</strong> <code>Hub Admin</code> (full access), <code>Hub Viewer</code> (read-only), etc.</li>
+            <li><strong>Job Role:</strong> App-specific role (e.g., "RMF Officer", "Security Manager")</li>
+            <li><strong>Site Assignment:</strong> Primary site + array of multi-tenant sites</li>
+            <li><strong>App Access:</strong> Array of allowed apps per user (SCORVA, CRATER, MASH, LAVA, etc.)</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Data Flow -->
+      <div class="section">
+        <h2>🔄 Data Flow & Relationships</h2>
+
+        <div class="data-flow">
+          <h4>SCORVA Flow</h4>
+          <p>User selects a Site → Views Controls for that Site → Creates Tasks linked to Controls → POAMs track remediation → ConMon tracks compliance</p>
+        </div>
+
+        <div class="data-flow">
+          <h4>CRATER Flow</h4>
+          <p>Create ProjectSystem (e.g., "Email Server") → Add ProjectControls from StandardLibrary → Gather evidence via EvidenceArtifacts → Validate controls → Generate SSP</p>
+        </div>
+
+        <div class="data-flow">
+          <h4>MASH Flow</h4>
+          <p>Register Site as MashSite → Manage Facility/Personnel/Media security → Track DD-254 contracts → Document clearances → Log findings → Measure compliance</p>
+        </div>
+
+        <div class="data-flow">
+          <h4>LAVA Flow</h4>
+          <p>Submit SAAR request (LavaSaar) → Assign hardware assets (LavaAssets) → Track assignment history → Audit all changes (LavaAuditLog)</p>
+        </div>
+      </div>
+
+      <!-- Indexes & Performance -->
+      <div class="section">
+        <h2>⚙️ Indexes & Query Performance</h2>
+        <p style="margin-bottom: 20px; color: #666;">
+          All multi-tenant resources are indexed on <code>siteId</code> for fast filtering. Key analytical queries use composite indexes.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Index</th>
+              <th>Table</th>
+              <th>Columns</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>siteId</code></td>
+              <td>controls, tasks, poams, conmon, workstations, etc.</td>
+              <td>siteId</td>
+              <td>Fast site scoping</td>
+            </tr>
+            <tr>
+              <td><code>tokenEpoch</code></td>
+              <td>users</td>
+              <td>tokenEpoch</td>
+              <td>Token revocation checks</td>
+            </tr>
+            <tr>
+              <td><code>expiresAt</code></td>
+              <td>data_fabric_sessions, hub_sso_tokens</td>
+              <td>expiresAt</td>
+              <td>Session cleanup queries</td>
+            </tr>
+            <tr>
+              <td><code>snapshotAt, siteId</code></td>
+              <td>nexus_snapshots</td>
+              <td>snapshotAt, siteId</td>
+              <td>Time-series analytics</td>
+            </tr>
+            <tr>
+              <td><code>resourceType, resourceId</code></td>
+              <td>evidence_artifacts</td>
+              <td>resourceType, resourceId</td>
+              <td>Artifact lookup by resource</td>
+            </tr>
+            <tr>
+              <td><code>unique(siteId, controlId)</code></td>
+              <td>con_mon</td>
+              <td>siteId, controlId</td>
+              <td>Prevent duplicate monitoring entries</td>
+            </tr>
+            <tr>
+              <td><code>unique(projectSystemId, controlId)</code></td>
+              <td>project_controls</td>
+              <td>projectSystemId, controlId</td>
+              <td>Prevent duplicate system controls</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Summary -->
+      <div class="section">
+        <h2>📋 Summary</h2>
+        <div style="background: #e3f2fd; border-radius: 8px; padding: 20px; line-height: 1.8;">
+          <p><strong>Total Tables:</strong> 50+</p>
+          <p><strong>Primary Key Strategy:</strong> CUID/UUID + String IDs for interoperability</p>
+          <p><strong>Multi-Tenancy:</strong> Site-scoped via <code>siteId</code> foreign key on all mission resources</p>
+          <p><strong>Authentication:</strong> Express-session (Hub) + JWT (other apps) with httpOnly cookies</p>
+          <p><strong>Authorization:</strong> Role-based (hubRole) + Site-based (siteIds[]) + App-based (allowedApps[])</p>
+          <p><strong>Domains:</strong> SCORVA (RMF), CRATER (eMASS), MASH (Security), LAVA (Network), NEXUS (Analytics)</p>
+          <p><strong>Tech Stack:</strong> PostgreSQL 16 + Prisma ORM + Node.js</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

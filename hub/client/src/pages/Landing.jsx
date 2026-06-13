@@ -23,10 +23,10 @@ const APPS = [
     tags: ['eMASS', 'RMF', 'SCTM', 'POAM'],
   },
   {
-    id: 'mash', name: 'MASH', tagline: 'MTSI Advanced Sentinel Hub',
-    desc: 'Security Managers Workspace shell for the future facility, personnel, and activities-security rebuild that will feed NEXUS.',
+    id: 'sentinel', name: 'Sentinel', tagline: 'Security Operations Center',
+    desc: 'Comprehensive security management platform for facility compliance, personnel clearances, document control, and compliance tracking.',
     color: 'gold', icon: 'BarChart3', team: 'Security Operations',
-    tags: ['Facility Security', 'Personnel Security', 'Activities Security'],
+    tags: ['Facility Security', 'Personnel Security', 'Document Control', 'Compliance'],
   },
   {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',

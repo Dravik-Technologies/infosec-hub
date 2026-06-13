@@ -19,6 +19,11 @@ const { hasAppAccess } = require('../../packages/db/src/appAccess');
 const app   = express();
 const PORT  = process.env.PORT || 3010;
 const isDev = process.env.NODE_ENV !== 'production';
+const secureCookies = process.env.COOKIE_SECURE === 'true'
+  ? true
+  : process.env.COOKIE_SECURE === 'false'
+    ? false
+    : !isDev;
 
 if (!isDev) app.set('trust proxy', 1);
 
@@ -38,7 +43,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure:   !isDev,
+    secure:   secureCookies,
     sameSite: 'lax',
     maxAge:   8 * 60 * 60 * 1000,
   },
@@ -78,10 +83,10 @@ const APPS = [
     team: 'GRC', status: 'live', tags: ['eMASS', 'RMF', 'SCTM', 'POAM', 'Vulnerabilities'],
   },
   {
-    id: 'mash', name: 'MASH', tagline: 'MTSI Advanced Sentinel Hub',
-    desc: 'Security Managers Workspace shell for the upcoming facility, personnel, and activities-security rebuild that will feed NEXUS.',
-    url: process.env.MASH_URL || 'http://localhost:8080', ssoPath: '/auth/sso', color: 'gold', icon: 'BarChart3',
-    team: 'Security Operations', status: 'transition', tags: ['Facility Security', 'Personnel Security', 'Activities Security'],
+    id: 'sentinel', name: 'Sentinel', tagline: 'Security Operations Center',
+    desc: 'Comprehensive security management platform for facility compliance, personnel clearances, document control, and compliance tracking.',
+    url: process.env.SENTINEL_URL || process.env.MASH_URL || 'http://localhost:8080', ssoPath: '/auth/sso', color: 'gold', icon: 'BarChart3',
+    team: 'Security Operations', status: 'live', tags: ['Facility Security', 'Personnel Security', 'Document Control', 'Compliance'],
   },
   {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',

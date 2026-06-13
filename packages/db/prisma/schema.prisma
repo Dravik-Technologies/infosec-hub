@@ -427,19 +427,26 @@ model InspectionCampaign {
   templateName    String                      @map("template_name")
   templateVersion String?                     @map("template_version")
   name            String
+  inspectionType  String?                     @map("inspection_type")
+  facilityArea    String?                     @map("facility_area")
+  standard        String?
+  overallRating   String?                     @map("overall_rating")
   status          String                      @default("Draft")
   startDate       DateTime?                   @map("start_date")
   targetDate      DateTime?                   @map("target_date")
   completedAt     DateTime?                   @map("completed_at")
   ownerName       String?                     @map("owner_name")
+  leadInspector   String?                     @map("lead_inspector")
   notes           String?
   createdBy       String                      @map("created_by")
   sections        InspectionCampaignSection[]
   items           InspectionCampaignItem[]
+  findings        InspectionFinding[]
   createdAt       DateTime                    @default(now()) @map("created_at")
   updatedAt       DateTime                    @updatedAt @map("updated_at")
 
   @@index([siteId])
+  @@index([status])
   @@map("inspection_campaigns")
 }
 
@@ -452,6 +459,8 @@ model InspectionCampaignSection {
   title             String
   sortOrder         Int                      @default(0) @map("sort_order")
   status            String                   @default("Not Started")
+  scorePercent      Int?                     @map("score_percent")
+  summary           String?
   completedAt       DateTime?                @map("completed_at")
   items             InspectionCampaignItem[]
   createdAt         DateTime                 @default(now()) @map("created_at")
@@ -469,6 +478,7 @@ model InspectionCampaignItem {
   section           InspectionCampaignSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
   templateItemId    String?                   @map("template_item_id")
   itemCode          String?                   @map("item_code")
+  requirementRef    String?                   @map("requirement_ref")
   nispomRef         String?                   @map("nispom_ref")
   questionText      String                    @map("question_text")
   applicabilityNote String?                   @map("applicability_note")
@@ -476,18 +486,76 @@ model InspectionCampaignItem {
   evidenceRequired  Boolean                   @default(false) @map("evidence_required")
   controlRef        String?                   @map("control_ref")
   sortOrder         Int                       @default(0) @map("sort_order")
+  result            String?
+  severity          String?
+  evidenceNotes     String?                   @map("evidence_notes")
+  inspectorComment  String?                   @map("inspector_comment")
   status            String                    @default("Not Started")
   workNotes         String?                   @map("work_notes")
   updatedBy         String?                   @map("updated_by")
   statusUpdatedAt   DateTime?                 @map("status_updated_at")
   taskId            String?                   @map("task_id")
   poamId            String?                   @map("poam_id")
+  findings          InspectionFinding[]
   createdAt         DateTime                  @default(now()) @map("created_at")
   updatedAt         DateTime                  @updatedAt @map("updated_at")
 
   @@index([campaignId])
   @@index([sectionId])
+  @@index([result])
   @@map("inspection_campaign_items")
+}
+
+model InspectionFinding {
+  id                String                       @id @default(cuid())
+  campaignId        String                       @map("campaign_id")
+  campaign          InspectionCampaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  itemId            String                       @map("item_id")
+  item              InspectionCampaignItem       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  findingNumber     String?                      @map("finding_number")
+  title             String
+  description       String
+  requirementRef    String?                      @map("requirement_ref")
+  severity          String                       @default("Medium")
+  status            String                       @default("Open")
+  responsibleOrg    String?                      @map("responsible_org")
+  responsibleUser   String?                      @map("responsible_user")
+  dueDate           DateTime?                    @map("due_date")
+  closedDate        DateTime?                    @map("closed_date")
+  rootCause         String?                      @map("root_cause")
+  evidence          Json?                        @default("[]")
+  notes             String?
+  correctiveActions InspectionCorrectiveAction[]
+  createdAt         DateTime                     @default(now()) @map("created_at")
+  updatedAt         DateTime                     @updatedAt @map("updated_at")
+
+  @@index([campaignId])
+  @@index([itemId])
+  @@index([status])
+  @@index([severity])
+  @@map("inspection_findings")
+}
+
+model InspectionCorrectiveAction {
+  id                String              @id @default(cuid())
+  findingId         String              @map("finding_id")
+  finding           InspectionFinding   @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  actionText        String              @map("action_text")
+  status            String              @default("Open")
+  assignedTo        String?             @map("assigned_to")
+  assignedOrg       String?             @map("assigned_org")
+  targetDate        DateTime?           @map("target_date")
+  completedDate     DateTime?           @map("completed_date")
+  verificationBy    String?             @map("verification_by")
+  verificationNotes String?             @map("verification_notes")
+  closureEvidence   Json?               @default("[]") @map("closure_evidence")
+  createdAt         DateTime            @default(now()) @map("created_at")
+  updatedAt         DateTime            @updatedAt @map("updated_at")
+
+  @@index([findingId])
+  @@index([status])
+  @@index([targetDate])
+  @@map("inspection_corrective_actions")
 }
 
 // ─── MASH models ───────────────────────────────────────────────────────────────
@@ -904,13 +972,16 @@ model MashActivitiesSecurity {
   title             String
   date              String?
   time              String?
+  dueDate           String?  @map("due_date")
   location          String?
+  program           String?
   classification    String?
   status            String   @default("Planned")
   owner             String?
   visitorCount      Int?     @map("visitor_count")
   clearanceVerified Boolean? @map("clearance_verified")
   briefingRequired  Boolean? @map("briefing_required")
+  description       String?
   notes             String?
   participants      Json?    @default("[]")
   evidenceLinks     Json?    @default("[]") @map("evidence_links")
@@ -1004,9 +1075,12 @@ model MashMediaControl {
   assignedDate   String?  @map("assigned_date")
   returnDue      String?  @map("return_due")
   system         String?
+  currentLocation String? @map("current_location")
   lastScan       String?  @map("last_scan")
   lastApproval   String?  @map("last_approval")
   approvedBy     String?  @map("approved_by")
+  destructionScheduled String? @map("destruction_scheduled")
+  destructionMethod String? @map("destruction_method")
   notes          String?
   flags          Json?    @default("[]")
   history        Json?    @default("[]")

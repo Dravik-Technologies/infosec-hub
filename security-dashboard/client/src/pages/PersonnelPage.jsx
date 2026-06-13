@@ -26,10 +26,10 @@ function prdWarning(prd) {
   return null;
 }
 
-function PersonnelForm({ person, onSave, onClose }) {
+function PersonnelForm({ person, siteId, onSave, onClose }) {
   const isEdit = !!person;
   const blank = {
-    name: '', position: '', org: '', siteId: '',
+    name: '', position: '', org: '', siteId: siteId || '',
     clearanceLevel: 'SECRET', clearanceStatus: 'Active',
     clearanceGrantDate: '', clearancePRD: '', indocDate: '',
     cvStatus: '', nbisEappStatus: '',
@@ -38,7 +38,7 @@ function PersonnelForm({ person, onSave, onClose }) {
     name: person.name || '',
     position: person.position || '',
     org: person.org || '',
-    siteId: person.siteId || '',
+    siteId: person.siteId || siteId || '',
     clearanceLevel: person.clearanceLevel || 'SECRET',
     clearanceStatus: person.clearanceStatus || 'Active',
     clearanceGrantDate: person.clearanceGrantDate || '',
@@ -52,17 +52,30 @@ function PersonnelForm({ person, onSave, onClose }) {
 
   async function submit(e) {
     e.preventDefault();
+    if (!form.siteId) {
+      alert('Error: Site ID is required. Please select a site and try again.');
+      return;
+    }
     setSaving(true);
     try {
       if (isEdit) {
-        await WS.patch('personnel_security', person.id, form);
+        const result = await WS.patch('personnel_security', person.id, form);
+        if (result?._wsError) {
+          throw new Error(result.message || 'Failed to update personnel');
+        }
         onSave(person.id);
       } else {
         const rec = await WS.post('personnel_security', {
           ...form, training: {}, visitAccessRequests: [], foreignTravel: [], adverseInfo: [],
         });
+        if (rec?._wsError) {
+          throw new Error(rec.message || 'Failed to create personnel');
+        }
         onSave(rec?.id);
       }
+    } catch (err) {
+      console.error('Form submission error:', err);
+      alert(`Error: ${err.message}`);
     } finally { setSaving(false); }
   }
 
@@ -70,7 +83,10 @@ function PersonnelForm({ person, onSave, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
       <div className="ws-card" style={{ width: 'min(640px, 100%)', maxHeight: '90vh', overflowY: 'auto' }}>
         <div className="ws-card-header" style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
-          <h3>{isEdit ? `Edit — ${person.name}` : 'Add Personnel'}</h3>
+          <div>
+            <h3>{isEdit ? `Edit — ${person.name}` : 'Add Personnel'}</h3>
+            {!isEdit && siteId && <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Site: <strong>{siteId}</strong></div>}
+          </div>
           <button type="button" className="ws-action-btn" onClick={onClose}>Cancel</button>
         </div>
         <form onSubmit={submit}>
@@ -89,7 +105,7 @@ function PersonnelForm({ person, onSave, onClose }) {
                   <input className="ws-input" value={form.org} onChange={e => set('org', e.target.value)} />
                 </FormField>
                 <FormField label="Site ID">
-                  <input className="ws-input" value={form.siteId} onChange={e => set('siteId', e.target.value)} placeholder="e.g. site-001" />
+                  <input className="ws-input" value={form.siteId} onChange={e => isEdit && set('siteId', e.target.value)} readOnly={!isEdit} placeholder={isEdit ? 'e.g. MTSI-VA' : ''} style={!isEdit ? { backgroundColor: 'var(--bg-alt)', cursor: 'not-allowed' } : {}} />
                 </FormField>
               </div>
             </div>
@@ -150,9 +166,28 @@ function PersonnelForm({ person, onSave, onClose }) {
   );
 }
 
-function PersonnelDetail({ person, onClose, onEdit, onSubSaved }) {
+function PersonnelDetail({ person, onClose, onEdit, onSubSaved, onDelete }) {
   const training = person.training || {};
   const [subPanel, setSubPanel] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    setDeleting(true);
+    try {
+      const result = await WS.del('personnel_security', person.id);
+      if (result?._wsError) {
+        alert(result.message || 'Failed to delete personnel');
+      } else {
+        onDelete(person.id);
+      }
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Failed to delete personnel');
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const [trainingForm, setTrainingForm] = useState({ key: 'annualBriefing', completed: '', due: '', status: 'Current' });
   const [tSaving, setTSaving] = useState(false);
@@ -222,9 +257,32 @@ function PersonnelDetail({ person, onClose, onEdit, onSubSaved }) {
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span className={`badge ${statusBadge(person.clearanceStatus)}`}>{person.clearanceLevel}</span>
             <button type="button" className="ws-action-btn" onClick={() => onEdit(person)}>Edit</button>
+            <button type="button" className="ws-action-btn" style={{ color: 'var(--red)' }} onClick={() => setShowDeleteConfirm(true)}>Delete</button>
             <button type="button" className="ws-action-btn" onClick={onClose}>Close</button>
           </div>
         </div>
+        {showDeleteConfirm && (
+          <div style={{ position: 'absolute', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem', borderRadius: 'inherit' }}>
+            <div className="ws-card" style={{ width: 'min(380px, 100%)' }}>
+              <div className="ws-card-header">
+                <h3>⚠️ Delete Personnel</h3>
+              </div>
+              <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <p style={{ color: 'var(--text-2)', fontSize: '0.9rem' }}>
+                  Are you sure you want to delete <strong>{person.name}</strong>? This action cannot be undone.
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                  <button type="button" className="ws-action-btn" disabled={deleting} onClick={() => setShowDeleteConfirm(false)}>
+                    Cancel
+                  </button>
+                  <button type="button" className="ws-action-btn" style={{ background: 'var(--red)', color: 'white' }} disabled={deleting} onClick={handleDelete}>
+                    {deleting ? 'Deleting…' : 'Delete'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
           {/* Info grid */}
@@ -553,7 +611,7 @@ function PersonnelRow({ person, onSelect }) {
   );
 }
 
-export default function PersonnelPage({ siteId }) {
+export default function PersonnelPage({ siteId, user, sites }) {
   const [personnel, setPersonnel] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -562,11 +620,16 @@ export default function PersonnelPage({ siteId }) {
   const [selected, setSelected] = useState(null);
   const [editingPerson, setEditingPerson] = useState(null);
   const [addingPerson, setAddingPerson] = useState(false);
+  const [showSiteWarning, setShowSiteWarning] = useState(false);
+
+  const requiresSiteSelection = Boolean(user?.canSeeAllSites || (user?.siteIds?.length > 1));
+  const readSiteId = siteId || (!requiresSiteSelection ? (user?.primarySiteId || user?.siteIds?.[0] || '') : '');
+  const createSiteId = siteId || user?.primarySiteId || user?.siteIds?.[0] || '';
 
   function load() {
     setLoading(true);
     setLoadError(null);
-    const params = siteId ? { siteId } : {};
+    const params = readSiteId ? { siteId: readSiteId } : {};
     WS.get('personnel_security', params).then(d => {
       if (d?._wsError) { setLoadError(d.message); setLoading(false); return; }
       setPersonnel(Array.isArray(d) ? d : []);
@@ -574,10 +637,10 @@ export default function PersonnelPage({ siteId }) {
     });
   }
 
-  useEffect(() => { load(); }, [siteId]);
+  useEffect(() => { load(); }, [readSiteId]);
 
   async function handleSubSaved(personId) {
-    const d = await WS.get('personnel_security', siteId ? { siteId } : {});
+    const d = await WS.get('personnel_security', readSiteId ? { siteId: readSiteId } : {});
     const list = Array.isArray(d) ? d : [];
     setPersonnel(list);
     if (personId) {
@@ -589,12 +652,27 @@ export default function PersonnelPage({ siteId }) {
   function handleFormSaved() {
     setEditingPerson(null);
     setAddingPerson(false);
+    // Immediately reload to show updated list
     load();
   }
 
   function handleEditFromDetail(person) {
     setSelected(null);
     setEditingPerson(person);
+  }
+
+  function handleDeletePerson(personId) {
+    setSelected(null);
+    setPersonnel(prev => prev.filter(p => p.id !== personId));
+    load();
+  }
+
+  function handleAddPersonnelClick() {
+    if (requiresSiteSelection && !siteId) {
+      setShowSiteWarning(true);
+      return;
+    }
+    setAddingPerson(true);
   }
 
   const filtered = personnel.filter(p => {
@@ -620,17 +698,38 @@ export default function PersonnelPage({ siteId }) {
 
   return (
     <div className="ws-page">
+      {showSiteWarning && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div className="ws-card" style={{ width: 'min(420px, 100%)' }}>
+            <div className="ws-card-header">
+              <h3>⚠️ Site Required</h3>
+            </div>
+            <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Please select a site from the dropdown menu at the top before adding personnel. Each personnel record must be assigned to a specific site.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="ws-action-btn primary" onClick={() => setShowSiteWarning(false)}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {selected && (
         <PersonnelDetail
           person={selected}
           onClose={() => setSelected(null)}
           onEdit={handleEditFromDetail}
           onSubSaved={handleSubSaved}
+          onDelete={handleDeletePerson}
         />
       )}
       {(editingPerson || addingPerson) && (
         <PersonnelForm
           person={editingPerson || null}
+          siteId={createSiteId}
           onSave={handleFormSaved}
           onClose={() => { setEditingPerson(null); setAddingPerson(false); }}
         />
@@ -663,7 +762,7 @@ export default function PersonnelPage({ siteId }) {
               {debriefPending} debrief pending
             </span>
           )}
-          <button type="button" className="ws-action-btn primary" onClick={() => setAddingPerson(true)}>
+          <button type="button" className="ws-action-btn primary" onClick={handleAddPersonnelClick}>
             + Add Personnel
           </button>
         </div>

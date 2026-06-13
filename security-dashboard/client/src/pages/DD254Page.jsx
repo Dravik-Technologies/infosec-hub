@@ -59,12 +59,35 @@ function DD254Form({ record, siteId, onSave, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!form.siteId) {
+      alert('Error: Site ID is required. Please select a site and try again.');
+      return;
+    }
     setSaving(true);
-    const payload = { ...form };
-    if (isEdit) await WS.patch('dd254_register', record.id, payload);
-    else await WS.post('dd254_register', { id: uid(), ...payload });
-    setSaving(false);
-    onSave();
+    try {
+      const payload = { ...form };
+      if (isEdit) {
+        const result = await WS.patch('dd254_register', record.id, payload);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      } else {
+        const result = await WS.post('dd254_register', { id: uid(), ...payload });
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      }
+      onSave();
+    } catch (err) {
+      console.error('Form submission error:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -229,22 +252,27 @@ function DD254Detail({ record, onClose, onEdit, onDelete }) {
   );
 }
 
-export default function DD254Page({ siteId }) {
+export default function DD254Page({ siteId, user, sites }) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('all');
   const [editing, setEditing] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [showSiteWarning, setShowSiteWarning] = useState(false);
+
+  const requiresSiteSelection = Boolean(user?.canSeeAllSites || (user?.siteIds?.length > 1));
+  const readSiteId = siteId || (!requiresSiteSelection ? (user?.primarySiteId || user?.siteIds?.[0] || '') : '');
+  const createSiteId = siteId || user?.primarySiteId || user?.siteIds?.[0] || '';
 
   async function load() {
     setLoading(true);
-    const result = await WS.get('dd254_register', siteId ? { siteId } : {});
+    const result = await WS.get('dd254_register', readSiteId ? { siteId: readSiteId } : {});
     setRecords(Array.isArray(result) ? result : []);
     setLoading(false);
   }
 
-  useEffect(() => { load(); }, [siteId]);
+  useEffect(() => { load(); }, [readSiteId]);
 
   const filtered = useMemo(() => {
     return records.filter(item => {
@@ -270,14 +298,41 @@ export default function DD254Page({ siteId }) {
     load();
   }
 
+  function handleAddDD254Click() {
+    if (requiresSiteSelection && !siteId) {
+      setShowSiteWarning(true);
+      return;
+    }
+    setEditing({});
+  }
+
   return (
     <div className="ws-page">
+      {showSiteWarning && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div className="ws-card" style={{ width: 'min(420px, 100%)' }}>
+            <div className="ws-card-header">
+              <h3>⚠️ Site Required</h3>
+            </div>
+            <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Please select a site from the dropdown menu at the top before adding DD254 records. Each record must be assigned to a specific site.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="ws-action-btn primary" onClick={() => setShowSiteWarning(false)}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="ws-page-header">
         <div><div className="ws-page-title">DD254 Register</div></div>
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
           <span className="ws-hero-tag">{summary.total} contracts tracked</span>
           <span className="ws-count-badge">{summary.attention} attention items</span>
-          <button type="button" className="ws-action-btn primary" onClick={() => setEditing({})}>+ Add DD254</button>
+          <button type="button" className="ws-action-btn primary" onClick={handleAddDD254Click}>+ Add DD254</button>
         </div>
       </div>
 
@@ -357,7 +412,7 @@ export default function DD254Page({ siteId }) {
       {editing && (
         <DD254Form
           record={editing.id ? editing : null}
-          siteId={siteId}
+          siteId={createSiteId}
           onSave={() => { setEditing(null); load(); }}
           onClose={() => setEditing(null)}
         />

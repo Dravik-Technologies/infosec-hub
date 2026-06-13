@@ -85,19 +85,45 @@ function ActivityForm({ activity, siteId, onSave, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setSaving(true);
-    const payload = {
-      ...form,
-      classification: form.classificationLevel,
-      visitorCount: form.visitorCount === '' ? 0 : Number(form.visitorCount),
-    };
-    if (isEdit) {
-      await WS.patch('activities_security', activity.id, payload);
-    } else {
-      await WS.post('activities_security', { ...payload, id: uid() });
+    if (!form.siteId) {
+      alert('Error: Site ID is required. Please select a site and try again.');
+      return;
     }
-    setSaving(false);
-    onSave();
+    setSaving(true);
+    try {
+      const { classificationLevel, ...formData } = form;
+      const payload = {
+        ...formData,
+        classification: classificationLevel,
+        visitorCount: form.visitorCount === '' ? 0 : Number(form.visitorCount),
+      };
+      console.log('Submitting activity payload:', payload);
+      if (isEdit) {
+        const result = await WS.patch('activities_security', activity.id, payload);
+        console.log('Patch result:', result);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      } else {
+        const finalPayload = { ...payload, id: uid() };
+        console.log('Final payload for create:', finalPayload);
+        const result = await WS.post('activities_security', finalPayload);
+        console.log('Post result:', result);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      }
+      onSave();
+    } catch (err) {
+      console.error('Form submission error:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -250,7 +276,7 @@ function ActivityDetail({ activity, onClose, onEdit, onDeleted }) {
   );
 }
 
-export default function ActivitiesPage({ siteId }) {
+export default function ActivitiesPage({ siteId, user, sites }) {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -260,9 +286,14 @@ export default function ActivitiesPage({ siteId }) {
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [showSiteWarning, setShowSiteWarning] = useState(false);
+
+  const requiresSiteSelection = Boolean(user?.canSeeAllSites || (user?.siteIds?.length > 1));
+  const readSiteId = siteId || (!requiresSiteSelection ? (user?.primarySiteId || user?.siteIds?.[0] || '') : '');
+  const createSiteId = siteId || user?.primarySiteId || user?.siteIds?.[0] || '';
 
   function loadActivities() {
-    const params = siteId ? { siteId } : {};
+    const params = readSiteId ? { siteId: readSiteId } : {};
     return WS.get('activities_security', params).then(d => {
       if (d?._wsError) { setLoadError(d.message); setLoading(false); return; }
       setLoadError(null);
@@ -274,7 +305,7 @@ export default function ActivitiesPage({ siteId }) {
   useEffect(() => {
     setLoading(true);
     loadActivities();
-  }, [siteId]);
+  }, [readSiteId]);
 
   function handleSaved() {
     loadActivities().then(() => { setAdding(false); setEditing(null); });
@@ -288,6 +319,14 @@ export default function ActivitiesPage({ siteId }) {
     const act = selected;
     setSelected(null);
     setEditing(act);
+  }
+
+  function handleAddActivityClick() {
+    if (requiresSiteSelection && !siteId) {
+      setShowSiteWarning(true);
+      return;
+    }
+    setAdding(true);
   }
 
   const overdueList = activities.filter(a => isOverdue(a));
@@ -310,11 +349,30 @@ export default function ActivitiesPage({ siteId }) {
 
   return (
     <div className="ws-page">
+      {showSiteWarning && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div className="ws-card" style={{ width: 'min(420px, 100%)' }}>
+            <div className="ws-card-header">
+              <h3>⚠️ Site Required</h3>
+            </div>
+            <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Please select a site from the dropdown menu at the top before adding activities. Each activity must be assigned to a specific site.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="ws-action-btn primary" onClick={() => setShowSiteWarning(false)}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {adding && (
-        <ActivityForm siteId={siteId} onSave={handleSaved} onClose={() => setAdding(false)} />
+        <ActivityForm siteId={createSiteId} onSave={handleSaved} onClose={() => setAdding(false)} />
       )}
       {editing && (
-        <ActivityForm activity={editing} siteId={siteId} onSave={handleSaved} onClose={() => setEditing(null)} />
+        <ActivityForm activity={editing} siteId={createSiteId} onSave={handleSaved} onClose={() => setEditing(null)} />
       )}
       {selected && !editing && (
         <ActivityDetail
@@ -336,7 +394,7 @@ export default function ActivitiesPage({ siteId }) {
             </span>
           )}
           <span className="ws-count-badge">{activities.length} total</span>
-          <button className="ws-action-btn primary" onClick={() => setAdding(true)}>+ Add Activity</button>
+          <button className="ws-action-btn primary" onClick={handleAddActivityClick}>+ Add Activity</button>
         </div>
       </div>
 

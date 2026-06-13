@@ -20,13 +20,19 @@ const {
 const mashDb = require('./lib/mashDb');
 const { RELATIONAL_DOMAINS } = mashDb;
 const { db } = require('../packages/db/src');
-const { getAllowedApps, getDisplayRole, getTitleFromSecurityRole } = require('../packages/db/src/appAccess');
+const { APP_ALIASES, getAllowedApps, getDisplayRole, getTitleFromSecurityRole } = require('../packages/db/src/appAccess');
+const inspectionRoutes = require('./server/routes/inspections');
 
 const PORT       = process.env.PORT || 8080;
 const DATA_DIR   = path.join(__dirname, 'data');
 const CLIENT_DIR = path.join(__dirname, 'client', 'dist');
 const JWT_SECRET = process.env.JWT_SECRET || 'smw-dev-secret-change-in-prod';
 const JWT_TTL    = '8h';
+const secureCookies = process.env.COOKIE_SECURE === 'true'
+  ? true
+  : process.env.COOKIE_SECURE === 'false'
+    ? false
+    : process.env.NODE_ENV === 'production';
 const HUB_URL    = process.env.HUB_URL || null;
 const HUB_HOST   = process.env.HUB_HOST || '127.0.0.1';
 const HUB_PORT   = parseInt(process.env.HUB_PORT || '3010', 10);
@@ -51,6 +57,14 @@ const WORKSPACE_COLLECTIONS = [
   'document_control', 'dd254_register', 'media_control', 'self_inspection_ops', 'security_findings',
   'security_workspace_settings', 'workspace_role_mappings',
 ];
+
+const CANONICAL_APP_ID = 'sentinel';
+const LEGACY_APP_ID = 'mash';
+
+function isSentinelRequest(appId) {
+  const normalized = APP_ALIASES[String(appId || '').trim().toLowerCase()] || String(appId || '').trim().toLowerCase();
+  return normalized === CANONICAL_APP_ID;
+}
 
 // ── Workspace roles ───────────────────────────────────────────────────────────
 const WORKSPACE_ROLES = {
@@ -178,6 +192,24 @@ app.get('/api/me', auth, (req, res) => {
   res.json(req.user);
 });
 
+app.get('/api/sites', auth, async (req, res) => {
+  try {
+    const userSiteIds = normalizeSiteList(req.user?.siteIds, req.user?.siteId);
+    const where = req.user?.canSeeAllSites
+      ? {}
+      : { id: { in: userSiteIds } };
+    const sites = await db.site.findMany({
+      where,
+      orderBy: { id: 'asc' },
+      select: { id: true, label: true },
+    });
+    res.json({ sites });
+  } catch (err) {
+    console.error('[sites]', err.message);
+    res.status(500).json({ error: 'Unable to load sites' });
+  }
+});
+
 // ── Auth routes ───────────────────────────────────────────────────────────────
 app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body || {};
@@ -192,8 +224,8 @@ app.post('/api/auth/login', async (req, res) => {
     if (!resp.ok) return res.status(resp.status).json({ error: data.error || 'Login failed' });
 
     const apps = Array.isArray(data.user?.allowedApps) ? data.user.allowedApps : [];
-    if (!apps.includes('mash')) {
-      return res.status(403).json({ error: 'MASH access has not been granted for this account' });
+    if (!apps.includes(CANONICAL_APP_ID)) {
+      return res.status(403).json({ error: 'Sentinel access has not been granted for this account' });
     }
 
     const wsRole = await resolveWorkspaceRole(username, data.user.securityRole);
@@ -220,7 +252,7 @@ app.get('/auth/sso', async (req, res) => {
     const data = await resp.json();
     if (!resp.ok || !data.valid || !data.user) return res.redirect('/?error=invalid_sso');
 
-    if (data.user.requestedApp && data.user.requestedApp !== 'mash') {
+    if (data.user.requestedApp && !isSentinelRequest(data.user.requestedApp)) {
       return res.redirect('/?error=invalid_sso_target');
     }
 
@@ -231,8 +263,8 @@ app.get('/auth/sso', async (req, res) => {
     if (!localUser || localUser.status !== 'Active') {
       return res.redirect('/?error=access_denied');
     }
-    if (!getAllowedApps(localUser).includes('mash')) {
-      return res.redirect('/?error=mash_access_denied');
+    if (!getAllowedApps(localUser).includes(CANONICAL_APP_ID)) {
+      return res.redirect('/?error=sentinel_access_denied');
     }
 
     const wsRole = await resolveWorkspaceRole(localUser.username, localUser.securityRole);
@@ -266,7 +298,7 @@ app.get('/auth/sso', async (req, res) => {
       httpOnly: true,
       sameSite: 'lax',
       maxAge: 8 * 60 * 60 * 1000,
-      secure: process.env.NODE_ENV === 'production',
+      secure: secureCookies,
     });
     res.redirect('/');
   } catch (err) {
@@ -515,10 +547,19 @@ app.post('/api/ws/:collection', auth, async (req, res) => {
   try {
     if (RELATIONAL_DOMAINS.has(collection)) {
       const siteId = resolveWriteSiteId(req);
-      const record = await mashDb.create(collection, {
+      const createData = {
         id: uid(), ...req.body, siteId,
         createdBy: req.user.username, updatedBy: req.user.username,
-      });
+      };
+      if (collection === 'activities_security') {
+        console.log('[mash] activities_security create request', {
+          user: req.user?.username,
+          siteId,
+          body: req.body,
+          createData,
+        });
+      }
+      const record = await mashDb.create(collection, createData);
       return res.status(201).json(record);
     }
     if (SITE_OWNED_COLLECTIONS.has(collection)) {
@@ -530,6 +571,14 @@ app.post('/api/ws/:collection', auth, async (req, res) => {
     await writeCollectionSafe(collection, data);
     res.status(201).json(item);
   } catch (err) {
+    if (req.params.collection === 'activities_security') {
+      console.error('[mash] activities_security create failed', {
+        user: req.user?.username,
+        body: req.body,
+        error: err?.message,
+        stack: err?.stack,
+      });
+    }
     res.status(err.status || 500).json({ error: err.message || 'Internal error' });
   }
 });
@@ -595,6 +644,9 @@ app.delete('/api/ws/:collection/:id', auth, async (req, res) => {
     res.status(err.status || 500).json({ error: err.message || 'Internal error' });
   }
 });
+
+// ── Inspection Routes ─────────────────────────────────────────────────────────
+app.use('/api', auth, inspectionRoutes);
 
 // ── Legacy MASH generic CRUD (backward compat) ────────────────────────────────
 function validLegacyCollection(name) {

@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Entra ID 100% Migration Guide</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0078d4 0%, #107c10 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0078d4 0%, #107c10 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1em;
+      opacity: 0.9;
+    }
+
+    .content {
+      padding: 40px;
+    }
+
+    .section {
+      margin-bottom: 50px;
+    }
+
+    .section h2 {
+      color: #0078d4;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 3px solid #0078d4;
+    }
+
+    .section h3 {
+      color: #107c10;
+      font-size: 1.3em;
+      margin: 20px 0 12px 0;
+    }
+
+    .alert {
+      background: #fff4ce;
+      border-left: 4px solid #ffc107;
+      padding: 16px;
+      border-radius: 6px;
+      margin: 20px 0;
+    }
+
+    .alert.info {
+      background: #e3f2fd;
+      border-left-color: #0078d4;
+    }
+
+    .alert.success {
+      background: #e8f5e9;
+      border-left-color: #107c10;
+    }
+
+    .code-block {
+      background: #f5f5f5;
+      border-radius: 6px;
+      padding: 16px;
+      overflow-x: auto;
+      margin: 16px 0;
+      border-left: 4px solid #0078d4;
+    }
+
+    .code-block code {
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+      color: #d63384;
+      line-height: 1.5;
+      display: block;
+    }
+
+    .flow-diagram {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 24px;
+      margin: 20px 0;
+      border: 2px dashed #0078d4;
+      font-family: monospace;
+      line-height: 1.8;
+      color: #333;
+    }
+
+    .flow-step {
+      background: white;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      border-left: 4px solid #0078d4;
+    }
+
+    .flow-step strong {
+      color: #0078d4;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e9ecef;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #333;
+    }
+
+    tr:hover {
+      background: #f8f9fa;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .comparison-box {
+      padding: 20px;
+      border-radius: 8px;
+      border: 2px solid #e9ecef;
+    }
+
+    .comparison-box h4 {
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e9ecef;
+    }
+
+    .comparison-box.before {
+      border-color: #ff9800;
+      background: #fff3e0;
+    }
+
+    .comparison-box.after {
+      border-color: #107c10;
+      background: #e8f5e9;
+    }
+
+    .checklist {
+      list-style: none;
+    }
+
+    .checklist li {
+      padding: 8px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .checklist li:before {
+      content: "✓";
+      color: #107c10;
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-right: 12px;
+    }
+
+    .todo {
+      list-style: none;
+    }
+
+    .todo li {
+      padding: 8px 0;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .todo li:before {
+      content: "□";
+      color: #0078d4;
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-right: 12px;
+      margin-top: 2px;
+    }
+
+    .entra-config {
+      background: #f0f4ff;
+      border-left: 4px solid #0078d4;
+      padding: 16px;
+      border-radius: 6px;
+      margin: 16px 0;
+    }
+
+    .entra-config h5 {
+      color: #0078d4;
+      margin-bottom: 10px;
+    }
+
+    .group-example {
+      background: white;
+      border: 1px solid #e9ecef;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 8px 0;
+      font-family: monospace;
+      font-size: 0.9em;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      font-weight: 600;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+
+    .badge.frontend { background: #e3f2fd; color: #0078d4; }
+    .badge.backend { background: #e8f5e9; color: #107c10; }
+    .badge.entra { background: #f3e5f5; color: #7b1fa2; }
+    .badge.database { background: #fff3e0; color: #f57c00; }
+
+    .key-point {
+      background: #fff9c4;
+      border-left: 4px solid #fbc02d;
+      padding: 16px;
+      border-radius: 6px;
+      margin: 16px 0;
+    }
+
+    .key-point strong {
+      color: #f57f17;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🔐 Entra ID 100% Migration Guide</h1>
+      <p>Azure Active Directory Single Sign-On for All Mission Apps</p>
+    </div>
+
+    <div class="content">
+      <!-- Quick Answer -->
+      <div class="alert info">
+        <strong>Quick Answer:</strong> You do <strong>NOT</strong> need separate databases per site. Single PostgreSQL with Entra groups for site assignment is simpler and more secure. Multi-tenancy is enforced at the application layer, not the database layer.
+      </div>
+
+      <!-- Architecture Overview -->
+      <div class="section">
+        <h2>🏗️ Architecture Overview</h2>
+
+        <h3>Current Architecture (Local Auth + Sessions)</h3>
+        <div class="flow-diagram">
+          User → Hub Login Form (admin/admin)
+          ↓
+          express-session cookie (hub.sid)
+          ↓
+          req.session.user populated from DB
+          ↓
+          Each app validates session or JWT
+          ↓
+          Site scoping via siteId in WHERE clause
+        </div>
+
+        <h3>New Architecture (100% Entra ID)</h3>
+        <div class="flow-diagram">
+          User → Azure Entra ID Login
+          ↓
+          MSAL gets JWT from Entra
+          ↓
+          JWT stored in localStorage (MSAL cache)
+          ↓
+          All requests: Authorization: Bearer {JWT}
+          ↓
+          Backend: Verify JWT signature, extract claims
+          ↓
+          Claims include Entra groups (site assignment)
+          ↓
+          Each app enforces site scoping from claims
+        </div>
+
+        <h3>Database Topology</h3>
+        <div class="comparison">
+          <div class="comparison-box before">
+            <h4>❌ Multi-DB per Site (DON'T DO THIS)</h4>
+            <ul style="list-style: disc; margin-left: 20px;">
+              <li>Site A → site_a_pg</li>
+              <li>Site B → site_b_pg</li>
+              <li>Site C → site_c_pg</li>
+              <li style="color: #d32f2f; margin-top: 12px;"><strong>Problems:</strong></li>
+              <li>Migration complexity (copy schemas N times)</li>
+              <li>No cross-site rollups (NEXUS analytics)</li>
+              <li>Duplicate master data (users, configs)</li>
+              <li>Operational overhead</li>
+            </ul>
+          </div>
+          <div class="comparison-box after">
+            <h4>✅ Single DB + Entra Groups (DO THIS)</h4>
+            <ul style="list-style: disc; margin-left: 20px;">
+              <li>One PostgreSQL for all sites</li>
+              <li>Entra groups control site access</li>
+              <li>siteId filtering at query layer</li>
+              <li style="color: #107c10; margin-top: 12px;"><strong>Benefits:</strong></li>
+              <li>Simpler operations & backups</li>
+              <li>Cross-site analytics work</li>
+              <li>Single source of truth for shared data</li>
+              <li>Less infrastructure cost</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Frontend Changes -->
+      <div class="section">
+        <h2>💻 Frontend Changes (HTML/CSS/JS)</h2>
+
+        <h3>What Must Change</h3>
+        <ul class="checklist">
+          <li>Remove local login form (username/password inputs)</li>
+          <li>Remove session-based auth handling</li>
+          <li>Add MSAL (Microsoft Authentication Library)</li>
+          <li>Replace localStorage token retrieval</li>
+          <li>Update all API calls to use JWT header</li>
+        </ul>
+
+        <h3>1. Install MSAL</h3>
+        <div class="code-block">
+          <code>npm install @azure/msal-browser @azure/msal-react</code>
+        </div>
+
+        <h3>2. HUB Login Page - BEFORE (Remove This)</h3>
+        <div class="code-block">
+          <code>&lt;form onSubmit={handleLogin}&gt;
+  &lt;input type="text" name="username" placeholder="Username" /&gt;
+  &lt;input type="password" name="password" placeholder="Password" /&gt;
+  &lt;button type="submit"&gt;Login&lt;/button&gt;
+&lt;/form&gt;</code>
+        </div>
+
+        <h3>3. HUB Login Page - AFTER (Add This)</h3>
+        <div class="code-block">
+          <code>import { useMsal } from '@azure/msal-react';
+
+export function HubLogin() {
+  const { instance } = useMsal();
+
+  const handleEntraLogin = async () => {
+    try {
+      const response = await instance.loginPopup({
+        scopes: ['api://hub-app-id/access'],
+      });
+      // JWT automatically stored in MSAL cache
+      // Redirect to portal
+      window.location.href = '/portal';
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
+  };
+
+  return (
+    &lt;div className="login-container"&gt;
+      &lt;h1&gt;MTSI Security Hub&lt;/h1&gt;
+      &lt;button
+        onClick={handleEntraLogin}
+        className="entra-login-btn"
+      &gt;
+        Sign in with Microsoft
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code>
+        </div>
+
+        <h3>4. Update API Client (AuthContext Replacement)</h3>
+        <div class="code-block">
+          <code>import { useMsal } from '@azure/msal-react';
+import axios from 'axios';
+
+export function ApiClient() {
+  const { instance, accounts } = useMsal();
+
+  // Get token from MSAL cache
+  const getAuthToken = async () => {
+    try {
+      const response = await instance.acquireTokenSilent({
+        account: accounts[0],
+        scopes: ['api://hub-app-id/access'],
+      });
+      return response.accessToken;
+    } catch (error) {
+      // Fall back to interactive login
+      const response = await instance.acquireTokenPopup({
+        scopes: ['api://hub-app-id/access'],
+      });
+      return response.accessToken;
+    }
+  };
+
+  // All API calls use Authorization header
+  const axiosInstance = axios.create();
+  axiosInstance.interceptors.request.use(async (config) => {
+    const token = await getAuthToken();
+    config.headers.Authorization = `Bearer ${token}`;
+    return config;
+  });
+
+  return axiosInstance;
+}</code>
+        </div>
+
+        <h3>5. MSAL Configuration (msalConfig.js)</h3>
+        <div class="code-block">
+          <code>import { PublicClientApplication } from '@azure/msal-browser';
+
+export const msalConfig = {
+  auth: {
+    clientId: 'YOUR_HUB_APP_ID', // from Entra
+    authority: 'https://login.microsoftonline.com/YOUR_TENANT_ID',
+    redirectUri: 'http://localhost:3010', // or prod URL
+  },
+  cache: {
+    cacheLocation: 'localStorage', // persistent across refresh
+  },
+};
+
+export const msalInstance = new PublicClientApplication(msalConfig);
+
+// App-specific scopes for other mission apps
+export const appScopes = {
+  hub: ['api://hub-app-id/access'],
+  scorva: ['api://scorva-app-id/access'],
+  crater: ['api://crater-app-id/access'],
+  mash: ['api://mash-app-id/access'],
+  lava: ['api://lava-app-id/access'],
+};</code>
+        </div>
+
+        <h3>6. App Entry Point - Wrap with MSAL</h3>
+        <div class="code-block">
+          <code>import { MsalProvider } from '@azure/msal-react';
+import { msalInstance } from './msalConfig';
+
+function App() {
+  return (
+    &lt;MsalProvider instance={msalInstance}&gt;
+      &lt;Router&gt;
+        &lt;Routes&gt;
+          &lt;Route path="/login" element={&lt;HubLogin /&gt;} /&gt;
+          &lt;Route path="/portal" element={&lt;ProtectedRoute element={&lt;Portal /&gt;} /&gt;} /&gt;
+        &lt;/Routes&gt;
+      &lt;/Router&gt;
+    &lt;/MsalProvider&gt;
+  );
+}</code>
+        </div>
+
+        <h3>7. Protected Route Component</h3>
+        <div class="code-block">
+          <code>import { useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { useEffect } from 'react';
+
+export function ProtectedRoute({ element }) {
+  const isAuthenticated = useIsAuthenticated();
+  const { instance } = useMsal();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Trigger login popup if not authenticated
+      instance.loginPopup();
+    }
+  }, [isAuthenticated, instance]);
+
+  return isAuthenticated ? element : null;
+}</code>
+        </div>
+
+        <h3>CSS Update: Login Button Styling</h3>
+        <div class="code-block">
+          <code>.entra-login-btn {
+  background: linear-gradient(135deg, #0078d4 0%, #107c10 100%);
+  color: white;
+  border: none;
+  padding: 14px 32px;
+  font-size: 1em;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.entra-login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 120, 212, 0.3);
+}
+
+.entra-login-btn:active {
+  transform: translateY(0);
+}</code>
+        </div>
+      </div>
+
+      <!-- Backend Changes -->
+      <div class="section">
+        <h2>⚙️ Backend Changes (Node.js/Express)</h2>
+
+        <h3>What Must Change</h3>
+        <ul class="checklist">
+          <li>Remove local password validation routes</li>
+          <li>Remove express-session middleware</li>
+          <li>Add JWT verification from Entra keys</li>
+          <li>Extract site assignment from JWT claims</li>
+          <li>Update requireAuth middleware</li>
+        </ul>
+
+        <h3>1. Install Dependencies</h3>
+        <div class="code-block">
+          <code>npm install jsonwebtoken jwks-rsa dotenv</code>
+        </div>
+
+        <h3>2. Entra Token Verification Module</h3>
+        <div class="code-block">
+          <code>// lib/entraAuth.js
+import jwt from 'jsonwebtoken';
+import JwksClient from 'jwks-rsa';
+
+const jwksClient = JwksClient({
+  jwksUri: `https://login.microsoftonline.com/${process.env.ENTRA_TENANT_ID}/discovery/v2.0/keys`,
+});
+
+async function getSigningKey(kid) {
+  const key = await jwksClient.getSigningKey(kid);
+  return key.getPublicKey();
+}
+
+export async function verifyEntraToken(token) {
+  try {
+    const decoded = jwt.decode(token, { complete: true });
+    if (!decoded) throw new Error('Invalid token format');
+
+    const kid = decoded.header.kid;
+    const signingKey = await getSigningKey(kid);
+
+    const verified = jwt.verify(token, signingKey, {
+      issuer: `https://login.microsoftonline.com/${process.env.ENTRA_TENANT_ID}/v2.0`,
+      audience: process.env.ENTRA_APP_ID,
+      algorithms: ['RS256'],
+    });
+
+    return verified;
+  } catch (err) {
+    throw new Error(`Token verification failed: ${err.message}`);
+  }
+}
+
+// Extract site IDs from Entra groups
+export function extractSitesFromClaims(claims) {
+  // Entra groups come as array in claims.groups
+  // Format: "SITE_A_USERS", "SITE_B_USERS", etc.
+  const groups = claims.groups || [];
+  const siteIds = groups
+    .filter(g =&gt; g.startsWith('SITE_'))
+    .map(g =&gt; g.replace('SITE_', '').replace('_USERS', ''))
+    .map(s =&gt; s.toLowerCase());
+
+  return siteIds;
+}</code>
+        </div>
+
+        <h3>3. New requireAuth Middleware</h3>
+        <div class="code-block">
+          <code>// middleware/requireAuth.js
+import { verifyEntraToken, extractSitesFromClaims } from '../lib/entraAuth';
+
+export async function requireAuth(req, res, next) {
+  try {
+    const authHeader = req.headers.authorization || '';
+    if (!authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Missing or invalid Authorization header' });
+    }
+
+    const token = authHeader.slice(7);
+    const claims = await verifyEntraToken(token);
+
+    // Build user object from Entra claims
+    req.user = {
+      id: claims.oid, // Entra object ID
+      email: claims.email || claims.preferred_username,
+      name: claims.name,
+      username: claims.preferred_username,
+      hubRole: 'Hub Admin', // Derive from Entra groups/roles
+      siteIds: extractSitesFromClaims(claims),
+      primarySiteId: extractSitesFromClaims(claims)[0] || null,
+      // Pass token for downstream validation
+      token: token,
+      tokenExpiry: claims.exp,
+    };
+
+    next();
+  } catch (err) {
+    console.error('[Auth Error]', err.message);
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+}</code>
+        </div>
+
+        <h3>4. Disable Old Auth Routes</h3>
+        <div class="code-block">
+          <code>// hub/server/index.js
+
+// REMOVE or comment out:
+// app.use(session({ ... }));  // No more express-session
+// app.use('/auth', authRouter);  // No more local auth
+
+// REMOVE or comment out Entra auth routes (if separate)
+// Keep only the JWT verification
+
+// New minimal auth endpoint (optional, for info only)
+app.get('/api/me', requireAuth, (req, res) => {
+  // Return user from Entra claims
+  res.json({
+    id: req.user.id,
+    email: req.user.email,
+    name: req.user.name,
+    hubRole: req.user.hubRole,
+    siteIds: req.user.siteIds,
+  });
+});</code>
+        </div>
+
+        <h3>5. Site Scoping - Example SCORVA Query</h3>
+        <div class="code-block">
+          <code>// scorva/server/routes/controls.js
+import { db } from '../../../packages/db/src';
+
+app.get('/api/controls', requireAuth, async (req, res) => {
+  try {
+    // User can only see controls for their assigned sites
+    const controls = await db.control.findMany({
+      where: {
+        siteId: {
+          in: req.user.siteIds, // From Entra groups
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(controls);
+  } catch (err) {
+    console.error('Error fetching controls:', err);
+    res.status(500).json({ error: 'Failed to fetch controls' });
+  }
+});</code>
+        </div>
+
+        <h3>6. Environment Variables (.env)</h3>
+        <div class="code-block">
+          <code"># Entra ID Configuration
+ENTRA_TENANT_ID=YOUR_TENANT_ID
+ENTRA_APP_ID=YOUR_HUB_APP_ID
+
+# Node environment
+NODE_ENV=production
+
+# Database (unchanged)
+DATABASE_URL=postgresql://user:pass@localhost:5432/securityapp</code>
+        </div>
+
+        <h3>7. Remove Session Storage from Database</h3>
+        <div class="key-point">
+          <strong>⚠️ Migration Step:</strong> You can now remove express-session table if it exists. No need for server-side session storage since JWT is self-contained and stateless.
+        </div>
+      </div>
+
+      <!-- Entra Configuration -->
+      <div class="section">
+        <h2>☁️ Entra ID Configuration</h2>
+
+        <h3>Step 1: Create App Registrations</h3>
+        <p>In Azure Portal → Entra ID → App registrations, create registrations for:</p>
+        <ul class="todo">
+          <li>Hub (hub-app)</li>
+          <li>SCORVA (scorva-app)</li>
+          <li>CRATER (crater-app)</li>
+          <li>MASH (mash-app)</li>
+          <li>LAVA (lava-app)</li>
+        </ul>
+
+        <div class="entra-config">
+          <h5>Hub App Registration Example</h5>
+          <p><strong>Name:</strong> MTSI Security Hub</p>
+          <p><strong>Supported account types:</strong> Single tenant (your org)</p>
+          <p><strong>Redirect URI:</strong> http://localhost:3010 (dev), https://hub.yourdomain.com (prod)</p>
+          <p><strong>API scopes:</strong> api://hub-app-id/access</p>
+        </div>
+
+        <h3>Step 2: Create Security Groups for Site Access</h3>
+        <p>In Entra ID → Groups, create security groups:</p>
+
+        <div class="group-example">SITE_MTSI_ALX_USERS</div>
+        <div class="group-example">SITE_MTSI_HVL_USERS</div>
+        <div class="group-example">SITE_MTSI_DCM_USERS</div>
+
+        <p style="margin-top: 12px;">Add users to appropriate groups based on their site assignment.</p>
+
+        <h3>Step 3: Configure Token Claims</h3>
+        <p>In App registration → Token configuration → Add groups claim:</p>
+        <div class="entra-config">
+          <h5>Add Groups Claim</h5>
+          <p><strong>Token type:</strong> ID Token</p>
+          <p><strong>Groups to include:</strong> Security groups assigned to user</p>
+          <p><strong>Include in:</strong> ID tokens</p>
+        </div>
+
+        <div class="code-block">
+          <code>// Example JWT claim after Entra token configuration
+{
+  "oid": "user-object-id",
+  "email": "user@company.com",
+  "preferred_username": "user@company.com",
+  "name": "John Doe",
+  "groups": [
+    "SITE_MTSI_ALX_USERS",
+    "SITE_MTSI_HVL_USERS"
+  ],
+  "aud": "hub-app-id",
+  "iss": "https://login.microsoftonline.com/tenant-id/v2.0",
+  "exp": 1234567890
+}</code>
+        </div>
+
+        <h3>Step 4: (Optional) Add Custom Roles</h3>
+        <p>For Hub Admin vs Site Admin roles, use Entra app roles:</p>
+        <div class="entra-config">
+          <h5>App Roles Example</h5>
+          <ul style="list-style: disc; margin-left: 20px;">
+            <li><strong>HubAdmin</strong> - Full access to all sites, user management</li>
+            <li><strong>SiteAdmin</strong> - Admin for assigned sites only</li>
+            <li><strong>SiteUser</strong> - Read/write access within assigned sites</li>
+            <li><strong>Viewer</strong> - Read-only access</li>
+          </ul>
+        </div>
+
+        <div class="code-block">
+          <code>// App role will appear in JWT as:
+"roles": ["HubAdmin"]
+
+// Backend can check:
+if (!req.user.roles?.includes('HubAdmin')) {
+  return res.status(403).json({ error: 'Admin access required' });
+}</code>
+        </div>
+      </div>
+
+      <!-- Database - No Changes Needed -->
+      <div class="section">
+        <h2>🗄️ Database Changes (NONE REQUIRED)</h2>
+
+        <div class="alert success">
+          <strong>✅ Good News:</strong> Your PostgreSQL schema needs <strong>zero changes</strong> for Entra ID migration. All multi-tenancy is still enforced at the application layer via <code>siteId</code> filtering.
+        </div>
+
+        <h3>What Stays the Same</h3>
+        <ul class="checklist">
+          <li>Single PostgreSQL database for all sites</li>
+          <li>User table still tracks siteIds (now synced from Entra)</li>
+          <li>All resources have siteId foreign key</li>
+          <li>All queries filter by siteId</li>
+          <li>No per-site databases needed</li>
+        </ul>
+
+        <h3>What Changes (Minimal)</h3>
+        <div class="code-block">
+          <code>// packages/db/prisma/schema.prisma
+model User {
+  id        String   @id  // Now: Entra OID instead of local ID
+  email     String   @unique
+  name      String
+  siteIds   String[] @map("site_ids")  // Still tracks assigned sites
+  hubRole   String   @default("Hub Viewer")
+  // Remove these (no longer used with Entra):
+  // - username (use email instead)
+  // - passwordHash (Entra handles passwords)
+  // - trainingDue, trainingCompliant (can move to Entra extension)
+}</code>
+        </div>
+
+        <h3>User Sync Strategy (Optional)</h3>
+        <p>You can either:</p>
+        <ul style="list-style: disc; margin-left: 20px;">
+          <li><strong>Keep User table empty:</strong> Use only Entra claims (stateless, no sync needed)</li>
+          <li><strong>Sync on first login:</strong> Create/update User record from Entra claims</li>
+        </ul>
+
+        <p style="margin-top: 12px;"><strong>Recommendation:</strong> Stateless approach (just claims) is simpler and more secure.</p>
+      </div>
+
+      <!-- Site Data Isolation -->
+      <div class="section">
+        <h2>🔒 How Site Data Isolation Works</h2>
+
+        <h3>Flow Diagram</h3>
+        <div class="flow-diagram">
+          <span style="color: #0078d4; font-weight: bold;">1. User logs in with Entra ID</span><br/>
+          ↓<br/>
+          <span style="color: #0078d4; font-weight: bold;">2. Entra returns JWT with groups claim</span><br/>
+          <code>groups: ["SITE_A_USERS", "SITE_B_USERS"]</code><br/>
+          ↓<br/>
+          <span style="color: #0078d4; font-weight: bold;">3. App extracts siteIds from groups</span><br/>
+          <code>siteIds: ["a", "b"]</code><br/>
+          ↓<br/>
+          <span style="color: #0078d4; font-weight: bold;">4. Every database query adds WHERE clause</span><br/>
+          <code>WHERE siteId IN ('a', 'b')</code><br/>
+          ↓<br/>
+          <span style="color: #107c10; font-weight: bold;">Result: User only sees their site data</span>
+        </div>
+
+        <h3>Example: Admin Console Access Control</h3>
+        <div class="code-block">
+          <code>// hub/server/routes/admin.js
+app.get('/api/admin/users', requireAuth, async (req, res) => {
+  // Only HubAdmin can access
+  if (!req.user.roles?.includes('HubAdmin')) {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  // HubAdmin sees all users
+  const users = await db.user.findMany();
+  res.json(users);
+});
+
+app.get('/api/admin/users/by-site', requireAuth, async (req, res) => {
+  // Site admins can only view users in their sites
+  const users = await db.user.findMany({
+    where: {
+      siteIds: {
+        hasSome: req.user.siteIds, // User sees only overlapping sites
+      },
+    },
+  });
+  res.json(users);
+});</code>
+        </div>
+
+        <h3>Example: SCORVA Control Access</h3>
+        <div class="code-block">
+          <code>// scorva/server/routes/controls.js
+app.get('/api/controls/:id', requireAuth, async (req, res) => {
+  const control = await db.control.findUnique({
+    where: { id: req.params.id },
+  });
+
+  // Enforce site isolation
+  if (!req.user.siteIds.includes(control.siteId)) {
+    return res.status(403).json({ error: 'Access denied' });
+  }
+
+  res.json(control);
+});</code>
+        </div>
+      </div>
+
+      <!-- Migration Checklist -->
+      <div class="section">
+        <h2>✅ Migration Checklist</h2>
+
+        <h3>Phase 1: Entra Setup (1-2 days)</h3>
+        <ul class="todo">
+          <li>Create Entra tenant (if not already created)</li>
+          <li>Create 5 app registrations (Hub, SCORVA, CRATER, MASH, LAVA)</li>
+          <li>Set up security groups (one per site, per app if needed)</li>
+          <li>Configure token claims (groups claim)</li>
+          <li>Document app IDs and tenant ID</li>
+        </ul>
+
+        <h3>Phase 2: Frontend Updates (3-5 days)</h3>
+        <ul class="todo">
+          <li>Install MSAL packages</li>
+          <li>Update Hub login page (replace form with Entra button)</li>
+          <li>Update SCORVA, CRATER, MASH, LAVA login</li>
+          <li>Update API client to use JWT header</li>
+          <li>Test token acquisition and refresh</li>
+          <li>Update Protected Route components</li>
+        </ul>
+
+        <h3>Phase 3: Backend Updates (3-5 days)</h3>
+        <ul class="todo">
+          <li>Install JWT verification libraries</li>
+          <li>Create Entra token verification module</li>
+          <li>Update requireAuth middleware</li>
+          <li>Remove local auth routes</li>
+          <li>Update all API endpoints to use Entra claims</li>
+          <li>Remove express-session</li>
+          <li>Test token verification with real Entra tokens</li>
+        </ul>
+
+        <h3>Phase 4: Testing (2-3 days)</h3>
+        <ul class="todo">
+          <li>Single sign-on across all apps</li>
+          <li>Site isolation (Site A users cannot see Site B data)</li>
+          <li>Admin console access control</li>
+          <li>Token refresh and expiry</li>
+          <li>Multi-site users see correct data</li>
+          <li>NEXUS cross-site rollups work correctly</li>
+        </ul>
+
+        <h3>Phase 5: Deployment (1 day)</h3>
+        <ul class="todo">
+          <li>Update Docker compose (add Entra env vars)</li>
+          <li>Deploy to staging</li>
+          <li>End-to-end test</li>
+          <li>Deploy to production</li>
+          <li>Monitor logs for auth errors</li>
+        </ul>
+      </div>
+
+      <!-- Common Pitfalls -->
+      <div class="section">
+        <h2>⚠️ Common Pitfalls & Solutions</h2>
+
+        <h3>1. Token Expiry Handling</h3>
+        <div class="alert">
+          <strong>Pitfall:</strong> User's JWT expires, app doesn't refresh, user gets 401
+        </div>
+        <div class="code-block">
+          <code>// Solution: Use MSAL's acquireTokenSilent with error handling
+axiosInstance.interceptors.response.use(
+  response =&gt; response,
+  async error =&gt; {
+    if (error.response?.status === 401) {
+      try {
+        const token = await instance.acquireTokenPopup({
+          scopes: ['api://app-id/access'],
+        });
+        // Retry request with new token
+        error.config.headers.Authorization = `Bearer ${token.accessToken}`;
+        return axios(error.config);
+      } catch (refreshError) {
+        // Force re-login
+        instance.logout();
+      }
+    }
+    return Promise.reject(error);
+  }
+);</code>
+        </div>
+
+        <h3>2. Group Synchronization Delay</h3>
+        <div class="alert">
+          <strong>Pitfall:</strong> User added to Entra group, but token still shows old groups (Entra cache delay)
+        </div>
+        <p style="margin-top: 12px;"><strong>Solution:</strong> Entra caches group claims for ~30 minutes. Either:</p>
+        <ul style="list-style: disc; margin-left: 20px; margin-top: 8px;">
+          <li>Tell users to log out and back in</li>
+          <li>Implement manual token refresh UI</li>
+          <li>Reduce token cache time (less secure, more calls)</li>
+        </ul>
+
+        <h3>3. Cross-Site Admin Operations</h3>
+        <div class="alert">
+          <strong>Pitfall:</strong> Hub Admin creates user, forgets to add to site group, user sees no sites
+        </div>
+        <p style="margin-top: 12px;"><strong>Solution:</strong> In admin UI, show group membership and allow adding users to groups directly from app.</p>
+
+        <h3>4. NEXUS Cross-Site Rollups</h3>
+        <div class="alert">
+          <strong>Pitfall:</strong> NEXUS should sum metrics across all sites, but now filtered by user's siteIds
+        </div>
+        <div class="code-block">
+          <code>// Solution: NEXUS queries check user role
+app.get('/api/nexus/rollup', requireAuth, async (req, res) => {
+  let whereClause = {};
+
+  // If not HubAdmin, filter to user's sites only
+  if (!req.user.roles?.includes('HubAdmin')) {
+    whereClause.siteId = { in: req.user.siteIds };
+  }
+  // If HubAdmin, leave empty (gets all sites)
+
+  const snapshot = await db.nexusSnapshot.aggregate({
+    where: whereClause,
+    _sum: { openPoams: true, authorizedAtos: true },
+  });
+
+  res.json(snapshot);
+});</code>
+        </div>
+      </div>
+
+      <!-- Environment Setup -->
+      <div class="section">
+        <h2>🛠️ Docker Compose Updates</h2>
+
+        <h3>Updated docker-compose.yml</h3>
+        <div class="code-block">
+          <code>services:
+  hub:
+    environment:
+      NODE_ENV: production
+      ENTRA_TENANT_ID: ${ENTRA_TENANT_ID}
+      ENTRA_APP_ID: ${ENTRA_APP_ID}
+      # Remove: SESSION_SECRET (no longer used)
+
+  scorva:
+    environment:
+      NODE_ENV: production
+      ENTRA_TENANT_ID: ${ENTRA_TENANT_ID}
+      ENTRA_APP_ID: ${ENTRA_SCORVA_APP_ID}
+      # Remove: SESSION_SECRET, JWT_SECRET (JWT from Entra)
+
+  # ... similar for CRATER, MASH, LAVA</code>
+        </div>
+
+        <h3>.env.local (Development)</h3>
+        <div class="code-block">
+          <code>ENTRA_TENANT_ID=your-tenant-id.onmicrosoft.com
+ENTRA_APP_ID=hub-app-registration-id
+ENTRA_SCORVA_APP_ID=scorva-app-registration-id
+DATABASE_URL=postgresql://postgres:postgres@localhost:5433/securityapp
+NODE_ENV=development</code>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="section">
+        <h2>📋 Summary</h2>
+
+        <div class="comparison">
+          <div class="comparison-box before">
+            <h4>Current Setup</h4>
+            <ul style="list-style: disc; margin-left: 20px;">
+              <li>Local auth (admin/admin)</li>
+              <li>express-session + hub.sid cookie</li>
+              <li>Password validation in code</li>
+              <li>JWT for some apps</li>
+              <li>Manual site assignment</li>
+            </ul>
+          </div>
+          <div class="comparison-box after">
+            <h4>Entra ID 100% Setup</h4>
+            <ul style="list-style: disc; margin-left: 20px;">
+              <li>Azure Entra ID login</li>
+              <li>MSAL + JWT in localStorage</li>
+              <li>Entra handles password/MFA</li>
+              <li>JWT for ALL apps</li>
+              <li>Entra groups control access</li>
+            </ul>
+          </div>
+        </div>
+
+        <h3>Database Decision: FINAL ANSWER</h3>
+        <div class="key-point">
+          <strong>✅ Keep single PostgreSQL database.</strong> No per-site databases needed. Multi-tenancy is enforced at the application layer:
+          <ul style="list-style: disc; margin-left: 20px; margin-top: 8px;">
+            <li>Entra groups define site membership</li>
+            <li>Backend extracts siteIds from JWT claims</li>
+            <li>Every query adds WHERE siteId IN (...)</li>
+            <li>Result: Complete data isolation without schema duplication</li>
+          </ul>
+        </div>
+
+        <h3>Timeline & Effort</h3>
+        <ul style="list-style: disc; margin-left: 20px;">
+          <li><strong>Phase 1-2:</strong> ~4-7 days (Entra + Frontend)</li>
+          <li><strong>Phase 3:</strong> ~3-5 days (Backend)</li>
+          <li><strong>Phase 4-5:</strong> ~2-4 days (Testing + Deploy)</li>
+          <li><strong>Total:</strong> 2-3 weeks for full 100% Entra ID migration</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

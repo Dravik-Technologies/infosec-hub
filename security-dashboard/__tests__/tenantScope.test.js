@@ -47,37 +47,37 @@ describe('getUserSiteScope', () => {
   });
 
   test('normalizes lowercase HUB fields', () => {
-    const s = getUserSiteScope({ siteId: 'MTSI-HVL', siteIds: ['MTSI-HVL'], role: 'Viewer' });
-    expect(s.siteId).toBe('MTSI-HVL');
-    expect(s.siteIds).toEqual(['MTSI-HVL']);
+    const s = getUserSiteScope({ siteId: 'MTSI-OH', siteIds: ['MTSI-OH'], role: 'Viewer' });
+    expect(s.siteId).toBe('MTSI-OH');
+    expect(s.siteIds).toEqual(['MTSI-OH']);
   });
 
   test('normalizes legacy uppercase fields', () => {
-    const s = getUserSiteScope({ siteID: 'MTSI-HVL', siteIDs: ['MTSI-HVL'], role: 'Viewer' });
-    expect(s.siteId).toBe('MTSI-HVL');
-    expect(s.siteIds).toContain('MTSI-HVL');
+    const s = getUserSiteScope({ siteID: 'MTSI-OH', siteIDs: ['MTSI-OH'], role: 'Viewer' });
+    expect(s.siteId).toBe('MTSI-OH');
+    expect(s.siteIds).toContain('MTSI-OH');
   });
 
   test('merges both without duplicates', () => {
     const s = getUserSiteScope({
-      siteId: 'MTSI-HVL', siteIds: ['MTSI-HVL'],
-      siteID: 'MTSI-HVL', siteIDs: ['MTSI-HVL'],
+      siteId: 'MTSI-OH', siteIds: ['MTSI-OH'],
+      siteID: 'MTSI-OH', siteIDs: ['MTSI-OH'],
     });
-    expect(s.siteIds).toEqual(['MTSI-HVL']);
+    expect(s.siteIds).toEqual(['MTSI-OH']);
   });
 
   test('canSeeAllSites true when flag is set', () => {
-    const s = getUserSiteScope({ siteIds: ['MTSI-ALX'], canSeeAllSites: true });
+    const s = getUserSiteScope({ siteIds: ['MTSI-VA'], canSeeAllSites: true });
     expect(s.canSeeAllSites).toBe(true);
   });
 
   test('canSeeAllSites true for Corporate Admin role (legacy fallback)', () => {
-    const s = getUserSiteScope({ siteIds: ['MTSI-ALX'], role: 'Corporate Admin' });
+    const s = getUserSiteScope({ siteIds: ['MTSI-VA'], role: 'Corporate Admin' });
     expect(s.canSeeAllSites).toBe(true);
   });
 
   test('canSeeAllSites false for regular user', () => {
-    const s = getUserSiteScope({ siteIds: ['MTSI-HVL'], role: 'Viewer', canSeeAllSites: false });
+    const s = getUserSiteScope({ siteIds: ['MTSI-OH'], role: 'Viewer', canSeeAllSites: false });
     expect(s.canSeeAllSites).toBe(false);
   });
 });
@@ -90,53 +90,53 @@ function makeReq(user, query = {}) {
 
 describe('resolveTenantScope', () => {
   test('single-site user returns mode:single', () => {
-    const scope = resolveTenantScope(makeReq({ siteId: 'MTSI-HVL', siteIds: ['MTSI-HVL'] }));
-    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-HVL' });
+    const scope = resolveTenantScope(makeReq({ siteId: 'MTSI-OH', siteIds: ['MTSI-OH'] }));
+    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-OH' });
   });
 
   test('single-site user requesting their site returns mode:single', () => {
     const scope = resolveTenantScope(
-      makeReq({ siteIds: ['MTSI-HVL'] }, { siteId: 'MTSI-HVL' })
+      makeReq({ siteIds: ['MTSI-OH'] }, { siteId: 'MTSI-OH' })
     );
-    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-HVL' });
+    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-OH' });
   });
 
   test('single-site user requesting another site throws 403', () => {
     expect(() =>
-      resolveTenantScope(makeReq({ siteIds: ['MTSI-HVL'] }, { siteId: 'MTSI-ALX' }))
+      resolveTenantScope(makeReq({ siteIds: ['MTSI-OH'] }, { siteId: 'MTSI-VA' }))
     ).toThrow(expect.objectContaining({ status: 403 }));
   });
 
   test('multi-site user with no query returns mode:multi', () => {
     const scope = resolveTenantScope(
-      makeReq({ siteIds: ['MTSI-ALX', 'MTSI-HVL'] })
+      makeReq({ siteIds: ['MTSI-VA', 'MTSI-OH'] })
     );
-    expect(scope).toEqual({ mode: 'multi', siteIds: ['MTSI-ALX', 'MTSI-HVL'] });
+    expect(scope).toEqual({ mode: 'multi', siteIds: ['MTSI-VA', 'MTSI-OH'] });
   });
 
   test('multi-site user requesting allowed site returns mode:single', () => {
     const scope = resolveTenantScope(
-      makeReq({ siteIds: ['MTSI-ALX', 'MTSI-HVL'] }, { siteId: 'MTSI-HVL' })
+      makeReq({ siteIds: ['MTSI-VA', 'MTSI-OH'] }, { siteId: 'MTSI-OH' })
     );
-    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-HVL' });
+    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-OH' });
   });
 
   test('multi-site user requesting unassigned site throws 403', () => {
     expect(() =>
-      resolveTenantScope(makeReq({ siteIds: ['MTSI-HVL'] }, { siteId: 'MTSI-ZZZ' }))
+      resolveTenantScope(makeReq({ siteIds: ['MTSI-OH'] }, { siteId: 'MTSI-ZZZ' }))
     ).toThrow(expect.objectContaining({ status: 403 }));
   });
 
   test('enterprise user with no query returns mode:all', () => {
-    const scope = resolveTenantScope(makeReq({ canSeeAllSites: true, siteIds: ['MTSI-ALX'] }));
+    const scope = resolveTenantScope(makeReq({ canSeeAllSites: true, siteIds: ['MTSI-VA'] }));
     expect(scope).toEqual({ mode: 'all' });
   });
 
   test('enterprise user requesting specific site returns mode:single', () => {
     const scope = resolveTenantScope(
-      makeReq({ canSeeAllSites: true, siteIds: ['MTSI-ALX'] }, { siteId: 'MTSI-HVL' })
+      makeReq({ canSeeAllSites: true, siteIds: ['MTSI-VA'] }, { siteId: 'MTSI-OH' })
     );
-    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-HVL' });
+    expect(scope).toEqual({ mode: 'single', siteId: 'MTSI-OH' });
   });
 
   test('user with no sites throws 403', () => {
@@ -156,9 +156,9 @@ describe('resolveTenantScope', () => {
 
 describe('applyScopeFilter', () => {
   const items = [
-    { id: '1', siteId: 'MTSI-ALX', name: 'A' },
-    { id: '2', siteId: 'MTSI-HVL', name: 'B' },
-    { id: '3', siteId: 'MTSI-HVL', name: 'C' },
+    { id: '1', siteId: 'MTSI-VA', name: 'A' },
+    { id: '2', siteId: 'MTSI-OH', name: 'B' },
+    { id: '3', siteId: 'MTSI-OH', name: 'C' },
   ];
 
   test('mode:all returns all items', () => {
@@ -166,15 +166,15 @@ describe('applyScopeFilter', () => {
   });
 
   test('mode:single filters to one site', () => {
-    const result = applyScopeFilter(items, { mode: 'single', siteId: 'MTSI-HVL' });
+    const result = applyScopeFilter(items, { mode: 'single', siteId: 'MTSI-OH' });
     expect(result).toHaveLength(2);
-    result.forEach(i => expect(i.siteId).toBe('MTSI-HVL'));
+    result.forEach(i => expect(i.siteId).toBe('MTSI-OH'));
   });
 
   test('mode:multi filters to multiple sites', () => {
-    const result = applyScopeFilter(items, { mode: 'multi', siteIds: ['MTSI-ALX'] });
+    const result = applyScopeFilter(items, { mode: 'multi', siteIds: ['MTSI-VA'] });
     expect(result).toHaveLength(1);
-    expect(result[0].siteId).toBe('MTSI-ALX');
+    expect(result[0].siteId).toBe('MTSI-VA');
   });
 
   test('mode:single with no matching items returns empty array', () => {
@@ -182,12 +182,12 @@ describe('applyScopeFilter', () => {
   });
 
   test('non-array input returned as-is', () => {
-    expect(applyScopeFilter(null, { mode: 'single', siteId: 'MTSI-HVL' })).toBeNull();
+    expect(applyScopeFilter(null, { mode: 'single', siteId: 'MTSI-OH' })).toBeNull();
   });
 
   test('Site A user cannot see Site B records', () => {
-    const siteAItems = applyScopeFilter(items, { mode: 'single', siteId: 'MTSI-ALX' });
-    siteAItems.forEach(i => expect(i.siteId).not.toBe('MTSI-HVL'));
+    const siteAItems = applyScopeFilter(items, { mode: 'single', siteId: 'MTSI-VA' });
+    siteAItems.forEach(i => expect(i.siteId).not.toBe('MTSI-OH'));
   });
 });
 
@@ -199,13 +199,13 @@ describe('buildSiteWhere', () => {
   });
 
   test('mode:single adds siteId filter', () => {
-    expect(buildSiteWhere({ mode: 'single', siteId: 'MTSI-HVL' }, {}))
-      .toEqual({ siteId: 'MTSI-HVL' });
+    expect(buildSiteWhere({ mode: 'single', siteId: 'MTSI-OH' }, {}))
+      .toEqual({ siteId: 'MTSI-OH' });
   });
 
   test('mode:multi adds siteId:in filter', () => {
-    expect(buildSiteWhere({ mode: 'multi', siteIds: ['MTSI-ALX', 'MTSI-HVL'] }, {}))
-      .toEqual({ siteId: { in: ['MTSI-ALX', 'MTSI-HVL'] } });
+    expect(buildSiteWhere({ mode: 'multi', siteIds: ['MTSI-VA', 'MTSI-OH'] }, {}))
+      .toEqual({ siteId: { in: ['MTSI-VA', 'MTSI-OH'] } });
   });
 });
 
@@ -213,29 +213,29 @@ describe('buildSiteWhere', () => {
 
 describe('assertSiteAccess', () => {
   test('enterprise user can access any site', () => {
-    expect(assertSiteAccess({ canSeeAllSites: true, siteIds: ['MTSI-ALX'] }, 'MTSI-HVL')).toBe(true);
-    expect(assertSiteAccess({ canSeeAllSites: true, siteIds: ['MTSI-ALX'] }, 'UNKNOWN')).toBe(true);
+    expect(assertSiteAccess({ canSeeAllSites: true, siteIds: ['MTSI-VA'] }, 'MTSI-OH')).toBe(true);
+    expect(assertSiteAccess({ canSeeAllSites: true, siteIds: ['MTSI-VA'] }, 'UNKNOWN')).toBe(true);
   });
 
   test('user with matching siteId can access it', () => {
-    expect(assertSiteAccess({ siteIds: ['MTSI-HVL'] }, 'MTSI-HVL')).toBe(true);
+    expect(assertSiteAccess({ siteIds: ['MTSI-OH'] }, 'MTSI-OH')).toBe(true);
   });
 
   test('user without matching siteId cannot access it', () => {
-    expect(assertSiteAccess({ siteIds: ['MTSI-HVL'] }, 'MTSI-ALX')).toBe(false);
+    expect(assertSiteAccess({ siteIds: ['MTSI-OH'] }, 'MTSI-VA')).toBe(false);
   });
 
   test('returns false for null user', () => {
-    expect(assertSiteAccess(null, 'MTSI-HVL')).toBe(false);
+    expect(assertSiteAccess(null, 'MTSI-OH')).toBe(false);
   });
 
   test('returns false for null siteId', () => {
-    expect(assertSiteAccess({ siteIds: ['MTSI-HVL'] }, null)).toBe(false);
+    expect(assertSiteAccess({ siteIds: ['MTSI-OH'] }, null)).toBe(false);
   });
 
   test('Site A user cannot access Site B', () => {
-    const siteAUser = { siteId: 'MTSI-ALX', siteIds: ['MTSI-ALX'], canSeeAllSites: false };
-    expect(assertSiteAccess(siteAUser, 'MTSI-HVL')).toBe(false);
+    const siteAUser = { siteId: 'MTSI-VA', siteIds: ['MTSI-VA'], canSeeAllSites: false };
+    expect(assertSiteAccess(siteAUser, 'MTSI-OH')).toBe(false);
   });
 });
 
@@ -247,17 +247,17 @@ describe('resolveWriteSiteId', () => {
   }
 
   test('uses body.siteId when user has access', () => {
-    const req = makeWriteReq({ siteIds: ['MTSI-HVL'] }, { siteId: 'MTSI-HVL' });
-    expect(resolveWriteSiteId(req)).toBe('MTSI-HVL');
+    const req = makeWriteReq({ siteIds: ['MTSI-OH'] }, { siteId: 'MTSI-OH' });
+    expect(resolveWriteSiteId(req)).toBe('MTSI-OH');
   });
 
   test('falls back to user primary siteId', () => {
-    const req = makeWriteReq({ siteId: 'MTSI-HVL', siteIds: ['MTSI-HVL'] }, {});
-    expect(resolveWriteSiteId(req)).toBe('MTSI-HVL');
+    const req = makeWriteReq({ siteId: 'MTSI-OH', siteIds: ['MTSI-OH'] }, {});
+    expect(resolveWriteSiteId(req)).toBe('MTSI-OH');
   });
 
   test('throws 403 when body siteId is out of user scope', () => {
-    const req = makeWriteReq({ siteIds: ['MTSI-HVL'] }, { siteId: 'MTSI-ALX' });
+    const req = makeWriteReq({ siteIds: ['MTSI-OH'] }, { siteId: 'MTSI-VA' });
     expect(() => resolveWriteSiteId(req)).toThrow(expect.objectContaining({ status: 403 }));
   });
 
@@ -267,14 +267,14 @@ describe('resolveWriteSiteId', () => {
   });
 
   test('enterprise user can write to any site', () => {
-    const req = makeWriteReq({ canSeeAllSites: true, siteIds: ['MTSI-ALX'] }, { siteId: 'MTSI-HVL' });
-    expect(resolveWriteSiteId(req)).toBe('MTSI-HVL');
+    const req = makeWriteReq({ canSeeAllSites: true, siteIds: ['MTSI-VA'] }, { siteId: 'MTSI-OH' });
+    expect(resolveWriteSiteId(req)).toBe('MTSI-OH');
   });
 
   test('cross-site write by regular user is denied', () => {
     const req = makeWriteReq(
-      { siteId: 'MTSI-HVL', siteIds: ['MTSI-HVL'], canSeeAllSites: false },
-      { siteId: 'MTSI-ALX' }
+      { siteId: 'MTSI-OH', siteIds: ['MTSI-OH'], canSeeAllSites: false },
+      { siteId: 'MTSI-VA' }
     );
     expect(() => resolveWriteSiteId(req)).toThrow(expect.objectContaining({ status: 403 }));
   });
@@ -289,12 +289,12 @@ describe('isEnterpriseScopeRequest', () => {
   });
 
   test('enterprise user with explicit siteId param is NOT enterprise scope', () => {
-    const req = makeReq({ canSeeAllSites: true }, { siteId: 'MTSI-HVL' });
+    const req = makeReq({ canSeeAllSites: true }, { siteId: 'MTSI-OH' });
     expect(isEnterpriseScopeRequest(req)).toBe(false);
   });
 
   test('non-enterprise user is never enterprise scope', () => {
-    const req = makeReq({ siteIds: ['MTSI-HVL'] });
+    const req = makeReq({ siteIds: ['MTSI-OH'] });
     expect(isEnterpriseScopeRequest(req)).toBe(false);
   });
 });
@@ -303,18 +303,18 @@ describe('isEnterpriseScopeRequest', () => {
 
 describe('normalizeSiteIds', () => {
   test('deduplicates', () => {
-    expect(normalizeSiteIds('MTSI-HVL', 'MTSI-HVL', ['MTSI-HVL'])).toEqual(['MTSI-HVL']);
+    expect(normalizeSiteIds('MTSI-OH', 'MTSI-OH', ['MTSI-OH'])).toEqual(['MTSI-OH']);
   });
 
   test('flattens arrays', () => {
-    expect(normalizeSiteIds(['MTSI-ALX', 'MTSI-HVL'])).toEqual(['MTSI-ALX', 'MTSI-HVL']);
+    expect(normalizeSiteIds(['MTSI-VA', 'MTSI-OH'])).toEqual(['MTSI-VA', 'MTSI-OH']);
   });
 
   test('filters falsy values', () => {
-    expect(normalizeSiteIds(null, undefined, '', 'MTSI-HVL')).toEqual(['MTSI-HVL']);
+    expect(normalizeSiteIds(null, undefined, '', 'MTSI-OH')).toEqual(['MTSI-OH']);
   });
 
   test('trims whitespace', () => {
-    expect(normalizeSiteIds('  MTSI-HVL  ')).toEqual(['MTSI-HVL']);
+    expect(normalizeSiteIds('  MTSI-OH  ')).toEqual(['MTSI-OH']);
   });
 });

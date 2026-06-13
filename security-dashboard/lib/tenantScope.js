@@ -11,7 +11,7 @@
  *   - no site assigned = blocked from all operational data
  *
  * canSeeAllSites is true when HUB has determined:
- *   user.siteIds includes MTSI-ALX  AND
+ *   user canSeeAllSites flag is set AND
  *   (platformRole === 'Hub Admin' OR platformRole === 'Corporate Admin' OR securityRole === 'Corporate Security Admin')
  *
  * MASH JWT is issued by this server at /api/auth/login (proxied from HUB).
@@ -163,9 +163,10 @@ function assertSiteAccess(user, siteId) {
 
 /**
  * Resolve the target siteId for a write operation and validate user access.
- * Uses req.body.siteId first, then falls back to the user's primary siteId.
+ * Requires explicit siteId in req.body — does NOT fall back to user's primary site.
+ * This prevents accidental data creation in the wrong tenant site.
  *
- * Throws 400 if no siteId can be resolved.
+ * Throws 400 if no siteId is provided in request body.
  * Throws 403 if the user cannot write to the resolved siteId.
  *
  * @param {import('express').Request} req
@@ -173,20 +174,18 @@ function assertSiteAccess(user, siteId) {
  */
 function resolveWriteSiteId(req) {
   const bodySiteId = (req.body?.siteId || req.body?.siteID || '').trim() || null;
-  const scope = getUserSiteScope(req.user);
 
-  const target = bodySiteId || scope.siteId;
-  if (!target) {
-    const err = new Error('siteId is required for write operations on site-owned records');
+  if (!bodySiteId) {
+    const err = new Error('siteId is required and must be explicitly provided in request body for write operations on site-owned records');
     err.status = 400;
     throw err;
   }
-  if (!assertSiteAccess(req.user, target)) {
-    const err = new Error(`Site access denied: ${target}`);
+  if (!assertSiteAccess(req.user, bodySiteId)) {
+    const err = new Error(`Site access denied: ${bodySiteId}`);
     err.status = 403;
     throw err;
   }
-  return target;
+  return bodySiteId;
 }
 
 /**

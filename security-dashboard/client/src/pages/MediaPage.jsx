@@ -73,15 +73,46 @@ function MediaForm({ item, siteId, onSave, onClose }) {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    setSaving(true);
-    const payload = { ...form, capacityGB: form.capacityGB === '' ? null : Number(form.capacityGB), location: form.currentLocation, system: form.associatedSystem };
-    if (isEdit) {
-      await WS.patch('media_control', item.id, payload);
-    } else {
-      await WS.post('media_control', { ...payload, id: uid(), history: [], flags: [] });
+    if (!form.siteId) {
+      alert('Error: Site ID is required. Please select a site and try again.');
+      return;
     }
-    setSaving(false);
-    onSave();
+    setSaving(true);
+    try {
+      const { currentLocation, associatedSystem, ...formData } = form;
+      const payload = {
+        ...formData,
+        capacityGB: form.capacityGB === '' ? null : Number(form.capacityGB),
+        currentLocation,
+        system: associatedSystem,
+      };
+      console.log('Media payload:', payload);
+      if (isEdit) {
+        const result = await WS.patch('media_control', item.id, payload);
+        console.log('Patch result:', result);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      } else {
+        const finalPayload = { ...payload, id: uid(), history: [], flags: [] };
+        console.log('Final media payload:', finalPayload);
+        const result = await WS.post('media_control', finalPayload);
+        console.log('Post result:', result);
+        if (result?._wsError) {
+          alert(`Save failed: ${result.message}`);
+          setSaving(false);
+          return;
+        }
+      }
+      onSave();
+    } catch (err) {
+      console.error('Form submission error:', err);
+      alert(`Error: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -165,7 +196,7 @@ function MediaForm({ item, siteId, onSave, onClose }) {
   );
 }
 
-function MediaDetail({ item, onClose, onEdit, onSubSaved }) {
+function MediaDetail({ item, onClose, onEdit, onSubSaved, onDeleted }) {
   const [subPanel, setSubPanel] = useState(null);
   const [subForm, setSubForm] = useState({});
   const [saving, setSaving] = useState(false);
@@ -201,7 +232,6 @@ function MediaDetail({ item, onClose, onEdit, onSubSaved }) {
       patch = {
         status: 'In Transfer',
         currentLocation: subForm.newLocation || item.currentLocation,
-        location: subForm.newLocation || item.currentLocation,
         history: [...(item.history || []), { action: 'Transfer', ...entry, to: subForm.transferTo, newLocation: subForm.newLocation }],
       };
     } else if (subPanel === 'pendingDestruction') {
@@ -231,9 +261,16 @@ function MediaDetail({ item, onClose, onEdit, onSubSaved }) {
   async function handleDelete() {
     if (!window.confirm('Delete this media record? This cannot be undone.')) return;
     setDeleting(true);
-    await WS.del('media_control', item.id);
-    setDeleting(false);
-    onClose();
+    try {
+      const result = await WS.del('media_control', item.id);
+      if (result?._wsError) {
+        alert(result.message || 'Failed to delete media record');
+        return;
+      }
+      onDeleted(item.id);
+    } finally {
+      setDeleting(false);
+    }
   }
 
   return (
@@ -479,7 +516,7 @@ function MediaDetail({ item, onClose, onEdit, onSubSaved }) {
   );
 }
 
-export default function MediaPage({ siteId }) {
+export default function MediaPage({ siteId, user, sites }) {
   const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(null);
@@ -490,9 +527,14 @@ export default function MediaPage({ siteId }) {
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
   const [adding, setAdding] = useState(false);
+  const [showSiteWarning, setShowSiteWarning] = useState(false);
+
+  const requiresSiteSelection = Boolean(user?.canSeeAllSites || (user?.siteIds?.length > 1));
+  const readSiteId = siteId || (!requiresSiteSelection ? (user?.primarySiteId || user?.siteIds?.[0] || '') : '');
+  const createSiteId = siteId || user?.primarySiteId || user?.siteIds?.[0] || '';
 
   function loadMedia() {
-    const params = siteId ? { siteId } : {};
+    const params = readSiteId ? { siteId: readSiteId } : {};
     return WS.get('media_control', params).then(d => {
       if (d?._wsError) { setLoadError(d.message); setLoading(false); return; }
       setLoadError(null);
@@ -504,7 +546,7 @@ export default function MediaPage({ siteId }) {
   useEffect(() => {
     setLoading(true);
     loadMedia();
-  }, [siteId]);
+  }, [readSiteId]);
 
   function handleSaved() {
     loadMedia().then(() => { setAdding(false); setEditing(null); });
@@ -522,6 +564,20 @@ export default function MediaPage({ siteId }) {
     const it = selected;
     setSelected(null);
     setEditing(it);
+  }
+
+  function handleDeleted(itemId) {
+    setSelected(null);
+    setMedia(prev => prev.filter(m => m.id !== itemId));
+    loadMedia();
+  }
+
+  function handleAddMediaClick() {
+    if (requiresSiteSelection && !siteId) {
+      setShowSiteWarning(true);
+      return;
+    }
+    setAdding(true);
   }
 
   const overdueCount = media.filter(isReturnOverdue).length;
@@ -549,14 +605,34 @@ export default function MediaPage({ siteId }) {
 
   return (
     <div className="ws-page">
-      {adding && <MediaForm siteId={siteId} onSave={handleSaved} onClose={() => setAdding(false)} />}
-      {editing && <MediaForm item={editing} siteId={siteId} onSave={handleSaved} onClose={() => setEditing(null)} />}
+      {showSiteWarning && (
+        <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg-strong)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
+          <div className="ws-card" style={{ width: 'min(420px, 100%)' }}>
+            <div className="ws-card-header">
+              <h3>⚠️ Site Required</h3>
+            </div>
+            <div className="ws-card-body" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                Please select a site from the dropdown menu at the top before adding media. Each media record must be assigned to a specific site.
+              </p>
+              <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+                <button type="button" className="ws-action-btn primary" onClick={() => setShowSiteWarning(false)}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {adding && <MediaForm siteId={createSiteId} onSave={handleSaved} onClose={() => setAdding(false)} />}
+      {editing && <MediaForm item={editing} siteId={createSiteId} onSave={handleSaved} onClose={() => setEditing(null)} />}
       {selected && !editing && (
         <MediaDetail
           item={selected}
           onClose={() => setSelected(null)}
           onEdit={handleEditFromDetail}
           onSubSaved={handleSubSaved}
+          onDeleted={handleDeleted}
         />
       )}
 
@@ -569,7 +645,7 @@ export default function MediaPage({ siteId }) {
           {pendingDestCount > 0 && <span className="ws-count-badge" style={{ background: 'var(--amber-bg)', color: 'var(--amber)', borderColor: 'var(--amber-border)' }}>{pendingDestCount} pending destruction</span>}
           {flaggedCount > 0 && <span className="ws-count-badge" style={{ background: 'var(--red-bg)', color: 'var(--red)', borderColor: 'var(--red-border)' }}>{flaggedCount} flagged</span>}
           <span className="ws-count-badge">{media.length} total</span>
-          <button className="ws-action-btn primary" onClick={() => setAdding(true)}>+ Add Media</button>
+          <button className="ws-action-btn primary" onClick={handleAddMediaClick}>+ Add Media</button>
         </div>
       </div>
 
