@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import type { Secret, SignOptions } from 'jsonwebtoken'
 import { z } from 'zod'
 import { prisma } from '../lib/prisma'
 import { authenticate, AuthRequest } from '../middleware/auth'
@@ -20,9 +21,11 @@ const loginSchema = z.object({
 })
 
 function signToken(userId: string) {
-  return jwt.sign({ userId }, process.env.JWT_SECRET!, {
-    expiresIn: (process.env.JWT_EXPIRES_IN as string) || '7d',
-  })
+  const secret: Secret = process.env.JWT_SECRET || 'crater-local-jwt-secret-2026-please-change'
+  const options: SignOptions = {
+    expiresIn: (process.env.JWT_EXPIRES_IN as SignOptions['expiresIn']) || '7d',
+  }
+  return jwt.sign({ userId }, secret, options)
 }
 
 router.post('/register', async (req, res, next) => {

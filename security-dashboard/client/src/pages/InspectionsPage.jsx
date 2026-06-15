@@ -512,6 +512,7 @@ function CampaignCreateModal({ siteId, initialData = null, onClose, onSaved, onD
     leadInspector: initialData?.leadInspector || '',
     startDate: initialData?.startDate ? String(initialData.startDate).slice(0, 10) : '',
     targetDate: initialData?.targetDate ? String(initialData.targetDate).slice(0, 10) : '',
+    completedAt: initialData?.completedAt ? String(initialData.completedAt).slice(0, 10) : '',
     notes: initialData?.notes || '',
     status: initialData?.status || 'Draft',
     overallRating: initialData?.overallRating || '',
@@ -538,6 +539,7 @@ function CampaignCreateModal({ siteId, initialData = null, onClose, onSaved, onD
         leadInspector: form.leadInspector,
         startDate: form.startDate || null,
         targetDate: form.targetDate || null,
+        completedAt: form.completedAt || null,
         notes: form.notes,
         status: form.status,
         overallRating: form.overallRating || null,
@@ -612,6 +614,9 @@ function CampaignCreateModal({ siteId, initialData = null, onClose, onSaved, onD
               </FormField>
               <FormField label="Target Date">
                 <input className="ws-input" type="date" value={form.targetDate} onChange={e => set('targetDate', e.target.value)} />
+              </FormField>
+              <FormField label="Completed Date">
+                <input className="ws-input" type="date" value={form.completedAt} onChange={e => set('completedAt', e.target.value)} />
               </FormField>
               <FormField label="Status">
                 <select className="ws-input" value={form.status} onChange={e => set('status', e.target.value)}>

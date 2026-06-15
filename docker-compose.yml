@@ -66,11 +66,11 @@ services:
   # ── CRATER API — eMASS RMF backend (port 3001, internal) ────────────────────
   crater-api:
     build:
-      context: .
-      dockerfile: crater/server/Dockerfile
+      context: ./crater/server
+      dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "${CRATER_API_PORT:-3001}:3001"
+    expose:
+      - "3001"
     environment:
       PORT: 3001
       NODE_ENV: production
@@ -87,11 +87,11 @@ services:
   # ── CRATER UI — eMASS RMF frontend via nginx (port 3003) ───────────────────
   crater-ui:
     build:
-      context: ./crater
+      context: ./crater/client
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${CRATER_UI_PORT:-3003}:3003"
+      - "${CRATER_UI_PORT:-3003}:80"
     depends_on:
       - crater-api
 

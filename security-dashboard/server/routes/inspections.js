@@ -213,8 +213,12 @@ async function buildCampaignSummary(campaignId) {
     include: {
       sections: {
         include: {
-          items: true,
+          items: {
+            include: { findings: true },
+            orderBy: { sortOrder: 'asc' },
+          },
         },
+        orderBy: { sortOrder: 'asc' },
       },
       findings: {
         include: {
@@ -246,6 +250,18 @@ async function buildCampaignSummary(campaignId) {
       overdueActions,
     },
   };
+}
+
+function resolvePatchedDate(currentValue, nextValue) {
+  if (nextValue === undefined) return currentValue;
+  if (nextValue === null || nextValue === '') return null;
+  const parsed = new Date(nextValue);
+  if (Number.isNaN(parsed.getTime())) {
+    const err = new Error(`Invalid date: ${nextValue}`);
+    err.status = 400;
+    throw err;
+  }
+  return parsed;
 }
 
 // ─── Campaign Routes ─────────────────────────────────────────────────────────
@@ -413,7 +429,9 @@ router.patch('/inspection-campaigns/:id', async (req, res) => {
         overallRating: req.body.overallRating ?? campaign.overallRating,
         leadInspector: req.body.leadInspector ?? campaign.leadInspector,
         status: req.body.status ?? campaign.status,
-        completedAt: req.body.completedAt ? new Date(req.body.completedAt) : campaign.completedAt,
+        startDate: resolvePatchedDate(campaign.startDate, req.body.startDate),
+        targetDate: resolvePatchedDate(campaign.targetDate, req.body.targetDate),
+        completedAt: resolvePatchedDate(campaign.completedAt, req.body.completedAt),
         notes: req.body.notes ?? campaign.notes,
         updatedAt: new Date(),
       },
