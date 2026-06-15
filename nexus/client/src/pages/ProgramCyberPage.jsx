@@ -1,6 +1,8 @@
 import MetricCard from '../components/MetricCard.jsx';
 import DonutChart from '../components/DonutChart.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
+import TimelineGantt from '../components/TimelineGantt.jsx';
+import Calendar from '../components/Calendar.jsx';
 import { fmtDate } from '../app.js';
 
 function statusBadge(status) {

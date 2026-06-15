@@ -2,6 +2,9 @@ import MetricCard from '../components/MetricCard.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
 import LineChart from '../components/LineChart.jsx';
 import BarChart from '../components/BarChart.jsx';
+import PieChart from '../components/PieChart.jsx';
+import TimelineGantt from '../components/TimelineGantt.jsx';
+import Calendar from '../components/Calendar.jsx';
 import { fmtDate, pctClass } from '../app.js';
 
 function statusBadge(status) {
@@ -305,6 +308,30 @@ export default function ProgramManagementPage({ data, trend }) {
         </div>
       )}
 
+      {/* Risk Severity Distribution */}
+      {openRisks.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3>Risk Severity Breakdown</h3>
+            <span>{openRisks.length} active risks</span>
+          </div>
+          <div className="card-body" style={{ minHeight: 340 }}>
+            <PieChart
+              data={(() => {
+                const severityMap = {};
+                openRisks.forEach(risk => {
+                  const sev = risk.severity || 'Medium';
+                  severityMap[sev] = (severityMap[sev] || 0) + 1;
+                });
+                return Object.entries(severityMap).map(([name, value]) => ({ name, value }));
+              })()}
+              label="Risks"
+              height={320}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Real Estate + Milestones */}
       {(realEstate.length > 0 || milestones.length > 0) && (
         <section className="split-grid">
@@ -351,22 +378,26 @@ export default function ProgramManagementPage({ data, trend }) {
                   <p>No milestones scheduled.</p>
                 </div>
               ) : (
-                <div className="timeline-list">
-                  {milestones.map(item => (
-                    <div key={item.id} className="timeline-row">
-                      <div className={`timeline-dot ${milestoneDotClass(item.status)}`} />
-                      <div className="timeline-row-main">
-                        <strong>{item.title}</strong>
-                        <p>{fmtDate(item.date)}</p>
-                      </div>
-                      <span className={`badge ${statusBadge(item.status)}`}>{item.status}</span>
-                    </div>
-                  ))}
+                <div style={{ minHeight: 300 }}>
+                  <TimelineGantt items={milestones} />
                 </div>
               )}
             </div>
           </div>
         </section>
+      )}
+
+      {/* Milestone Calendar */}
+      {milestones.length > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3>Milestone Calendar</h3>
+            <span>Track upcoming dates</span>
+          </div>
+          <div className="card-body">
+            <Calendar events={milestones} />
+          </div>
+        </div>
       )}
     </div>
   );

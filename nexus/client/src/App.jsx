@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AUTH, API, isAdminRole } from './app.js';
 import AppHeader from './components/AppHeader.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -147,6 +148,12 @@ export default function App() {
     reloadBootstrap();
   }
 
+  const pageVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
+    exit: { opacity: 0, y: -20, transition: { duration: 0.3, ease: 'easeIn' } },
+  };
+
   const activePage = useMemo(() => {
     if (view === 'security') return <ProgramSecurityPage data={data.programSecurity} trend={data.trend} />;
     if (view === 'cyber') return <ProgramCyberPage data={data.cyber} trend={data.trend} />;
@@ -211,9 +218,18 @@ export default function App() {
         onToggleTheme={toggleTheme}
       />
       <DataSourceBanner sources={data._sources} />
-      <main className="main-shell">
-        {activePage}
-      </main>
+      <AnimatePresence mode="wait">
+        <motion.main
+          key={view}
+          className="main-shell"
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
+          {activePage}
+        </motion.main>
+      </AnimatePresence>
     </div>
   );
 }
