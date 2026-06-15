@@ -33,10 +33,10 @@ function AnimatedValue({ value, suffix = '' }) {
   }, [value]);
 
   return (
-    <>
-      {displayValue}
-      {suffix && <sup>{suffix}</sup>}
-    </>
+    <span className="kpi-value-content">
+      <span className="kpi-value-number">{displayValue}</span>
+      {suffix && <span className="kpi-value-suffix">{suffix}</span>}
+    </span>
   );
 }
 

@@ -529,8 +529,24 @@ body {
   margin-top: 0.2rem;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
 }
-.kpi-value sup { font-size: 1rem; vertical-align: top; margin-top: 0.3rem; display: inline-block; font-weight: 600; }
+.kpi-value-content {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+.kpi-value-number {
+  font: 700 2rem Inter, sans-serif;
+}
+.kpi-value-suffix {
+  font: 700 1.1rem Inter, sans-serif;
+  font-weight: 600;
+  vertical-align: baseline;
+  margin-top: 0.1rem;
+}
 .kpi-hint { font: 400 0.72rem Inter, sans-serif; color: var(--muted); margin-top: 0.25rem; }
 .kpi-trend {
   display: flex;
