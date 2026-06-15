@@ -994,6 +994,137 @@ body {
   flex-wrap: wrap;
 }
 
+/* ── Glassmorphism & Enhanced Cards ──────────────────────────────────────────── */
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root[data-theme="dark"] .card {
+  background: rgba(12, 26, 46, 0.7);
+  border: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.card:hover {
+  border-color: rgba(29, 78, 216, 0.3);
+  box-shadow: 0 8px 32px rgba(29, 78, 216, 0.12), 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+:root[data-theme="dark"] .card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 8px 32px rgba(34, 211, 238, 0.1), 0 0 1px rgba(0, 0, 0, 0.4);
+}
+
+.kpi-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:root[data-theme="dark"] .kpi-card {
+  background: rgba(12, 26, 46, 0.6);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.kpi-card:hover {
+  border-color: var(--blue);
+  box-shadow: 0 8px 24px rgba(29, 78, 216, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+:root[data-theme="dark"] .kpi-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 8px 24px rgba(34, 211, 238, 0.12), inset 0 1px 0 rgba(59, 130, 246, 0.2);
+}
+
+/* ── Enhanced Animations ─────────────────────────────────────────────────────── */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.kpi-strip > * {
+  animation: slideUp 0.5s ease-out backwards;
+}
+
+.kpi-strip > :nth-child(1) { animation-delay: 0.05s; }
+.kpi-strip > :nth-child(2) { animation-delay: 0.1s; }
+.kpi-strip > :nth-child(3) { animation-delay: 0.15s; }
+.kpi-strip > :nth-child(4) { animation-delay: 0.2s; }
+.kpi-strip > :nth-child(5) { animation-delay: 0.25s; }
+.kpi-strip > :nth-child(6) { animation-delay: 0.3s; }
+
+.split-grid > * {
+  animation: slideUp 0.6s ease-out backwards;
+}
+
+.split-grid > :nth-child(1) { animation-delay: 0.1s; }
+.split-grid > :nth-child(2) { animation-delay: 0.2s; }
+
+.card {
+  animation: fadeInScale 0.5s ease-out;
+}
+
+/* ── Data list row animations ─────────────────────────────────────────────────── */
+.data-row {
+  transition: all 0.2s ease-out;
+  border-radius: 6px;
+}
+
+.data-row:hover {
+  background: rgba(29, 78, 216, 0.05);
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+:root[data-theme="dark"] .data-row:hover {
+  background: rgba(59, 130, 246, 0.08);
+}
+
+/* ── Timeline animations ─────────────────────────────────────────────────────── */
+.timeline-row {
+  transition: transform 0.2s ease-out, background 0.2s ease-out;
+}
+
+.timeline-row:hover {
+  transform: translateX(4px);
+}
+
+.timeline-dot {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────────────────── */
 @media (max-width: 1080px) {
   .kpi-strip { grid-template-columns: 1fr 1fr; }

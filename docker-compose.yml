@@ -118,6 +118,29 @@ services:
       hub:
         condition: service_started
 
+  # ── NEXUS — Program Command (port 8090) ─────────────────────────────────────
+  nexus:
+    build:
+      context: .
+      dockerfile: nexus/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      PORT: 8090
+      NODE_ENV: production
+      COOKIE_SECURE: "false"
+      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-securityapp}
+      JWT_SECRET: ${NEXUS_JWT_SECRET:-nexus-local-jwt-secret-2026-please-change-more-than-32}
+      HUB_URL: http://hub:3010
+      HUB_HOST: hub
+      HUB_PORT: 3010
+    depends_on:
+      postgres:
+        condition: service_healthy
+      hub:
+        condition: service_started
+
   # ── Data Fabric — CIM-ARC platform (port 8081) ──────────────────────────────
   data-fabric:
     build:

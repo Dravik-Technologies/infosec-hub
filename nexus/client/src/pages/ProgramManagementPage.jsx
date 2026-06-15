@@ -1,5 +1,7 @@
 import MetricCard from '../components/MetricCard.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
+import LineChart from '../components/LineChart.jsx';
+import BarChart from '../components/BarChart.jsx';
 import { fmtDate, pctClass } from '../app.js';
 
 function statusBadge(status) {
@@ -282,6 +284,25 @@ export default function ProgramManagementPage({ data, trend }) {
             </div>
           </div>
         </section>
+      )}
+
+      {/* Construction Progress Chart */}
+      {construction.length > 1 && (
+        <div className="card">
+          <div className="card-header">
+            <h3>Construction Progress Comparison</h3>
+            <span>Active projects by completion</span>
+          </div>
+          <div className="card-body" style={{ minHeight: 320 }}>
+            <BarChart
+              data={construction.map(p => ({ name: p.name.slice(0, 12), value: p.progress || 0 }))}
+              dataKey="value"
+              label="% Complete"
+              colors={['#0f766e']}
+              height={300}
+            />
+          </div>
+        </div>
       )}
 
       {/* Real Estate + Milestones */}

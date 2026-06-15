@@ -1,5 +1,6 @@
 import MetricCard from '../components/MetricCard.jsx';
 import ProgressBar from '../components/ProgressBar.jsx';
+import BarChart from '../components/BarChart.jsx';
 import { fmtDate } from '../app.js';
 
 function statusBadge(status) {
@@ -146,6 +147,29 @@ export default function ProgramSecurityPage({ data, trend }) {
           <strong>{inspections.overdue || 0}</strong>
         </div>
       </div>
+
+      {/* Facility Posture Chart */}
+      {totalFacilities > 0 && (
+        <div className="card">
+          <div className="card-header">
+            <h3>Facility Posture Distribution</h3>
+            <span>{totalFacilities} total facilities</span>
+          </div>
+          <div className="card-body" style={{ minHeight: 280 }}>
+            <BarChart
+              data={[
+                { name: 'Nominal', value: summary.nominal || 0 },
+                { name: 'Guarded', value: summary.guarded || 0 },
+                { name: 'Elevated', value: summary.elevated || 0 },
+              ]}
+              dataKey="value"
+              label="Facilities"
+              colors={['#15803d', '#d97706', '#dc2626']}
+              height={260}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Facility list + Personnel security */}
       <section className="split-grid">
