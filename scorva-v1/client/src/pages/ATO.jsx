@@ -32,10 +32,22 @@ function getAtoRowClass(row) {
 
 function ATOForm({ value, onChange }) {
   const f = (k, v) => onChange({ ...value, [k]: v });
+
+  // Check if ATO is expired
+  const isExpired = value.expires && new Date(value.expires) < new Date();
+
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="col-span-2">
-        <label className="block text-xs text-scorva-muted mb-1">System Name *</label>
+    <div className="space-y-4">
+      {/* Expiration warning */}
+      {isExpired && (
+        <div className="rounded-lg border border-red-500/50 bg-red-500/15 px-4 py-3 text-sm text-red-400">
+          <strong>⚠ This ATO is expired.</strong> Please update the Status field to "Expired" or renew the authorization.
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2">
+          <label className="block text-xs text-scorva-muted mb-1">System Name *</label>
         <input
           className="input-base"
           placeholder="e.g., Enterprise Email System, Cloud Storage Platform"
@@ -109,6 +121,7 @@ function ATOForm({ value, onChange }) {
           value={value.open_findings}
           onChange={e => f('open_findings', +e.target.value)}
         />
+      </div>
       </div>
     </div>
   );
