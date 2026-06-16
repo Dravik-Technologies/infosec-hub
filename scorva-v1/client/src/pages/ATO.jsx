@@ -142,7 +142,16 @@ export default function ATOPage() {
     { key: 'id',     label: 'ID',     width: 100 },
     { key: 'system', label: 'System' },
     { key: 'category', label: 'Category' },
-    { key: 'status', label: 'Status', render: v => <Badge label={v} /> },
+    {
+      key: 'status',
+      label: 'Status',
+      render: (v, row) => {
+        // Check if ATO is actually expired based on date
+        const isActuallyExpired = row.expires && new Date(row.expires) < now;
+        const displayStatus = isActuallyExpired ? 'Expired' : v;
+        return <Badge label={displayStatus} />;
+      }
+    },
     { key: 'ao',     label: 'Auth. Official' },
     { key: 'expires',label: 'Expires',  render: v => <span className="font-mono text-xs">{v || '—'}</span> },
     { key: 'open_findings', label: 'Findings' },
@@ -169,7 +178,15 @@ export default function ATOPage() {
   const authPct    = data.length ? Math.round((authorized / data.length) * 100) : 0;
 
   const now  = new Date();
+  const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
   const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
+  const expiringWithin30 = data
+    .filter(r => r.status === 'Authorized' && r.expires)
+    .map(r => ({ ...r, _expDate: new Date(r.expires) }))
+    .filter(r => r._expDate >= now && r._expDate <= in30)
+    .sort((a, b) => a._expDate - b._expDate);
+
   const expiringSoon = data
     .filter(r => r.status === 'Authorized' && r.expires)
     .map(r => ({ ...r, _expDate: new Date(r.expires) }))
@@ -212,8 +229,50 @@ export default function ATOPage() {
           </div>
         </div>
 
-        {/* ── Expiring Soon list ── */}
-        <div className="mt-5 pt-5 border-t border-scorva-border">
+        {/* ── URGENT: Expiring Within 30 Days ── */}
+        {expiringWithin30.length > 0 && (
+          <div className="mt-5 pt-5 border-t border-red-500/30 bg-red-500/5 -mx-4 px-4 py-3 rounded-lg">
+            <div className="flex items-center gap-2 mb-3">
+              <Clock size={13} className="text-red-400 animate-pulse" />
+              <span className="text-[11px] font-mono font-semibold text-red-400 uppercase tracking-wide">
+                ⚠ URGENT: Expiring Within 30 Days
+              </span>
+              <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">
+                {expiringWithin30.length}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {expiringWithin30.map(r => {
+                const days = daysUntil(r._expDate);
+                return (
+                  <div key={r.id} className="flex items-center gap-3 py-1.5 px-2 rounded-lg bg-red-500/10 border border-red-500/30">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-red-400 truncate">{r.system}</span>
+                        {r.category && <span className="text-[9px] font-mono text-scorva-muted hidden sm:inline">{r.category}</span>}
+                      </div>
+                      <div className="mt-1 h-1.5 rounded-full bg-scorva-border overflow-hidden w-32">
+                        <div
+                          className="h-full rounded-full bg-red-400"
+                          style={{ width: `${Math.max(8, Math.round((days / 30) * 100))}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[10px] font-mono text-scorva-muted">{r.expires}</span>
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-red-500/15 text-red-400">
+                        {days}d
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Expiring Within 90 Days ── */}
+        <div className={`mt-5 pt-5 border-t border-scorva-border ${expiringWithin30.length > 0 ? '' : ''}`}>
           <div className="flex items-center gap-2 mb-3">
             <Clock size={13} className={expiringSoon.length > 0 ? 'text-yellow-400' : 'text-scorva-muted'} />
             <span className="text-[11px] font-mono font-semibold text-scorva-text uppercase tracking-wide">
