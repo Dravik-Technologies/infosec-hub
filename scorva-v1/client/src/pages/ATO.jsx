@@ -170,6 +170,11 @@ export default function ATOPage() {
     return <div className="text-sm text-red-400">Failed to load ATO data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
   }
 
+  // Define date references first
+  const now  = new Date();
+  const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+
   // Count based on actual status (checking expiration dates)
   const authorized = data.filter(r => r.status === 'Authorized' && (!r.expires || new Date(r.expires) >= now)).length;
   const pending    = data.filter(r => r.status === 'Pending Authorization').length;
@@ -177,10 +182,6 @@ export default function ATOPage() {
   const denied     = data.filter(r => r.status === 'Denied').length;
   const findings   = data.reduce((s, r) => s + (r.open_findings || 0), 0);
   const authPct    = data.length ? Math.round((authorized / data.length) * 100) : 0;
-
-  const now  = new Date();
-  const in30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-  const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
 
   const expiringWithin30 = data
     .filter(r => r.status === 'Authorized' && r.expires)
