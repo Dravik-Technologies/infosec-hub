@@ -170,9 +170,10 @@ export default function ATOPage() {
     return <div className="text-sm text-red-400">Failed to load ATO data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
   }
 
-  const authorized = data.filter(r => r.status === 'Authorized').length;
+  // Count based on actual status (checking expiration dates)
+  const authorized = data.filter(r => r.status === 'Authorized' && (!r.expires || new Date(r.expires) >= now)).length;
   const pending    = data.filter(r => r.status === 'Pending Authorization').length;
-  const expired    = data.filter(r => r.status === 'Expired').length;
+  const expired    = data.filter(r => r.status === 'Expired' || (r.expires && new Date(r.expires) < now)).length;
   const denied     = data.filter(r => r.status === 'Denied').length;
   const findings   = data.reduce((s, r) => s + (r.open_findings || 0), 0);
   const authPct    = data.length ? Math.round((authorized / data.length) * 100) : 0;
