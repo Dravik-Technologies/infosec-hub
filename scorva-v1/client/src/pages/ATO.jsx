@@ -36,11 +36,22 @@ function ATOForm({ value, onChange }) {
     <div className="grid grid-cols-2 gap-4">
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">System Name *</label>
-        <input className="input-base" value={value.system} onChange={e => f('system', e.target.value)} required />
+        <input
+          className="input-base"
+          placeholder="e.g., Enterprise Email System, Cloud Storage Platform"
+          value={value.system}
+          onChange={e => f('system', e.target.value)}
+          required
+        />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Category</label>
-        <input className="input-base" value={value.category} onChange={e => f('category', e.target.value)} />
+        <input
+          className="input-base"
+          placeholder="e.g., Cloud Service, SaaS, On-Premises, Hybrid"
+          value={value.category}
+          onChange={e => f('category', e.target.value)}
+        />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Status</label>
@@ -50,23 +61,54 @@ function ATOForm({ value, onChange }) {
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Issued</label>
-        <input type="date" className="input-base" value={value.issued} onChange={e => f('issued', e.target.value)} />
+        <input
+          type="date"
+          className="input-base"
+          title="Date when authorization was issued"
+          value={value.issued}
+          onChange={e => f('issued', e.target.value)}
+        />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Expires</label>
-        <input type="date" className="input-base" value={value.expires} onChange={e => f('expires', e.target.value)} />
+        <input
+          type="date"
+          className="input-base"
+          title="Date when authorization expires"
+          value={value.expires}
+          onChange={e => f('expires', e.target.value)}
+        />
       </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">Authorizing Official</label>
-        <input className="input-base" value={value.ao} onChange={e => f('ao', e.target.value)} />
+        <input
+          className="input-base"
+          placeholder="e.g., Dr. John Smith, Chief Information Officer"
+          value={value.ao}
+          onChange={e => f('ao', e.target.value)}
+        />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Controls Count</label>
-        <input type="number" className="input-base" value={value.controls} onChange={e => f('controls', +e.target.value)} />
+        <input
+          type="number"
+          className="input-base"
+          placeholder="0"
+          title="Number of security controls implemented"
+          value={value.controls}
+          onChange={e => f('controls', +e.target.value)}
+        />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Open Findings</label>
-        <input type="number" className="input-base" value={value.open_findings} onChange={e => f('open_findings', +e.target.value)} />
+        <input
+          type="number"
+          className="input-base"
+          placeholder="0"
+          title="Number of open security findings"
+          value={value.open_findings}
+          onChange={e => f('open_findings', +e.target.value)}
+        />
       </div>
     </div>
   );
