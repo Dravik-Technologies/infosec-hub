@@ -46,15 +46,19 @@ function sevClass(s = '') {
 
 /* ── ATO classification ── */
 function classifyAto(ato) {
+  // Check expiration date first (regardless of status)
+  if (ato.expires) {
+    const exp  = new Date(ato.expires);
+    const now  = new Date();
+    const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+    if (exp < now)  return 'expired';
+    if (exp < in90) return 'expiring';
+  }
+
+  // Then check authorization status
+  if (ato.status === 'Authorized') return 'current';
   if (ato.status === 'Expired') return 'expired';
-  if (ato.status !== 'Authorized') return 'other';
-  if (!ato.expires) return 'current';
-  const exp  = new Date(ato.expires);
-  const now  = new Date();
-  const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-  if (exp < now)  return 'expired';
-  if (exp < in90) return 'expiring';
-  return 'current';
+  return 'other'; // Pending, Denied, etc.
 }
 
 /* ── Log helpers ── */
