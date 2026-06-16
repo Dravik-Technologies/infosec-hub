@@ -146,7 +146,7 @@ export default function SecurityEventsPage() {
       />
 
       {needsExplicitSite && (
-        <div className="mt-4 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-300">
+        <div className="mt-4 rounded-xl border border-yellow-500/50 bg-yellow-500/15 px-4 py-3 text-sm text-yellow-700 dark:text-yellow-300">
           Select a specific site in the header before logging a security event. Corporate Admins cannot create events while scoped to `All Sites`.
         </div>
       )}
@@ -202,7 +202,7 @@ export default function SecurityEventsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <EventForm value={form} onChange={setForm} />
               {needsExplicitSite && modal === 'create' && (
-                <div className="rounded-lg border border-yellow-500/30 bg-yellow-500/10 px-3 py-2 text-sm text-yellow-300">
+                <div className="rounded-lg border border-yellow-500/50 bg-yellow-500/15 px-3 py-2 text-sm text-yellow-700 dark:text-yellow-300">
                   Choose a specific site from the top-right site selector before saving this event.
                 </div>
               )}
