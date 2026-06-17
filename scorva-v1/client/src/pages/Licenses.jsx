@@ -28,11 +28,11 @@ function LicForm({ value, onChange }) {
     <div className="grid grid-cols-2 gap-4">
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">Product *</label>
-        <input className="input-base" value={value.product} onChange={e => f('product', e.target.value)} required />
+        <input className="input-base" placeholder="e.g. Microsoft Office 365, Splunk Enterprise" value={value.product} onChange={e => f('product', e.target.value)} required />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Vendor</label>
-        <input className="input-base" value={value.vendor || ''} onChange={e => f('vendor', e.target.value)} />
+        <input className="input-base" placeholder="e.g. Microsoft, Splunk" value={value.vendor || ''} onChange={e => f('vendor', e.target.value)} />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Status</label>

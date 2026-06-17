@@ -168,10 +168,10 @@ export default function Dashboard() {
 
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <StatTile label="Active ATOs"        value={activeAtos}   total={atos.length}     icon={ShieldCheck}   accent />
-        <StatTile label="Open POAMs"         value={openPoams}    total={poams.length}    icon={AlertTriangle} warn={openPoams > 0} />
-        <StatTile label="Open Tasks"         value={openTasks}    total={tasks.length}    icon={CheckSquare} />
-        <StatTile label="Controls Impl."     value={implControls} total={controls.length} icon={BookOpen}      showPct />
+        <StatTile label="Active ATOs"        value={activeAtos}   total={atos.length}     icon={ShieldCheck}   tone="orange" />
+        <StatTile label="Open POAMs"         value={openPoams}    total={poams.length}    icon={AlertTriangle} tone="orange" />
+        <StatTile label="Open Tasks"         value={openTasks}    total={tasks.length}    icon={CheckSquare}   tone="orange" />
+        <StatTile label="Controls Impl."     value={implControls} total={controls.length} icon={BookOpen}      showPct tone="orange" />
       </div>
 
       {/* ── Module grid — PRIMARY NAVIGATION ── */}
@@ -386,24 +386,25 @@ function KpiTile({ icon: Icon, label, value, sub, warn = false, good = false, ac
   );
 }
 
-function StatTile({ label, value, total, icon: Icon, accent = false, warn = false, showPct = false }) {
+function StatTile({ label, value, total, icon: Icon, accent = false, warn = false, showPct = false, tone = '' }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   const isWarn = warn && value > 0;
+  const isOrange = tone === 'orange';
 
   return (
-    <div className={`card p-4 flex gap-3 items-start sc-kpi-tile ${accent ? 'border-scorva-accent/30' : isWarn ? 'border-orange-500/25' : ''}`}>
-      <div className={`p-2 rounded-lg shrink-0 ${accent ? 'bg-scorva-accent/15 text-scorva-accent' : isWarn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted'}`}>
+    <div className={`card p-4 flex gap-3 items-start sc-kpi-tile ${isOrange ? 'border-orange-500/25' : accent ? 'border-scorva-accent/30' : isWarn ? 'border-orange-500/25' : ''}`}>
+      <div className={`p-2 rounded-lg shrink-0 ${isOrange ? 'bg-orange-500/15 text-orange-400' : accent ? 'bg-scorva-accent/15 text-scorva-accent' : isWarn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted'}`}>
         <Icon size={15} />
       </div>
       <div className="min-w-0 flex-1">
-        <div className={`text-2xl font-bold font-mono leading-none ${accent ? 'text-scorva-accent' : isWarn ? 'text-orange-400' : 'text-scorva-text'}`}>
+        <div className={`text-2xl font-bold font-mono leading-none ${isOrange ? 'text-orange-400' : accent ? 'text-scorva-accent' : isWarn ? 'text-orange-400' : 'text-scorva-text'}`}>
           {value ?? '—'}
         </div>
         <div className="text-[10px] text-scorva-muted mt-0.5 truncate">{label}</div>
         {total > 0 && (
           <div className="mt-2 h-1 rounded-full bg-scorva-border overflow-hidden">
             <div
-              className={`h-full rounded-full ${accent ? 'bg-scorva-accent' : isWarn ? 'bg-orange-400' : 'bg-scorva-muted'}`}
+              className={`h-full rounded-full ${isOrange ? 'bg-orange-400' : accent ? 'bg-scorva-accent' : isWarn ? 'bg-orange-400' : 'bg-scorva-muted'}`}
               style={{ width: `${showPct ? pct : Math.round((value / total) * 100)}%` }}
             />
           </div>

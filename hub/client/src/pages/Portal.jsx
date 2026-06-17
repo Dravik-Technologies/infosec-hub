@@ -11,43 +11,67 @@ import {
 
 const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame, Command };
 
+const LOGO_FRAME_CLASS =
+  'flex items-center justify-center overflow-hidden rounded-2xl border border-scorva-border/60 bg-white/78 backdrop-blur-md dark:border-white/12 dark:bg-slate-100/[0.12] dark:backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_10px_30px_rgba(0,0,0,0.16)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.12),0_12px_36px_rgba(0,0,0,0.28)]';
+
+const LOGO_SIZE_CLASS = {
+  scorva: {
+    card: 'h-20 max-w-[200px] scale-[1.22]',
+    modal: 'h-24 max-w-[260px] scale-[1.16]',
+  },
+  sentinel: {
+    card: 'h-16 max-w-[180px] scale-[1.12]',
+    modal: 'h-20 max-w-[220px] scale-[1.08]',
+  },
+  nexus: {
+    card: 'h-16 max-w-[180px] scale-[1.1]',
+    modal: 'h-20 max-w-[220px] scale-[1.06]',
+  },
+};
+
+function getLogoSizeClass(appId, context = 'card') {
+  return LOGO_SIZE_CLASS[appId]?.[context] || (context === 'modal' ? 'h-20 max-w-[220px]' : 'h-16 max-w-[180px]');
+}
+
 const APPS = [
   {
     id: 'scorva', name: 'SCORVA', tagline: 'Cyber Command Center',
     desc: 'NIST SP 800-53 Rev 5 compliance management — ATO tracking, continuous monitoring, POAM, asset inventory, and access governance.',
-    url: 'http://localhost:3000', ssoPath: '/auth/sso',
-    color: 'teal', icon: 'ShieldCheck', team: 'Cybersecurity', status: 'live',
+    url: '', ssoPath: '/auth/sso',
+    color: 'teal', icon: 'scorva-logo', logo: '/scorva-logo.png', team: 'Cybersecurity', status: 'live',
     tags: ['NIST 800-53', 'RMF', 'ATO', 'ConMon', 'POAM'],
   },
   {
     id: 'crater', name: 'CRATER', tagline: 'eMASS RMF Toolkit',
     desc: 'eMASS-aligned RMF package builder with SCTM, POAM management, vulnerability tracking, system diagrams, and compliance reporting.',
-    url: 'http://localhost:3003', ssoPath: '/sso.html',
+    url: '', ssoPath: '/sso.html',
     color: 'indigo', icon: 'FileText', team: 'GRC', status: 'live',
     tags: ['eMASS', 'RMF', 'SCTM', 'POAM', 'Vulnerabilities'],
   },
   {
     id: 'sentinel', name: 'Sentinel', tagline: 'Security Operations Center',
     desc: 'Comprehensive security management platform for facility compliance, personnel clearances, document control, and compliance tracking.',
-    url: 'http://localhost:8080', ssoPath: '/auth/sso',
-    color: 'gold', icon: 'BarChart3', team: 'Security Operations', status: 'live',
+    url: '', ssoPath: '/auth/sso',
+    color: 'gold', icon: 'BarChart3', logo: '/sentinel-logo.png', team: 'Security Operations', status: 'live',
     tags: ['Facility Security', 'Personnel Security', 'Document Control', 'Compliance'],
   },
   {
     id: 'lava', name: 'LAVA', tagline: 'Network Access Portal',
     desc: 'Magmatic onboarding portal with digitized DD Form 2875 SAAR workflow, Vulcan approval command, and hardware asset provisioning.',
-    url: 'http://localhost:3002', ssoPath: '/auth/sso',
+    url: '', ssoPath: '/auth/sso',
     color: 'orange', icon: 'Flame', team: 'Network Administration', status: 'live',
     tags: ['SAAR', 'DD Form 2875', 'Access Control', 'Hardware', 'YubiKey'],
   },
   {
     id: 'nexus', name: 'NEXUS', tagline: 'Program Mission Command',
     desc: 'Executive command surface for program management, program security, and SCORVA-fed IT and cybersecurity rollups.',
-    url: 'http://localhost:8090', ssoPath: '/auth/sso',
-    color: 'cyan', icon: 'Command', team: 'Program Management', status: 'live',
+    url: '', ssoPath: '/auth/sso',
+    color: 'cyan', icon: 'Command', logo: '/nexus-logo.png', team: 'Program Management', status: 'live',
     tags: ['Real Estate', 'Construction', 'Accreditation', 'Budget', 'Cyber Rollup'],
   },
 ];
+
+const APP_META_BY_ID = Object.fromEntries(APPS.map(app => [app.id, app]));
 
 const COLOR_MAP = {
   teal: {
@@ -97,7 +121,10 @@ export default function Portal() {
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
   const [launching, setLaunching] = useState(null);
-  const [apps,      setApps]      = useState(APPS);
+  const [apps,      setApps]      = useState(() => {
+    const allowed = Array.isArray(user?.allowedApps) ? user.allowedApps : [];
+    return APPS.filter(app => allowed.includes(app.id));
+  });
   const [pendingRequests, setPendingRequests] = useState(0);
   const [showLoader, setShowLoader] = useState(true);
   const [expandedApp, setExpandedApp] = useState(null);
@@ -116,10 +143,19 @@ export default function Portal() {
   }, []);
 
   useEffect(() => {
+    const allowed = Array.isArray(user?.allowedApps) ? user.allowedApps : [];
+    setApps(APPS.filter(app => allowed.includes(app.id)));
+  }, [user]);
+
+  useEffect(() => {
     const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
     fetch(`${BASE}/api/apps`, { credentials: 'include' })
       .then(r => r.ok ? r.json() : null)
-      .then(data => { if (Array.isArray(data) && data.length) setApps(data); })
+      .then(data => {
+        if (Array.isArray(data)) {
+          setApps(data.map(app => ({ ...(APP_META_BY_ID[app.id] || {}), ...app })));
+        }
+      })
       .catch(() => {});
 
     // Load pending requests count for Hub Admins
@@ -137,6 +173,10 @@ export default function Portal() {
   }, [canAdmin]);
 
   async function handleLaunch(app) {
+    if (!app?.url) {
+      window.alert(`Launch URL for ${app?.name || 'this app'} is not available yet. Refresh the HUB and try again.`);
+      return;
+    }
     setLaunching(app.id);
     try {
       const url = await launchApp(app.id, app.url, app.ssoPath ?? null);
@@ -289,6 +329,7 @@ export default function Portal() {
                 const colors = COLOR_MAP[app.color];
                 const busy   = launching === app.id;
                 const isExpanded = expandedApp === app.id;
+                const logoSrc = app.logo || null;
 
                 // Simplified grid card
                 return (
@@ -302,8 +343,18 @@ export default function Portal() {
                       <div className={`absolute -top-1 left-0 right-0 h-1 ${colors.top} rounded-t-xl opacity-40 group-hover:opacity-100 transition-opacity`} />
 
                       {/* Large icon */}
-                      <div className={`p-4 rounded-xl mb-3 ${colors.icon} group-hover:scale-110 transition-transform`}>
-                        <Icon size={32} />
+                      <div className={`mb-3 group-hover:scale-110 transition-transform ${logoSrc ? `${LOGO_FRAME_CLASS} min-h-[104px] w-full px-4 py-3` : `rounded-xl p-4 ${colors.icon}`}`}>
+                        {logoSrc ? (
+                          <img
+                            src={logoSrc}
+                            alt={app.name}
+                            className={`w-auto object-contain drop-shadow-[0_12px_30px_rgba(0,0,0,0.26)] ${getLogoSizeClass(app.id, 'card')}`}
+                          />
+                        ) : (
+                          <div className={`p-4 ${colors.icon} rounded-xl`}>
+                            <Icon size={32} />
+                          </div>
+                        )}
                       </div>
 
                       {/* App name */}
@@ -344,15 +395,26 @@ export default function Portal() {
                   const Icon = ICON_MAP[app.icon] || Shield;
                   const colors = COLOR_MAP[app.color];
                   const busy = launching === app.id;
+                  const logoSrc = app.logo || null;
 
                   return (
                     <div>
                       {/* Header */}
                       <div className="flex items-start justify-between mb-6">
                         <div className="flex items-center gap-4">
-                          <div className={`p-4 rounded-xl ${colors.icon}`}>
-                            <Icon size={40} />
-                          </div>
+                          {logoSrc ? (
+                            <div className={`${LOGO_FRAME_CLASS} min-h-[112px] min-w-[220px] px-5 py-4`}>
+                              <img
+                                src={logoSrc}
+                                alt={app.name}
+                                className={`w-auto object-contain drop-shadow-[0_14px_34px_rgba(0,0,0,0.28)] ${getLogoSizeClass(app.id, 'modal')}`}
+                              />
+                            </div>
+                          ) : (
+                            <div className={`p-4 rounded-xl ${colors.icon}`}>
+                              <Icon size={40} />
+                            </div>
+                          )}
                           <div>
                             <h2 className="text-2xl font-black text-scorva-text font-mono tracking-widest uppercase">
                               {app.name}

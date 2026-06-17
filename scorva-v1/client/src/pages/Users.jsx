@@ -84,7 +84,7 @@ function UserForm({ value, onChange, isNew, sites }) {
       </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">FULL NAME *</label>
-        <input className="input-base" value={value.name} onChange={e => f('name', e.target.value)} required />
+        <input className="input-base" placeholder="e.g. John Smith" value={value.name} onChange={e => f('name', e.target.value)} required />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">TITLE</label>

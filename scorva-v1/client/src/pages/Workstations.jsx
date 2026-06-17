@@ -52,7 +52,7 @@ function WSForm({ value, onChange, systems }) {
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">HOSTNAME *</label>
-        <input className="input-base font-mono" value={value.hostname} onChange={e => f('hostname', e.target.value)} required />
+        <input className="input-base font-mono" placeholder="e.g. USAREUR-LT-001" value={value.hostname} onChange={e => f('hostname', e.target.value)} required />
       </div>
 
       <div>
@@ -67,7 +67,7 @@ function WSForm({ value, onChange, systems }) {
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">IP ADDRESS</label>
-        <input className="input-base font-mono" value={value.ip || ''} onChange={e => f('ip', e.target.value)} />
+        <input className="input-base font-mono" placeholder="e.g. 192.168.1.100" value={value.ip || ''} onChange={e => f('ip', e.target.value)} />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">ASSIGNED TO</label>
@@ -75,7 +75,7 @@ function WSForm({ value, onChange, systems }) {
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">LOCATION</label>
-        <input className="input-base" value={value.location || ''} onChange={e => f('location', e.target.value)} />
+        <input className="input-base" placeholder="e.g. Building A, Room 201" value={value.location || ''} onChange={e => f('location', e.target.value)} />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">CLASSIFICATION</label>
@@ -104,7 +104,7 @@ function WSForm({ value, onChange, systems }) {
       )}
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">NOTES</label>
-        <textarea className="input-base resize-none" rows={2} value={value.notes || ''} onChange={e => f('notes', e.target.value)} />
+        <textarea className="input-base resize-none" rows={2} placeholder="e.g. Enclave assignment, backup role, maintenance notes..." value={value.notes || ''} onChange={e => f('notes', e.target.value)} />
       </div>
     </div>
   );

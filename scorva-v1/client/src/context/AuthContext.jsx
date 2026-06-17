@@ -20,20 +20,35 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Pick up JWT dropped in URL by the SSO redirect (/?token=<jwt>)
-    const params = new URLSearchParams(window.location.search);
-    const ssoToken = params.get('token');
-    if (ssoToken) {
-      localStorage.setItem(TOKEN_KEY, ssoToken);
-      params.delete('token');
-      const next = params.toString() ? `?${params}` : window.location.pathname;
-      window.history.replaceState({}, '', next);
+    let mounted = true;
+
+    async function bootstrap() {
+      try {
+        // Prefer the secure cookie/session path so SSO does not depend on localStorage.
+        const cookieSession = await axios.get(`${BASE}/api/me`, { withCredentials: true });
+        if (!mounted) return;
+        localStorage.removeItem(TOKEN_KEY);
+        setUser(cookieSession.data);
+        setLoading(false);
+        return;
+      } catch (_) {}
+
+      try {
+        const bearerSession = await axios.get(`${BASE}/api/me`, { headers: authHeaders() });
+        if (!mounted) return;
+        setUser(bearerSession.data);
+      } catch (_) {
+        if (!mounted) return;
+        setUser(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     }
 
-    axios.get(`${BASE}/api/me`, { headers: authHeaders() })
-      .then(r => setUser(r.data))
-      .catch(() => setUser(null))
-      .finally(() => setLoading(false));
+    bootstrap();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   /**
@@ -43,7 +58,8 @@ export function AuthProvider({ children }) {
     const { data } = await axios.post(`${BASE}/auth/login`, { username, password });
     localStorage.setItem(TOKEN_KEY, data.token);
     setUser(data.user);
-    if (data.user?.role !== 'Corporate Admin') {
+    const isAdmin = Boolean(data.user?.canSeeAllSites) || data.user?.hubRole === 'Hub Admin' || data.user?.role === 'Corporate Admin';
+    if (!isAdmin) {
       localStorage.removeItem(SELECTED_SITE_KEY);
       setSelectedSite(null);
     }

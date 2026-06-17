@@ -244,6 +244,16 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.post('/api/auth/logout', (_req, res) => {
+  res.clearCookie('mash_auth', {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: secureCookies,
+    path: '/',
+  });
+  res.json({ ok: true });
+});
+
 app.get('/auth/sso', async (req, res) => {
   const token = req.query.token || req.query.hub_token;
   if (!token) return res.redirect('/?error=no_token');

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { Shield, ChevronLeft, Bell, Sun, Moon, LogOut, Building2 } from 'lucide-react';
+import { ChevronLeft, Bell, Sun, Moon, LogOut, Building2 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth }  from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import scorvaLogo from '../../assets/scorva-logo.png?url';
 
 const BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const TOKEN_KEY = 'scorva_token';
@@ -21,7 +22,7 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
   const { dark, toggle } = useTheme();
   const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
 
-  const isAdmin = user?.role === 'Corporate Admin';
+  const isAdmin = Boolean(user?.canSeeAllSites) || user?.hubRole === 'Hub Admin' || user?.role === 'Corporate Admin';
   const [sites, setSites] = useState([]);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function AppHeader({ appName, appIcon: AppIcon, tabs = [] }) {
         title="Back to Portal"
       >
         <div className="sc-app-header-mark">
-          <Shield size={14} className="text-scorva-accent" />
+          <img src={scorvaLogo} alt="SCORVA" className="h-4 w-4 object-contain" />
         </div>
         <span className="text-xs font-mono font-bold text-scorva-accent tracking-widest">SCORVA</span>
         <ChevronLeft size={13} className="text-scorva-muted group-hover:text-scorva-text transition-colors" />

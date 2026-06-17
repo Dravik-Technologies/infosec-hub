@@ -5,7 +5,7 @@ import { useTheme } from '../context/ThemeContext';
 import {
   Shield, Users, Sun, Moon, LogOut, ArrowLeft,
   RefreshCw, UserPlus, ClipboardList, ChevronDown, ChevronUp,
-  MapPin,
+  MapPin, Trash2,
 } from 'lucide-react';
 
 const BASE = import.meta.env.DEV ? 'http://localhost:3010' : '';
@@ -57,14 +57,15 @@ export default function AccessAdmin() {
   const [expandedUser, setExpandedUser] = useState(null);
   const [expandedSites, setExpandedSites] = useState({});
   const [expandedRoles, setExpandedRoles] = useState({});
+  const [usersQuery, setUsersQuery] = useState('');
 
   const [meta, setMeta] = useState({
     platformRoles: [], securityRoles: [], securityRoleTitles: {},
-    securityRoleApps: {}, allApps: [], sites: [],
+    securityRoleApps: {}, allApps: [], sites: [], nextUserId: '',
   });
 
   const blankCreate = {
-    id: '', name: '', username: '', email: '', password: '',
+    name: '', username: '', email: '', password: '',
     role: 'Hub Viewer', securityRole: '', siteId: '', siteIds: [], allowedApps: ['hub'],
   };
   const [createForm, setCreateForm] = useState(blankCreate);
@@ -110,6 +111,9 @@ export default function AccessAdmin() {
     setError(''); setMessage('');
     try {
       const payload = {
+        name:         entry.name,
+        username:     entry.username,
+        email:        entry.email,
         status:       entry.status,
         securityRole: entry.securityRole || null,
         siteId:       entry.siteId || null,
@@ -127,6 +131,24 @@ export default function AccessAdmin() {
       setUsers(cur => cur.map(u => u.id === entry.id ? data.user : u));
       setMessage(`Saved ${entry.username}.`);
     } catch (err) { setError(err.message); }
+  }
+
+  async function deleteUser(entry) {
+    if (!window.confirm(`Delete ${entry.username}? This cannot be undone.`)) return;
+    setError(''); setMessage('');
+    try {
+      const res = await fetch(`${BASE}/api/admin/users/${encodeURIComponent(entry.id)}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Unable to delete user');
+      setUsers(cur => cur.filter(u => u.id !== entry.id));
+      if (expandedUser === entry.id) setExpandedUser(null);
+      setMessage(`Deleted ${entry.username}.`);
+    } catch (err) {
+      setError(err.message);
+    }
   }
 
   async function createUser(e) {
@@ -155,6 +177,7 @@ export default function AccessAdmin() {
         }));
       }
       setCreateForm(blankCreate);
+      loadMeta();
       setMessage(`Created ${data.user.username}.`);
     } catch (err) { setError(err.message); }
   }
@@ -219,7 +242,7 @@ export default function AccessAdmin() {
 
   const pendingCount = requests.filter(r => r.status === 'pending').length;
 
-  const { platformRoles, securityRoles, securityRoleTitles, securityRoleApps, sites, allApps } = meta;
+  const { platformRoles, securityRoles, securityRoleTitles, securityRoleApps, sites, allApps, nextUserId } = meta;
 
   function derivedTitle(securityRole) {
     return securityRoleTitles[securityRole] || securityRole || '';
@@ -243,10 +266,47 @@ export default function AccessAdmin() {
     }));
   }
 
+  function handleCreateSecurityRoleChange(securityRole) {
+    setCreateForm(f => {
+      const currentApps = Array.isArray(f.allowedApps) ? f.allowedApps : [];
+      const nextApps = (!currentApps.length || JSON.stringify([...currentApps].sort()) === JSON.stringify(['hub']))
+        ? suggestedApps(securityRole)
+        : currentApps;
+      return { ...f, securityRole, allowedApps: nextApps };
+    });
+  }
+
+  function handleUserSecurityRoleChange(entry, securityRole) {
+    const currentApps = Array.isArray(entry.allowedApps) ? entry.allowedApps : [];
+    const oldStoredApps = Array.isArray(entry.storedAllowedApps) ? entry.storedAllowedApps : [];
+    const shouldApplyDefaults =
+      JSON.stringify([...currentApps].sort()) === JSON.stringify([...oldStoredApps].sort()) &&
+      JSON.stringify([...oldStoredApps].sort()) === JSON.stringify(['hub']);
+
+    patchUser(entry.id, {
+      securityRole: securityRole || null,
+      defaultAllowedApps: suggestedApps(securityRole || null),
+      allowedApps: shouldApplyDefaults ? suggestedApps(securityRole || null) : currentApps,
+    });
+  }
+
   const groupedUsers = useMemo(() => {
+    const needle = usersQuery.trim().toLowerCase();
     const siteLabelById = Object.fromEntries(sites.map(s => [s.id, s.label]));
     const groups = new Map();
     for (const entry of users) {
+      const searchable = [
+        entry.id,
+        entry.name,
+        entry.username,
+        entry.email,
+        entry.title,
+        entry.role,
+        entry.securityRole,
+        entry.siteId,
+        siteLabelById[entry.siteId] || '',
+      ].filter(Boolean).join(' ').toLowerCase();
+      if (needle && !searchable.includes(needle)) continue;
       const siteKey = entry.siteId || 'UNASSIGNED';
       const siteLabel = entry.siteId ? `${entry.siteId} — ${siteLabelById[entry.siteId] || entry.siteId}` : 'Unassigned Users';
       if (!groups.has(siteKey)) {
@@ -266,7 +326,23 @@ export default function AccessAdmin() {
           .sort(([a], [b]) => a.localeCompare(b))
           .map(([roleKey, members]) => ({ roleKey, members })),
       }));
-  }, [users, sites]);
+  }, [users, sites, usersQuery]);
+
+  useEffect(() => {
+    if (tab !== 'users' || !groupedUsers.length) return;
+
+    const hasExpandedSite = groupedUsers.some(group => expandedSites[group.siteKey]);
+    if (!hasExpandedSite) {
+      setExpandedSites(cur => ({ ...cur, [groupedUsers[0].siteKey]: true }));
+    }
+
+    const firstRolePath = groupedUsers[0]?.roles?.[0]
+      ? `${groupedUsers[0].siteKey}:${groupedUsers[0].roles[0].roleKey}`
+      : null;
+    if (firstRolePath && !expandedRoles[firstRolePath]) {
+      setExpandedRoles(cur => ({ ...cur, [firstRolePath]: true }));
+    }
+  }, [tab, groupedUsers]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-scorva-bg">
@@ -393,7 +469,7 @@ export default function AccessAdmin() {
 
           {/* ── Access Requests ── */}
           {tab === 'requests' && (
-            <div className="card p-5">
+            <div className="admin-glass rounded-2xl p-5">
               <SectionHeader
                 title="Access Requests"
                 subtitle="Requests from app landing pages. Approval grants the requested application directly to the selected user account."
@@ -451,9 +527,8 @@ export default function AccessAdmin() {
                               <button onClick={() => reviewRequest(entry.id, 'approved')} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors">Approve</button>
                               <button onClick={() => reviewRequest(entry.id, 'denied')} className="px-2.5 py-1.5 rounded-lg text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 transition-colors">Deny</button>
                               {entry.status === 'pending' && (
-                                <button onClick={() => {
+                              <button onClick={() => {
                                   setCreateForm({
-                                    id: `${entry.firstName.toLowerCase()}.${entry.lastName.toLowerCase()}`,
                                     name: entry.name,
                                     username: entry.username,
                                     email: entry.email,
@@ -484,25 +559,39 @@ export default function AccessAdmin() {
           {/* ── Users ── */}
           {tab === 'users' && (
             <div className="space-y-3">
-              <div className="card p-5">
-                <SectionHeader
-                  title="Users"
-                  subtitle="Manage HUB role, job role, app access, and site assignments in a site-first hierarchy."
-                  action={
-                    <button onClick={loadUsers} disabled={usersLoading} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors disabled:opacity-60">
-                      <RefreshCw size={12} className={usersLoading ? 'animate-spin' : ''} /> Refresh
-                    </button>
-                  }
-                />
+              <div className="admin-glass rounded-2xl p-5">
+              <SectionHeader
+                title="Users"
+                subtitle="Manage HUB role, job role, app access, and site assignments in a site-first hierarchy."
+                action={
+                  <button onClick={loadUsers} disabled={usersLoading} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono font-semibold bg-scorva-hover border border-scorva-border text-scorva-text hover:border-scorva-accent/40 transition-colors disabled:opacity-60">
+                    <RefreshCw size={12} className={usersLoading ? 'animate-spin' : ''} /> Refresh
+                  </button>
+                }
+              />
+
+                <div className="mb-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+                  <input
+                    className="input-base text-xs font-mono sm:max-w-sm"
+                    placeholder="Search name, username, email, role, site..."
+                    value={usersQuery}
+                    onChange={e => setUsersQuery(e.target.value)}
+                  />
+                  <p className="text-[10px] font-mono text-scorva-muted">
+                    {groupedUsers.reduce((sum, group) => sum + group.count, 0)} visible users
+                  </p>
+                </div>
 
                 {usersLoading ? (
                   <p className="text-xs font-mono text-scorva-muted py-4">Loading users…</p>
+                ) : groupedUsers.length === 0 ? (
+                  <p className="text-xs text-scorva-muted py-4">No users match the current filter.</p>
                 ) : (
                   <div className="space-y-3">
                     {groupedUsers.map(siteGroup => {
                       const siteOpen = expandedSites[siteGroup.siteKey] ?? false;
                       return (
-                        <div key={siteGroup.siteKey} className="border border-scorva-border rounded-xl overflow-hidden">
+                        <div key={siteGroup.siteKey} className="rounded-xl overflow-hidden border border-scorva-border bg-scorva-surface/35 backdrop-blur-md">
                           <button
                             onClick={() => setExpandedSites(cur => ({ ...cur, [siteGroup.siteKey]: !siteOpen }))}
                             className="w-full flex items-center justify-between px-4 py-3 bg-scorva-hover/30 hover:bg-scorva-hover/50 transition-colors"
@@ -522,7 +611,7 @@ export default function AccessAdmin() {
                                 const rolePath = `${siteGroup.siteKey}:${roleGroup.roleKey}`;
                                 const roleOpen = expandedRoles[rolePath] ?? false;
                                 return (
-                                  <div key={rolePath} className="border border-scorva-border/70 rounded-xl overflow-hidden">
+                                  <div key={rolePath} className="rounded-xl overflow-hidden border border-scorva-border/70 bg-scorva-bg/25">
                                     <button
                                       onClick={() => setExpandedRoles(cur => ({ ...cur, [rolePath]: !roleOpen }))}
                                       className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-scorva-hover/30 transition-colors"
@@ -541,49 +630,97 @@ export default function AccessAdmin() {
                                         {roleGroup.members.map(entry => {
                                           const isExpanded = expandedUser === entry.id;
                                           return (
-                                            <div key={entry.id} className="border border-scorva-border rounded-xl overflow-hidden hover:border-scorva-accent/20 transition-colors">
-                                              <button
-                                                onClick={() => setExpandedUser(isExpanded ? null : entry.id)}
-                                                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-scorva-hover/40 transition-colors"
-                                              >
-                                                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-scorva-accent/10 border border-scorva-accent/20 text-xs font-black text-scorva-accent font-mono shrink-0">
-                                                  {entry.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase()}
-                                                </div>
-                                                <div className="w-44 shrink-0 min-w-0">
-                                                  <div className="text-sm font-semibold text-scorva-text truncate">{entry.name}</div>
-                                                  <div className="text-[10px] font-mono text-scorva-muted truncate">@{entry.username}</div>
-                                                  {entry.title && <div className="text-[10px] text-teal-400 truncate">{entry.title}</div>}
-                                                </div>
-                                                <div className="flex-1 hidden sm:flex items-center gap-1.5 flex-wrap min-w-0">
-                                                  <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${entry.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
-                                                    {entry.status}
-                                                  </span>
-                                                  {entry.securityRole ? (
-                                                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-teal-500/10 text-teal-400 border-teal-500/20 shrink-0">
-                                                      {entry.securityRole}
+                                            <div key={entry.id} className="rounded-xl overflow-hidden border border-scorva-border bg-scorva-surface/25 hover:border-scorva-accent/20 transition-colors">
+                                              <div className="flex items-stretch">
+                                                <button
+                                                  onClick={() => setExpandedUser(isExpanded ? null : entry.id)}
+                                                  className="flex-1 flex items-center gap-3 px-4 py-3 text-left hover:bg-scorva-hover/40 transition-colors"
+                                                >
+                                                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-scorva-accent/10 border border-scorva-accent/20 text-xs font-black text-scorva-accent font-mono shrink-0">
+                                                    {entry.name.split(' ').map(p => p[0]).join('').substring(0, 2).toUpperCase()}
+                                                  </div>
+                                                  <div className="w-44 shrink-0 min-w-0">
+                                                    <div className="text-sm font-semibold text-scorva-text truncate">{entry.name}</div>
+                                                    <div className="text-[10px] font-mono text-scorva-muted truncate">@{entry.username}</div>
+                                                    {entry.title && <div className="text-[10px] text-teal-400 truncate">{entry.title}</div>}
+                                                  </div>
+                                                  <div className="flex-1 hidden sm:flex items-center gap-1.5 flex-wrap min-w-0">
+                                                    <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${entry.status === 'Active' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                      {entry.status}
                                                     </span>
-                                                  ) : (
-                                                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">
-                                                      No Job Role
-                                                    </span>
+                                                    {entry.securityRole ? (
+                                                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-teal-500/10 text-teal-400 border-teal-500/20 shrink-0">
+                                                        {entry.securityRole}
+                                                      </span>
+                                                    ) : (
+                                                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-scorva-hover text-scorva-border border-scorva-border/50 shrink-0">
+                                                        No Job Role
+                                                      </span>
+                                                    )}
+                                                    {(entry.allowedApps || []).map(appId => (
+                                                      <span key={appId} className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${appId === 'hub' ? 'bg-scorva-accent/10 text-scorva-accent border-scorva-accent/20' : 'bg-scorva-hover border-scorva-border text-scorva-muted'}`}>
+                                                        {appId}
+                                                      </span>
+                                                    ))}
+                                                    {entry.canSeeAllSites && (
+                                                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shrink-0">All Sites</span>
+                                                    )}
+                                                  </div>
+                                                  <div className="shrink-0 ml-auto">
+                                                    {isExpanded ? <ChevronUp size={14} className="text-scorva-muted" /> : <ChevronDown size={14} className="text-scorva-muted" />}
+                                                  </div>
+                                                </button>
+
+                                                <div className="shrink-0 flex items-center gap-2 px-3 border-l border-scorva-border bg-scorva-bg/40">
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => setExpandedUser(entry.id)}
+                                                    className="px-2.5 py-1.5 rounded-lg text-[10px] font-mono font-semibold border border-scorva-accent/30 bg-scorva-accent/10 text-scorva-accent hover:bg-scorva-accent/20 transition-colors"
+                                                    title="Edit user"
+                                                  >
+                                                    Edit
+                                                  </button>
+                                                  {isHubAdmin && (
+                                                    <button
+                                                      type="button"
+                                                      onClick={() => deleteUser(entry)}
+                                                      className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-mono font-semibold border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                                                      title="Delete user"
+                                                    >
+                                                      <Trash2 size={11} /> Delete
+                                                    </button>
                                                   )}
-                                                  {(entry.allowedApps || []).map(appId => (
-                                                    <span key={appId} className={`text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0 ${appId === 'hub' ? 'bg-scorva-accent/10 text-scorva-accent border-scorva-accent/20' : 'bg-scorva-hover border-scorva-border text-scorva-muted'}`}>
-                                                      {appId}
-                                                    </span>
-                                                  ))}
-                                                  {entry.canSeeAllSites && (
-                                                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-yellow-500/10 text-yellow-400 border-yellow-500/20 shrink-0">All Sites</span>
-                                                  )}
                                                 </div>
-                                                <div className="shrink-0 ml-auto">
-                                                  {isExpanded ? <ChevronUp size={14} className="text-scorva-muted" /> : <ChevronDown size={14} className="text-scorva-muted" />}
-                                                </div>
-                                              </button>
+                                              </div>
 
                                               {isExpanded && (
                                                 <div className="px-4 pb-5 pt-3 border-t border-scorva-accent/15 bg-scorva-bg/60">
                                                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                                                    <div className="space-y-3">
+                                                      <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
+                                                        <div className="w-2 h-px bg-scorva-accent" />
+                                                        <span className="text-[9px] font-mono text-scorva-accent uppercase tracking-[0.3em] font-medium">Identity</span>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>System User ID</FieldLabel>
+                                                        <input className="input-base text-xs font-mono opacity-70" value={entry.id} disabled readOnly />
+                                                        <p className="text-[10px] text-scorva-muted mt-1">Immutable internal account key.</p>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>Full Name</FieldLabel>
+                                                        <input className="input-base text-xs" value={entry.name || ''} onChange={e => patchUser(entry.id, { name: e.target.value })} />
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>Username</FieldLabel>
+                                                        <input className="input-base text-xs font-mono" value={entry.username || ''} onChange={e => patchUser(entry.id, { username: e.target.value.toLowerCase() })} />
+                                                        <p className="text-[10px] text-scorva-muted mt-1">Login handle used for authentication.</p>
+                                                      </div>
+                                                      <div>
+                                                        <FieldLabel>Email</FieldLabel>
+                                                        <input className="input-base text-xs" type="email" value={entry.email || ''} onChange={e => patchUser(entry.id, { email: e.target.value.toLowerCase() })} />
+                                                      </div>
+                                                    </div>
+
                                                     <div className="space-y-3">
                                                       <div className="flex items-center gap-2 pb-1.5 border-b border-scorva-border/60 mb-3">
                                                         <div className="w-2 h-px bg-scorva-accent" />
@@ -614,10 +751,7 @@ export default function AccessAdmin() {
                                                         <select
                                                           className="input-base text-xs"
                                                           value={entry.securityRole || ''}
-                                                          onChange={e => patchUser(entry.id, {
-                                                            securityRole: e.target.value || null,
-                                                            defaultAllowedApps: suggestedApps(e.target.value || null),
-                                                          })}
+                                                          onChange={e => handleUserSecurityRoleChange(entry, e.target.value)}
                                                         >
                                                           <option value="">— None —</option>
                                                           {securityRoles.map(r => <option key={r} value={r}>{r}</option>)}
@@ -702,9 +836,19 @@ export default function AccessAdmin() {
                                                         })}
                                                       </div>
                                                       <div className="pt-2">
-                                                        <button onClick={() => saveUser(entry)} className="btn-primary text-xs glow-border">
-                                                          Save Changes
-                                                        </button>
+                                                        <div className="flex items-center gap-2">
+                                                          <button onClick={() => saveUser(entry)} className="btn-primary text-xs glow-border">
+                                                            Save Changes
+                                                          </button>
+                                                          {isHubAdmin && (
+                                                            <button
+                                                              onClick={() => deleteUser(entry)}
+                                                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                                                            >
+                                                              <Trash2 size={12} /> Delete User
+                                                            </button>
+                                                          )}
+                                                        </div>
                                                       </div>
                                                     </div>
                                                   </div>
@@ -731,7 +875,7 @@ export default function AccessAdmin() {
 
           {/* ── Create User (Hub Admin only) ── */}
           {tab === 'create' && isHubAdmin && (
-            <div className="card p-5">
+              <div className="admin-glass rounded-2xl p-5">
               <SectionHeader
                 title="Create User"
                 subtitle="Provision a new HUB account, assign sites, job role, and explicit application access."
@@ -748,7 +892,13 @@ export default function AccessAdmin() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <FieldLabel>User ID</FieldLabel>
-                      <input className="input-base text-xs font-mono" placeholder="jdoe-001" value={createForm.id} onChange={e => setCreateForm(f => ({ ...f, id: e.target.value }))} required />
+                      <input
+                        className="input-base text-xs font-mono opacity-70 cursor-not-allowed"
+                        value={nextUserId || 'MTSI-user-001'}
+                        readOnly
+                        disabled
+                      />
+                      <p className="mt-1 text-[10px] text-scorva-muted">Generated automatically on create.</p>
                     </div>
                     <div>
                       <FieldLabel>Full Name</FieldLabel>
@@ -784,7 +934,7 @@ export default function AccessAdmin() {
                     </div>
                     <div>
                       <FieldLabel>Job Role</FieldLabel>
-                      <select className="input-base text-xs" value={createForm.securityRole} onChange={e => setCreateForm(f => ({ ...f, securityRole: e.target.value }))}>
+                      <select className="input-base text-xs" value={createForm.securityRole} onChange={e => handleCreateSecurityRoleChange(e.target.value)}>
                         <option value="">— None —</option>
                         {securityRoles.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>

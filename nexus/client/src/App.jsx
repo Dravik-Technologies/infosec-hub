@@ -132,7 +132,14 @@ export default function App() {
     setView(pathToView(pathname));
   }
 
-  function logout() {
+  async function logout() {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: AUTH.hdrs(),
+        credentials: 'include',
+      });
+    } catch {}
     AUTH.clearAll();
     setCurrentUser(null);
     setLoaded(false);

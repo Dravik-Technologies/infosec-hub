@@ -39,11 +39,10 @@ export default function Login() {
       <div className="relative w-full max-w-[26rem]">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-[1.4rem] bg-scorva-accent/10 border border-scorva-accent/20 mb-4 shadow-[0_0_28px_rgba(255,94,20,0.16)]">
-            <Shield size={26} className="text-scorva-accent" />
+          <div className="inline-flex items-center justify-center mb-4">
+            <img src="/scorva-logo.png" alt="SCORVA" className="h-20 w-auto" />
           </div>
           <div className="text-[10px] font-mono font-semibold uppercase tracking-[0.24em] text-scorva-accent mb-2">Secure Access</div>
-          <h1 className="text-3xl font-bold text-scorva-text font-mono tracking-[0.18em]">SCORVA</h1>
           <p className="text-sm text-scorva-muted mt-2">Mission access portal</p>
         </div>
 
@@ -64,6 +63,7 @@ export default function Login() {
               <input
                 className="input-base"
                 type="text"
+                placeholder="e.g. jsmith or john.smith"
                 autoComplete="username"
                 value={form.username}
                 onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
@@ -77,6 +77,7 @@ export default function Login() {
                 <input
                   className="input-base pr-10"
                   type={showPw ? 'text' : 'password'}
+                  placeholder="Enter your password"
                   autoComplete="current-password"
                   value={form.password}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}

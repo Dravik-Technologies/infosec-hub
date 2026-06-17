@@ -90,7 +90,7 @@ function DocForm({ value, onChange }) {
     <div className="grid grid-cols-2 gap-4">
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">TITLE *</label>
-        <input className="input-base" value={value.title} onChange={e => f('title', e.target.value)} required />
+        <input className="input-base" placeholder="e.g. Memorandum of Understanding with IT Department" value={value.title} onChange={e => f('title', e.target.value)} required />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">CATEGORY</label>
@@ -128,7 +128,7 @@ function DocForm({ value, onChange }) {
       </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">NOTES</label>
-        <textarea className="input-base resize-none" rows={3} value={value.notes || ''} onChange={e => f('notes', e.target.value)} />
+        <textarea className="input-base resize-none" rows={3} placeholder="e.g. Key terms, renewal conditions, points of contact..." value={value.notes || ''} onChange={e => f('notes', e.target.value)} />
       </div>
     </div>
   );

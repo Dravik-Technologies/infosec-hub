@@ -46,19 +46,24 @@ function sevClass(s = '') {
 
 /* ── ATO classification ── */
 function classifyAto(ato) {
-  // Check expiration date first (regardless of status)
-  if (ato.expires) {
-    const exp  = new Date(ato.expires);
-    const now  = new Date();
-    const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-    if (exp < now)  return 'expired';
-    if (exp < in90) return 'expiring';
+  const status = String(ato.status || '').trim();
+  const now = new Date();
+
+  if (status === 'Denied') return 'denied';
+  if (status === 'Pending Authorization') return 'pending';
+  if (status === 'Expired') return 'expired';
+
+  if (status === 'Authorized') {
+    if (ato.expires) {
+      const exp = new Date(ato.expires);
+      const in90 = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+      if (exp < now) return 'expired';
+      if (exp < in90) return 'expiring';
+    }
+    return 'current';
   }
 
-  // Then check authorization status
-  if (ato.status === 'Authorized') return 'current';
-  if (ato.status === 'Expired') return 'expired';
-  return 'other'; // Pending, Denied, etc.
+  return 'other';
 }
 
 /* ── Log helpers ── */
@@ -204,7 +209,10 @@ export default function Portal() {
   const atoClasses   = atos.map(classifyAto);
   const atoCurrentN  = atoClasses.filter(c => c === 'current').length;
   const atoExpiringN = atoClasses.filter(c => c === 'expiring').length;
+  const atoActiveN   = atoCurrentN + atoExpiringN;
   const atoExpiredN  = atoClasses.filter(c => c === 'expired').length;
+  const atoDeniedN   = atoClasses.filter(c => c === 'denied').length;
+  const atoPendingN  = atoClasses.filter(c => c === 'pending').length;
   const atoOtherN    = atoClasses.filter(c => c === 'other').length;
 
   /* ── Derived: POAMs ── */
@@ -354,21 +362,21 @@ export default function Portal() {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
 
           {/* Active ATOs */}
-          <ChartCard icon={ShieldCheck} label="Active ATOs" sublabel={`${atos.length} system${atos.length !== 1 ? 's' : ''} total`} accent>
+          <ChartCard icon={ShieldCheck} label="Active ATOs" sublabel={`${atos.length} system${atos.length !== 1 ? 's' : ''} total`} tone="orange">
             <DonutChart
               size={96} thickness={12}
               label={String(atos.length)} sublabel="systems"
               segments={[
-                { label: 'Up to Date',    value: atoCurrentN,  color: 'green'  },
-                { label: 'Expiring Soon', value: atoExpiringN, color: 'yellow' },
-                { label: 'Expired',       value: atoExpiredN,  color: 'red'    },
-                { label: 'Pending',       value: atoOtherN,    color: 'muted'  },
+                { label: 'Active',  value: atoActiveN,               color: 'green'  },
+                { label: 'Pending', value: atoPendingN + atoOtherN,  color: 'yellow' },
+                { label: 'Expired', value: atoExpiredN,              color: 'red'    },
+                { label: 'Denied',  value: atoDeniedN,               color: 'orange' },
               ].filter(s => s.value > 0)}
             />
           </ChartCard>
 
           {/* Open POAMs */}
-          <ChartCard icon={AlertTriangle} label="Open POAMs" sublabel={`${openPoams.length} open findings`} warn={openPoams.length > 0}>
+          <ChartCard icon={AlertTriangle} label="Open POAMs" sublabel={`${openPoams.length} open findings`} tone="orange">
             <DonutChart
               size={96} thickness={12}
               label={String(openPoams.length)} sublabel="open"
@@ -383,7 +391,7 @@ export default function Portal() {
           </ChartCard>
 
           {/* Tasks */}
-          <ChartCard icon={CheckSquare} label="Tasks" sublabel={`${tasks.length} total`} warn>
+          <ChartCard icon={CheckSquare} label="Tasks" sublabel={`${tasks.length} total`} tone="orange">
             <DonutChart
               size={96} thickness={12}
               label={String(tasks.length)} sublabel="tasks"
@@ -396,7 +404,7 @@ export default function Portal() {
           </ChartCard>
 
           {/* Controls */}
-          <ChartCard icon={BookOpen} label="Controls" sublabel={`${controls.length} required`} warn>
+          <ChartCard icon={BookOpen} label="Controls" sublabel={`${controls.length} required`} tone="orange">
             <DonutChart
               size={96} thickness={12}
               label={`${implPct}%`} sublabel="impl."
@@ -637,15 +645,16 @@ function SectionLabel({ children }) {
   );
 }
 
-function ChartCard({ icon: Icon, label, sublabel, accent = false, warn = false, children }) {
+function ChartCard({ icon: Icon, label, sublabel, accent = false, warn = false, tone = '', children }) {
+  const isOrange = tone === 'orange';
   return (
-    <div className={`sc-chart-card p-4 flex flex-col gap-3 ${accent ? 'border-scorva-accent/30' : warn ? 'border-orange-500/25' : ''}`}>
+    <div className={`sc-chart-card p-4 flex flex-col gap-3 ${isOrange ? 'border-orange-500/25' : accent ? 'border-scorva-accent/30' : warn ? 'border-orange-500/25' : ''}`}>
       <div className="flex items-center gap-2">
-        <div className={`p-1.5 rounded-lg shrink-0 ${accent ? 'bg-scorva-accent/15 text-scorva-accent' : warn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted'}`}>
+        <div className={`p-1.5 rounded-lg shrink-0 ${isOrange ? 'bg-orange-500/15 text-orange-400' : accent ? 'bg-scorva-accent/15 text-scorva-accent' : warn ? 'bg-orange-500/15 text-orange-400' : 'bg-scorva-hover text-scorva-muted'}`}>
           <Icon size={13} />
         </div>
         <div className="min-w-0">
-          <div className={`text-[11px] font-mono font-semibold uppercase tracking-wide leading-none ${accent ? 'text-scorva-accent' : warn ? 'text-orange-400' : 'text-scorva-text'}`}>
+          <div className={`text-[11px] font-mono font-semibold uppercase tracking-wide leading-none ${isOrange ? 'text-orange-400' : accent ? 'text-scorva-accent' : warn ? 'text-orange-400' : 'text-scorva-text'}`}>
             {label}
           </div>
           <div className="text-[9px] text-scorva-muted mt-0.5">{sublabel}</div>

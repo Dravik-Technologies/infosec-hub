@@ -8,6 +8,7 @@ const path       = require('path');
 const helmet     = require('helmet');
 const cors       = require('cors');
 const session    = require('express-session');
+const { getSessionStore } = require('./sessionStore');
 
 const requireAuth = require('./middleware/requireAuth');
 const authRouter  = require('./routes/auth');
@@ -39,6 +40,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(session({
   name:              'hub.sid',
   secret:            process.env.SESSION_SECRET || 'hub-devsecret',
+  store:             getSessionStore(),
   resave:            false,
   saveUninitialized: false,
   cookie: {
@@ -73,7 +75,7 @@ const APPS = [
   {
     id: 'scorva', name: 'SCORVA', tagline: 'Cyber Command Center',
     desc: 'NIST SP 800-53 Rev 5 compliance management — ATO tracking, continuous monitoring, POAM, asset inventory, and access governance.',
-    url: process.env.SCORVA_URL || 'http://localhost:3000', ssoPath: '/auth/sso', color: 'teal', icon: 'ShieldCheck',
+    url: process.env.SCORVA_URL || 'http://localhost:3000', ssoPath: '/auth/sso', color: 'teal', icon: 'scorva-logo',
     team: 'Cybersecurity', status: 'live', tags: ['NIST 800-53', 'RMF', 'ATO', 'ConMon', 'POAM'],
   },
   {

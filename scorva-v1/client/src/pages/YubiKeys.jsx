@@ -27,7 +27,7 @@ function YKForm({ value, onChange }) {
     <div className="grid grid-cols-2 gap-4">
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Serial *</label>
-        <input className="input-base font-mono" value={value.serial} onChange={e => f('serial', e.target.value)} required />
+        <input className="input-base font-mono" placeholder="e.g. 12345678" value={value.serial} onChange={e => f('serial', e.target.value)} required />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Model</label>
@@ -41,7 +41,7 @@ function YKForm({ value, onChange }) {
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Assigned To</label>
-        <input className="input-base" value={value.username || ''} onChange={e => f('username', e.target.value)} />
+        <input className="input-base" placeholder="e.g. jsmith or john.smith@domain.com" value={value.username || ''} onChange={e => f('username', e.target.value)} />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Issued Date</label>

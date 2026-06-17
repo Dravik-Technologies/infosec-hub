@@ -1011,6 +1011,16 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+app.post('/api/auth/logout', (_req, res) => {
+  res.clearCookie('nexus_auth', {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: secureCookies,
+    path: '/',
+  });
+  res.json({ ok: true });
+});
+
 app.get('/auth/sso', async (req, res) => {
   const { hub_token } = req.query;
   if (!hub_token) return res.redirect('/?sso_error=missing_token');

@@ -8,8 +8,7 @@ import Badge         from '../components/ui/Badge';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
-import { Plus, Pencil, Trash2, RefreshCw, Download, List, LayoutGrid, AlertTriangle } from 'lucide-react';
-import FilterPanel, { FilterGroup, FilterTrigger } from '../components/ui/FilterPanel';
+import { Plus, Pencil, Trash2, RefreshCw, Download, List, LayoutGrid, AlertTriangle, Filter } from 'lucide-react';
 import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
@@ -96,7 +95,7 @@ function POAMForm({ value, onChange }) {
     <div className="grid grid-cols-2 gap-4">
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">Title *</label>
-        <input className="input-base" value={value.title} onChange={e => f('title', e.target.value)} required />
+        <input className="input-base" placeholder="e.g. Implement multi-factor authentication" value={value.title} onChange={e => f('title', e.target.value)} required />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Severity</label>
@@ -112,7 +111,7 @@ function POAMForm({ value, onChange }) {
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">POAM Type</label>
-        <input className="input-base" value={value.poam_type || ''} onChange={e => f('poam_type', e.target.value)} />
+        <input className="input-base" placeholder="e.g. Technical, Operational, Policy" value={value.poam_type || ''} onChange={e => f('poam_type', e.target.value)} />
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Scheduled Completion</label>
@@ -120,7 +119,7 @@ function POAMForm({ value, onChange }) {
       </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">Weakness Description</label>
-        <textarea className="input-base resize-none" rows={3} value={value.weakness || ''} onChange={e => f('weakness', e.target.value)} />
+        <textarea className="input-base resize-none" rows={3} placeholder="Describe the security weakness or finding that this POA&M item addresses..." value={value.weakness || ''} onChange={e => f('weakness', e.target.value)} />
       </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">Responsible Party</label>
@@ -135,11 +134,11 @@ function POAMForm({ value, onChange }) {
       </div>
       <div>
         <label className="block text-xs text-scorva-muted mb-1">Comments</label>
-        <textarea className="input-base resize-none" rows={2} value={value.comments || ''} onChange={e => f('comments', e.target.value)} />
+        <textarea className="input-base resize-none" rows={2} placeholder="e.g. Budget approved, team assigned, dependencies noted..." value={value.comments || ''} onChange={e => f('comments', e.target.value)} />
       </div>
       <div className="col-span-2">
         <label className="block text-xs text-scorva-muted mb-1">Risk Rationale</label>
-        <textarea className="input-base resize-none" rows={2} value={value.risk_rationale || ''} onChange={e => f('risk_rationale', e.target.value)} />
+        <textarea className="input-base resize-none" rows={2} placeholder="Explain the risk if this item is not completed, business impact, or mitigation strategy..." value={value.risk_rationale || ''} onChange={e => f('risk_rationale', e.target.value)} />
       </div>
     </div>
   );
@@ -462,7 +461,9 @@ export default function POAMPage() {
                 <LayoutGrid size={13} /> Board
               </button>
             </div>
-            <FilterTrigger onClick={() => setFilterOpen(o => !o)} activeCount={activeFilterCount} />
+            <button className="btn-secondary flex items-center gap-1.5" onClick={() => setFilterOpen(true)} title="Open filter panel">
+              <Filter size={14} /> Filters {activeFilterCount > 0 && <span className="font-mono text-xs bg-scorva-accent/20 text-scorva-accent px-1.5 rounded">{activeFilterCount}</span>}
+            </button>
             <button className="btn-secondary flex items-center gap-1.5" onClick={() => backfill.mutate()} disabled={backfill.isPending} title="Create missing tasks for existing POAMs">
               <RefreshCw size={14} className={backfill.isPending ? 'animate-spin' : ''} /> Sync
             </button>
@@ -521,45 +522,82 @@ export default function POAMPage() {
         />
       )}
 
-      {/* ── Filter panel ── */}
-      <FilterPanel
-        open={filterOpen}
-        onClose={() => setFilterOpen(false)}
-        title="Filter POAMs"
-        onClear={activeFilterCount > 0 ? clearFilters : undefined}
-      >
-        <FilterGroup
-          label="Severity"
-          options={[
-            { value: 'Critical', label: 'Critical', count: data.filter(r => r.severity === 'Critical').length },
-            { value: 'High',     label: 'High',     count: data.filter(r => r.severity === 'High').length },
-            { value: 'Medium',   label: 'Medium',   count: data.filter(r => r.severity === 'Medium').length },
-            { value: 'Low',      label: 'Low',      count: data.filter(r => r.severity === 'Low').length },
-          ]}
-          value={filterSeverity}
-          onChange={setFilterSev}
-        />
-        <FilterGroup
-          label="Status"
-          options={[
-            { value: 'Open',        label: 'Open',        count: data.filter(r => r.status === 'Open').length },
-            { value: 'In Progress', label: 'In Progress', count: data.filter(r => r.status === 'In Progress').length },
-            { value: 'Completed',   label: 'Completed',   count: data.filter(r => r.status === 'Completed').length },
-            { value: 'Closed',      label: 'Closed',      count: data.filter(r => r.status === 'Closed').length },
-          ]}
-          value={filterStatus}
-          onChange={setFilterStatus}
-        />
-        <FilterGroup
-          label="Risk Workflow"
-          options={['Draft', 'Submitted', 'Under Review', 'Approved', 'Rejected'].map(s => ({
-            value: s, label: s,
-            count: data.filter(r => (r.risk_workflow_state || r.riskWorkflowState || 'Draft') === s).length,
-          }))}
-          value={filterRisk}
-          onChange={setFilterRisk}
-        />
-      </FilterPanel>
+      {/* ── Filter modal ── */}
+      {filterOpen && (
+        <Modal title="Filter POAMs" onClose={() => setFilterOpen(false)} size="md">
+          <div className="space-y-6">
+            {/* Severity */}
+            <div>
+              <h4 className="text-sm font-semibold text-scorva-text mb-3">Severity</h4>
+              <div className="space-y-2">
+                {[
+                  { value: 'All', label: 'All', count: data.length },
+                  { value: 'Critical', label: 'Critical', count: data.filter(r => r.severity === 'Critical').length },
+                  { value: 'High',     label: 'High',     count: data.filter(r => r.severity === 'High').length },
+                  { value: 'Medium',   label: 'Medium',   count: data.filter(r => r.severity === 'Medium').length },
+                  { value: 'Low',      label: 'Low',      count: data.filter(r => r.severity === 'Low').length },
+                ].map(opt => (
+                  <label key={opt.value} className="flex items-center gap-3 p-2 rounded hover:bg-scorva-hover cursor-pointer group transition-colors">
+                    <input type="radio" name="severity" checked={filterSeverity === opt.value} onChange={() => setFilterSev(opt.value)} className="accent-scorva-accent" />
+                    <span className="text-sm text-scorva-text flex-1">{opt.label}</span>
+                    <span className="text-xs text-scorva-muted font-mono bg-scorva-surface px-2 py-0.5 rounded group-hover:bg-scorva-card">{opt.count}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <h4 className="text-sm font-semibold text-scorva-text mb-3">Status</h4>
+              <div className="space-y-2">
+                {[
+                  { value: 'All',        label: 'All',        count: data.length },
+                  { value: 'Open',        label: 'Open',        count: data.filter(r => r.status === 'Open').length },
+                  { value: 'In Progress', label: 'In Progress', count: data.filter(r => r.status === 'In Progress').length },
+                  { value: 'Completed',   label: 'Completed',   count: data.filter(r => r.status === 'Completed').length },
+                  { value: 'Closed',      label: 'Closed',      count: data.filter(r => r.status === 'Closed').length },
+                ].map(opt => (
+                  <label key={opt.value} className="flex items-center gap-3 p-2 rounded hover:bg-scorva-hover cursor-pointer group transition-colors">
+                    <input type="radio" name="status" checked={filterStatus === opt.value} onChange={() => setFilterStatus(opt.value)} className="accent-scorva-accent" />
+                    <span className="text-sm text-scorva-text flex-1">{opt.label}</span>
+                    <span className="text-xs text-scorva-muted font-mono bg-scorva-surface px-2 py-0.5 rounded group-hover:bg-scorva-card">{opt.count}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Risk Workflow */}
+            <div>
+              <h4 className="text-sm font-semibold text-scorva-text mb-3">Risk Workflow</h4>
+              <div className="space-y-2">
+                {[
+                  { value: 'All', label: 'All', count: data.length },
+                  ...['Draft', 'Submitted', 'Under Review', 'Approved', 'Rejected'].map(s => ({
+                    value: s, label: s,
+                    count: data.filter(r => (r.risk_workflow_state || r.riskWorkflowState || 'Draft') === s).length,
+                  }))
+                ].map(opt => (
+                  <label key={opt.value} className="flex items-center gap-3 p-2 rounded hover:bg-scorva-hover cursor-pointer group transition-colors">
+                    <input type="radio" name="workflow" checked={filterRisk === opt.value} onChange={() => setFilterRisk(opt.value)} className="accent-scorva-accent" />
+                    <span className="text-sm text-scorva-text flex-1">{opt.label}</span>
+                    <span className="text-xs text-scorva-muted font-mono bg-scorva-surface px-2 py-0.5 rounded group-hover:bg-scorva-card">{opt.count}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4 border-t border-scorva-border">
+              <button type="button" className="btn-secondary flex-1" onClick={() => { clearFilters(); setFilterOpen(false); }} disabled={activeFilterCount === 0}>
+                Clear All
+              </button>
+              <button type="button" className="btn-primary flex-1" onClick={() => setFilterOpen(false)}>
+                Done
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
       {modal && (
         <Modal title={modal === 'create' ? 'New POAM' : 'Edit POAM'} onClose={() => setModal(null)} size="lg">
           <form onSubmit={handleSubmit} className="space-y-4">

@@ -87,7 +87,7 @@ export default function SitesPage() {
             )}
             <div>
               <label className="block text-xs text-scorva-muted mb-1">Label *</label>
-              <input className="input-base" value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} required />
+              <input className="input-base" placeholder="e.g. Headquarters, Regional Office, Data Center A" value={form.label} onChange={e => setForm(f => ({ ...f, label: e.target.value }))} required />
             </div>
             <div className="flex justify-end gap-3 pt-2">
               <button type="button" className="btn-secondary" onClick={() => setModal(null)}>Cancel</button>

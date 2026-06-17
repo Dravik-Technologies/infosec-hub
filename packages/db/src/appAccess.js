@@ -128,6 +128,8 @@ function readAppFactoryMeta(userOrMeta) {
 /* ── Security role helpers ── */
 
 function getSecurityRole(user) {
+  const directRole = String(user?.securityRole || user?.jobRole || '').trim();
+  if (directRole) return directRole;
   const { appFactory } = readAppFactoryMeta(user);
   return appFactory.securityRole || null;
 }
@@ -161,6 +163,8 @@ function defaultAllowedAppsForRole(securityRole) {
 }
 
 function getStoredAllowedApps(user) {
+  const directApps = normalizeApps(user?.allowedApps);
+  if (directApps.length) return directApps;
   const { appFactory } = readAppFactoryMeta(user);
   return normalizeApps(appFactory.allowedApps);
 }

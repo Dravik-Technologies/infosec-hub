@@ -184,7 +184,17 @@ export default function App() {
   }, [user]);
 
   function handleLogin(u) { setUser(u); }
-  function handleLogout() { AUTH.clearAll(); setUser(null); }
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        headers: AUTH.hdrs(),
+        credentials: 'include',
+      });
+    } catch {}
+    AUTH.clearAll();
+    setUser(null);
+  }
   function handleToggleTheme() { setTheme(t => t === 'dark' ? 'light' : 'dark'); }
 
   if (!authChecked) {

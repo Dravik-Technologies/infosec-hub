@@ -18,6 +18,26 @@ const requireAuth = require('../middleware/requireAuth');
 const { signAccessToken } = require('../middleware/jwt');
 
 const router = express.Router();
+const COOKIE_NAME = 'scorva_auth';
+
+function clearAuthCookie(res) {
+  res.clearCookie(COOKIE_NAME, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+}
+
+function setAuthCookie(res, token) {
+  res.cookie(COOKIE_NAME, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 8 * 60 * 60 * 1000,
+    path: '/',
+  });
+}
 
 function toAuthUser(u) {
   const initials = (u.name || '')
@@ -78,7 +98,9 @@ router.post('/login', async (req, res) => {
       allowedApps: ['hub', 'scorva', 'crater', 'mash', 'lava', 'nexus'],
       canSeeAllSites: true,
     });
-    return res.json({ token: signAccessToken(user), user });
+    const token = signAccessToken(user);
+    setAuthCookie(res, token);
+    return res.json({ token, user });
   }
 
   try {
@@ -98,6 +120,7 @@ router.post('/login', async (req, res) => {
 
     const user  = toScorvaUser(found);
     const token = signAccessToken(user);
+    setAuthCookie(res, token);
 
     await db.user.update({ where: { id: found.id }, data: { lastLogin: new Date() } });
     await audit(user.username, 'LOGIN', 'System', 'Successful login', user.siteId);
@@ -134,10 +157,11 @@ router.get('/sso', async (req, res) => {
     const user = toScorvaUser(found);
 
     const token = signAccessToken(user);
+    setAuthCookie(res, token);
     req.session.user = user;
     req.session.save(err => {
       if (err) console.error('[SCORVA SSO] session save error:', err.message);
-      res.redirect(`/portal?token=${encodeURIComponent(token)}`);
+      res.redirect('/portal');
     });
   } catch (err) {
     console.error('[SCORVA SSO]', err.message);
@@ -155,6 +179,10 @@ router.post('/select-site', requireAuth, (req, res) => {
 
 router.post('/logout', requireAuth, async (req, res) => {
   await audit(req.user.username, 'LOGOUT', 'System', 'User logged out', req.user.siteId || req.user.siteID || null);
+  clearAuthCookie(res);
+  if (req.session) {
+    return req.session.destroy(() => res.json({ ok: true }));
+  }
   res.json({ ok: true });
 });
 

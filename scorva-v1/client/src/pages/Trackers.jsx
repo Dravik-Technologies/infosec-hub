@@ -181,7 +181,7 @@ export default function TrackersPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs text-scorva-muted mb-1">Name *</label>
-              <input className="input-base" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
+              <input className="input-base" placeholder="e.g. Monthly Privileged Access Review" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} required />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -221,7 +221,7 @@ export default function TrackersPage() {
             </div>
             <div>
               <label className="block text-xs text-scorva-muted mb-1">Description</label>
-              <textarea className="input-base resize-none" rows={3} value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+              <textarea className="input-base resize-none" rows={3} placeholder="Describe the purpose and scope of this tracker..." value={form.description || ''} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
             </div>
             {modal === 'edit' && editing && (
               <EvidencePanel resourceType="tracker" resourceId={editing} />

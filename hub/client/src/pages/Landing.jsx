@@ -9,11 +9,24 @@ import {
 
 const ICON_MAP = { ShieldCheck, FileText, BarChart3, Shield, Flame, Command };
 
+const LOGO_FRAME_CLASS =
+  'flex items-center justify-center overflow-hidden rounded-2xl border border-scorva-border/60 bg-white/70 dark:bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_30px_rgba(0,0,0,0.16)]';
+
+const LOGO_SIZE_CLASS = {
+  scorva: 'h-16 max-w-[170px] scale-[1.2]',
+  sentinel: 'h-12 max-w-[145px] scale-[1.1]',
+  nexus: 'h-12 max-w-[145px] scale-[1.08]',
+};
+
+function getLogoSizeClass(appId) {
+  return LOGO_SIZE_CLASS[appId] || 'h-12 max-w-[145px]';
+}
+
 const APPS = [
   {
     id: 'scorva', name: 'SCORVA', tagline: 'Cyber Command Center',
     desc: 'NIST SP 800-53 Rev 5 compliance management — ATO tracking, continuous monitoring, POAM, asset inventory, and access governance.',
-    color: 'teal', icon: 'ShieldCheck', team: 'Cybersecurity',
+    color: 'teal', icon: 'scorva-logo', logo: '/scorva-logo.png', team: 'Cybersecurity',
     tags: ['NIST 800-53', 'RMF', 'ATO', 'ConMon'],
   },
   {
@@ -25,7 +38,7 @@ const APPS = [
   {
     id: 'sentinel', name: 'Sentinel', tagline: 'Security Operations Center',
     desc: 'Comprehensive security management platform for facility compliance, personnel clearances, document control, and compliance tracking.',
-    color: 'gold', icon: 'BarChart3', team: 'Security Operations',
+    color: 'gold', icon: 'BarChart3', logo: '/sentinel-logo.png', team: 'Security Operations',
     tags: ['Facility Security', 'Personnel Security', 'Document Control', 'Compliance'],
   },
   {
@@ -37,7 +50,7 @@ const APPS = [
   {
     id: 'nexus', name: 'NEXUS', tagline: 'Program Mission Command',
     desc: 'Executive command surface for program management, non-IT security posture, and SCORVA-fed IT and cybersecurity readiness.',
-    color: 'cyan', icon: 'Command', team: 'Program Management',
+    color: 'cyan', icon: 'Command', logo: '/nexus-logo.png', team: 'Program Management',
     tags: ['Real Estate', 'Construction', 'Accreditation'],
   },
 ];
@@ -218,10 +231,15 @@ export default function Landing() {
                   {APPS.map(app => {
                     const Icon = ICON_MAP[app.icon] || Shield;
                     const colors = COLOR_MAP[app.color];
+                    const logoSrc = app.logo || null;
                     return (
                       <div key={app.id} className="flex items-center gap-3 p-3 rounded-lg bg-scorva-bg/70 border border-scorva-border/40 hover:border-scorva-accent/30 transition-colors">
-                        <div className={`p-2 rounded-lg border ${colors.icon} shrink-0`}>
-                          <Icon size={13} />
+                        <div className={`shrink-0 ${logoSrc ? `${LOGO_FRAME_CLASS} min-h-[56px] min-w-[72px] px-3 py-2` : `rounded-lg border p-2 ${colors.icon}`}`}>
+                          {logoSrc ? (
+                            <img src={logoSrc} alt={app.name} className={`w-auto object-contain ${getLogoSizeClass(app.id)}`} />
+                          ) : (
+                            <Icon size={13} />
+                          )}
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-xs font-black font-mono text-scorva-text tracking-widest uppercase">{app.name}</div>
@@ -298,14 +316,19 @@ export default function Landing() {
           {APPS.map(app => {
             const Icon = ICON_MAP[app.icon] || Shield;
             const colors = COLOR_MAP[app.color];
+            const logoSrc = app.logo || null;
             return (
               <div key={app.id} className={`relative card p-6 transition-all duration-300 group overflow-hidden ${colors.card} ${colors.glow}`}>
                 <div className={`absolute top-0 left-0 right-0 h-[3px] ${colors.top} opacity-60 group-hover:opacity-100 transition-opacity`} />
 
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-4">
-                    <div className={`p-3 rounded-xl border ${colors.icon}`}>
-                      <Icon size={22} />
+                    <div className={`${logoSrc ? `${LOGO_FRAME_CLASS} min-h-[84px] min-w-[120px] px-4 py-3` : `rounded-xl border p-3 ${colors.icon}`}`}>
+                      {logoSrc ? (
+                        <img src={logoSrc} alt={app.name} className={`w-auto object-contain ${getLogoSizeClass(app.id)}`} />
+                      ) : (
+                        <Icon size={22} />
+                      )}
                     </div>
                     <div>
                       <h3 className="text-base font-black text-scorva-text font-mono tracking-widest uppercase">{app.name}</h3>

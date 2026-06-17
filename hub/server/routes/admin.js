@@ -106,6 +106,65 @@ function pickUser(row) {
   };
 }
 
+function resolveAllowedAppsForCreate(securityRole, requestedAllowedApps) {
+  const normalizedRequested = normalizeApps(requestedAllowedApps);
+  const roleDefaults = securityRole ? normalizeApps(SECURITY_ROLE_APPS[securityRole] || ['hub']) : ['hub'];
+
+  // If the create flow only submitted HUB (or nothing), treat that as
+  // "use the role defaults" so operational-role users do not get stranded
+  // with a Hub-only account by accident.
+  if (!normalizedRequested.length || arraysEqualAsSet(normalizedRequested, ['hub'])) {
+    return roleDefaults;
+  }
+
+  return normalizedRequested;
+}
+
+function resolveAllowedAppsForUpdate(currentStoredAllowedApps, nextSecurityRole, requestedAllowedApps, securityRoleChanged) {
+  const normalizedRequested = normalizeApps(requestedAllowedApps);
+  const normalizedCurrent = normalizeApps(currentStoredAllowedApps);
+  const roleDefaults = nextSecurityRole ? normalizeApps(SECURITY_ROLE_APPS[nextSecurityRole] || ['hub']) : ['hub'];
+
+  // Existing misconfigured users can be healed by a normal save if their
+  // role implies app access but both the stored and requested lists are
+  // still Hub-only.
+  if (
+    nextSecurityRole &&
+    arraysEqualAsSet(normalizedRequested, ['hub']) &&
+    arraysEqualAsSet(normalizedCurrent, ['hub'])
+  ) {
+    return roleDefaults;
+  }
+
+  // If the admin changed the user's role but never changed app checkboxes,
+  // and the user was previously Hub-only, apply the new role defaults.
+  if (
+    securityRoleChanged &&
+    arraysEqualAsSet(normalizedRequested, normalizedCurrent) &&
+    arraysEqualAsSet(normalizedCurrent, ['hub'])
+  ) {
+    return roleDefaults;
+  }
+
+  return normalizedRequested;
+}
+
+async function getNextUserId() {
+  const users = await db.user.findMany({
+    select: { id: true },
+    where: { id: { startsWith: 'MTSI-user-' } },
+  });
+
+  let max = 0;
+  for (const user of users) {
+    const match = String(user.id || '').match(/^MTSI-user-(\d+)$/);
+    if (!match) continue;
+    max = Math.max(max, Number(match[1]));
+  }
+
+  return `MTSI-user-${String(max + 1).padStart(3, '0')}`;
+}
+
 /* ── Access-request fulfillment (used after user creation) ── */
 
 async function fulfillApprovedPendingRequests(user, actorUsername) {
@@ -150,12 +209,14 @@ async function fulfillApprovedPendingRequests(user, actorUsername) {
 router.get('/identity-meta', adminOnly, async (_req, res) => {
   try {
     const sites = await db.site.findMany({ orderBy: { id: 'asc' } });
+    const nextUserId = await getNextUserId();
     res.json({
       platformRoles:      PLATFORM_ROLES,
       securityRoles:      SECURITY_ROLES,
       securityRoleTitles: SECURITY_ROLE_TITLES,
       securityRoleApps:   SECURITY_ROLE_APPS,
       allApps:            ALL_APPS,
+      nextUserId,
       sites:              sites.map(s => ({ id: s.id, label: s.label })),
     });
   } catch (err) {
@@ -188,25 +249,26 @@ router.get('/access-requests', adminOnly, async (_req, res) => {
 
 router.post('/users', corpAdminOnly, async (req, res) => {
   try {
-    const { id, name, username, email, password, role, status, siteId, siteIds } = req.body || {};
-    if (!id || !name || !username || !email || !password) {
-      return res.status(400).json({ error: 'id, name, username, email, and password are required' });
+    const { name, username, email, password, role, status, siteId, siteIds } = req.body || {};
+    if (!name || !username || !email || !password) {
+      return res.status(400).json({ error: 'name, username, email, and password are required' });
     }
 
     const validationError = await getValidationError(req.body);
     if (validationError) return res.status(400).json({ error: validationError });
 
+    const resolvedId = await getNextUserId();
     const normalizedUsername = String(username).toLowerCase().trim();
     const normalizedEmail    = String(email).toLowerCase().trim();
     const mergedSiteIds      = [...new Set([...(Array.isArray(siteIds) ? siteIds : []), siteId].filter(Boolean).map(String))];
 
     const securityRole = req.body.jobRole || req.body.securityRole || null;
-    const explicitAllowedApps = normalizeApps(req.body.allowedApps);
+    const resolvedAllowedApps = resolveAllowedAppsForCreate(securityRole, req.body.allowedApps);
     const derivedTitle = getTitleFromSecurityRole(securityRole) || null;
     const passwordHash = await bcrypt.hash(password, 12);
     let doc = await db.user.create({
       data: {
-        id:           String(id).trim(),
+        id:           resolvedId,
         name:         String(name).trim(),
         title:        derivedTitle,
         username:     normalizedUsername,
@@ -217,7 +279,7 @@ router.post('/users', corpAdminOnly, async (req, res) => {
         siteId:       mergedSiteIds[0] || null,
         siteIds:      mergedSiteIds,
         dod8140: mergeAppFactory(
-          mergeAllowedApps(null, explicitAllowedApps.length ? explicitAllowedApps : ['hub']),
+          mergeAllowedApps(null, resolvedAllowedApps),
           { securityRole }
         ),
       },
@@ -261,7 +323,31 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
       req.body.siteId,
     ].filter(Boolean).map(String))];
 
-    if ('name'   in req.body) data.name   = req.body.name;
+    if ('name' in req.body) {
+      data.name = String(req.body.name || '').trim();
+    }
+    if ('username' in req.body) {
+      const nextUsername = String(req.body.username || '').toLowerCase().trim();
+      if (!nextUsername) return res.status(400).json({ error: 'Username is required' });
+      if (nextUsername !== current.username) {
+        const existing = await db.user.findUnique({ where: { username: nextUsername } });
+        if (existing && existing.id !== current.id) {
+          return res.status(400).json({ error: 'Username is already in use' });
+        }
+        data.username = nextUsername;
+      }
+    }
+    if ('email' in req.body) {
+      const nextEmail = String(req.body.email || '').toLowerCase().trim();
+      if (!nextEmail) return res.status(400).json({ error: 'Email is required' });
+      if (nextEmail !== current.email) {
+        const existing = await db.user.findUnique({ where: { email: nextEmail } });
+        if (existing && existing.id !== current.id) {
+          return res.status(400).json({ error: 'Email is already in use' });
+        }
+        data.email = nextEmail;
+      }
+    }
 
     let shouldRevokeTokens = false;
 
@@ -294,10 +380,14 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
     }
 
     let nextDod8140 = current.dod8140;
+    const newSecRole = ('securityRole' in req.body || 'jobRole' in req.body)
+      ? (req.body.jobRole || req.body.securityRole || null)
+      : (current.securityRole || current.dod8140?.securityRole || null);
+    const oldSecRole = current.securityRole || (current.dod8140?.securityRole) || null;
+    const securityRoleChanged = newSecRole !== oldSecRole;
+
     if ('securityRole' in req.body || 'jobRole' in req.body) {
-      const newSecRole = req.body.jobRole || req.body.securityRole || null;
-      const oldSecRole = current.securityRole || (current.dod8140?.securityRole) || null;
-      if (newSecRole !== oldSecRole) {
+      if (securityRoleChanged) {
         data.title = getTitleFromSecurityRole(newSecRole) || null;
         nextDod8140 = mergeAppFactory(nextDod8140, {
           securityRole: newSecRole,
@@ -307,10 +397,15 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
       }
     }
     if ('allowedApps' in req.body) {
-      const oldAllowedApps = current.dod8140?.allowedApps || [];
-      const newAllowedApps = Array.isArray(req.body.allowedApps) ? req.body.allowedApps : [];
+      const oldAllowedApps = getStoredAllowedApps(current);
+      const newAllowedApps = resolveAllowedAppsForUpdate(
+        oldAllowedApps,
+        newSecRole,
+        Array.isArray(req.body.allowedApps) ? req.body.allowedApps : [],
+        securityRoleChanged
+      );
       if (!arraysEqualAsSet(oldAllowedApps, newAllowedApps)) {
-        nextDod8140 = mergeAllowedApps(nextDod8140, req.body.allowedApps);
+        nextDod8140 = mergeAllowedApps(nextDod8140, newAllowedApps);
         shouldRevokeTokens = true;
       }
     }
@@ -330,6 +425,25 @@ router.patch('/users/:id', adminOnly, async (req, res) => {
   } catch (err) {
     console.error('[HUB admin update user]', err.message);
     res.status(500).json({ error: 'Unable to update user' });
+  }
+});
+
+router.delete('/users/:id', corpAdminOnly, async (req, res) => {
+  try {
+    const current = await db.user.findUnique({ where: { id: req.params.id } });
+    if (!current) return res.status(404).json({ error: 'User not found' });
+
+    const actorId = req.session?.user?.id || null;
+    const actorUsername = req.session?.user?.username || null;
+    if ((actorId && actorId === current.id) || (actorUsername && actorUsername === current.username)) {
+      return res.status(400).json({ error: 'You cannot delete your own account' });
+    }
+
+    await db.user.delete({ where: { id: req.params.id } });
+    res.json({ ok: true, id: current.id });
+  } catch (err) {
+    console.error('[HUB admin delete user]', err.message);
+    res.status(500).json({ error: 'Unable to delete user' });
   }
 });
 

@@ -25,7 +25,8 @@ function toFormState(row = {}) {
 
 function getAtoRowClass(row) {
   const s = (row.status || '').toLowerCase();
-  if (s === 'expired' || s === 'denied') return 'row-critical';
+  const isExpiredByDate = row.expires && new Date(row.expires) < new Date();
+  if (s === 'expired' || s === 'denied' || isExpiredByDate) return 'row-critical';
   if (s.includes('pending')) return 'row-medium';
   return '';
 }
@@ -60,7 +61,7 @@ function ATOForm({ value, onChange }) {
         <label className="block text-xs text-scorva-muted mb-1">Category</label>
         <input
           className="input-base"
-          placeholder="e.g., Cloud Service, SaaS, On-Premises, Hybrid"
+          placeholder="e.g., Category Four"
           value={value.category}
           onChange={e => f('category', e.target.value)}
         />
@@ -191,7 +192,7 @@ export default function ATOPage() {
   // Count based on actual status (checking expiration dates)
   const authorized = data.filter(r => r.status === 'Authorized' && (!r.expires || new Date(r.expires) >= now)).length;
   const pending    = data.filter(r => r.status === 'Pending Authorization').length;
-  const expired    = data.filter(r => r.status === 'Expired' || (r.expires && new Date(r.expires) < now)).length;
+  const expired    = data.filter(r => r.status !== 'Denied' && (r.status === 'Expired' || (r.expires && new Date(r.expires) < now))).length;
   const denied     = data.filter(r => r.status === 'Denied').length;
   const findings   = data.reduce((s, r) => s + (r.open_findings || 0), 0);
   const authPct    = data.length ? Math.round((authorized / data.length) * 100) : 0;
@@ -224,18 +225,23 @@ export default function ATOPage() {
         breadcrumbs={[{ label: 'Authorization' }, { label: 'ATO' }]}
         title="Authority to Operate"
         description="ATO package tracking and expiration monitoring"
-        action={<button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} />New ATO</button>}
+        action={<button className="btn-primary flex items-center gap-1.5" onClick={openCreate} disabled={!selectedSite}><Plus size={15} />New ATO</button>}
       />
+      {!selectedSite && (
+        <div className="mx-4 mt-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/25 text-yellow-600 dark:text-yellow-400 text-sm">
+          Select a site from the header to view or add ATOs for that site.
+        </div>
+      )}
       <StatusDashboard>
         <div className="flex flex-wrap gap-6 items-start">
           <DonutChart
             label={`${authPct}%`}
-            sublabel="authorized"
+            sublabel="active"
             segments={[
-              { label: 'Authorized', value: authorized, color: 'green'  },
+              { label: 'Active',     value: authorized, color: 'green'  },
               { label: 'Pending',    value: pending,    color: 'yellow' },
               { label: 'Expired',    value: expired,    color: 'red'    },
-              { label: 'Denied',     value: denied,     color: 'muted'  },
+              { label: 'Denied',     value: denied,     color: 'orange' },
             ]}
           />
           <div className="flex flex-wrap gap-2 items-start">

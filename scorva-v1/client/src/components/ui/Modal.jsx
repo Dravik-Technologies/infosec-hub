@@ -12,7 +12,7 @@ export default function Modal({ title, onClose, children, size = 'md' }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className={`w-full ${widths[size]} sc-modal-shell flex flex-col max-h-[90vh]`}>

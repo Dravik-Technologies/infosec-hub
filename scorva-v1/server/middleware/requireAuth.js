@@ -24,7 +24,8 @@ function normalizeSiteList(...values) {
 
 module.exports = async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || '';
-  const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  const cookieToken = req.cookies?.scorva_auth || null;
+  const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : cookieToken;
 
   if (bearer) {
     try {

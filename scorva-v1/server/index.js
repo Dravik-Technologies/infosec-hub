@@ -7,6 +7,7 @@ const express = require('express');
 const path = require('path');
 const helmet = require('helmet');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const requireAuth = require('./middleware/requireAuth');
 const tenantHandler = require('./middleware/tenantHandler');
@@ -57,6 +58,7 @@ if (isDev) {
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: false, limit: '10mb' }));
+app.use(cookieParser());
 
 // Session store: connect-pg-simple in production, memory store in dev
 let sessionStore;
