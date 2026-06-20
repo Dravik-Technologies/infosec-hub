@@ -12,6 +12,7 @@ import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart     from '../components/ui/DonutChart';
 import { Plus, CheckCircle, Pencil, Trash2 } from 'lucide-react';
 import UserSelect from '../components/ui/UserSelect';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView } from '../utils/siteSelectionGuard';
 
 const EMPTY = { title: '', type: 'Task', status: 'Open', priority: 'Medium', assignee: '', due_date: '', control: '', linked_controls_str: '', notes: '' };
 
@@ -137,9 +138,11 @@ function CompleteModal({ task, onConfirm, onCancel }) {
    PAGE
 ════════════════════════════════════════════════════════ */
 export default function TasksPage() {
-  const { user }  = useAuth();
+  const { user, selectedSite }  = useAuth();
+  const showSiteContext = isAllSitesView(user, selectedSite);
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'all-sites';
   const qc        = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['tasks', 'mine'], queryFn: api.tasks.listMine });
+  const { data = [], isLoading } = useQuery({ queryKey: ['tasks', 'mine', siteScopeKey], queryFn: api.tasks.listMine });
 
   const [activeTab,    setActiveTab]   = useState('active');
   const [modal,        setModal]       = useState(null);   // 'create' | 'edit'
@@ -165,7 +168,11 @@ export default function TasksPage() {
     return { ...rest, linked_controls: parseCtrlStr(linked_controls_str) };
   }
 
-  function openCreate() { setForm({ ...EMPTY, assignee: user?.name || user?.username || '' }); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'task' })) return;
+    setForm({ ...EMPTY, assignee: user?.name || user?.username || '' });
+    setModal('create');
+  }
   function openEdit(row) {
     setForm({ ...row, linked_controls_str: (row.linked_controls || []).join(', ') });
     setEditing(row.id);
@@ -205,6 +212,12 @@ export default function TasksPage() {
 
   const baseCols = [
     { key: 'id',       label: 'ID',       width: 90,  render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span> },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'title',    label: 'Title' },
     { key: 'source', label: 'Source', width: 110, render: (_, row) => <Badge label={sourceLabel(row)} /> },
     { key: 'priority', label: 'Priority', render: v => <Badge label={v} /> },

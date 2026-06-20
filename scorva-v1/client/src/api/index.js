@@ -67,6 +67,25 @@ export const api = {
     bulk: d => post('/api/controls/bulk', d),
     bulkDelete: ids => post('/api/controls/bulk-delete', { ids }),
   },
+  controlCatalog: {
+    list: (p = {}) => http.get('/api/control-catalog', { params: p }).then(r => r.data),
+    get: id => get(`/api/control-catalog/${id}`),
+    create: d => post('/api/control-catalog', d),
+    import: d => post('/api/control-catalog/import', d),
+    update: (id, d) => patch(`/api/control-catalog/${id}`, d),
+    remove: id => del(`/api/control-catalog/${id}`),
+  },
+  siteControls: {
+    list: (p = {}) => http.get('/api/site-controls', { params: p }).then(r => r.data),
+    get: id => get(`/api/site-controls/${id}`),
+    syncFromCatalog: d => post('/api/site-controls/sync-from-catalog', d || {}),
+    update: (id, d) => patch(`/api/site-controls/${id}`, d),
+    remove: id => del(`/api/site-controls/${id}`),
+    addFinding: (id, d) => post(`/api/site-controls/${id}/findings`, d),
+    updateFinding: (id, findingId, d) => patch(`/api/site-controls/${id}/findings/${findingId}`, d),
+    createFindingPoam: (id, findingId, d = {}) => post(`/api/site-controls/${id}/findings/${findingId}/poam`, d),
+    addEvidence: (id, d) => post(`/api/site-controls/${id}/evidence`, d),
+  },
   // POAM
   poam:        {
     list: () => get('/api/poam'),

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../../api';
+import { useAuth } from '../../context/AuthContext';
 import { ChevronDown, Search, X, Check } from 'lucide-react';
 
 /**
@@ -13,7 +14,9 @@ import { ChevronDown, Search, X, Check } from 'lucide-react';
  *   disabled    – boolean
  */
 export default function UserSelect({ value, onChange, placeholder = 'Select user…', disabled = false }) {
-  const { data: users = [] } = useQuery({ queryKey: ['users'], queryFn: api.users.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'all-sites';
+  const { data: users = [] } = useQuery({ queryKey: ['users', siteScopeKey], queryFn: api.users.list });
 
   const [open,  setOpen]  = useState(false);
   const [query, setQuery] = useState('');

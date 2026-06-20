@@ -1,7 +1,9 @@
-import { useState, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { X, Upload, CheckCircle, AlertTriangle, Star } from 'lucide-react';
 import ExcelJS from 'exceljs';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
+import { guardSiteScopedCreate, isAllSitesView, requiresExplicitSiteSelection } from '../utils/siteSelectionGuard';
 
 /* ══════════════════════════════════════════════════════
    PARSERS
@@ -320,6 +322,7 @@ const TABS = [
 const CHUNK_SIZE = 50;
 
 export default function ImportControlsModal({ onClose, onImported, currentCount = 0 }) {
+  const { user, selectedSite } = useAuth();
   const [tabId, setTabId]         = useState('oscal-json');
   const [file, setFile]           = useState(null);
   const [parsed, setParsed]       = useState(null);   // { controls[], error } | null
@@ -327,15 +330,43 @@ export default function ImportControlsModal({ onClose, onImported, currentCount 
   const [importing, setImporting] = useState(false);
   const [progress, setProgress]   = useState(null);   // { done, total } | null
   const [result, setResult]       = useState(null);
+  const [importMode, setImportMode] = useState('site-implementation');
+  const [syncAfterImport, setSyncAfterImport] = useState(true);
   const fileRef = useRef(null);
 
   const tab = TABS.find(t => t.id === tabId);
+  const isScorvaRestore = tabId === 'scorva-json';
+  const isHubAdmin = Boolean(
+    user?.canSeeAllSites ||
+    user?.hubRole === 'Hub Admin' ||
+    user?.role === 'Hub Admin' ||
+    user?.role === 'Corporate Admin'
+  );
+  const showSiteContext = isAllSitesView(user, selectedSite);
+  const needsExplicitSite = requiresExplicitSiteSelection(user, selectedSite);
+  const importOptions = useMemo(() => {
+    const siteLabel = selectedSite || 'Selected Site';
+    const options = [];
+    if (isHubAdmin && !isScorvaRestore) {
+      options.push({ value: 'catalog-enterprise', label: 'Enterprise Catalog', hint: 'Reusable baseline definitions for all sites' });
+    }
+    if (!isScorvaRestore) {
+      options.push({ value: 'catalog-site', label: `Site Catalog`, hint: `Definitions owned by ${siteLabel}` });
+    }
+    options.push({ value: 'site-implementation', label: `Site Implementation`, hint: `Immediately usable controls for ${siteLabel}` });
+    return options;
+  }, [isHubAdmin, isScorvaRestore, selectedSite]);
 
   function switchTab(id) {
     setTabId(id);
     setFile(null);
     setParsed(null);
     setResult(null);
+    setOverwrite(id === 'scorva-json');
+    setImportMode(id === 'scorva-json'
+      ? 'site-implementation'
+      : (isHubAdmin ? 'catalog-enterprise' : 'site-implementation'));
+    setSyncAfterImport(id !== 'scorva-json');
     if (fileRef.current) fileRef.current.value = '';
   }
 
@@ -362,6 +393,10 @@ export default function ImportControlsModal({ onClose, onImported, currentCount 
 
   async function doImport() {
     if (!parsed?.controls?.length) return;
+    if ((importMode === 'catalog-site' || importMode === 'site-implementation') &&
+        !guardSiteScopedCreate({ user, selectedSite, entityLabel: 'controls import' })) {
+      return;
+    }
     setImporting(true);
     setProgress(null);
 
@@ -374,12 +409,36 @@ export default function ImportControlsModal({ onClose, onImported, currentCount 
       for (let i = 0; i < total; i += CHUNK_SIZE) {
         setProgress({ done: i, total });
         const chunk = all.slice(i, i + CHUNK_SIZE);
-        const r = await api.controls.bulk({ controls: chunk, overwrite });
+        let r;
+        if (importMode === 'site-implementation') {
+          r = await api.controls.bulk({ controls: chunk, overwrite, siteId: selectedSite || undefined });
+        } else {
+          const definitions = chunk.map(control => ({
+            controlKey: control.id,
+            title: control.title,
+            family: control.family || '',
+            baseline: control.baseline || '',
+            description: control.description || '',
+            implementation_default: control.implementation_guidance || '',
+            source: tab.label,
+            owner_type: importMode === 'catalog-enterprise' ? 'enterprise' : 'site',
+            owner_site_id: importMode === 'catalog-site' ? (selectedSite || '') : null,
+          }));
+          r = await api.controlCatalog.import({ definitions, overwrite });
+        }
         inserted   += r.inserted   ?? 0;
         overwritten += r.overwritten ?? 0;
         skipped    += r.skipped    ?? 0;
         if (r.errors?.length) errors.push(...r.errors);
       }
+
+      if (syncAfterImport && importMode !== 'site-implementation' && selectedSite) {
+        await api.siteControls.syncFromCatalog({
+          siteId: selectedSite,
+          ownerScope: importMode === 'catalog-enterprise' ? 'enterprise' : 'site',
+        });
+      }
+
       setProgress({ done: total, total });
       setResult({ inserted, overwritten, skipped, errors, success: true });
       onImported();
@@ -506,6 +565,49 @@ export default function ImportControlsModal({ onClose, onImported, currentCount 
             </div>
           </div>
 
+          <div className="space-y-2">
+            <div className="text-[11px] font-semibold text-scorva-text uppercase tracking-wider">Import Destination</div>
+            <div className="grid gap-2">
+              {importOptions.map(option => (
+                <label
+                  key={option.value}
+                  className={`rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
+                    importMode === option.value
+                      ? 'border-scorva-accent bg-scorva-accent/8'
+                      : 'border-scorva-border bg-scorva-hover/30'
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <input
+                      type="radio"
+                      name="importMode"
+                      value={option.value}
+                      checked={importMode === option.value}
+                      onChange={e => setImportMode(e.target.value)}
+                      disabled={isScorvaRestore && option.value !== 'site-implementation'}
+                      className="mt-0.5 accent-scorva-accent"
+                    />
+                    <div>
+                      <div className="text-xs font-semibold text-scorva-text">{option.label}</div>
+                      <div className="text-[11px] text-scorva-muted">{option.hint}</div>
+                    </div>
+                  </div>
+                </label>
+              ))}
+            </div>
+            {needsExplicitSite && importMode !== 'catalog-enterprise' && (
+              <div className="flex items-start gap-2 text-[11px] text-yellow-400 bg-yellow-500/10 border border-yellow-500/20 rounded-lg px-3 py-2.5">
+                <AlertTriangle size={12} className="shrink-0 mt-0.5" />
+                <span>Select a site from the SCORVA header before importing site-owned definitions or site implementations.</span>
+              </div>
+            )}
+            {showSiteContext && importMode !== 'catalog-enterprise' && selectedSite && (
+              <div className="text-[11px] text-scorva-muted">
+                Target site: <span className="font-mono text-scorva-accent-light">{selectedSite}</span>
+              </div>
+            )}
+          </div>
+
           {/* Parse result / preview */}
           {parsed && (
             <div className={`rounded-lg border p-4 ${parsed.error ? 'border-red-500/30 bg-red-500/5' : 'border-emerald-500/30 bg-emerald-500/5'}`}>
@@ -546,11 +648,25 @@ export default function ImportControlsModal({ onClose, onImported, currentCount 
                     <input
                       type="checkbox"
                       checked={overwrite}
+                      disabled={isScorvaRestore}
                       onChange={e => setOverwrite(e.target.checked)}
                       className="rounded border-scorva-border accent-scorva-accent"
                     />
-                    Overwrite existing controls that share the same ID
+                    {isScorvaRestore
+                      ? 'Update existing controls that share the same ID (recommended for SCORVA restore imports)'
+                      : 'Overwrite existing controls that share the same ID'}
                   </label>
+                  {!isScorvaRestore && importMode !== 'site-implementation' && selectedSite && (
+                    <label className="flex items-center gap-2 text-xs text-scorva-muted cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={syncAfterImport}
+                        onChange={e => setSyncAfterImport(e.target.checked)}
+                        className="rounded border-scorva-border accent-scorva-accent"
+                      />
+                      After import, sync these definitions into the selected site implementation workspace
+                    </label>
+                  )}
                 </div>
               )}
             </div>
@@ -605,6 +721,11 @@ export default function ImportControlsModal({ onClose, onImported, currentCount 
                       {result.errors.slice(0, 5).map((e, i) => (
                         <div key={i}>{e.id}: {e.reason}</div>
                       ))}
+                    </div>
+                  )}
+                  {syncAfterImport && importMode !== 'site-implementation' && selectedSite && (
+                    <div className="text-[10px] text-scorva-muted font-mono">
+                      Definitions were also synced into site implementations for {selectedSite}.
                     </div>
                   )}
                 </div>

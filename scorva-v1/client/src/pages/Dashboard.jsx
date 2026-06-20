@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
+import WorldClockStrip from '../components/ui/WorldClockStrip';
 import {
   ShieldCheck, Activity, AlertTriangle, CheckSquare,
   BookOpen, Users, Monitor, Key, ArrowRight, Shield,
@@ -12,28 +12,6 @@ import {
 } from 'lucide-react';
 
 /* ── Helpers ──────────────────────────────────────────────────────────────── */
-
-function utcClock() {
-  return new Date().toUTCString().slice(5, 25) + ' UTC';
-}
-
-function calcInfocon(poams) {
-  const critical = poams.filter(p => p.status === 'Open' && /critical/i.test(p.severity || '')).length;
-  const high     = poams.filter(p => p.status === 'Open' && /high/i.test(p.severity || '')).length;
-  const open     = poams.filter(p => p.status === 'Open').length;
-  if (critical >= 3 || open >= 20) return 2;
-  if (critical >= 1 || high >= 5)  return 3;
-  if (high >= 1    || open >= 5)   return 4;
-  return 5;
-}
-
-const INFOCON_META = {
-  5: { label: 'INFOCON 5', sub: 'Normal',           color: 'text-emerald-400', dot: 'bg-emerald-400', ring: 'ring-emerald-500/30', bg: 'bg-emerald-500/10' },
-  4: { label: 'INFOCON 4', sub: 'Increased',        color: 'text-blue-400',    dot: 'bg-blue-400',    ring: 'ring-blue-500/30',    bg: 'bg-blue-500/10' },
-  3: { label: 'INFOCON 3', sub: 'Enhanced',         color: 'text-yellow-400',  dot: 'bg-yellow-400',  ring: 'ring-yellow-500/30',  bg: 'bg-yellow-500/10' },
-  2: { label: 'INFOCON 2', sub: 'Greater',          color: 'text-orange-400',  dot: 'bg-orange-400',  ring: 'ring-orange-500/30',  bg: 'bg-orange-500/10' },
-  1: { label: 'INFOCON 1', sub: 'Maximum',          color: 'text-red-400',     dot: 'bg-red-400',     ring: 'ring-red-500/30',     bg: 'bg-red-500/10' },
-};
 
 function sevClass(s = '') {
   const u = s.toUpperCase();
@@ -86,13 +64,7 @@ const COLOR_MAP = {
 export default function Dashboard() {
   const navigate = useNavigate();
   const { user, selectedSite } = useAuth();
-  const [clock, setClock] = useState(utcClock());
   const siteScopeKey = selectedSite || user?.siteID || 'all-sites';
-
-  useEffect(() => {
-    const t = setInterval(() => setClock(utcClock()), 1000);
-    return () => clearInterval(t);
-  }, []);
 
   const { data: atos     = [] } = useQuery({ queryKey: ['ato', siteScopeKey],      queryFn: api.ato.list,      refetchInterval: 60_000 });
   const { data: controls = [] } = useQuery({ queryKey: ['controls', siteScopeKey], queryFn: api.controls.list, refetchInterval: 60_000 });
@@ -120,8 +92,6 @@ export default function Dashboard() {
   const openTasks    = tasks.filter(t => t.status === 'Open').length;
   const implControls = controls.filter(c => c.status === 'Implemented').length;
   const unread       = notifs.filter(n => !n.read).length;
-  const infocon      = calcInfocon(poams);
-  const ic           = INFOCON_META[infocon];
 
   const threatsTime = threatsUpdatedAt
     ? new Date(threatsUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -143,14 +113,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="sc-dashboard-hero-side">
-            <div className="sc-dashboard-signal">
-              <label>System Time</label>
-              <strong>{clock}</strong>
-            </div>
-            <div className={`sc-dashboard-signal ${ic.bg}`}>
-              <label>{ic.label}</label>
-              <strong className={ic.color}>{ic.sub}</strong>
-            </div>
+            <WorldClockStrip />
           </div>
         </div>
       </section>

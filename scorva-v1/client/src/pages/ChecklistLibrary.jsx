@@ -11,6 +11,7 @@ import {
   CheckCircle2, Circle, Clock, AlertCircle,
   FileText, ListTodo, ChevronDown, ChevronUp,
 } from 'lucide-react';
+import { guardSiteScopedCreate } from '../utils/siteSelectionGuard';
 
 // ─── Shared helpers ────────────────────────────────────────────────────────
 
@@ -290,14 +291,14 @@ function LibraryView() {
 
 // ─── Create campaign modal ─────────────────────────────────────────────────
 
-function CreateCampaignModal({ onClose, onCreated }) {
+function CreateCampaignModal({ onClose, onCreated, selectedSite }) {
   const qc = useQueryClient();
   const { data: templates = [] } = useQuery({ queryKey: ['checklist-templates'], queryFn: api.checklist.templates });
   const { data: sites    = [] } = useQuery({ queryKey: ['sites'],               queryFn: api.sites.list });
   const { user } = useAuth();
 
   const [form, setForm] = useState({
-    name: '', templateId: templates[0]?.id || '', siteId: '', startDate: '', targetDate: '', ownerName: '', notes: '',
+    name: '', templateId: templates[0]?.id || '', siteId: selectedSite || '', startDate: '', targetDate: '', ownerName: '', notes: '',
   });
   const [error, setError] = useState('');
 
@@ -394,12 +395,13 @@ function CreateCampaignModal({ onClose, onCreated }) {
 // ─── Campaigns list ────────────────────────────────────────────────────────
 
 function CampaignsList({ onSelect }) {
-  const { user } = useAuth();
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'all-sites';
   const admin = user?.role === 'Corporate Admin' || user?.role === 'Site Admin';
   const [showCreate, setShowCreate] = useState(false);
 
   const { data: campaigns = [], isLoading, isError, error } = useQuery({
-    queryKey: ['campaigns'],
+    queryKey: ['campaigns', siteScopeKey],
     queryFn:  api.campaigns.list,
   });
 
@@ -414,7 +416,14 @@ function CampaignsList({ onSelect }) {
           <div className="text-xs text-scorva-muted mt-0.5">Inspection campaigns for your site</div>
         </div>
         {admin && (
-          <button type="button" onClick={() => setShowCreate(true)} className="btn-primary flex items-center gap-2 text-sm">
+          <button
+            type="button"
+            onClick={() => {
+              if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'inspection campaign' })) return;
+              setShowCreate(true);
+            }}
+            className="btn-primary flex items-center gap-2 text-sm"
+          >
             <Plus size={14} />New Campaign
           </button>
         )}
@@ -471,6 +480,7 @@ function CampaignsList({ onSelect }) {
       {showCreate && (
         <CreateCampaignModal
           onClose={() => setShowCreate(false)}
+          selectedSite={selectedSite}
           onCreated={(id) => { setShowCreate(false); onSelect(id); }}
         />
       )}

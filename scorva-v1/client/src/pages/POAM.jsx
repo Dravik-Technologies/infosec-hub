@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
 import { useAuth } from '../context/AuthContext';
@@ -14,6 +14,7 @@ import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
 import EvidencePanel from '../components/EvidencePanel';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView, requiresExplicitSiteSelection } from '../utils/siteSelectionGuard';
 
 const EMPTY = {
   title: '',
@@ -144,6 +145,35 @@ function POAMForm({ value, onChange }) {
   );
 }
 
+function SourceLinkPanel({ value }) {
+  const sourceType = value.source_type || value.sourceType || '';
+  const sourceId = value.source_id || value.sourceId || '';
+  if (!sourceType || !sourceId) return null;
+
+  let href = null;
+  let label = null;
+
+  if (sourceType === 'siteControlFinding') {
+    href = `/monitoring/controls?findingId=${encodeURIComponent(sourceId)}`;
+    label = 'Open Originating Control Finding';
+  }
+
+  if (!href) return null;
+
+  return (
+    <div className="rounded-xl border border-scorva-border bg-scorva-panel/40 p-4">
+      <div className="text-xs uppercase tracking-[0.22em] text-scorva-muted">Source Linkage</div>
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <Badge label={sourceType} />
+        <span className="font-mono text-xs text-scorva-accent-light">{sourceId}</span>
+        <a href={href} className="btn-secondary">
+          {label}
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function RiskWorkflowPanel({ value, onChange, canReview, onTransition, isTransitioning }) {
   const actions = (WORKFLOW_ACTIONS[value.risk_workflow_state || 'Draft'] || []).filter(action => !action.reviewerOnly || canReview);
 
@@ -220,7 +250,7 @@ const KANBAN_COLS = [
   { status: 'Closed',      label: 'Closed',       dot: 'bg-slate-500',   text: 'text-slate-400' },
 ];
 
-function KanbanBoard({ data, onEdit, onDelete }) {
+function KanbanBoard({ data, onEdit, onDelete, showSiteContext }) {
   const grouped = Object.fromEntries(KANBAN_COLS.map(c => [c.status, []]));
   data.forEach(row => {
     const key = grouped[row.status] !== undefined ? row.status : 'Open';
@@ -282,6 +312,13 @@ function KanbanBoard({ data, onEdit, onDelete }) {
                 <p className="text-[12px] text-scorva-text font-medium leading-snug line-clamp-2">
                   {row.title}
                 </p>
+                {showSiteContext && (
+                  <div>
+                    <span className="inline-flex items-center rounded-full border border-scorva-border bg-scorva-hover px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-scorva-accent-light">
+                      {getRecordSiteLabel(row)}
+                    </span>
+                  </div>
+                )}
 
                 {/* Severity + due date */}
                 <div className="flex items-center justify-between gap-2">
@@ -316,6 +353,8 @@ function KanbanBoard({ data, onEdit, onDelete }) {
 export default function POAMPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const needsExplicitSite = requiresExplicitSiteSelection(user, selectedSite);
+  const showSiteContext = isAllSitesView(user, selectedSite);
   const canReviewRisk = REVIEWER_ROLES.has(user?.role);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading, isError, error } = useQuery({ queryKey: ['poam', siteScopeKey], queryFn: api.poam.list });
@@ -358,7 +397,13 @@ export default function POAMPage() {
     transitionRisk.reset();
   }
 
-  function openCreate() { resetErrors(); setEditing(null); setForm(EMPTY); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'POA&M record' })) return;
+    resetErrors();
+    setEditing(null);
+    setForm(EMPTY);
+    setModal('create');
+  }
   function openEdit(row) { resetErrors(); setForm(toFormState(row)); setEditing(row.id); setModal('edit'); }
   function handleSubmit(e) {
     e.preventDefault();
@@ -408,6 +453,12 @@ export default function POAMPage() {
 
   const cols = [
     { key: 'id',       label: 'ID',       width: 90, render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span> },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'title',    label: 'Title' },
     { key: 'severity', label: 'Severity', render: v => <Badge label={v} /> },
     { key: 'status',   label: 'Status',   render: v => <Badge label={v} /> },
@@ -435,6 +486,21 @@ export default function POAMPage() {
 
   const medium = data.filter(r => r.severity === 'Medium').length;
   const low    = data.filter(r => r.severity === 'Low').length;
+
+  useEffect(() => {
+    if (!data.length) return;
+    const params = new URLSearchParams(window.location.search);
+    const poamId = params.get('poamId');
+    if (!poamId) return;
+    const target = data.find(row => row.id === poamId);
+    if (!target) return;
+    openEdit(target);
+    params.delete('poamId');
+    const nextSearch = params.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}`;
+    window.history.replaceState({}, '', nextUrl);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.length]);
 
   return (
     <div>
@@ -474,6 +540,11 @@ export default function POAMPage() {
           </div>
         }
       />
+      {needsExplicitSite && (
+        <div className="mx-4 mt-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/25 text-yellow-600 dark:text-yellow-400 text-sm">
+          Select a site from the header before creating a new POA&amp;M.
+        </div>
+      )}
       <StatusDashboard>
         <div className="flex flex-wrap gap-6 items-start">
           <DonutChart
@@ -511,6 +582,7 @@ export default function POAMPage() {
           data={displayData}
           onEdit={openEdit}
           onDelete={id => setDelId(id)}
+          showSiteContext={showSiteContext}
         />
       ) : (
         <Table
@@ -604,6 +676,7 @@ export default function POAMPage() {
             <POAMForm value={form} onChange={setForm} />
             {modal === 'edit' && (
               <>
+                <SourceLinkPanel value={form} />
                 <RiskWorkflowPanel
                   value={form}
                   onChange={setForm}

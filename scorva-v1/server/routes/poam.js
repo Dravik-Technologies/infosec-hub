@@ -75,6 +75,68 @@ function buildRiskWorkflowUpdate(doc, nextState, username, reviewNotes) {
   }
 }
 
+function mapPoamStatusToFindingStatus(status) {
+  if (status === 'In Progress') return 'In Progress';
+  if (status === 'Completed' || status === 'Closed') return 'Resolved';
+  return 'Open';
+}
+
+async function syncLinkedSiteControlFinding(poam, nextPoamStatus) {
+  if (!poam || poam.sourceType !== 'siteControlFinding' || !poam.sourceId) return;
+
+  const finding = await db.siteControlFinding.findUnique({ where: { id: poam.sourceId } });
+  if (!finding) return;
+
+  const updatedFinding = await db.siteControlFinding.update({
+    where: { id: finding.id },
+    data: {
+      status: mapPoamStatusToFindingStatus(nextPoamStatus),
+      closedAt: nextPoamStatus === 'Completed' || nextPoamStatus === 'Closed' ? new Date() : null,
+    },
+  });
+
+  const openFindings = await db.siteControlFinding.count({
+    where: {
+      siteControlId: finding.siteControlId,
+      status: { notIn: ['Closed', 'Resolved'] },
+    },
+  });
+
+  await db.siteControlImplementation.update({
+    where: { id: finding.siteControlId },
+    data: { findings: openFindings },
+  });
+
+  return updatedFinding;
+}
+
+async function reopenLinkedSiteControlFinding(poam) {
+  if (!poam || poam.sourceType !== 'siteControlFinding' || !poam.sourceId) return;
+
+  const finding = await db.siteControlFinding.findUnique({ where: { id: poam.sourceId } });
+  if (!finding) return;
+
+  await db.siteControlFinding.update({
+    where: { id: finding.id },
+    data: {
+      status: 'Open',
+      closedAt: null,
+    },
+  });
+
+  const openFindings = await db.siteControlFinding.count({
+    where: {
+      siteControlId: finding.siteControlId,
+      status: { notIn: ['Closed', 'Resolved'] },
+    },
+  });
+
+  await db.siteControlImplementation.update({
+    where: { id: finding.siteControlId },
+    data: { findings: openFindings },
+  });
+}
+
 async function createLinkedTask(poamId, title, siteId, responsibleParty, scheduledCompletion, severity, username) {
   try {
     const last    = await db.task.findFirst({ orderBy: { id: 'desc' }, select: { id: true } });
@@ -187,6 +249,8 @@ router.post('/', async (req, res, next) => {
       },
     });
 
+    await syncLinkedSiteControlFinding(doc, doc.status);
+
     await createLinkedTask(id, title, siteId, responsible_party, scheduled_completion,
       severity, req.session.user?.username);
     await audit(req.session.user.username, 'POAM_ADD', id, `Added: ${title}`, siteId);
@@ -229,6 +293,9 @@ router.patch('/:id', async (req, res, next) => {
     if (data.severity)             taskSync.priority = data.severity === 'Critical' ? 'Critical' : data.severity === 'High' ? 'High' : 'Medium';
     if (Object.keys(taskSync).length) {
       await db.task.updateMany({ where: { source: 'poam', sourceId: req.params.id }, data: taskSync });
+    }
+    if (data.status) {
+      await syncLinkedSiteControlFinding(updated, updated.status);
     }
 
     await audit(req.session.user.username, 'POAM_UPDATE', req.params.id,
@@ -297,6 +364,7 @@ router.delete('/:id', async (req, res, next) => {
     const doc = await db.poam.findUnique({ where: { id: req.params.id } });
     if (!doc) return res.status(404).json({ error: 'Not found' });
     if (!req.assertTenantDocument(doc)) return res.status(403).json({ error: 'Forbidden' });
+    await reopenLinkedSiteControlFinding(doc);
     await db.poam.delete({ where: { id: req.params.id } });
     await db.task.deleteMany({ where: { source: 'poam', sourceId: req.params.id } });
     await audit(req.session.user.username, 'POAM_DELETE', req.params.id, 'Deleted', doc.siteId);

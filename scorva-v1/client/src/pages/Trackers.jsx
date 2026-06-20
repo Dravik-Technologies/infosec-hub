@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Modal         from '../components/ui/Modal';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
@@ -10,6 +11,7 @@ import UserSelect from '../components/ui/UserSelect';
 import { Plus, Pencil, Trash2, LayoutGrid, ClipboardCheck } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import EvidencePanel from '../components/EvidencePanel';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView } from '../utils/siteSelectionGuard';
 
 const EMPTY = {
   name: '',
@@ -51,7 +53,10 @@ function trackerHealth(tracker, todayStr) {
 
 export default function TrackersPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['trackers'], queryFn: api.trackers.list });
+  const { user, selectedSite } = useAuth();
+  const showSiteContext = isAllSitesView(user, selectedSite);
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'all-sites';
+  const { data = [], isLoading } = useQuery({ queryKey: ['trackers', siteScopeKey], queryFn: api.trackers.list });
   const [modal, setModal]     = useState(null);
   const [form, setForm]       = useState(EMPTY);
   const [editing, setEditing] = useState(null);
@@ -61,7 +66,11 @@ export default function TrackersPage() {
   const update = useMutation({ mutationFn: ({ id, d }) => api.trackers.update(id, d), onSuccess: () => { qc.invalidateQueries(['trackers']); setModal(null); } });
   const remove = useMutation({ mutationFn: api.trackers.remove, onSuccess: () => { qc.invalidateQueries(['trackers']); setDelId(null); } });
 
-  function openCreate(template) { setForm({ ...EMPTY, ...(template || {}) }); setModal('create'); }
+  function openCreate(template) {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'tracker' })) return;
+    setForm({ ...EMPTY, ...(template || {}) });
+    setModal('create');
+  }
   function openEdit(row) {
     setForm({
       ...EMPTY,
@@ -156,6 +165,7 @@ export default function TrackersPage() {
                 <Badge label={trackerHealth(t, todayStr)} />
                 {t.category && <Badge label={t.category} />}
                 {t.frequency && <span className="sc-tracker-chip">{t.frequency}</span>}
+                {showSiteContext && <Badge label={getRecordSiteLabel(t)} />}
               </div>
               <div className="flex gap-3 mt-3 text-xs text-scorva-muted">
                 <span>Owner: {t.owner || '—'}</span>

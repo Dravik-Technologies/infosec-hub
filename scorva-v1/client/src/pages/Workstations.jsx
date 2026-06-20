@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, Search, ShieldCheck, LaptopMinimal } from 'lucide
 import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView } from '../utils/siteSelectionGuard';
 
 const TYPES    = ['Laptop','Server','TACLANE','Switch','Workstation','Other'];
 const STATUSES = ['Available','Checked Out','Awaiting Destruction','Lost','Active','Maintenance','Decommissioned'];
@@ -116,6 +117,7 @@ function WSForm({ value, onChange, systems }) {
 export default function WorkstationsPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const showSiteContext = isAllSitesView(user, selectedSite);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading }         = useQuery({ queryKey: ['workstations', siteScopeKey],  queryFn: api.workstations.list });
   const { data: atoData = [] }           = useQuery({ queryKey: ['ato', siteScopeKey],           queryFn: api.ato.list });
@@ -144,7 +146,11 @@ export default function WorkstationsPage() {
     onSuccess: () => { invalidate(); setSelectedIds([]); },
   });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'device record' })) return;
+    setForm(EMPTY);
+    setModal('create');
+  }
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
   function handleSubmit(e) {
     e.preventDefault();
@@ -199,6 +205,11 @@ export default function WorkstationsPage() {
       </div>
     )},
     { key: 'type',           label: 'Type',        render: v => <Badge label={v} /> },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'username',       label: 'Assigned To', render: v => <span className="text-xs">{v || '—'}</span> },
     { key: 'status',         label: 'Status',      render: v => <Badge label={v} /> },
     { key: 'os',             label: 'OS',          render: v => <span className="text-xs">{v || '—'}</span> },

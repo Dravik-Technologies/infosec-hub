@@ -5,36 +5,15 @@ import { useAuth }  from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { api } from '../api';
 import DonutChart from '../components/ui/DonutChart';
+import WorldClockStrip from '../components/ui/WorldClockStrip';
 import {
   Shield, ShieldCheck, Activity, Monitor, Users, Globe,
-  Clock, Zap, ArrowRight, RefreshCw, ExternalLink,
+  Zap, ArrowRight, RefreshCw, ExternalLink,
   AlertTriangle, CheckSquare, BookOpen,
   Bell, Sun, Moon, LogOut, Upload, X, FileText,
 } from 'lucide-react';
 
 /* ── Helpers ── */
-function utcClock() {
-  return new Date().toUTCString().slice(5, 25) + ' UTC';
-}
-
-function calcInfocon(poams) {
-  const critical = poams.filter(p => p.status === 'Open' && /critical/i.test(p.severity || '')).length;
-  const high     = poams.filter(p => p.status === 'Open' && /high/i.test(p.severity || '')).length;
-  const open     = poams.filter(p => p.status === 'Open').length;
-  if (critical >= 3 || open >= 20) return 2;
-  if (critical >= 1 || high >= 5)  return 3;
-  if (high >= 1    || open >= 5)   return 4;
-  return 5;
-}
-
-const INFOCON_META = {
-  5: { label: 'INFOCON 5', sub: 'Normal',   color: 'text-emerald-400', dot: 'bg-emerald-400', ring: 'ring-emerald-500/30', bg: 'bg-emerald-500/10' },
-  4: { label: 'INFOCON 4', sub: 'Increased',color: 'text-blue-400',    dot: 'bg-blue-400',    ring: 'ring-blue-500/30',    bg: 'bg-blue-500/10' },
-  3: { label: 'INFOCON 3', sub: 'Enhanced', color: 'text-yellow-400',  dot: 'bg-yellow-400',  ring: 'ring-yellow-500/30',  bg: 'bg-yellow-500/10' },
-  2: { label: 'INFOCON 2', sub: 'Greater',  color: 'text-orange-400',  dot: 'bg-orange-400',  ring: 'ring-orange-500/30',  bg: 'bg-orange-500/10' },
-  1: { label: 'INFOCON 1', sub: 'Maximum',  color: 'text-red-400',     dot: 'bg-red-400',     ring: 'ring-red-500/30',     bg: 'bg-red-500/10' },
-};
-
 function sevClass(s = '') {
   const u = s.toUpperCase();
   if (u === 'CRITICAL') return 'sev-critical';
@@ -165,7 +144,6 @@ export default function Portal() {
   const navigate = useNavigate();
   const { user, logout, selectedSite } = useAuth();
   const { dark, toggle } = useTheme();
-  const [clock, setClock] = useState(utcClock());
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
 
   /* ── System Audit Log state ── */
@@ -175,11 +153,6 @@ export default function Portal() {
   const [logFilter, setLogFilter]   = useState('all');
   const [dragOver, setDragOver]     = useState(false);
   const fileInputRef = useRef(null);
-
-  useEffect(() => {
-    const t = setInterval(() => setClock(utcClock()), 1000);
-    return () => clearInterval(t);
-  }, []);
 
   /* ── Data queries ── */
   const { data: atos     = [] } = useQuery({ queryKey: ['ato', siteScopeKey],      queryFn: api.ato.list,      refetchInterval: 60_000 });
@@ -236,8 +209,6 @@ export default function Portal() {
 
   /* ── Misc ── */
   const unread      = notifs.filter(n => !n.read).length;
-  const infocon     = calcInfocon(poams);
-  const ic          = INFOCON_META[infocon];
   const threatsTime = threatsUpdatedAt
     ? new Date(threatsUpdatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null;
@@ -324,7 +295,7 @@ export default function Portal() {
       {/* ── Body ── */}
       <main className="flex-1 overflow-y-auto p-6 space-y-6 relative z-10">
 
-        {/* ── Title + INFOCON ── */}
+        {/* ── Title + world clocks ── */}
         <div className="sc-command-hero">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
@@ -333,17 +304,7 @@ export default function Portal() {
               <h1 className="text-base font-bold text-scorva-text font-mono tracking-widest uppercase">Cyber Command Center</h1>
             </div>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="flex items-center gap-1.5 text-[11px] font-mono text-scorva-muted">
-              <Clock size={12} className="text-scorva-accent" />
-              {clock}
-            </div>
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md ring-1 ${ic.ring} ${ic.bg}`}>
-              <span className={`w-1.5 h-1.5 rounded-full shrink-0 animate-pulse ${ic.dot}`} />
-              <span className={`text-[11px] font-mono font-bold ${ic.color}`}>{ic.label}</span>
-              <span className="text-[9px] font-mono text-scorva-muted">{ic.sub}</span>
-            </div>
-          </div>
+          <WorldClockStrip className="sm:max-w-[780px]" />
         </div>
         </div>
 

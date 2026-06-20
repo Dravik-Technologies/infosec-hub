@@ -12,6 +12,7 @@ import { Plus, Pencil, Trash2, Clock } from 'lucide-react';
 import StatusDashboard from '../components/ui/StatusDashboard';
 import { StatTile }    from '../components/ui/StatusDashboard';
 import DonutChart       from '../components/ui/DonutChart';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView, requiresExplicitSiteSelection } from '../utils/siteSelectionGuard';
 
 const EMPTY = { system: '', category: '', status: 'Pending Authorization', issued: '', expires: '', ao: '', controls: 0, open_findings: 0 };
 
@@ -131,6 +132,8 @@ function ATOForm({ value, onChange }) {
 export default function ATOPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const needsExplicitSite = requiresExplicitSiteSelection(user, selectedSite);
+  const showSiteContext = isAllSitesView(user, selectedSite);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading, isError, error } = useQuery({ queryKey: ['ato', siteScopeKey], queryFn: api.ato.list });
   const [modal, setModal]   = useState(null); // null | 'create' | 'edit'
@@ -143,7 +146,13 @@ export default function ATOPage() {
   const update = useMutation({ mutationFn: ({ id, d }) => api.ato.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
   const remove = useMutation({ mutationFn: api.ato.remove, onSuccess: () => { invalidate(); setDelId(null); } });
 
-  function openCreate() { create.reset(); update.reset(); setForm(EMPTY); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'ATO package' })) return;
+    create.reset();
+    update.reset();
+    setForm(EMPTY);
+    setModal('create');
+  }
   function openEdit(row) { create.reset(); update.reset(); setForm(toFormState(row)); setEditing(row.id); setModal('edit'); }
 
   function handleSubmit(e) {
@@ -154,6 +163,12 @@ export default function ATOPage() {
 
   const cols = [
     { key: 'id',     label: 'ID',     width: 100 },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'system', label: 'System' },
     { key: 'category', label: 'Category' },
     {
@@ -225,9 +240,9 @@ export default function ATOPage() {
         breadcrumbs={[{ label: 'Authorization' }, { label: 'ATO' }]}
         title="Authority to Operate"
         description="ATO package tracking and expiration monitoring"
-        action={<button className="btn-primary flex items-center gap-1.5" onClick={openCreate} disabled={!selectedSite}><Plus size={15} />New ATO</button>}
+        action={<button className="btn-primary flex items-center gap-1.5" onClick={openCreate}><Plus size={15} />New ATO</button>}
       />
-      {!selectedSite && (
+      {needsExplicitSite && (
         <div className="mx-4 mt-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/25 text-yellow-600 dark:text-yellow-400 text-sm">
           Select a site from the header to view or add ATOs for that site.
         </div>

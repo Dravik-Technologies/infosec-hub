@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Badge         from '../components/ui/Badge';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -8,7 +9,9 @@ import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 
 export default function NotificationsPage() {
   const qc = useQueryClient();
-  const { data = [], isLoading } = useQuery({ queryKey: ['notifications'], queryFn: api.notifications.list });
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'all-sites';
+  const { data = [], isLoading } = useQuery({ queryKey: ['notifications', siteScopeKey], queryFn: api.notifications.list });
 
   const markRead    = useMutation({ mutationFn: api.notifications.markRead,    onSuccess: () => qc.invalidateQueries(['notifications']) });
   const markAll     = useMutation({ mutationFn: api.notifications.markAllRead, onSuccess: () => qc.invalidateQueries(['notifications']) });

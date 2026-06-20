@@ -13,6 +13,7 @@ import ImportConMonModal from '../components/ImportConMonModal';
 import { Plus, Pencil, Trash2, CheckCircle, Upload } from 'lucide-react';
 import UserSelect from '../components/ui/UserSelect';
 import EvidencePanel from '../components/EvidencePanel';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView, requiresExplicitSiteSelection } from '../utils/siteSelectionGuard';
 
 const STATUS_TABS = ['Pending', 'Overdue', 'Due Soon', 'Completed', 'All'];
 
@@ -236,6 +237,8 @@ function ControlDetail({ item, onComplete }) {
 export default function ConMonPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const needsExplicitSite = requiresExplicitSiteSelection(user, selectedSite);
+  const showSiteContext = isAllSitesView(user, selectedSite);
   const siteScopeKey = selectedSite || user?.siteID || 'all-sites';
   const { data: items = [], isLoading } = useQuery({ queryKey: ['conmon', siteScopeKey], queryFn: api.conmon.list });
 
@@ -290,7 +293,11 @@ export default function ConMonPage() {
     },
   });
 
-  function openCreate() { setForm(EMPTY_FORM); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'ConMon review' })) return;
+    setForm(EMPTY_FORM);
+    setModal('create');
+  }
   function openEdit(row) {
     setForm({
       control_id:             row.control_id             || '',
@@ -384,6 +391,12 @@ export default function ConMonPage() {
       key: 'control_id', label: 'Control ID', width: 100,
       render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span>,
     },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'control_title', label: 'Control Title' },
     {
       key: 'family', label: 'Family', width: 130,

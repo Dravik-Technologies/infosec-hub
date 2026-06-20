@@ -251,9 +251,9 @@ describe('resolveWriteSiteId', () => {
     expect(resolveWriteSiteId(req)).toBe('MTSI-OH');
   });
 
-  test('falls back to user primary siteId', () => {
+  test('throws 400 when body.siteId is omitted even if user has a primary site', () => {
     const req = makeWriteReq({ siteId: 'MTSI-OH', siteIds: ['MTSI-OH'] }, {});
-    expect(resolveWriteSiteId(req)).toBe('MTSI-OH');
+    expect(() => resolveWriteSiteId(req)).toThrow(expect.objectContaining({ status: 400 }));
   });
 
   test('throws 403 when body siteId is out of user scope', () => {

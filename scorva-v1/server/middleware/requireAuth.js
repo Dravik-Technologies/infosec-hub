@@ -3,6 +3,14 @@
 const { verifyAccessToken } = require('./jwt');
 const { getTokenEpoch } = require('../../../packages/db/src/tokenEpochCache');
 const { db } = require('../../../packages/db/src');
+const {
+  getAllowedApps,
+  getDisplayRole,
+  getLegacyPlatformRole,
+  getSecurityRole,
+  canSeeAllSites,
+  normalizePlatformRole,
+} = require('../../../packages/db/src/appAccess');
 
 /**
  * requireAuth — Express middleware
@@ -22,6 +30,66 @@ function normalizeSiteList(...values) {
   return [...new Set(flat.filter(Boolean).map(v => String(v).trim()).filter(Boolean))];
 }
 
+async function hydrateCanonicalUser(userLike = {}) {
+  const userId = userLike.sub || userLike.id || null;
+  if (!userId) return null;
+
+  const found = await db.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      username: true,
+      email: true,
+      name: true,
+      title: true,
+      role: true,
+      siteId: true,
+      siteIds: true,
+      status: true,
+      dod8140: true,
+      tokenEpoch: true,
+    },
+  });
+
+  if (!found || found.status !== 'Active') return null;
+
+  const siteIds = normalizeSiteList(found.siteIds, found.siteId);
+  const siteId = found.siteId || siteIds[0] || null;
+  const hubRole = normalizePlatformRole(found.role);
+  const jobRole = getSecurityRole(found) || String(found.title || '').trim() || null;
+  const initials = String(found.name || '')
+    .split(' ')
+    .filter(Boolean)
+    .map(part => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+
+  return {
+    authVersion: Number(userLike.authVersion || 3),
+    id: found.id,
+    username: found.username,
+    email: found.email || userLike.email || null,
+    name: found.name || userLike.name || null,
+    initials: userLike.initials || initials || null,
+    title: found.title || null,
+    displayRole: getDisplayRole(found),
+    hubRole,
+    jobRole,
+    primarySiteId: siteId,
+    role: getLegacyPlatformRole(hubRole),
+    siteID: siteId,
+    siteIDs: siteIds,
+    site: siteId,
+    siteId,
+    siteIds,
+    canSeeAllSites: canSeeAllSites(found),
+    securityRole: jobRole,
+    allowedApps: getAllowedApps(found),
+    tokenEpoch: Number.isFinite(Number(found.tokenEpoch)) ? Number(found.tokenEpoch) : 0,
+  };
+}
+
 module.exports = async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || '';
   const cookieToken = req.cookies?.scorva_auth || null;
@@ -38,36 +106,11 @@ module.exports = async function requireAuth(req, res, next) {
         return res.status(401).json({ error: 'Token revoked' });
       }
 
-      // Merge lowercase (HUB) and uppercase (legacy SCORVA) site field variants
-      const siteIDs = normalizeSiteList(claims.siteIDs, claims.siteIds, claims.siteID, claims.siteId);
-      const siteID  = claims.siteID || claims.siteId || siteIDs[0] || null;
-      const hubRole = claims.hubRole || claims.role || 'Hub Viewer';
-      const jobRole = claims.jobRole || claims.securityRole || null;
-      req.user = {
-        authVersion:   claims.authVersion || 2,
-        id:            claims.sub || claims.id,
-        username:      claims.username,
-        email:         claims.email,
-        name:          claims.name,
-        initials:      claims.initials,
-        title:         claims.title || null,
-        displayRole:   claims.displayRole || claims.title || jobRole || hubRole,
-        hubRole:       hubRole,
-        jobRole:       jobRole,
-        primarySiteId: claims.primarySiteId || claims.siteId || claims.siteID || siteID,
-        role:          claims.role || hubRole,
-        // Uppercase aliases kept for backward compat with existing middleware
-        siteID,
-        siteIDs,
-        site:          siteID,
-        // Lowercase aliases for HUB-model compatibility
-        siteId:        siteID,
-        siteIds:       siteIDs,
-        // Tenant control fields
-        canSeeAllSites: Boolean(claims.canSeeAllSites) || claims.role === 'Corporate Admin' || hubRole === 'Hub Admin',
-        securityRole:   jobRole,
-        allowedApps:    Array.isArray(claims.allowedApps) ? claims.allowedApps : [],
-      };
+      const canonical = await hydrateCanonicalUser(claims);
+      if (!canonical) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
+      req.user = canonical;
       if (!req.session) req.session = {};
       req.session.user = req.user;
       return next();
@@ -88,28 +131,12 @@ module.exports = async function requireAuth(req, res, next) {
           return res.status(401).json({ error: 'Token revoked' });
         }
 
-        const sessionSiteIDs = normalizeSiteList(
-          req.session.user.siteIDs, req.session.user.siteIds,
-          req.session.user.siteID,  req.session.user.site
-        );
-        const sessionSiteID = req.session.user.siteID || req.session.user.siteId
-          || req.session.user.site || sessionSiteIDs[0] || null;
-        req.user = {
-          ...req.session.user,
-          authVersion:     req.session.user.authVersion || 2,
-          title:           req.session.user.title || null,
-          displayRole:     req.session.user.displayRole || req.session.user.title || req.session.user.jobRole || req.session.user.securityRole || req.session.user.hubRole || req.session.user.role || 'Hub Viewer',
-          hubRole:         req.session.user.hubRole || req.session.user.role || 'Hub Viewer',
-          jobRole:         req.session.user.jobRole || req.session.user.securityRole || null,
-          primarySiteId:   req.session.user.primarySiteId || sessionSiteID,
-          siteID:         sessionSiteID,
-          siteIDs:        sessionSiteIDs,
-          siteId:         sessionSiteID,
-          siteIds:        sessionSiteIDs,
-          site:           sessionSiteID,
-          canSeeAllSites: Boolean(req.session.user.canSeeAllSites) || req.session.user.role === 'Corporate Admin' || req.session.user.hubRole === 'Hub Admin',
-          securityRole:   req.session.user.jobRole || req.session.user.securityRole || null,
-        };
+        const canonical = await hydrateCanonicalUser(req.session.user);
+        if (!canonical) {
+          return res.status(401).json({ error: 'Unauthorized' });
+        }
+        req.user = canonical;
+        req.session.user = canonical;
         return next();
       } catch (err) {
         return res.status(401).json({ error: 'Unauthorized' });

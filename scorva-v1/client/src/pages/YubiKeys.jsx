@@ -11,6 +11,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Plus, Pencil, Trash2, KeyRound, ShieldCheck } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView } from '../utils/siteSelectionGuard';
 
 const EMPTY = { serial: '', model: '', status: 'Unassigned', username: '', issued: '', lost_destroyed_date: '' };
 
@@ -58,6 +59,7 @@ function YKForm({ value, onChange }) {
 export default function YubiKeysPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const showSiteContext = isAllSitesView(user, selectedSite);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading } = useQuery({ queryKey: ['yubikeys', siteScopeKey], queryFn: api.yubikeys.list });
   const [modal, setModal]     = useState(null);
@@ -77,7 +79,11 @@ export default function YubiKeysPage() {
     onSuccess: () => { invalidate(); setSelectedIds([]); },
   });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'YubiKey record' })) return;
+    setForm(EMPTY);
+    setModal('create');
+  }
   function openEdit(row) {
     setForm({
       ...EMPTY,
@@ -119,6 +125,12 @@ export default function YubiKeysPage() {
       ),
     },
     { key: 'id',       label: 'ID',     width: 90, render: v => <span className="font-mono text-xs text-scorva-muted">{v}</span> },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'serial',   label: 'Serial', render: v => <span className="font-mono text-xs">{v}</span> },
     { key: 'model',    label: 'Model' },
     { key: 'status',   label: 'Status', render: v => <Badge label={v} /> },

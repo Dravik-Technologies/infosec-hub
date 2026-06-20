@@ -20,11 +20,15 @@ export default function Table({
   emptyText = 'No records found.',
   emptyIcon: EmptyIcon = SearchX,
   getRowClass,
+  minWidth,
 }) {
   return (
     <div className="sc-table-shell overflow-hidden">
-      <div className="overflow-x-auto">
-      <table className="w-full text-sm sc-table">
+      <div className="sc-table-scroll overflow-x-auto pb-2">
+      <table
+        className="w-full text-sm sc-table"
+        style={minWidth ? { minWidth } : undefined}
+      >
         <thead>
           <tr className="border-b border-scorva-border">
             {columns.map(col => (

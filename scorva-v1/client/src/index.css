@@ -251,6 +251,41 @@
     animation: scorvaFadeUp 0.22s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 
+  .sc-world-clock-strip {
+    @apply grid gap-2;
+    grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+    width: 100%;
+  }
+
+  .sc-world-clock-cell {
+    @apply rounded-xl border px-3 py-2;
+    border-color: rgb(var(--scorva-border) / 0.55);
+    background: linear-gradient(180deg, rgb(var(--scorva-surface) / 0.82), rgb(var(--scorva-card) / 0.72));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+  }
+
+  .dark .sc-world-clock-cell {
+    background: linear-gradient(180deg, rgb(20 24 31 / 0.82), rgb(14 18 24 / 0.74));
+    border-color: rgb(59 68 87 / 0.6);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 24px rgba(0,0,0,0.18);
+  }
+
+  .sc-world-clock-label {
+    @apply block text-[11px] font-mono font-semibold tracking-[0.12em];
+    color: rgb(var(--scorva-accent-light));
+  }
+
+  .sc-world-clock-time {
+    @apply mt-1 block text-base font-bold font-mono tracking-[0.1em];
+    color: rgb(var(--scorva-text));
+  }
+
+  .sc-world-clock-detail {
+    @apply mt-1 block text-[10px] font-mono tracking-[0.08em];
+    color: rgb(var(--scorva-muted));
+  }
+
   .section-divider {
     @apply border-t border-scorva-border my-4;
   }
@@ -732,6 +767,27 @@
     background: linear-gradient(135deg, rgb(20 24 31 / 0.85), rgb(16 19 25 / 0.8));
     box-shadow: 0 28px 64px rgba(0,0,0,0.35), inset 0 1px 1px rgba(255,255,255,0.05);
     border-color: rgb(39 45 58 / 0.4);
+  }
+
+  .sc-table-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--scorva-accent) / 0.45) rgb(var(--scorva-surface) / 0.55);
+  }
+
+  .sc-table-scroll::-webkit-scrollbar {
+    height: 10px;
+  }
+
+  .sc-table-scroll::-webkit-scrollbar-track {
+    background: rgb(var(--scorva-surface) / 0.55);
+    border-radius: 999px;
+  }
+
+  .sc-table-scroll::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, rgb(var(--scorva-accent) / 0.55), rgb(var(--scorva-accent-light) / 0.55));
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
 
   .sc-table thead tr {

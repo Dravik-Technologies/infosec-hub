@@ -11,6 +11,7 @@ import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { Plus, Pencil, Trash2, BadgeDollarSign, ReceiptText } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView } from '../utils/siteSelectionGuard';
 
 const EMPTY = { product: '', vendor: '', seats: 0, used: 0, status: 'Active', expires: '', cost: '' };
 
@@ -63,6 +64,7 @@ function LicForm({ value, onChange }) {
 export default function LicensesPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const showSiteContext = isAllSitesView(user, selectedSite);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading } = useQuery({ queryKey: ['licenses', siteScopeKey], queryFn: api.licenses.list });
   const [modal, setModal]     = useState(null);
@@ -82,7 +84,11 @@ export default function LicensesPage() {
     onSuccess: () => { invalidate(); setSelectedIds([]); },
   });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'license record' })) return;
+    setForm(EMPTY);
+    setModal('create');
+  }
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
   function handleSubmit(e) {
     e.preventDefault();
@@ -111,6 +117,12 @@ export default function LicensesPage() {
       ),
     },
     { key: 'id',      label: 'ID',      width: 90, render: v => <span className="font-mono text-xs text-scorva-muted">{v}</span> },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'product', label: 'Product' },
     { key: 'vendor',  label: 'Vendor' },
     { key: 'status',  label: 'Status',  render: v => <Badge label={v} /> },

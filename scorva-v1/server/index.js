@@ -17,6 +17,8 @@ const missionSiteScope = require('./middleware/missionSiteScope');
 const authRouter = require('./routes/auth');
 const conmonRouter = require('./routes/conmon');
 const controlsRouter = require('./routes/controls');
+const controlCatalogRouter = require('./routes/control-catalog');
+const siteControlsRouter = require('./routes/site-controls');
 const tasksRouter = require('./routes/tasks');
 const poamRouter = require('./routes/poam');
 const atoRouter = require('./routes/ato');
@@ -95,6 +97,8 @@ app.use('/api/agreements', requireAuth, tenantHandler, missionSiteScope, agreeme
 app.use('/api/trackers', requireAuth, tenantHandler, trackersRouter);
 app.use('/api/users', requireAuth, tenantHandler, usersRouter);
 app.use('/api/controls', requireAuth, tenantHandler, missionSiteScope, controlsRouter);
+app.use('/api/control-catalog', requireAuth, tenantHandler, controlCatalogRouter);
+app.use('/api/site-controls', requireAuth, tenantHandler, siteControlsRouter);
 app.use('/api/workstations', requireAuth, tenantHandler, missionSiteScope, workstationsRouter);
 app.use('/api/yubikeys', requireAuth, tenantHandler, missionSiteScope, yubikeysRouter);
 app.use('/api/licenses', requireAuth, tenantHandler, missionSiteScope, licensesRouter);

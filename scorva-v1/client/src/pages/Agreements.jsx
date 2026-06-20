@@ -13,6 +13,7 @@ import UserSelect from '../components/ui/UserSelect';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView } from '../utils/siteSelectionGuard';
 
 /* ── Document taxonomy ─────────────────────────────────── */
 const DOC_TYPES = {
@@ -203,6 +204,7 @@ function DocDetailModal({ doc, onEdit, onClose }) {
 export default function AgreementsPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
+  const showSiteContext = isAllSitesView(user, selectedSite);
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
   const { data = [], isLoading } = useQuery({ queryKey: ['agreements', siteScopeKey], queryFn: api.agreements.list });
 
@@ -218,7 +220,11 @@ export default function AgreementsPage() {
   const update = useMutation({ mutationFn: ({ id, d }) => api.agreements.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
   const remove = useMutation({ mutationFn: api.agreements.remove, onSuccess: () => { invalidate(); setDelId(null); } });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'document record' })) return;
+    setForm(EMPTY);
+    setModal('create');
+  }
   function openEdit(row) {
     setDetail(null);
     setForm({ ...row, category: row.category || categoryForType(row.type) });
@@ -252,6 +258,12 @@ export default function AgreementsPage() {
 
   const cols = [
     { key: 'id',       label: 'ID',          width: 90,  render: v => <span className="font-mono text-xs text-scorva-muted">{v}</span> },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'title',    label: 'Title',        render: v => <span className="text-xs font-medium text-scorva-text">{v}</span> },
     { key: 'category', label: 'Category',     render: v => <Badge label={v} /> },
     { key: 'type',     label: 'Type',         render: v => <span className="text-xs text-scorva-muted">{v}</span> },

@@ -286,9 +286,10 @@ function UserDetailModal({ user, onEdit, onClose }) {
    PAGE
 ════════════════════════════════════════════════════════ */
 export default function UsersPage() {
-  const { user: me } = useAuth();
+  const { user: me, selectedSite } = useAuth();
   const qc = useQueryClient();
-  const { data = [], isLoading }   = useQuery({ queryKey: ['users'], queryFn: api.users.list });
+  const siteScopeKey = selectedSite || me?.siteID || me?.siteId || 'all-sites';
+  const { data = [], isLoading }   = useQuery({ queryKey: ['users', siteScopeKey], queryFn: api.users.list });
   const { data: sites = [] }       = useQuery({ queryKey: ['sites'], queryFn: api.sites.list });
 
   const [modal,    setModal]    = useState(null);   // 'create' | 'edit'

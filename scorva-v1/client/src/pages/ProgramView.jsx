@@ -80,7 +80,8 @@ function AnalyticsPanel({ title, icon: Icon, children }) {
 
 export default function ProgramView() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'all-sites';
 
   if (user?.role !== 'Corporate Admin') {
     return (
@@ -92,7 +93,7 @@ export default function ProgramView() {
   }
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['aggregate-metrics'],
+    queryKey: ['aggregate-metrics', siteScopeKey],
     queryFn: api.aggregate.metrics,
     refetchInterval: 60_000,
   });

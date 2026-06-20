@@ -12,6 +12,7 @@ import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 import DonutChart from '../components/ui/DonutChart';
 import BarList    from '../components/ui/BarList';
 import { Plus, Pencil, Trash2, Zap } from 'lucide-react';
+import { getRecordSiteLabel, guardSiteScopedCreate, isAllSitesView, requiresExplicitSiteSelection } from '../utils/siteSelectionGuard';
 
 const EVENT_TYPES = ['IDS Alert', 'Login Failure', 'Scan Finding', 'Policy Violation', 'Malware', 'Data Exfil', 'Other'];
 const SEVERITIES  = ['Critical', 'High', 'Medium', 'Low'];
@@ -73,8 +74,8 @@ export default function SecurityEventsPage() {
   const qc = useQueryClient();
   const { user, selectedSite } = useAuth();
   const siteScopeKey = selectedSite || user?.siteID || 'active-site';
-  const isCorporateAdmin = user?.role === 'Corporate Admin';
-  const needsExplicitSite = isCorporateAdmin && !selectedSite;
+  const needsExplicitSite = requiresExplicitSiteSelection(user, selectedSite);
+  const showSiteContext = isAllSitesView(user, selectedSite);
 
   const { data = [], isLoading, isError, error } = useQuery({
     queryKey: ['security-events', siteScopeKey],
@@ -92,7 +93,11 @@ export default function SecurityEventsPage() {
   const update = useMutation({ mutationFn: ({ id, d }) => api.securityEvents.update(id, d), onSuccess: () => { invalidate(); setModal(null); } });
   const remove = useMutation({ mutationFn: api.securityEvents.remove, onSuccess: () => { invalidate(); setDelId(null); } });
 
-  function openCreate() { setForm(EMPTY); setModal('create'); }
+  function openCreate() {
+    if (!guardSiteScopedCreate({ user, selectedSite, entityLabel: 'security event' })) return;
+    setForm(EMPTY);
+    setModal('create');
+  }
   function openEdit(row) { setForm(row); setEditing(row.id); setModal('edit'); }
   function handleSubmit(e) {
     e.preventDefault();
@@ -107,6 +112,12 @@ export default function SecurityEventsPage() {
 
   const cols = [
     { key: 'id',          label: 'ID',       width: 130, render: v => <span className="font-mono text-xs text-scorva-accent-light">{v}</span> },
+    ...(showSiteContext ? [{
+      key: '_site',
+      label: 'Site',
+      width: 110,
+      render: (_, row) => <span className="font-mono text-xs text-scorva-accent-light">{getRecordSiteLabel(row)}</span>,
+    }] : []),
     { key: 'type',        label: 'Type',      width: 120 },
     { key: 'severity',    label: 'Severity',  width: 100, render: v => <Badge label={v} /> },
     { key: 'status',      label: 'Status',    width: 110, render: v => <Badge label={v} /> },
@@ -139,7 +150,7 @@ export default function SecurityEventsPage() {
         title="Security Events"
         description="Track and correlate security incidents across assets"
         action={
-          <button className="btn-primary flex items-center gap-1.5" onClick={openCreate} disabled={needsExplicitSite}>
+          <button className="btn-primary flex items-center gap-1.5" onClick={openCreate}>
             <Plus size={15} /> Log Event
           </button>
         }

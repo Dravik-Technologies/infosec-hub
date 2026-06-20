@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../api';
+import { useAuth } from '../context/AuthContext';
 import PageHeader    from '../components/ui/PageHeader';
 import Table         from '../components/ui/Table';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
@@ -8,10 +9,12 @@ import { Search, ScanSearch, History } from 'lucide-react';
 import StatusDashboard, { StatTile } from '../components/ui/StatusDashboard';
 
 export default function AuditPage() {
+  const { user, selectedSite } = useAuth();
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'all-sites';
   const [filters, setFilters] = useState({ username: '', action: '', site: '', limit: 100, offset: 0 });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['audit', filters],
+    queryKey: ['audit', siteScopeKey, filters],
     queryFn: () => api.audit.list(filters),
     keepPreviousData: true,
   });

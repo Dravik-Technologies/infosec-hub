@@ -11,10 +11,38 @@ generator client {
   binaryTargets = ["native", "linux-musl-openssl-3.0.x", "debian-openssl-3.0.x"]
 }
 
+enum ControlOwnershipMode {
+  enterprise
+  site
+  hybrid
+}
+
+enum ControlOwnerType {
+  enterprise
+  site
+}
+
 // ─── Hub / SCORVA shared models ────────────────────────────────────────────────
+
+model Tenant {
+  id           String               @id @default(cuid())
+  name         String
+  slug         String               @unique
+  controlModel ControlOwnershipMode @default(hybrid) @map("control_model")
+  createdAt    DateTime             @default(now()) @map("created_at")
+  updatedAt    DateTime             @updatedAt @map("updated_at")
+
+  sites          Site[]
+  controlCatalog ControlCatalog[]
+  siteControls   SiteControlImplementation[]
+
+  @@map("tenants")
+}
 
 model Site {
   id        String   @id
+  tenantId  String?  @map("tenant_id")
+  tenant    Tenant?  @relation(fields: [tenantId], references: [id])
   label     String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -43,7 +71,10 @@ model Site {
   mashMedia           MashMediaControl[]
   mashSelfInspections MashSelfInspectionOp[]
   mashFindings        MashSecurityFinding[]
+  siteControlCatalogs ControlCatalog[]            @relation("SiteOwnedControlCatalog")
+  siteControls        SiteControlImplementation[]
 
+  @@index([tenantId])
   @@map("sites")
 }
 
@@ -94,6 +125,98 @@ model Control {
 
   @@index([siteId])
   @@map("controls")
+}
+
+model ControlCatalog {
+  id                    String           @id @default(cuid())
+  tenantId              String?          @map("tenant_id")
+  tenant                Tenant?          @relation(fields: [tenantId], references: [id])
+  controlKey            String           @map("control_key")
+  title                 String
+  family                String?
+  baseline              String?
+  description           String?
+  source                String?
+  implementationDefault String?          @map("implementation_default")
+  ownerType             ControlOwnerType @default(enterprise) @map("owner_type")
+  ownerSiteId           String?          @map("owner_site_id")
+  ownerSite             Site?            @relation("SiteOwnedControlCatalog", fields: [ownerSiteId], references: [id])
+  isTemplate            Boolean          @default(true) @map("is_template")
+  isActive              Boolean          @default(true) @map("is_active")
+  version               String?
+  createdAt             DateTime         @default(now()) @map("created_at")
+  updatedAt             DateTime         @updatedAt @map("updated_at")
+
+  siteImplementations SiteControlImplementation[]
+
+  @@index([tenantId])
+  @@index([ownerType, ownerSiteId])
+  @@unique([tenantId, ownerType, ownerSiteId, controlKey])
+  @@map("control_catalog")
+}
+
+model SiteControlImplementation {
+  id                     String         @id @default(cuid())
+  tenantId               String?        @map("tenant_id")
+  tenant                 Tenant?        @relation(fields: [tenantId], references: [id])
+  siteId                 String         @map("site_id")
+  site                   Site           @relation(fields: [siteId], references: [id])
+  controlCatalogId       String         @map("control_catalog_id")
+  controlCatalog         ControlCatalog @relation(fields: [controlCatalogId], references: [id])
+  status                 String         @default("Not Implemented")
+  lastReview             String?        @map("last_review")
+  findings               Int            @default(0)
+  notes                  String?
+  implementationGuidance String?        @map("implementation_guidance")
+  conmonStatus           String?        @map("conmon_status")
+  conmonGroup            String?        @map("conmon_group")
+  conmonFrequency        String?        @map("conmon_frequency")
+  assignedTo             String?        @map("assigned_to")
+  evidenceSummary        String?        @map("evidence_summary")
+  createdAt              DateTime       @default(now()) @map("created_at")
+  updatedAt              DateTime       @updatedAt @map("updated_at")
+
+  findingsRecords   SiteControlFinding[]
+  evidenceArtifacts SiteControlEvidence[]
+
+  @@index([tenantId])
+  @@index([siteId])
+  @@index([controlCatalogId])
+  @@unique([siteId, controlCatalogId])
+  @@map("site_control_implementations")
+}
+
+model SiteControlFinding {
+  id          String                    @id @default(cuid())
+  siteControlId String                  @map("site_control_id")
+  siteControl SiteControlImplementation @relation(fields: [siteControlId], references: [id], onDelete: Cascade)
+  severity    String?
+  title       String
+  description String?
+  status      String                    @default("Open")
+  openedAt    DateTime                  @default(now()) @map("opened_at")
+  closedAt    DateTime?                 @map("closed_at")
+  createdAt   DateTime                  @default(now()) @map("created_at")
+  updatedAt   DateTime                  @updatedAt @map("updated_at")
+
+  @@index([siteControlId])
+  @@index([status])
+  @@map("site_control_findings")
+}
+
+model SiteControlEvidence {
+  id          String                    @id @default(cuid())
+  siteControlId String                  @map("site_control_id")
+  siteControl SiteControlImplementation @relation(fields: [siteControlId], references: [id], onDelete: Cascade)
+  artifactType String?                  @map("artifact_type")
+  fileName    String?                   @map("file_name")
+  url         String?
+  notes       String?
+  uploadedBy  String?                   @map("uploaded_by")
+  uploadedAt  DateTime                  @default(now()) @map("uploaded_at")
+
+  @@index([siteControlId])
+  @@map("site_control_evidence")
 }
 
 model Task {
