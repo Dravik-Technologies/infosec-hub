@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gatekeeper | DevSecOps Intake</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero panel">
+        <div class="eyebrow">DevSecOps Intake</div>
+        <h1>Gatekeeper</h1>
+        <p class="lede">
+          Upload a source folder or build archive, detect its technology stack, scan dependencies and risky code patterns,
+          then export the results as HTML or JSON.
+        </p>
+        <div class="hero-badges">
+          <span>Folder upload</span>
+          <span>Multi-language detection</span>
+          <span>Dependency inventory</span>
+          <span>HTML + JSON reports</span>
+        </div>
+      </section>
+
+      <section class="panel upload-panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Submission</div>
+            <h2>Upload an application package</h2>
+            <p class="submission-hint">For large projects, upload a single archive for faster intake and fewer browser slowdowns.</p>
+          </div>
+        </div>
+
+        <form id="upload-form" class="upload-form">
+          <label class="field">
+            <span>Submission name</span>
+            <input id="submissionName" name="submissionName" type="text" placeholder="ex: payroll-portal-review" />
+          </label>
+
+          <div class="mode-grid">
+            <label class="mode-card">
+              <input type="radio" name="mode" value="folder" checked />
+              <strong>Source Folder</strong>
+              <span>Upload a full project directory from your workstation.</span>
+            </label>
+            <label class="mode-card">
+              <input type="radio" name="mode" value="archive" />
+              <strong>Archive</strong>
+              <span>Upload a `.zip`, `.tar`, or `.tar.gz` bundle instead.</span>
+            </label>
+          </div>
+
+          <div id="folder-picker" class="picker is-active">
+            <label class="dropzone">
+              <span class="drop-title">Choose project folder</span>
+              <span class="drop-copy">Select a local source directory to upload.</span>
+              <input id="folderInput" type="file" webkitdirectory directory multiple />
+            </label>
+            <div id="folderSummary" class="picker-summary">No folder selected yet.</div>
+          </div>
+
+          <div id="archive-picker" class="picker">
+            <label class="dropzone">
+              <span class="drop-title">Choose archive file</span>
+              <span class="drop-copy">Supported: `.zip`, `.tar`, `.tar.gz`, `.tgz`</span>
+              <input id="archiveInput" type="file" accept=".zip,.tar,.tgz,.gz,.tar.gz" />
+            </label>
+            <div id="archiveSummary" class="picker-summary">No archive selected yet.</div>
+          </div>
+
+          <div class="actions">
+            <button id="submitButton" type="submit" class="primary">Start scan</button>
+          </div>
+          <div id="uploadError" class="error-message" hidden></div>
+        </form>
+      </section>
+
+      <section class="panel tracker-panel">
+        <div class="panel-head">
+          <div>
+            <div class="eyebrow">Pipeline Status</div>
+            <h2>Scan tracker</h2>
+          </div>
+          <div id="jobStatusBadge" class="status-badge status-idle">Idle</div>
+        </div>
+
+        <div id="jobMeta" class="job-meta muted">No active job yet.</div>
+        <div class="tracker-progress">
+          <div class="tracker-progress-head">
+            <strong id="progressPercent">0%</strong>
+            <span id="progressNarrative" class="muted">Waiting for intake to start.</span>
+          </div>
+          <div class="progress-rail" aria-hidden="true">
+            <div id="progressBarFill" class="progress-fill"></div>
+          </div>
+          <div id="progressPhases" class="progress-phases"></div>
+        </div>
+        <div id="stepList" class="step-list"></div>
+        <div id="reportSummary" class="report-summary" hidden></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+  </html>
