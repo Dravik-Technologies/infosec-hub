@@ -41,5 +41,5 @@ npx prisma db seed
 echo ""
 echo "==> Database setup complete!"
 echo "    Sites:  MTSI Alexandria (MTSI-ALX), MTSI Huntsville (MTSI-HVL)"
-echo "    Admin:  username=admin  password=Admin@12345!"
+echo "    Admin:  username=admin  password=value of SEED_ADMIN_PASSWORD (or fallback dev password)"
 echo "    URL:    $DATABASE_URL"

@@ -42,6 +42,9 @@
         linear-gradient(180deg, #041019 0%, #07131d 30%, #06111a 100%);
     }
 
+    /* Example only: production connection strings should come from environment
+       variables, never inline HTML or committed source files. */
+
     .scanlines::before {
       content: "";
       position: fixed;
@@ -995,7 +998,7 @@ docker push secappfactory.azurecr.us/scorva:latest</div>
           <div class="runbook">
             <h4>Apply Prisma Migrations to Azure PostgreSQL</h4>
             <div class="cmd">export PATH="$HOME/.nvm/versions/node/v22.6.0/bin:$PATH"
-export DATABASE_URL="postgresql://&lt;user&gt;:&lt;password&gt;@&lt;host&gt;:5432/securityapp?sslmode=require"
+export DATABASE_URL="set-from-env-or-key-vault"
 
 node packages/db/node_modules/prisma/build/index.js migrate deploy --schema=packages/db/prisma/schema.prisma</div>
           </div>

@@ -5,7 +5,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER:     crater
-      POSTGRES_PASSWORD: craterpassword
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-set_in_env_for_local_dev}
       POSTGRES_DB:       crater
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -25,7 +25,7 @@ services:
     env_file: .env
     environment:
       # Override .env DATABASE_URL — "db" resolves on the Docker network, "localhost" does not
-      DATABASE_URL: postgresql://crater:craterpassword@db:5432/crater
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${CRATER_DB_USER:-crater}:${POSTGRES_PASSWORD:-local_dev_only}@${CRATER_DB_HOST:-db}:${CRATER_DB_PORT_INNER:-5432}/${CRATER_DB_NAME:-crater}}
       NODE_ENV:     production
       PORT:         3000
       OLLAMA_BASE_URL: http://ollama:11434

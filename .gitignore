@@ -46,6 +46,7 @@ Thumbs.db
 
 # ── Uploads / local model files ───────────────────────────────────────────────
 uploads/
+gatekeeper/runtime/
 *.gguf
 *.bin
 *.safetensors

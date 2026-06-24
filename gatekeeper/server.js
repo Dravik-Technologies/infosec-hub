@@ -1346,18 +1346,21 @@ function buildReportHtml(job) {
   <title>Gatekeeper Scan Report — ${escapeHtml(job.name)}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Oxanium:wght@500;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
   <style>
     :root {
       color-scheme: dark;
-      --bg: #06101b;
-      --panel: rgba(9, 17, 30, 0.86);
-      --panel-strong: rgba(12, 22, 37, 0.97);
-      --line: rgba(129, 148, 178, 0.18);
-      --line-strong: rgba(94, 234, 212, 0.22);
+      --font-ui: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+      --font-display: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+      --font-mono: 'Share Tech Mono', 'JetBrains Mono', ui-monospace, monospace;
+      --bg: #040914;
+      --panel: rgba(9, 17, 30, 0.9);
+      --panel-strong: rgba(10, 20, 36, 0.98);
+      --line: rgba(125, 211, 252, 0.14);
+      --line-strong: rgba(110, 231, 216, 0.28);
       --text: #edf6ff;
-      --muted: #88a0c2;
-      --accent: #59e1d3;
+      --muted: #7f93b5;
+      --accent: #6ee7d8;
       --accent-strong: #7dd3fc;
       --critical: #ef4444;
       --high: #f97316;
@@ -1369,18 +1372,19 @@ function buildReportHtml(job) {
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: 'Rajdhani', Inter, ui-sans-serif, system-ui, sans-serif;
+      font-family: var(--font-ui);
       background:
-        linear-gradient(rgba(94, 234, 212, 0.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(94, 234, 212, 0.04) 1px, transparent 1px),
-        radial-gradient(circle at top right, rgba(89, 225, 211, 0.18), transparent 22rem),
-        radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 18rem),
-        linear-gradient(180deg, rgba(9, 15, 28, 0.98), rgba(6, 12, 23, 1)),
+        linear-gradient(rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at top right, rgba(110, 231, 216, 0.16), transparent 20rem),
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 17rem),
+        radial-gradient(circle at bottom center, rgba(245, 158, 11, 0.06), transparent 24rem),
+        linear-gradient(180deg, rgba(8, 14, 24, 0.985), rgba(4, 9, 20, 1)),
         var(--bg);
-      background-size: 32px 32px, 32px 32px, auto, auto, auto;
+      background-size: 28px 28px, 28px 28px, auto, auto, auto, auto;
       color: var(--text);
       padding: 1.5rem;
-      letter-spacing: 0.01em;
+      letter-spacing: 0.015em;
     }
     body::before {
       content: '';
@@ -1397,6 +1401,18 @@ function buildReportHtml(job) {
           transparent 4px
         );
       opacity: 0.35;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(110, 231, 216, 0.08), transparent 18rem),
+        radial-gradient(circle at 82% 20%, rgba(96, 165, 250, 0.08), transparent 16rem),
+        radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.05), transparent 20rem);
+      mix-blend-mode: screen;
+      opacity: 0.65;
     }
     h1, h2, h3, h4 { margin: 0; }
     .shell { max-width: 1280px; margin: 0 auto; display: grid; gap: 1.5rem; position: relative; z-index: 1; }
@@ -1446,7 +1462,7 @@ function buildReportHtml(job) {
       letter-spacing: 0.26em;
       font-size: 0.7rem;
       font-weight: 700;
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .title-row {
       display: flex;
@@ -1458,9 +1474,9 @@ function buildReportHtml(job) {
     .title-row h1 {
       font-size: clamp(2rem, 4vw, 3rem);
       line-height: 0.92;
-      font-family: 'Oxanium', 'Rajdhani', sans-serif;
+      font-family: var(--font-display);
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       text-shadow: 0 0 24px rgba(89, 225, 211, 0.08);
     }
@@ -1531,14 +1547,14 @@ function buildReportHtml(job) {
     .donut-center strong {
       font-size: 1.6rem;
       line-height: 1;
-      font-family: 'Oxanium', 'Rajdhani', sans-serif;
+      font-family: var(--font-display);
     }
     .donut-center span {
       font-size: 0.7rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--muted);
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .risk-summary-body {
       display: grid;
@@ -1573,7 +1589,7 @@ function buildReportHtml(job) {
     }
     .legend-row strong {
       color: var(--text);
-      font-family: 'Oxanium', 'Rajdhani', sans-serif;
+      font-family: var(--font-display);
     }
     .legend-key {
       display: inline-flex;
@@ -1582,7 +1598,7 @@ function buildReportHtml(job) {
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-size: 0.75rem;
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .legend-dot {
       width: 0.6rem;
@@ -1613,11 +1629,11 @@ function buildReportHtml(job) {
       text-transform: uppercase;
       letter-spacing: 0.14em;
       margin-bottom: 0.35rem;
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .stat-tile strong {
       font-size: 1.35rem;
-      font-family: 'Oxanium', 'Rajdhani', sans-serif;
+      font-family: var(--font-display);
     }
     .section {
       overflow: hidden;
@@ -1646,16 +1662,16 @@ function buildReportHtml(job) {
     }
     .section-title h2 {
       font-size: 1.1rem;
-      font-family: 'Oxanium', 'Rajdhani', sans-serif;
+      font-family: var(--font-display);
       text-transform: uppercase;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.08em;
     }
     .section-badge {
       color: var(--muted);
       font-size: 0.72rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     .chevron {
       color: var(--muted);
@@ -1671,7 +1687,7 @@ function buildReportHtml(job) {
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
     th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.14em; }
-    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; font-family: var(--font-mono); }
     .badge-critical { background: rgba(239, 68, 68, 0.18); color: #fecaca; border: 1px solid rgba(239, 68, 68, 0.26); }
     .badge-high { background: rgba(249, 115, 22, 0.18); color: #fed7aa; border: 1px solid rgba(249, 115, 22, 0.26); }
     .badge-medium { background: rgba(250, 204, 21, 0.18); color: #fef08a; border: 1px solid rgba(250, 204, 21, 0.26); }
@@ -1686,7 +1702,7 @@ function buildReportHtml(job) {
       text-transform: uppercase;
       letter-spacing: 0.1em;
       background: rgba(89, 225, 211, 0.08);
-      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-family: var(--font-mono);
     }
     ul { margin: 0; padding-left: 1.1rem; }
     li + li { margin-top: 0.45rem; }
@@ -1706,7 +1722,7 @@ function buildReportHtml(job) {
       color: var(--text);
       padding: 0.85rem 0.95rem;
       font: inherit;
-      font-family: 'Rajdhani', sans-serif;
+      font-family: var(--font-ui);
     }
     .toolbar input:focus,
     .toolbar select:focus {
@@ -1758,7 +1774,7 @@ function buildReportHtml(job) {
     .finding-title {
       font-size: 0.95rem;
       font-weight: 700;
-      font-family: 'Oxanium', 'Rajdhani', sans-serif;
+      font-family: var(--font-display);
     }
     .finding-file {
       color: var(--muted);

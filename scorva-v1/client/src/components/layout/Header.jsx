@@ -4,6 +4,7 @@ import { useAuth }  from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { canManageAllSites } from '../../utils/siteSelectionGuard';
 
 const BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const TOKEN_KEY = 'scorva_token';
@@ -15,7 +16,7 @@ export default function Header({ onMenuClick }) {
   const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
 
   const [sites, setSites] = useState([]);
-  const isAdmin = user?.role === 'Corporate Admin';
+  const isAdmin = canManageAllSites(user);
 
   useEffect(() => {
     if (!isAdmin) return;

@@ -118,7 +118,7 @@ This script builds and pushes:
 
 ```powershell
 .\infra\azure\migrate-postgres.ps1 `
-  -DatabaseUrl "postgresql://admin:password@myserver.postgres.database.azure.com:5432/securityapp?sslmode=require"
+  -DatabaseUrl "<pull-from-key-vault-or-env>"
 ```
 
 This applies all Prisma migrations, including the new `MASH` and `data-fabric` storage tables.

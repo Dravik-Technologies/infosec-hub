@@ -8,6 +8,9 @@ const db = new PrismaClient();
 async function main() {
   console.log('Seeding database...');
 
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD || 'local-dev-admin-password';
+  const userPassword = process.env.SEED_USER_PASSWORD || 'local-dev-user-password';
+
   // ── Sites ──────────────────────────────────────────────────────────────────
   const sites = [
     { id: 'MTSI-VA', label: 'MTSI Virginia' },
@@ -35,7 +38,7 @@ async function main() {
       name: 'MTSI Admin',
       username: 'admin',
       email: 'admin@mtsi.com',
-      password: 'Admin@12345!',
+      password: adminPassword,
       role: 'Hub Admin',
       siteId: 'MTSI-VA',
       siteIds: ['MTSI-VA', 'MTSI-OH', 'MTSI-LV', 'MTSI-CO', 'MTSI-STL', 'MTSI-AL', 'MTSI-FL'],
@@ -45,7 +48,7 @@ async function main() {
       name: 'Virginia User',
       username: 'va.user',
       email: 'user@mtsi-va.com',
-      password: 'User@12345!',
+      password: userPassword,
       role: 'Hub User',
       siteId: 'MTSI-VA',
       siteIds: ['MTSI-VA'],
@@ -55,7 +58,7 @@ async function main() {
       name: 'Alabama User',
       username: 'al.user',
       email: 'user@mtsi-al.com',
-      password: 'User@12345!',
+      password: userPassword,
       role: 'Hub User',
       siteId: 'MTSI-AL',
       siteIds: ['MTSI-AL'],

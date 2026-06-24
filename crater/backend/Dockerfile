@@ -1,6 +1,6 @@
 # ─── Base ────────────────────────────────────────────────────────────────────
 FROM node:20-slim AS base
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma
@@ -27,7 +27,7 @@ RUN npm run build
 
 # ─── Production ──────────────────────────────────────────────────────────────
 FROM node:20-slim AS production
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 ENV NODE_ENV=production
 
@@ -35,6 +35,9 @@ COPY --from=builder /app/dist        ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/prisma      ./prisma
 COPY package*.json ./
+
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 3000
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]

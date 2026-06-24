@@ -10,7 +10,7 @@ services:
     build:
       target: development
     environment:
-      DATABASE_URL: postgresql://crater:craterpassword@db:5432/crater
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${CRATER_DB_USER:-crater}:${POSTGRES_PASSWORD:-local_dev_only}@${CRATER_DB_HOST:-db}:${CRATER_DB_PORT_INNER:-5432}/${CRATER_DB_NAME:-crater}}
       NODE_ENV:     development
       CLIENT_URL:   http://localhost:${CRATER_FRONTEND_PORT:-5174}
       OLLAMA_BASE_URL: http://ollama:11434

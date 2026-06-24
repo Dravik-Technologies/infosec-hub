@@ -14,6 +14,7 @@ const LOGO_FRAME_CLASS =
 
 const LOGO_SIZE_CLASS = {
   scorva: 'h-16 max-w-[170px] scale-[1.2]',
+  crater: 'h-14 max-w-[160px] scale-[1.14]',
   sentinel: 'h-12 max-w-[145px] scale-[1.1]',
   nexus: 'h-12 max-w-[145px] scale-[1.08]',
 };
@@ -32,7 +33,7 @@ const APPS = [
   {
     id: 'crater', name: 'CRATER', tagline: 'eMASS RMF Toolkit',
     desc: 'eMASS-aligned RMF package builder with SCTM, POAM management, vulnerability tracking, diagrams, and compliance reporting.',
-    color: 'indigo', icon: 'FileText', team: 'GRC',
+    color: 'indigo', icon: 'FileText', logo: '/crater-logo.png', team: 'GRC',
     tags: ['eMASS', 'RMF', 'SCTM', 'POAM'],
   },
   {

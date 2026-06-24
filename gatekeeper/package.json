@@ -1,0 +1,15 @@
+{
+  "name": "gatekeeper-devsecops-pipeline",
+  "version": "1.0.0",
+  "description": "Gatekeeper — intake and DevSecOps pipeline scanner for Security App Factory",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "express": "^4.21.2",
+    "multer": "^2.0.2",
+    "tar": "^7.4.3"
+  }
+}

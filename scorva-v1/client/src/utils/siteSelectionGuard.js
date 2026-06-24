@@ -1,10 +1,14 @@
-export function requiresExplicitSiteSelection(user, selectedSite) {
-  const canSeeAllSites =
+export function canManageAllSites(user) {
+  return (
     Boolean(user?.canSeeAllSites) ||
     user?.hubRole === 'Hub Admin' ||
-    user?.role === 'Corporate Admin';
+    user?.role === 'Hub Admin' ||
+    user?.role === 'Corporate Admin'
+  );
+}
 
-  return canSeeAllSites && !selectedSite;
+export function requiresExplicitSiteSelection(user, selectedSite) {
+  return canManageAllSites(user) && !selectedSite;
 }
 
 export function isAllSitesView(user, selectedSite) {

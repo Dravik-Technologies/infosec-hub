@@ -181,6 +181,18 @@ services:
       hub:
         condition: service_started
 
+  # ── Gatekeeper — DevSecOps intake pipeline (port 8095) ─────────────────────
+  gatekeeper:
+    build:
+      context: .
+      dockerfile: gatekeeper/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8095:8095"
+    environment:
+      PORT: 8095
+      NODE_ENV: production
+
 volumes:
   postgres_data:
     driver: local

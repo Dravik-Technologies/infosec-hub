@@ -809,7 +809,7 @@ export default function ControlsPage() {
   const { user, selectedSite } = useAuth();
   const needsExplicitSite = requiresExplicitSiteSelection(user, selectedSite);
   const showSiteContext = isAllSitesView(user, selectedSite);
-  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'active-site';
   const isHubAdmin = Boolean(
     user?.canSeeAllSites ||
     user?.hubRole === 'Hub Admin' ||
@@ -859,6 +859,10 @@ export default function ControlsPage() {
     queryFn: () => api.siteControls.get(viewingImplementationId),
     enabled: Boolean(viewingImplementationId),
   });
+  const controlsData = Array.isArray(data) ? data : [];
+  const conmonActivities = Array.isArray(activities) ? activities : [];
+  const catalogRows = Array.isArray(catalogDefinitions) ? catalogDefinitions : [];
+  const implementationRows = Array.isArray(siteImplementations) ? siteImplementations : [];
 
   const create      = useMutation({ mutationFn: api.controls.create, onSuccess: () => { qc.invalidateQueries(['controls']); setModal(null); } });
   const update      = useMutation({ mutationFn: ({ id, d }) => api.controls.update(id, d), onSuccess: () => { qc.invalidateQueries(['controls']); qc.invalidateQueries(['conmon']); setModal(null); } });
@@ -963,7 +967,7 @@ export default function ControlsPage() {
     },
   });
 
-  const sorted = [...data].sort((a, b) =>
+  const sorted = [...controlsData].sort((a, b) =>
     (a.control_id ?? a.id ?? '').localeCompare(b.control_id ?? b.id ?? '', undefined, { numeric: true, sensitivity: 'base' })
   );
 
@@ -982,7 +986,7 @@ export default function ControlsPage() {
     setBulkDeleteError('');
   }, [siteScopeKey, search, filterStatus, filterConMon]);
 
-  const filteredIds = useMemo(() => filtered.map(row => row.id), [filtered]);
+  const filteredIds = filtered.map(row => row.id);
   const allFilteredSelected = filteredIds.length > 0 && filteredIds.every(id => selectedIds.includes(id));
 
   function toggleSelectOne(id) {
@@ -1066,11 +1070,11 @@ export default function ControlsPage() {
   }
 
   useEffect(() => {
-    if (!siteImplementations.length) return;
+    if (!implementationRows.length) return;
     const params = new URLSearchParams(window.location.search);
     const findingId = params.get('findingId');
     if (!findingId) return;
-    const matchedRow = siteImplementations.find(row =>
+    const matchedRow = implementationRows.find(row =>
       Array.isArray(row.findingsRecords) && row.findingsRecords.some(finding => finding.id === findingId)
     );
     if (!matchedRow) return;
@@ -1082,7 +1086,7 @@ export default function ControlsPage() {
     const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}`;
     window.history.replaceState({}, '', nextUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [siteImplementations.length]);
+  }, [implementationRows]);
 
   useEffect(() => {
     setSelectedCatalogIds([]);
@@ -1182,18 +1186,13 @@ export default function ControlsPage() {
     addImplementationEvidence.error?.message ||
     createImplementationFindingPoam.error?.message;
 
-  if (isLoading) return <LoadingSpinner />;
-  if (isError) {
-    return <div className="text-sm text-red-400">Failed to load Controls data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
-  }
-
-  const implemented = data.filter(r => r.status === 'Implemented').length;
-  const partial     = data.filter(r => r.status === 'Partially Implemented').length;
-  const notImpl     = data.filter(r => r.status === 'Not Implemented').length;
-  const compliant   = data.filter(r => (r.conmon_status || 'Open') === 'Compliant').length;
-  const findings    = data.reduce((s, r) => s + (r.findings || 0), 0);
-  const implPct     = data.length ? Math.round((implemented / data.length) * 100) : 0;
-  const filteredCatalog = catalogDefinitions.filter(row => {
+  const implemented = controlsData.filter(r => r.status === 'Implemented').length;
+  const partial     = controlsData.filter(r => r.status === 'Partially Implemented').length;
+  const notImpl     = controlsData.filter(r => r.status === 'Not Implemented').length;
+  const compliant   = controlsData.filter(r => (r.conmon_status || 'Open') === 'Compliant').length;
+  const findings    = controlsData.reduce((s, r) => s + (r.findings || 0), 0);
+  const implPct     = controlsData.length ? Math.round((implemented / controlsData.length) * 100) : 0;
+  const filteredCatalog = catalogRows.filter(row => {
     if (!catalogSearch) return true;
     const q = catalogSearch.toLowerCase();
     return (
@@ -1203,7 +1202,7 @@ export default function ControlsPage() {
       (row.source || '').toLowerCase().includes(q)
     );
   });
-  const filteredImplementations = siteImplementations.filter(row => {
+  const filteredImplementations = implementationRows.filter(row => {
     if (!implementationSearch) return true;
     const q = implementationSearch.toLowerCase();
     const catalog = row.controlCatalog || {};
@@ -1215,8 +1214,12 @@ export default function ControlsPage() {
       (row.notes || '').toLowerCase().includes(q)
     );
   });
-  const filteredCatalogIds = useMemo(() => filteredCatalog.map(row => row.id), [filteredCatalog]);
+  const filteredCatalogIds = filteredCatalog.map(row => row.id);
   const allFilteredCatalogSelected = filteredCatalogIds.length > 0 && filteredCatalogIds.every(id => selectedCatalogIds.includes(id));
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) {
+    return <div className="text-sm text-red-400">Failed to load Controls data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
+  }
   const catalogCols = [
     {
       key: '_select',
@@ -1329,7 +1332,7 @@ export default function ControlsPage() {
       <PageHeader
         breadcrumbs={[{ label: 'Authorization', to: '/ato' }, { label: 'Controls' }]}
         title="Control Library"
-        description={`${data.length} controls · NIST SP 800-53 Rev 5`}
+        description={`${controlsData.length} controls · NIST SP 800-53 Rev 5`}
         action={headerAction}
       />
       <ControlsSurfaceTabs active={surface} onChange={setSurface} />
@@ -1414,7 +1417,7 @@ export default function ControlsPage() {
           <div className="sc-workbar mt-6 mb-4">
             <div className="sc-workbar-meta">
               <span className="sc-workbar-pill">{filteredCatalog.length} definitions</span>
-              <span className="sc-workbar-pill">{catalogDefinitions.filter(row => row.owner_type === 'enterprise').length} enterprise</span>
+              <span className="sc-workbar-pill">{catalogRows.filter(row => row.owner_type === 'enterprise').length} enterprise</span>
               <span className="sc-workbar-pill">{selectedCatalogIds.length} selected</span>
             </div>
             <div className="relative flex-1 max-w-xs">
@@ -1450,7 +1453,7 @@ export default function ControlsPage() {
           <div className="sc-workbar mt-6 mb-4">
             <div className="sc-workbar-meta">
               <span className="sc-workbar-pill">{filteredImplementations.length} implementations</span>
-              <span className="sc-workbar-pill">{siteImplementations.filter(row => row.status === 'Implemented').length} implemented</span>
+              <span className="sc-workbar-pill">{implementationRows.filter(row => row.status === 'Implemented').length} implemented</span>
             </div>
             <div className="relative flex-1 max-w-xs">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-scorva-muted" />
@@ -1481,7 +1484,7 @@ export default function ControlsPage() {
       {/* View Modal */}
       {modal === 'view' && viewing && (
         <Modal title={`${viewing.control_id || viewing.id} — ${viewing.title}`} onClose={() => setModal(null)} size="lg">
-          <ControlDetail control={viewing} activities={activities} />
+          <ControlDetail control={viewing} activities={conmonActivities} />
           <div className="flex justify-end gap-3 pt-4 mt-2 border-t border-scorva-border">
             <button className="btn-secondary" onClick={() => openEdit(viewing)}>Edit</button>
             <button className="btn-primary"   onClick={() => setModal(null)}>Close</button>

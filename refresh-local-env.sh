@@ -75,7 +75,7 @@ cat <<EOF
 
 Default seeded admin:
     username: admin
-    password: Admin@12345!
+    password: value of SEED_ADMIN_PASSWORD (or fallback dev password)
 
 Useful commands:
     docker compose logs -f hub scorva mash lava

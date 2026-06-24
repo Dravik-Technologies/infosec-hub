@@ -356,8 +356,9 @@ export default function POAMPage() {
   const needsExplicitSite = requiresExplicitSiteSelection(user, selectedSite);
   const showSiteContext = isAllSitesView(user, selectedSite);
   const canReviewRisk = REVIEWER_ROLES.has(user?.role);
-  const siteScopeKey = selectedSite || user?.siteID || 'active-site';
+  const siteScopeKey = selectedSite || user?.siteID || user?.siteId || 'active-site';
   const { data = [], isLoading, isError, error } = useQuery({ queryKey: ['poam', siteScopeKey], queryFn: api.poam.list });
+  const poamRows = Array.isArray(data) ? data : [];
   const [view,           setView]          = useState('list');
   const [filterOpen,     setFilterOpen]    = useState(false);
   const [filterSeverity, setFilterSev]     = useState('All');
@@ -433,7 +434,7 @@ export default function POAMPage() {
     update.error?.message ||
     transitionRisk.error?.message;
 
-  const displayData = data.filter(r => {
+  const displayData = poamRows.filter(r => {
     if (filterSeverity !== 'All' && r.severity !== filterSeverity) return false;
     if (filterStatus   !== 'All' && r.status   !== filterStatus)   return false;
     const wfState = r.risk_workflow_state || r.riskWorkflowState || 'Draft';
@@ -473,26 +474,12 @@ export default function POAMPage() {
     )},
   ];
 
-  if (isLoading) return <LoadingSpinner />;
-  if (isError) {
-    return <div className="text-sm text-red-400">Failed to load POAM data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
-  }
-
-  const open     = data.filter(r => r.status === 'Open').length;
-  const inProg   = data.filter(r => r.status === 'In Progress').length;
-  const closed   = data.filter(r => r.status === 'Closed' || r.status === 'Completed').length;
-  const critical = data.filter(r => r.severity === 'Critical').length;
-  const high     = data.filter(r => r.severity === 'High').length;
-
-  const medium = data.filter(r => r.severity === 'Medium').length;
-  const low    = data.filter(r => r.severity === 'Low').length;
-
   useEffect(() => {
-    if (!data.length) return;
+    if (!poamRows.length) return;
     const params = new URLSearchParams(window.location.search);
     const poamId = params.get('poamId');
     if (!poamId) return;
-    const target = data.find(row => row.id === poamId);
+    const target = poamRows.find(row => row.id === poamId);
     if (!target) return;
     openEdit(target);
     params.delete('poamId');
@@ -500,14 +487,28 @@ export default function POAMPage() {
     const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ''}`;
     window.history.replaceState({}, '', nextUrl);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data.length]);
+  }, [poamRows]);
+
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) {
+    return <div className="text-sm text-red-400">Failed to load POAM data: {error?.response?.data?.error || error?.message || 'Unknown error'}</div>;
+  }
+
+  const open     = poamRows.filter(r => r.status === 'Open').length;
+  const inProg   = poamRows.filter(r => r.status === 'In Progress').length;
+  const closed   = poamRows.filter(r => r.status === 'Closed' || r.status === 'Completed').length;
+  const critical = poamRows.filter(r => r.severity === 'Critical').length;
+  const high     = poamRows.filter(r => r.severity === 'High').length;
+
+  const medium = poamRows.filter(r => r.severity === 'Medium').length;
+  const low    = poamRows.filter(r => r.severity === 'Low').length;
 
   return (
     <div>
       <PageHeader
         breadcrumbs={[{ label: 'Authorization', to: '/ato' }, { label: 'POAM' }]}
         title="Plan of Action & Milestones"
-        description={`${data.length} total · ${open} open · ${critical} critical`}
+        description={`${poamRows.length} total · ${open} open · ${critical} critical`}
         action={
           <div className="flex items-center gap-2">
             {/* View toggle */}

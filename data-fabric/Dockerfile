@@ -12,13 +12,16 @@ COPY data-fabric/ data-fabric/
 RUN cd data-fabric && npm prune --omit=dev
 
 FROM node:20-slim
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/data-fabric
 
 COPY --from=builder /app/data-fabric/ ./
 COPY --from=builder /app/packages/db/src/ /app/packages/db/src/
 COPY --from=builder /app/packages/db/node_modules/.prisma /app/packages/db/node_modules/.prisma
 COPY --from=builder /app/packages/db/node_modules/@prisma /app/packages/db/node_modules/@prisma
+
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 8081
 ENV NODE_ENV=production

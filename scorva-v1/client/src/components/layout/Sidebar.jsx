@@ -4,12 +4,14 @@ import {
   LayoutDashboard, ShieldCheck, Activity, BookOpen,
   AlertTriangle, CheckSquare, Users, Monitor, Key,
   FileText, Package, LayoutGrid, ClipboardList, Bell,
-  Building2, Shield, Sun, Moon, LogOut, Plus,
+  Building2, Sun, Moon, LogOut, Plus,
   ChevronLeft, ChevronRight, Zap,
 } from 'lucide-react';
 import { useAuth }  from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import axios from 'axios';
+import { canManageAllSites } from '../../utils/siteSelectionGuard';
+import scorvaLogo from '../../assets/scorva-logo.png?url';
 
 const BASE      = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const TOKEN_KEY = 'scorva_token';
@@ -62,7 +64,7 @@ export default function Sidebar({ open, onToggle }) {
   const { dark, toggle: toggleTheme } = useTheme();
   const [sites, setSites] = useState([]);
   const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
-  const isAdmin = user?.role === 'Corporate Admin';
+  const isAdmin = canManageAllSites(user);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -87,7 +89,7 @@ export default function Sidebar({ open, onToggle }) {
           onClick={!open ? onToggle : undefined}
           className={`sc-brand-mark ${!open ? 'hover:bg-scorva-accent/20 cursor-pointer mx-auto' : 'cursor-default'}`}
         >
-          <Shield size={16} />
+          <img src={scorvaLogo} alt="SCORVA" className="h-7 w-7 object-contain" />
         </button>
 
         {open && (

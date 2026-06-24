@@ -1,25 +1,29 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Oxanium:wght@500;600;700&family=Rajdhani:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&display=swap');
 
 :root {
   color-scheme: dark;
-  --bg: #06101b;
-  --bg-grid: rgba(94, 234, 212, 0.07);
-  --panel: rgba(9, 17, 30, 0.86);
-  --panel-strong: rgba(12, 22, 37, 0.97);
-  --line: rgba(129, 148, 178, 0.18);
-  --line-strong: rgba(94, 234, 212, 0.22);
+  --font-ui: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Share Tech Mono', 'JetBrains Mono', ui-monospace, monospace;
+  --bg: #040914;
+  --bg-grid: rgba(94, 234, 212, 0.055);
+  --panel: rgba(9, 17, 30, 0.9);
+  --panel-strong: rgba(10, 20, 36, 0.98);
+  --line: rgba(125, 211, 252, 0.14);
+  --line-strong: rgba(94, 234, 212, 0.28);
   --text: #edf6ff;
-  --muted: #88a0c2;
-  --accent: #59e1d3;
+  --muted: #7f93b5;
+  --accent: #6ee7d8;
   --accent-strong: #7dd3fc;
-  --accent-soft: rgba(89, 225, 211, 0.12);
+  --accent-soft: rgba(110, 231, 216, 0.12);
+  --accent-warm: #f59e0b;
   --critical: #ef4444;
   --high: #f97316;
   --medium: #facc15;
   --low: #38bdf8;
   --info: #94a3b8;
-  --shadow: 0 24px 80px rgba(2, 6, 23, 0.4);
-  --radius: 1rem;
+  --shadow: 0 24px 80px rgba(2, 6, 23, 0.48);
+  --radius: 0.9rem;
 }
 
 * {
@@ -29,17 +33,18 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: 'Rajdhani', Inter, ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-ui);
   background:
-    linear-gradient(rgba(94, 234, 212, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(94, 234, 212, 0.04) 1px, transparent 1px),
-    radial-gradient(circle at top right, rgba(89, 225, 211, 0.18), transparent 22rem),
-    radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 18rem),
-    linear-gradient(180deg, rgba(9, 15, 28, 0.98), rgba(6, 12, 23, 1)),
+    linear-gradient(rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+    radial-gradient(circle at top right, rgba(110, 231, 216, 0.16), transparent 20rem),
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 17rem),
+    radial-gradient(circle at bottom center, rgba(245, 158, 11, 0.06), transparent 24rem),
+    linear-gradient(180deg, rgba(8, 14, 24, 0.985), rgba(4, 9, 20, 1)),
     var(--bg);
-  background-size: 32px 32px, 32px 32px, auto, auto, auto;
+  background-size: 28px 28px, 28px 28px, auto, auto, auto, auto;
   color: var(--text);
-  letter-spacing: 0.01em;
+  letter-spacing: 0.015em;
 }
 
 body::before {
@@ -57,6 +62,19 @@ body::before {
       transparent 4px
     );
   opacity: 0.35;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 12%, rgba(110, 231, 216, 0.08), transparent 18rem),
+    radial-gradient(circle at 82% 20%, rgba(96, 165, 250, 0.08), transparent 16rem),
+    radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.05), transparent 20rem);
+  mix-blend-mode: screen;
+  opacity: 0.65;
 }
 
 .shell {
@@ -99,6 +117,11 @@ body::before {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
+.panel > * {
+  position: relative;
+  z-index: 1;
+}
+
 .hero {
   padding: 1.7rem 1.9rem;
 }
@@ -106,29 +129,29 @@ body::before {
 .eyebrow {
   color: var(--accent);
   text-transform: uppercase;
-  letter-spacing: 0.26em;
-  font-size: 0.7rem;
+  letter-spacing: 0.32em;
+  font-size: 0.74rem;
   font-weight: 700;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 h1 {
   margin: 0.35rem 0 0.7rem;
   font-size: clamp(2.4rem, 4vw, 4rem);
   line-height: 0.92;
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
+  font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  text-shadow: 0 0 24px rgba(89, 225, 211, 0.08);
+  text-shadow: 0 0 24px rgba(110, 231, 216, 0.1);
 }
 
 h2 {
   margin: 0.35rem 0 0;
   font-size: 1.42rem;
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
+  font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -164,10 +187,11 @@ h2 {
 
 .hero-badges span {
   border-radius: 999px;
-  border: 1px solid rgba(89, 225, 211, 0.22);
-  background: linear-gradient(180deg, rgba(15, 34, 48, 0.95), rgba(10, 24, 37, 0.86));
+  border: 1px solid rgba(110, 231, 216, 0.18);
+  background:
+    linear-gradient(180deg, rgba(14, 30, 50, 0.96), rgba(8, 18, 33, 0.88));
   padding: 0.45rem 0.8rem;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .upload-panel,
@@ -196,8 +220,8 @@ h2 {
 .field span {
   font-size: 0.78rem;
   color: var(--muted);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  letter-spacing: 0.16em;
+  font-family: var(--font-mono);
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
@@ -210,6 +234,7 @@ input[type='text'] {
   padding: 0.9rem 1rem;
   font: inherit;
   font-size: 1.05rem;
+  font-family: var(--font-ui);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
 }
 
@@ -243,9 +268,9 @@ input[type='text']:focus {
 }
 
 .mode-card strong {
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
+  font-family: var(--font-display);
   font-size: 1.05rem;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -291,9 +316,9 @@ input[type='text']:focus {
 .drop-title {
   font-size: 1.04rem;
   font-weight: 700;
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
+  font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .drop-copy {
@@ -309,7 +334,7 @@ input[type='text']:focus {
 .picker-summary {
   margin-top: 0.7rem;
   color: var(--muted);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .actions {
@@ -336,11 +361,11 @@ button {
 button.primary,
 button[type='submit'] {
   color: #03101d;
-  background: linear-gradient(135deg, #59e1d3, #7dd3fc 58%, #60a5fa);
+  background: linear-gradient(135deg, #6ee7d8, #7dd3fc 60%, #60a5fa);
   padding: 0.85rem 1.2rem;
   min-width: 10rem;
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
-  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   box-shadow: 0 12px 30px rgba(96, 165, 250, 0.22);
 }
@@ -350,8 +375,8 @@ button[type='submit'] {
   border-color: var(--line);
   padding: 0.85rem 1.2rem;
   background: rgba(12, 24, 40, 0.82);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
-  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+  letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
@@ -385,7 +410,7 @@ button:disabled {
   padding: 0.45rem 0.8rem;
   border: 1px solid var(--line);
   background: rgba(16, 29, 47, 0.7);
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-size: 0.72rem;
@@ -433,8 +458,8 @@ button:disabled {
 
 .tracker-progress-head strong {
   font-size: 1.55rem;
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
-  letter-spacing: 0.06em;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
 }
 
 .progress-rail {
@@ -482,7 +507,7 @@ button:disabled {
   color: var(--muted);
   font-size: 0.76rem;
   letter-spacing: 0.08em;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   text-transform: uppercase;
 }
 
@@ -543,9 +568,9 @@ button:disabled {
 
 .step-head strong {
   font-size: 0.98rem;
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
+  font-family: var(--font-display);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
 .step-head span,
@@ -554,7 +579,7 @@ button:disabled {
 }
 
 .step-head span {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-size: 0.72rem;
@@ -609,12 +634,12 @@ button:disabled {
 
 .summary-card strong {
   font-size: 1.7rem;
-  font-family: 'Oxanium', 'Rajdhani', sans-serif;
-  letter-spacing: 0.04em;
+  font-family: var(--font-display);
+  letter-spacing: 0.08em;
 }
 
 .summary-card span {
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: var(--font-mono);
 }
 
 .downloads {
@@ -677,7 +702,7 @@ button:disabled {
 
 .donut-inner strong {
   font-size: 1.6rem;
-  font-family: 'Oxanium', sans-serif;
+  font-family: var(--font-display);
 }
 
 .donut-inner span {
@@ -711,7 +736,7 @@ button:disabled {
 .legend-row strong {
   margin-left: auto;
   color: var(--text);
-  font-family: 'Oxanium', sans-serif;
+  font-family: var(--font-display);
 }
 
 .report-body {
@@ -742,7 +767,7 @@ button:disabled {
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--accent);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .filter-checkbox {
@@ -792,7 +817,7 @@ button:disabled {
 
 .findings-count {
   font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
 }
 
 .findings-container {
@@ -850,7 +875,7 @@ button:disabled {
 
 .finding-file {
   color: var(--muted);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   overflow: hidden;
@@ -865,7 +890,7 @@ button:disabled {
   padding: 0.15rem 0.35rem;
   background: rgba(89, 225, 211, 0.08);
   color: var(--accent);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   font-weight: 600;

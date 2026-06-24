@@ -19,6 +19,10 @@ const LOGO_SIZE_CLASS = {
     card: 'h-20 max-w-[200px] scale-[1.22]',
     modal: 'h-24 max-w-[260px] scale-[1.16]',
   },
+  crater: {
+    card: 'h-18 max-w-[190px] scale-[1.16]',
+    modal: 'h-22 max-w-[240px] scale-[1.12]',
+  },
   sentinel: {
     card: 'h-16 max-w-[180px] scale-[1.12]',
     modal: 'h-20 max-w-[220px] scale-[1.08]',
@@ -45,7 +49,7 @@ const APPS = [
     id: 'crater', name: 'CRATER', tagline: 'eMASS RMF Toolkit',
     desc: 'eMASS-aligned RMF package builder with SCTM, POAM management, vulnerability tracking, system diagrams, and compliance reporting.',
     url: '', ssoPath: '/sso.html',
-    color: 'indigo', icon: 'FileText', team: 'GRC', status: 'live',
+    color: 'indigo', icon: 'FileText', logo: '/crater-logo.png', team: 'GRC', status: 'live',
     tags: ['eMASS', 'RMF', 'SCTM', 'POAM', 'Vulnerabilities'],
   },
   {
@@ -121,10 +125,7 @@ export default function Portal() {
   const { dark, toggle } = useTheme();
   const navigate = useNavigate();
   const [launching, setLaunching] = useState(null);
-  const [apps,      setApps]      = useState(() => {
-    const allowed = Array.isArray(user?.allowedApps) ? user.allowedApps : [];
-    return APPS.filter(app => allowed.includes(app.id));
-  });
+  const [apps,      setApps]      = useState([]);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [showLoader, setShowLoader] = useState(true);
   const [expandedApp, setExpandedApp] = useState(null);
@@ -143,8 +144,7 @@ export default function Portal() {
   }, []);
 
   useEffect(() => {
-    const allowed = Array.isArray(user?.allowedApps) ? user.allowedApps : [];
-    setApps(APPS.filter(app => allowed.includes(app.id)));
+    setApps([]);
   }, [user]);
 
   useEffect(() => {

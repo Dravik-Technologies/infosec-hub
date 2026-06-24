@@ -2,7 +2,7 @@
 
 const router = require('express').Router();
 const multer = require('multer');
-const XLSX   = require('xlsx');
+const ExcelJS = require('exceljs');
 const { db } = require('../db');
 const { writeAudit, actor } = require('../audit');
 const { requireVulcan, isSiteAllowed } = require('../authz');
@@ -11,7 +11,9 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits:  { fileSize: 10 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const ok = file.mimetype.includes('spreadsheet') || file.mimetype.includes('excel') || file.originalname.endsWith('.xlsx') || file.originalname.endsWith('.xls');
+    const ok =
+      file.mimetype.includes('spreadsheetml') ||
+      file.originalname.toLowerCase().endsWith('.xlsx');
     cb(null, ok);
   },
 });
@@ -91,16 +93,30 @@ async function writeAssignmentHistory(asset, nextAssignedUser, notes, req) {
 
 // ── Download Hardware Excel Template ─────────────────────────────────────────
 router.get('/template', (_req, res) => {
-  const wb     = XLSX.utils.book_new();
   const header = ['Asset Tag', 'Serial Number', 'Make', 'Model', 'Type', 'Status', 'Classification', 'Assigned User', 'Location', 'Notes'];
   const sample = ['LAVA-001', 'SN123456789', 'Dell', 'Latitude 5540', 'Workstation', 'Assigned', 'UNCLASSIFIED', 'jsmith', 'Room 101', 'Initial issue'];
-  const ws     = XLSX.utils.aoa_to_sheet([header, sample]);
-  ws['!cols']  = header.map(() => ({ wch: 22 }));
-  XLSX.utils.book_append_sheet(wb, ws, 'Hardware Assets');
-  const buf = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
-  res.set('Content-Disposition', 'attachment; filename="LAVA_Hardware_Template.xlsx"');
-  res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-  res.send(buf);
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('Hardware Assets');
+
+  sheet.addRow(header);
+  sheet.addRow(sample);
+  sheet.columns = header.map((column) => ({
+    header: column,
+    key: column,
+    width: 22,
+  }));
+
+  sheet.getRow(1).font = { bold: true };
+  sheet.views = [{ state: 'frozen', ySplit: 1 }];
+
+  workbook.xlsx.writeBuffer().then((buf) => {
+    res.set('Content-Disposition', 'attachment; filename="LAVA_Hardware_Template.xlsx"');
+    res.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(Buffer.from(buf));
+  }).catch((err) => {
+    console.error('[LAVA/hardware] template error', err);
+    res.status(500).json({ error: 'Failed to generate hardware template' });
+  });
 });
 
 // ── Upload & Bulk-Import Hardware from Excel ─────────────────────────────────
@@ -114,9 +130,32 @@ router.post('/upload/:systemId', requireVulcan, upload.single('file'), async (re
       return res.status(403).json({ error: 'Access denied — system is outside your site scope' });
     }
 
-    const wb   = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const ws   = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws);
+    const workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(req.file.buffer);
+    const sheet = workbook.worksheets[0];
+    if (!sheet) return res.status(400).json({ error: 'Spreadsheet has no worksheets' });
+
+    const headerRow = sheet.getRow(1);
+    const headers = headerRow.values
+      .slice(1)
+      .map((value) => (value !== undefined && value !== null ? String(value).trim() : ''));
+    const rows = [];
+
+    for (let rowNumber = 2; rowNumber <= sheet.rowCount; rowNumber += 1) {
+      const row = sheet.getRow(rowNumber);
+      const cells = row.values.slice(1);
+      if (!cells.some((value) => value !== undefined && value !== null && String(value).trim() !== '')) {
+        continue;
+      }
+
+      const record = {};
+      headers.forEach((header, index) => {
+        if (!header) return;
+        const value = cells[index];
+        record[header] = value && typeof value === 'object' && value.text ? value.text : value;
+      });
+      rows.push(record);
+    }
 
     if (!rows.length) return res.status(400).json({ error: 'Spreadsheet is empty or has no data rows' });
 

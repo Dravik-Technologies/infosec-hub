@@ -10,7 +10,7 @@ RUN npm run build
 
 # ── Stage 2: production server ───────────────────────────────────────────────
 FROM node:20-slim
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/scorva-v1
 
 COPY scorva-v1/package*.json ./
@@ -24,6 +24,9 @@ RUN npm prune --omit=dev
 COPY scorva-v1/server/ ./server/
 COPY packages/db/src/ /app/packages/db/src/
 COPY --from=client-builder /app/client/dist ./client/dist
+
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 3000
 ENV NODE_ENV=production

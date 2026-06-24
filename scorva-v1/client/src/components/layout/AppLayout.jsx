@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
-  Shield, ChevronLeft, Bell, Sun, Moon, LogOut, Building2, Menu, X,
+  ChevronLeft, Bell, Sun, Moon, LogOut, Building2, Menu, X,
 } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { canManageAllSites } from '../../utils/siteSelectionGuard';
+import scorvaLogo from '../../assets/scorva-logo.png?url';
 
 const BASE = import.meta.env.DEV ? 'http://localhost:3000' : '';
 const TOKEN_KEY = 'scorva_token';
@@ -26,7 +28,7 @@ export default function AppLayout({ appName, appIcon: AppIcon, tabs = [], childr
   const [sites, setSites] = useState([]);
   const displayRole = user?.displayRole || user?.title || user?.jobRole || user?.securityRole || user?.hubRole || user?.role || 'Hub Viewer';
 
-  const isAdmin = user?.role === 'Corporate Admin';
+  const isAdmin = canManageAllSites(user);
 
   // Fetch sites on mount
   useEffect(() => {
@@ -57,7 +59,7 @@ export default function AppLayout({ appName, appIcon: AppIcon, tabs = [], childr
               title="Back to Portal"
             >
               <div className="w-10 h-10 rounded-xl bg-scorva-accent/10 border border-scorva-accent/20 flex items-center justify-center shrink-0">
-                <Shield size={16} className="text-scorva-accent" />
+                <img src={scorvaLogo} alt="SCORVA" className="h-7 w-7 object-contain" />
               </div>
               {sidebarOpen && (
                 <div className="flex-1 min-w-0">

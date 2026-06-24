@@ -8,7 +8,7 @@ COPY nexus/client/ ./
 RUN npm run build
 
 FROM node:20-slim AS builder
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 COPY packages/db/package*.json packages/db/
@@ -21,7 +21,7 @@ RUN cd nexus && npm ci && npm prune --omit=dev
 COPY nexus/ nexus/
 
 FROM node:20-slim
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 WORKDIR /app/nexus
 
 COPY --from=builder /app/nexus/ ./
@@ -29,6 +29,9 @@ COPY --from=builder /app/packages/db/src/ /app/packages/db/src/
 COPY --from=builder /app/packages/db/node_modules/.prisma /app/packages/db/node_modules/.prisma
 COPY --from=builder /app/packages/db/node_modules/@prisma /app/packages/db/node_modules/@prisma
 COPY --from=client-builder /app/client/dist ./client/dist
+
+RUN chown -R node:node /app
+USER node
 
 EXPOSE 8090
 ENV NODE_ENV=production
