@@ -91,8 +91,8 @@ function DD254Form({ record, siteId, onSave, onClose }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-      <div className="ws-card" style={{ width: 'min(760px, 100%)', maxHeight: '90vh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', zIndex: 200, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '7.25rem 1.5rem 2.25rem', overflowY: 'auto' }}>
+      <div className="ws-card" style={{ width: 'min(760px, 100%)', maxHeight: 'calc(100vh - 9.5rem)', overflowY: 'auto', borderRadius: '24px', border: '1px solid rgba(148, 163, 184, 0.28)', boxShadow: '0 32px 90px rgba(15, 23, 42, 0.28)', backdropFilter: 'blur(18px)' }}>
         <div className="ws-card-header" style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
           <h3>{isEdit ? 'Edit DD254' : 'Add DD254'}</h3>
           <button type="button" className="ws-action-btn" onClick={onClose}>Cancel</button>
@@ -180,8 +180,8 @@ function DD254Form({ record, siteId, onSave, onClose }) {
 
 function DD254Detail({ record, onClose, onEdit, onDelete }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', zIndex: 150, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1.5rem' }}>
-      <div className="ws-card" style={{ width: 'min(760px, 100%)', maxHeight: '88vh', overflowY: 'auto' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--overlay-bg)', zIndex: 150, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '7.25rem 1.5rem 2.25rem', overflowY: 'auto' }}>
+      <div className="ws-card" style={{ width: 'min(760px, 100%)', maxHeight: 'calc(100vh - 9.5rem)', overflowY: 'auto', borderRadius: '24px', border: '1px solid rgba(148, 163, 184, 0.28)', boxShadow: '0 32px 90px rgba(15, 23, 42, 0.28)', backdropFilter: 'blur(18px)' }}>
         <div className="ws-card-header" style={{ position: 'sticky', top: 0, background: 'var(--surface)', zIndex: 1 }}>
           <div>
             <h3>{record.contractNumber}</h3>

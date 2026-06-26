@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gatekeeper Scan Report — security-app-factory-zip</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --font-ui: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+      --font-display: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+      --font-mono: 'Share Tech Mono', 'JetBrains Mono', ui-monospace, monospace;
+      --bg: #040914;
+      --panel: rgba(9, 17, 30, 0.9);
+      --panel-strong: rgba(10, 20, 36, 0.98);
+      --line: rgba(125, 211, 252, 0.14);
+      --line-strong: rgba(110, 231, 216, 0.28);
+      --text: #edf6ff;
+      --muted: #7f93b5;
+      --accent: #6ee7d8;
+      --accent-strong: #7dd3fc;
+      --critical: #ef4444;
+      --high: #f97316;
+      --medium: #facc15;
+      --low: #38bdf8;
+      --info: #94a3b8;
+      --shadow: 0 24px 80px rgba(2, 6, 23, 0.4);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      background:
+        linear-gradient(rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at top right, rgba(110, 231, 216, 0.16), transparent 20rem),
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 17rem),
+        radial-gradient(circle at bottom center, rgba(245, 158, 11, 0.06), transparent 24rem),
+        linear-gradient(180deg, rgba(8, 14, 24, 0.985), rgba(4, 9, 20, 1)),
+        var(--bg);
+      background-size: 28px 28px, 28px 28px, auto, auto, auto, auto;
+      color: var(--text);
+      padding: 1.5rem;
+      letter-spacing: 0.015em;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 12%, transparent 88%, rgba(255, 255, 255, 0.02)),
+        repeating-linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.018) 0,
+          rgba(255, 255, 255, 0.018) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+      opacity: 0.35;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(110, 231, 216, 0.08), transparent 18rem),
+        radial-gradient(circle at 82% 20%, rgba(96, 165, 250, 0.08), transparent 16rem),
+        radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.05), transparent 20rem);
+      mix-blend-mode: screen;
+      opacity: 0.65;
+    }
+    h1, h2, h3, h4 { margin: 0; }
+    .shell { max-width: 1280px; margin: 0 auto; display: grid; gap: 1.5rem; position: relative; z-index: 1; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      padding: 1.5rem;
+    }
+    .panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        linear-gradient(135deg, rgba(125, 211, 252, 0.09), transparent 26%),
+        linear-gradient(315deg, rgba(89, 225, 211, 0.07), transparent 22%);
+    }
+    .panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1.2rem;
+      align-items: start;
+      position: relative;
+      z-index: 2;
+    }
+    .hero-title {
+      display: grid;
+      gap: 0.8rem;
+    }
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.26em;
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .title-row h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 0.92;
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 24px rgba(89, 225, 211, 0.08);
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem 0.9rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+    .ghost-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 9rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.7rem 0.95rem;
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(18, 33, 54, 0.72);
+      font-weight: 600;
+    }
+    .risk-summary {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 1.2rem;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: var(--panel-strong);
+      padding: 1.2rem;
+      position: relative;
+      z-index: 2;
+    }
+    .risk-donut {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: var(--critical) 0% 0%, var(--high) 0% 1.2345679012345678%, var(--medium) 1.2345679012345678% 98.14814814814815%, var(--low) 98.14814814814815% 100%, var(--info) 100% 100%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      margin: 0 auto;
+      border: 1px solid var(--line-strong);
+    }
+    .risk-donut::after {
+      content: '';
+      position: absolute;
+      inset: 24px;
+      border-radius: 50%;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+    .donut-center {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      gap: 0.2rem;
+    }
+    .donut-center strong {
+      font-size: 1.6rem;
+      line-height: 1;
+      font-family: var(--font-display);
+    }
+    .donut-center span {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .risk-summary-body {
+      display: grid;
+      gap: 0.9rem;
+    }
+    .stack-bar {
+      display: flex;
+      overflow: hidden;
+      height: 0.85rem;
+      border-radius: 999px;
+      background: rgba(12, 24, 40, 0.75);
+      border: 1px solid var(--line);
+    }
+    .stack-segment { min-width: 0; }
+    .stack-critical { background: var(--critical); }
+    .stack-high { background: var(--high); }
+    .stack-medium { background: var(--medium); }
+    .stack-low { background: var(--low); }
+    .stack-info { background: var(--info); }
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem 1.2rem;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .legend-row strong {
+      color: var(--text);
+      font-family: var(--font-display);
+    }
+    .legend-key {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+    }
+    .legend-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .legend-critical { background: var(--critical); }
+    .legend-high { background: var(--high); }
+    .legend-medium { background: var(--medium); }
+    .legend-low { background: var(--low); }
+    .legend-info { background: var(--info); }
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+    .stat-tile {
+      border: 1px solid var(--line);
+      border-radius: 0.95rem;
+      padding: 0.85rem 0.95rem;
+      background: var(--panel-strong);
+    }
+    .stat-tile span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 0.35rem;
+      font-family: var(--font-mono);
+    }
+    .stat-tile strong {
+      font-size: 1.35rem;
+      font-family: var(--font-display);
+    }
+    .section {
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .section summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem;
+      transition: background 120ms ease;
+    }
+    .section summary:hover {
+      background: rgba(89, 225, 211, 0.04);
+    }
+    .section summary::-webkit-details-marker { display: none; }
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .section-title h2 {
+      font-size: 1.1rem;
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .section-badge {
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .chevron {
+      color: var(--muted);
+      transition: transform 180ms ease;
+      font-size: 1.2rem;
+    }
+    details[open] .chevron {
+      transform: rotate(90deg);
+    }
+    .section-body {
+      margin-top: 0.9rem;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.14em; }
+    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; font-family: var(--font-mono); }
+    .badge-critical { background: rgba(239, 68, 68, 0.18); color: #fecaca; border: 1px solid rgba(239, 68, 68, 0.26); }
+    .badge-high { background: rgba(249, 115, 22, 0.18); color: #fed7aa; border: 1px solid rgba(249, 115, 22, 0.26); }
+    .badge-medium { background: rgba(250, 204, 21, 0.18); color: #fef08a; border: 1px solid rgba(250, 204, 21, 0.26); }
+    .badge-low { background: rgba(56, 189, 248, 0.18); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.26); }
+    .badge-info { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.26); }
+    .scanner-badge {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      color: var(--accent);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: rgba(89, 225, 211, 0.08);
+      font-family: var(--font-mono);
+    }
+    ul { margin: 0; padding-left: 1.1rem; }
+    li + li { margin-top: 0.45rem; }
+    li span { color: var(--muted); display: block; margin-top: 0.2rem; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.6fr repeat(4, minmax(0, 0.75fr));
+      gap: 0.65rem;
+      margin: 0.95rem 0;
+    }
+    .toolbar input,
+    .toolbar select {
+      width: 100%;
+      border: 1px solid rgba(129, 148, 178, 0.2);
+      border-radius: 0.9rem;
+      background: rgba(5, 12, 22, 0.92);
+      color: var(--text);
+      padding: 0.85rem 0.95rem;
+      font: inherit;
+      font-family: var(--font-ui);
+    }
+    .toolbar input:focus,
+    .toolbar select:focus {
+      outline: none;
+      border-color: rgba(89, 225, 211, 0.45);
+      box-shadow: 0 0 0 3px rgba(89, 225, 211, 0.08);
+    }
+    .toolbar-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .findings-grid {
+      display: grid;
+      gap: 0.65rem;
+    }
+    .findings-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .finding-row {
+      border: 1px solid var(--line);
+      border-radius: 0.95rem;
+      background: var(--panel-strong);
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+    .finding-row:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(89, 225, 211, 0.12);
+    }
+    .finding-row summary {
+      list-style: none;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto auto 1.1fr minmax(180px, 0.8fr) auto;
+      gap: 0.8rem;
+      align-items: center;
+      padding: 0.9rem 1rem;
+    }
+    .finding-row summary::-webkit-details-marker { display: none; }
+    .finding-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+    }
+    .finding-file {
+      color: var(--muted);
+      font-size: 0.82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .finding-category {
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .finding-body {
+      padding: 0 0.9rem 0.9rem;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 0.8rem;
+    }
+    .finding-body-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+    .finding-block {
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      background: rgba(10, 18, 31, 0.55);
+      padding: 0.8rem;
+    }
+    .finding-block strong {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .finding-block p {
+      margin: 0;
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+    .finding-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+    .finding-card h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .page-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .pager-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(18, 33, 54, 0.7);
+      color: var(--text);
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      font: inherit;
+    }
+    .pager-button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .empty-state {
+      border: 1px dashed var(--line);
+      border-radius: 0.95rem;
+      background: rgba(20, 34, 56, 0.45);
+      padding: 1rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .hint-text {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .table-shell {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 0.95rem;
+    }
+    @media (max-width: 980px) {
+      body { padding: 1rem; }
+      .hero { grid-template-columns: 1fr; }
+      .risk-summary { grid-template-columns: 1fr; }
+      .quick-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .legend-grid { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+      .finding-row summary { grid-template-columns: 1fr; }
+      .finding-body-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; color: #111827; padding: 0; }
+      .panel { box-shadow: none; border-color: #d1d5db; background: #fff; }
+      .badge { border: 1px solid #d1d5db; color: #111827 !important; background: transparent !important; }
+      .toolbar { display: none; }
+      .page-controls { display: none; }
+      .section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="panel hero">
+      <div class="hero-title">
+        <div class="eyebrow">Gatekeeper DevSecOps Report</div>
+        <div class="title-row">
+          <h1>security-app-factory-zip</h1>
+          <div class="hero-actions">
+            <a class="ghost-link" href="#" onclick="window.print(); return false;">Print report</a>
+          </div>
+        </div>
+        <div class="meta">
+          <span><strong>Job ID:</strong> 2546ebc2-bb36-420a-9dbd-84f8878e9a95</span>
+          <span><strong>Completed:</strong> 2026-06-25T14:27:16.452Z</span>
+          <span><strong>Files scanned:</strong> 622</span>
+          <span><strong>Dependencies:</strong> 186</span>
+          <span><strong>Excluded dirs:</strong> 27</span>
+        </div>
+        <div class="quick-stats">
+          <div class="stat-tile"><span>Ecosystems</span><strong>2</strong></div>
+          <div class="stat-tile"><span>Scanners</span><strong>10</strong></div>
+          <div class="stat-tile"><span>AI Signals</span><strong>Detected</strong></div>
+          <div class="stat-tile"><span>Total Findings</span><strong>162</strong></div>
+        </div>
+        <div class="hint-text">Default exclusions applied: .cache, .git, .next, .pytest_cache, .scannerwork, .terraform, .venv, __pycache__, build, coverage, dist, node_modules, out, runtime, scan-reports, target, vendor, venv • 252 findings suppressed from excluded paths</div>
+      </div>
+      <div class="risk-summary">
+        <div class="risk-donut">
+          <div class="donut-center">
+            <strong>162</strong>
+            <span>findings</span>
+          </div>
+        </div>
+        <div class="risk-summary-body">
+          <div>
+            <div class="eyebrow">Risk Summary</div>
+            <div class="stack-bar">
+    <div class="stack-segment stack-critical" style="width:0%"></div>
+  
+    <div class="stack-segment stack-high" style="width:1.2345679012345678%"></div>
+  
+    <div class="stack-segment stack-medium" style="width:96.91358024691358%"></div>
+  
+    <div class="stack-segment stack-low" style="width:1.8518518518518516%"></div>
+  
+    <div class="stack-segment stack-info" style="width:0%"></div>
+  </div>
+          </div>
+          <div class="legend-grid">
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-critical"></span>critical</span>
+      <strong>0</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-high"></span>high</span>
+      <strong>2</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-medium"></span>medium</span>
+      <strong>157</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-low"></span>low</span>
+      <strong>3</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-info"></span>info</span>
+      <strong>0</strong>
+    </div>
+  </div>
+        </div>
+      </div>
+    </section>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Findings Console</h2>
+          <span class="section-badge">162 total findings</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="toolbar">
+          <input id="findingSearch" type="search" placeholder="Search findings, files, categories..." />
+          <select id="severityFilter">
+            <option value="all">All severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+            <option value="info">Info</option>
+          </select>
+          <select id="scannerFilter">
+            <option value="all">All scanners</option>
+            <option value="ai-intake">ai-intake</option><option value="bandit">bandit</option><option value="grype">grype</option><option value="hadolint">hadolint</option><option value="heuristic-code-scan">heuristic-code-scan</option><option value="npm-audit">npm-audit</option><option value="osv.dev">osv.dev</option><option value="secret-scan">secret-scan</option><option value="semgrep">semgrep</option><option value="shellcheck">shellcheck</option>
+          </select>
+          <select id="sortFindings">
+            <option value="severity-desc">Severity</option>
+            <option value="severity-asc">Severity asc</option>
+            <option value="title-asc">Title A-Z</option>
+            <option value="title-desc">Title Z-A</option>
+            <option value="scanner-asc">Scanner</option>
+          </select>
+          <select id="pageSize">
+            <option value="10">10 / page</option>
+            <option value="25" selected>25 / page</option>
+            <option value="50">50 / page</option>
+            <option value="100">100 / page</option>
+          </select>
+        </div>
+        <div class="toolbar-bar">
+          <span id="findingsCount">0 findings visible</span>
+          <span class="hint-text">Compact mode: findings stay collapsed until you open one.</span>
+        </div>
+        <div id="findingsGrid" class="findings-grid"></div>
+        <div class="page-controls">
+          <button id="prevPage" class="pager-button" type="button">Previous</button>
+          <span id="pageMeta" class="hint-text">Page 1 of 1</span>
+          <button id="nextPage" class="pager-button" type="button">Next</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Detected Ecosystems</h2>
+          <span class="section-badge">2 discovered</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <ul>
+    <li><strong>Node.js</strong><span>security-app-factory/crater/backend/package-lock.json, security-app-factory/crater/backend/package.json, security-app-factory/crater/client/package-lock.json, security-app-factory/crater/client/package.json, security-app-factory/crater/server/package-lock.json, security-app-factory/crater/server/package.json, security-app-factory/data-fabric/package-lock.json, security-app-factory/data-fabric/package.json, security-app-factory/gatekeeper/package-lock.json, security-app-factory/gatekeeper/package.json, security-app-factory/hub/client/package-lock.json, security-app-factory/hub/client/package.json, security-app-factory/hub/package-lock.json, security-app-factory/hub/package.json, security-app-factory/lava/client/package-lock.json, security-app-factory/lava/client/package.json, security-app-factory/lava/package-lock.json, security-app-factory/lava/package.json, security-app-factory/nexus/client/package-lock.json, security-app-factory/nexus/client/package.json, security-app-factory/nexus/package-lock.json, security-app-factory/nexus/package.json, security-app-factory/packages/db/package-lock.json, security-app-factory/packages/db/package.json, security-app-factory/scorva-v1/client/package-lock.json, security-app-factory/scorva-v1/client/package.json, security-app-factory/scorva-v1/package-lock.json, security-app-factory/scorva-v1/package.json, security-app-factory/security-dashboard/client/package-lock.json, security-app-factory/security-dashboard/client/package.json, security-app-factory/security-dashboard/package-lock.json, security-app-factory/security-dashboard/package.json</span></li>
+  
+    <li><strong>PowerShell</strong><span>security-app-factory/infra/azure/build-and-push.ps1, security-app-factory/infra/azure/deploy-container-apps.ps1, security-app-factory/infra/azure/migrate-postgres.ps1</span></li>
+  </ul>
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>AI / LLM Intake Summary</h2>
+          <span class="section-badge">signals detected</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        
+          <div class="quick-stats" style="margin-bottom:0.85rem">
+            <div class="stat-tile"><span>Framework hints</span><strong>0</strong></div>
+            <div class="stat-tile"><span>Model artifacts</span><strong>0</strong></div>
+            <div class="stat-tile"><span>Plugin surfaces</span><strong>2</strong></div>
+            <div class="stat-tile"><span>Runtime hints</span><strong>1</strong></div>
+          </div>
+          <details class="section" open>
+            <summary><div class="section-title"><h3>Framework / SDK Hints</h3></div><span class="chevron">▶</span></summary>
+            <div class="section-body"><ul><li>No framework hints recorded.</li></ul></div>
+          </details>
+          <details class="section">
+            <summary><div class="section-title"><h3>Model Manifests</h3></div><span class="chevron">▶</span></summary>
+            <div class="section-body"><ul><li>No model manifests recorded.</li></ul></div>
+          </details>
+          <details class="section">
+            <summary><div class="section-title"><h3>Model Artifacts</h3></div><span class="chevron">▶</span></summary>
+            <div class="section-body"><div class="table-shell"><table><thead><tr><th>File</th><th>Type</th><th>Handling</th></tr></thead><tbody><tr><td colspan="3">No model artifacts recorded.</td></tr></tbody></table></div></div>
+          </details>
+          <details class="section">
+            <summary><div class="section-title"><h3>Prompt / Plugin Surfaces</h3></div><span class="chevron">▶</span></summary>
+            <div class="section-body"><ul><li>security-app-factory/crater/tools/build_focused_rag_packs.py</li><li>security-app-factory/crater/tools/ingest_rmf_documents.py</li></ul></div>
+          </details>
+          <details class="section">
+            <summary><div class="section-title"><h3>Runtime Exposure Hints</h3></div><span class="chevron">▶</span></summary>
+            <div class="section-body"><div class="table-shell"><table><thead><tr><th>File</th><th>Signal</th><th>Detail</th></tr></thead><tbody>
+    <tr>
+      <td>security-app-factory/gatekeeper/server.js</td>
+      <td>AI application runtime appears internet-bindable</td>
+      <td>The code appears to bind a web runtime publicly or enable permissive CORS.</td>
+    </tr>
+  </tbody></table></div></div>
+          </details>
+        
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Tool Execution Notes</h2>
+          <span class="section-badge">17 notes</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="table-shell">
+          <table>
+            <thead><tr><th>Tool</th><th>Status</th><th>Detail</th></tr></thead>
+            <tbody>
+    <tr>
+      <td>ai-intake</td>
+      <td>completed</td>
+      <td>Detected 0 AI framework hints, 0 model artifacts, 0 model manifests, and 1 runtime exposure hints.</td>
+    </tr>
+  
+    <tr>
+      <td>osv.dev</td>
+      <td>completed</td>
+      <td>Queried 93 exact-version dependencies, found 16 vulnerability matches.</td>
+    </tr>
+  
+    <tr>
+      <td>trufflehog</td>
+      <td>completed</td>
+      <td>TruffleHog executed successfully and reported 0 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>trivy</td>
+      <td>completed</td>
+      <td>Trivy executed successfully and reported 0 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>grype</td>
+      <td>completed</td>
+      <td>Grype executed successfully and reported 264 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>semgrep</td>
+      <td>completed</td>
+      <td>Semgrep executed successfully and reported 105 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>bandit</td>
+      <td>completed</td>
+      <td>Bandit executed successfully and reported 1 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>pip-audit</td>
+      <td>skipped</td>
+      <td>pip-audit was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>osv-scanner</td>
+      <td>unavailable</td>
+      <td>osv-scanner is not installed in the runtime image.</td>
+    </tr>
+  
+    <tr>
+      <td>retire</td>
+      <td>completed</td>
+      <td>Retire.js executed successfully and reported 0 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>npm-audit</td>
+      <td>completed</td>
+      <td>npm audit executed successfully and reported 1 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>bundle-audit</td>
+      <td>skipped</td>
+      <td>bundle-audit was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>checkov</td>
+      <td>completed</td>
+      <td>Checkov executed successfully and reported 0 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>hadolint</td>
+      <td>completed</td>
+      <td>Hadolint executed successfully and reported 44 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>shellcheck</td>
+      <td>completed</td>
+      <td>Shellcheck executed successfully and reported 24 findings.</td>
+    </tr>
+  
+    <tr>
+      <td>gosec</td>
+      <td>skipped</td>
+      <td>gosec was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>syft</td>
+      <td>completed</td>
+      <td>Syft generated an SBOM inventory with 1621 package entries.</td>
+    </tr>
+  </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Dependency Inventory</h2>
+          <span class="section-badge">186 discovered</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="hint-text" style="margin-bottom:0.75rem">Showing the first 150 dependencies in the HTML report. Use the JSON export for the full inventory.</div>
+        <div class="table-shell">
+          <table>
+            <thead><tr><th>Name</th><th>Version</th><th>Ecosystem</th><th>Source</th></tr></thead>
+            <tbody>
+    <tr>
+      <td>@prisma/client</td>
+      <td>^5.17.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/archiver</td>
+      <td>^7.0.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>archiver</td>
+      <td>^7.0.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>bcryptjs</td>
+      <td>^2.4.3</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>cors</td>
+      <td>^2.8.5</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>docx</td>
+      <td>^9.6.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>dotenv</td>
+      <td>^16.4.5</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express</td>
+      <td>^4.19.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express-rate-limit</td>
+      <td>^7.4.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>helmet</td>
+      <td>^7.1.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>jsonwebtoken</td>
+      <td>^9.0.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>morgan</td>
+      <td>^1.10.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>multer</td>
+      <td>^2.2.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>xml-js</td>
+      <td>^1.6.11</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>zod</td>
+      <td>^3.23.8</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/bcryptjs</td>
+      <td>^2.4.6</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/cors</td>
+      <td>^2.8.17</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/express</td>
+      <td>^4.17.21</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/jsonwebtoken</td>
+      <td>^9.0.6</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/morgan</td>
+      <td>^1.9.9</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/multer</td>
+      <td>^2.0.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/node</td>
+      <td>^22.0.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>nodemon</td>
+      <td>^3.1.4</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>prisma</td>
+      <td>^5.17.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>tsx</td>
+      <td>^4.16.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>typescript</td>
+      <td>^5.5.4</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/backend/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@hookform/resolvers</td>
+      <td>^3.9.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@tanstack/react-query</td>
+      <td>^5.51.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@tanstack/react-query-devtools</td>
+      <td>^5.51.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>axios</td>
+      <td>^1.18.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>clsx</td>
+      <td>^2.1.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>date-fns</td>
+      <td>^3.6.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>konva</td>
+      <td>^9.3.14</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>lucide-react</td>
+      <td>^0.427.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-dom</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-dropzone</td>
+      <td>^14.2.3</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-hook-form</td>
+      <td>^7.52.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-hot-toast</td>
+      <td>^2.4.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-konva</td>
+      <td>^18.2.10</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-router-dom</td>
+      <td>^6.26.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>recharts</td>
+      <td>^2.12.7</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>tailwind-merge</td>
+      <td>^2.4.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>zod</td>
+      <td>^3.23.8</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>zustand</td>
+      <td>^4.5.4</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/react</td>
+      <td>^18.3.3</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/react-dom</td>
+      <td>^18.3.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@typescript-eslint/eslint-plugin</td>
+      <td>^7.16.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@typescript-eslint/parser</td>
+      <td>^7.16.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@vitejs/plugin-react</td>
+      <td>^6.0.1</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>autoprefixer</td>
+      <td>^10.4.19</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>eslint</td>
+      <td>^8.57.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>eslint-plugin-react-hooks</td>
+      <td>^4.6.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>postcss</td>
+      <td>^8.4.40</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>tailwindcss</td>
+      <td>^3.4.7</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>typescript</td>
+      <td>^5.5.4</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>vite</td>
+      <td>^8.1.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@prisma/client</td>
+      <td>^5.17.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>bcryptjs</td>
+      <td>^2.4.3</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>cors</td>
+      <td>^2.8.5</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>dotenv</td>
+      <td>^16.4.5</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express</td>
+      <td>^4.19.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express-rate-limit</td>
+      <td>^7.4.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>helmet</td>
+      <td>^7.1.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>jsonwebtoken</td>
+      <td>^9.0.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>morgan</td>
+      <td>^1.10.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>multer</td>
+      <td>^2.2.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>zod</td>
+      <td>^3.23.8</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/bcryptjs</td>
+      <td>^2.4.6</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/cors</td>
+      <td>^2.8.17</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/express</td>
+      <td>^4.17.21</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/jsonwebtoken</td>
+      <td>^9.0.6</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/morgan</td>
+      <td>^1.9.9</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/multer</td>
+      <td>^2.0.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@types/node</td>
+      <td>^22.0.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>prisma</td>
+      <td>^5.17.0</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>tsx</td>
+      <td>^4.16.2</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>typescript</td>
+      <td>^5.5.4</td>
+      <td>npm</td>
+      <td>security-app-factory/crater/server/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@prisma/client</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/data-fabric/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express</td>
+      <td>^4.22.2</td>
+      <td>npm</td>
+      <td>security-app-factory/data-fabric/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>postcss</td>
+      <td>^8.5.15</td>
+      <td>npm</td>
+      <td>security-app-factory/data-fabric/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>prisma</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/data-fabric/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>adm-zip</td>
+      <td>^0.5.16</td>
+      <td>npm</td>
+      <td>security-app-factory/gatekeeper/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express</td>
+      <td>^4.21.2</td>
+      <td>npm</td>
+      <td>security-app-factory/gatekeeper/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>multer</td>
+      <td>^2.2.0</td>
+      <td>npm</td>
+      <td>security-app-factory/gatekeeper/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>tar</td>
+      <td>^7.5.16</td>
+      <td>npm</td>
+      <td>security-app-factory/gatekeeper/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>axios</td>
+      <td>^1.18.1</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>lucide-react</td>
+      <td>^0.408.0</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-dom</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-router-dom</td>
+      <td>^6.30.4</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@vitejs/plugin-react</td>
+      <td>^6.0.3</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>autoprefixer</td>
+      <td>^10.4.19</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>postcss</td>
+      <td>^8.4.40</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>tailwindcss</td>
+      <td>^3.4.7</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>vite</td>
+      <td>^8.1.0</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@azure/msal-node</td>
+      <td>^5.1.5</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@prisma/client</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>bcryptjs</td>
+      <td>^2.4.3</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>connect-pg-simple</td>
+      <td>^9.0.1</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>cors</td>
+      <td>^2.8.5</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>dotenv</td>
+      <td>^16.4.5</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express</td>
+      <td>^4.19.2</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express-session</td>
+      <td>^1.18.0</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>helmet</td>
+      <td>^7.1.0</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>pg</td>
+      <td>^8.13.1</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>concurrently</td>
+      <td>^9.0.0</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>nodemon</td>
+      <td>^3.1.4</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>prisma</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/hub/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>axios</td>
+      <td>^1.18.1</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>framer-motion</td>
+      <td>^11.18.2</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-dom</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-router-dom</td>
+      <td>^6.27.0</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@vitejs/plugin-react</td>
+      <td>^6.0.3</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>vite</td>
+      <td>^8.1.0</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@prisma/client</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>axios</td>
+      <td>^1.18.1</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>bcryptjs</td>
+      <td>^2.4.3</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>cors</td>
+      <td>^2.8.5</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>dotenv</td>
+      <td>^16.4.5</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>exceljs</td>
+      <td>^4.4.0</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express</td>
+      <td>^4.21.1</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express-session</td>
+      <td>^1.18.1</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>helmet</td>
+      <td>^8.0.0</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>multer</td>
+      <td>^2.2.0</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>prisma</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/lava/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>framer-motion</td>
+      <td>^12.40.0</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-dom</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>recharts</td>
+      <td>^3.8.1</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@vitejs/plugin-react</td>
+      <td>^6.0.3</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>autoprefixer</td>
+      <td>^10.4.20</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>postcss</td>
+      <td>^8.4.47</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>tailwindcss</td>
+      <td>^3.4.13</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>terser</td>
+      <td>^5.48.0</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>vite</td>
+      <td>^8.1.0</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>cookie-parser</td>
+      <td>^1.4.6</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>dotenv</td>
+      <td>^16.4.5</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>express</td>
+      <td>^4.19.2</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>jsonwebtoken</td>
+      <td>^9.0.3</td>
+      <td>npm</td>
+      <td>security-app-factory/nexus/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@prisma/client</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/packages/db/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>bcryptjs</td>
+      <td>^2.4.3</td>
+      <td>npm</td>
+      <td>security-app-factory/packages/db/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>prisma</td>
+      <td>^5.22.0</td>
+      <td>npm</td>
+      <td>security-app-factory/packages/db/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>@tanstack/react-query</td>
+      <td>^5.51.1</td>
+      <td>npm</td>
+      <td>security-app-factory/scorva-v1/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>axios</td>
+      <td>^1.18.1</td>
+      <td>npm</td>
+      <td>security-app-factory/scorva-v1/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>exceljs</td>
+      <td>^4.4.0</td>
+      <td>npm</td>
+      <td>security-app-factory/scorva-v1/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>lucide-react</td>
+      <td>^0.408.0</td>
+      <td>npm</td>
+      <td>security-app-factory/scorva-v1/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/scorva-v1/client/package.json</td>
+    </tr>
+  
+    <tr>
+      <td>react-dom</td>
+      <td>^18.3.1</td>
+      <td>npm</td>
+      <td>security-app-factory/scorva-v1/client/package.json</td>
+    </tr>
+  </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </div>
+  <script>
+    (function () {
+      const reportData = {"findings":[{"index":0,"severity":"medium","scanner":"ai-intake","title":"Prompt, agent, or plugin extension surface detected","file":"security-app-factory/crater/tools/build_focused_rag_packs.py","category":"prompt-plugin-surface","detail":"The repository contains a folder commonly used for prompt packs, extensions, custom tools, or agent wiring.","recommendation":"Review prompt injection controls, tool allowlists, and any untrusted plugin execution boundaries before approval."},{"index":1,"severity":"medium","scanner":"ai-intake","title":"Prompt, agent, or plugin extension surface detected","file":"security-app-factory/crater/tools/ingest_rmf_documents.py","category":"prompt-plugin-surface","detail":"The repository contains a folder commonly used for prompt packs, extensions, custom tools, or agent wiring.","recommendation":"Review prompt injection controls, tool allowlists, and any untrusted plugin execution boundaries before approval."},{"index":2,"severity":"medium","scanner":"ai-intake","title":"AI application runtime appears internet-bindable","file":"security-app-factory/gatekeeper/server.js","category":"runtime-exposure","detail":"The code appears to bind a web runtime publicly or enable permissive CORS.","recommendation":"Constrain network binding, restrict origins, and require authenticated access paths before deployment."},{"index":3,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/SCORVA_PROJECT_DASHBOARD.html","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":4,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/crater/backend/src/controllers/information-type.controller.ts","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":5,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/crater/backend/src/services/document-chunk.service.ts","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":6,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/data-fabric/digital-pmr.html","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":7,"severity":"medium","scanner":"secret-scan","title":"Hardcoded password indicator detected","file":"security-app-factory/data-fabric/server.js","category":"secret-exposure","detail":"A high-risk string pattern was detected in the file contents.","recommendation":"Move secrets to a vault or environment variable and rotate the exposed value."},{"index":8,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/gatekeeper/server.js","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":9,"severity":"medium","scanner":"secret-scan","title":"JWT secret indicator detected","file":"security-app-factory/infra/azure/deploy-container-apps.ps1","category":"secret-exposure","detail":"A high-risk string pattern was detected in the file contents.","recommendation":"Move secrets to a vault or environment variable and rotate the exposed value."},{"index":10,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/refresh-local-env.sh","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":11,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/security-dashboard/data/role_mappings.json","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":12,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/security-dashboard/data/settings.json","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":13,"severity":"medium","scanner":"heuristic-code-scan","title":"Potential command execution pattern detected","file":"security-app-factory/setup-db.sh","category":"risky-code-pattern","detail":"The file contains a dynamic execution primitive that often warrants manual review.","recommendation":"Validate whether user-controlled input can reach this code path."},{"index":14,"severity":"low","scanner":"osv.dev","title":"express 4.19.2 has known vulnerability GHSA-qw6h-vgh9-j6wx","file":"security-app-factory/crater/backend/package.json","category":"dependency-vulnerability","detail":"express vulnerable to XSS via response.redirect()","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":15,"severity":"medium","scanner":"osv.dev","title":"postcss 8.4.40 has known vulnerability GHSA-qx2v-qp2m-jg93","file":"security-app-factory/crater/client/package.json","category":"dependency-vulnerability","detail":"PostCSS has XSS via Unescaped \u003c/style> in its CSS Stringify Output","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":16,"severity":"medium","scanner":"osv.dev","title":"postcss 8.4.47 has known vulnerability GHSA-qx2v-qp2m-jg93","file":"security-app-factory/nexus/client/package.json","category":"dependency-vulnerability","detail":"PostCSS has XSS via Unescaped \u003c/style> in its CSS Stringify Output","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":17,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-356w-63v5-8wf4","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite has an `server.fs.deny` bypass with an invalid `request-target`","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":18,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-4r4m-qw57-chr8","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite has a `server.fs.deny` bypassed for `inline` and `raw` with `?import` query","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":19,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-4w7w-66w2-5vf9","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite Vulnerable to Path Traversal in Optimized Deps `.map` Handling","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":20,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-859w-5945-r5v3","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite's server.fs.deny bypassed with /. for files under project root","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":21,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-93m4-6634-74q7","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"vite allows server.fs.deny bypass via backslash on Windows","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":22,"severity":"high","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-c27g-q93r-2cwf","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"launch-editor vulnerable to command injection via the crafted request on Windows","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":23,"severity":"high","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-fx2h-pf6j-xcff","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"vite: `server.fs.deny` bypass on Windows alternate paths","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":24,"severity":"low","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-g4jq-h2w9-997c","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite middleware may serve files starting with the same name with the public directory","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":25,"severity":"low","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-jqfw-vq24-v9c3","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite's `server.fs` settings were not applied to HTML files","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":26,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-v6wh-96g9-6wx3","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"launch-editor: NTLMv2 hash disclosure via UNC path handling on Windows","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":27,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-vg6x-rcgg-rjx6","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Websites were able to send any requests to the development server and read the response in vite","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":28,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-x574-m823-4x7w","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite bypasses server.fs.deny when using ?raw??","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":29,"severity":"medium","scanner":"osv.dev","title":"vite 5.4.8 has known vulnerability GHSA-xcj6-pq6g-qj4x","file":"security-app-factory/security-dashboard/client/package.json","category":"dependency-vulnerability","detail":"Vite allows server.fs.deny to be bypassed with .svg or relative paths","recommendation":"Upgrade to a fixed dependency version and validate transitive consumers."},{"index":30,"severity":"medium","scanner":"grype","title":"uuid 8.3.2 has known vulnerability GHSA-w5hq-g745-h8pq","file":"security-app-factory/scorva-v1/client/package-lock.json","category":"dependency-vulnerability","detail":"uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided","recommendation":"Upgrade or replace the affected dependency."},{"index":31,"severity":"medium","scanner":"grype","title":"uuid 8.3.2 has known vulnerability GHSA-w5hq-g745-h8pq","file":"security-app-factory/scorva-v1/package-lock.json","category":"dependency-vulnerability","detail":"uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided","recommendation":"Upgrade or replace the affected dependency."},{"index":32,"severity":"medium","scanner":"grype","title":"uuid 8.3.2 has known vulnerability GHSA-w5hq-g745-h8pq","file":"security-app-factory/lava/package-lock.json","category":"dependency-vulnerability","detail":"uuid: Missing buffer bounds check in v3/v5/v6 when buf is provided","recommendation":"Upgrade or replace the affected dependency."},{"index":33,"severity":"medium","scanner":"grype","title":"qs 6.14.2 has known vulnerability GHSA-q8mj-m7cp-5q26","file":"security-app-factory/hub/package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade or replace the affected dependency."},{"index":34,"severity":"medium","scanner":"grype","title":"qs 6.14.2 has known vulnerability GHSA-q8mj-m7cp-5q26","file":"security-app-factory/lava/package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade or replace the affected dependency."},{"index":35,"severity":"medium","scanner":"grype","title":"qs 6.14.2 has known vulnerability GHSA-q8mj-m7cp-5q26","file":"security-app-factory/scorva-v1/package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade or replace the affected dependency."},{"index":36,"severity":"medium","scanner":"grype","title":"qs 6.14.2 has known vulnerability GHSA-q8mj-m7cp-5q26","file":"security-app-factory/nexus/package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade or replace the affected dependency."},{"index":37,"severity":"medium","scanner":"grype","title":"qs 6.14.2 has known vulnerability GHSA-q8mj-m7cp-5q26","file":"security-app-factory/crater/backend/package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade or replace the affected dependency."},{"index":38,"severity":"medium","scanner":"grype","title":"qs 6.14.2 has known vulnerability GHSA-q8mj-m7cp-5q26","file":"security-app-factory/security-dashboard/package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade or replace the affected dependency."},{"index":39,"severity":"medium","scanner":"grype","title":"qs 6.15.1 has known vulnerability GHSA-q8mj-m7cp-5q26","file":"security-app-factory/crater/backend/package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade or replace the affected dependency."},{"index":40,"severity":"medium","scanner":"grype","title":"react-router 6.30.3 has known vulnerability GHSA-2j2x-hqr9-3h42","file":"security-app-factory/crater/client/package-lock.json","category":"dependency-vulnerability","detail":"React Router's same-origin redirect with path starting // causes open redirect via protocol-relative URL reinterpretation","recommendation":"Upgrade or replace the affected dependency."},{"index":41,"severity":"medium","scanner":"grype","title":"react-router 6.30.3 has known vulnerability GHSA-2j2x-hqr9-3h42","file":"security-app-factory/lava/client/package-lock.json","category":"dependency-vulnerability","detail":"React Router's same-origin redirect with path starting // causes open redirect via protocol-relative URL reinterpretation","recommendation":"Upgrade or replace the affected dependency."},{"index":42,"severity":"medium","scanner":"semgrep","title":"dockerfile.security.missing-user.missing-user","file":"security-app-factory/crater/backend/Dockerfile","category":"static-analysis","detail":"By not specifying a USER, a program in the container may run as 'root'. This is a security hazard. If an attacker can control a process running as root, they may have control over the container. Ensure that the last USER in a Dockerfile is a USER other than 'root'.","recommendation":"Review the matched rule and remediate the code path."},{"index":43,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.express-wkhtml-injection.express-wkhtmltoimage-injection","file":"security-app-factory/crater/backend/src/controllers/project.controller.ts","category":"static-analysis","detail":"If unverified user data can reach the `phantom` methods it can result in Server-Side Request Forgery vulnerabilities","recommendation":"Review the matched rule and remediate the code path."},{"index":44,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.express-wkhtml-injection.express-wkhtmltoimage-injection","file":"security-app-factory/crater/backend/src/controllers/project.controller.ts","category":"static-analysis","detail":"If unverified user data can reach the `phantom` methods it can result in Server-Side Request Forgery vulnerabilities","recommendation":"Review the matched rule and remediate the code path."},{"index":45,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal","file":"security-app-factory/crater/backend/src/middleware/upload.ts","category":"static-analysis","detail":"Possible writing outside of the destination, make sure that the target path is nested in the intended destination","recommendation":"Review the matched rule and remediate the code path."},{"index":46,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/crater/backend/src/middleware/upload.ts","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":47,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal","file":"security-app-factory/crater/backend/src/middleware/upload.ts","category":"static-analysis","detail":"Possible writing outside of the destination, make sure that the target path is nested in the intended destination","recommendation":"Review the matched rule and remediate the code path."},{"index":48,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/crater/backend/src/middleware/upload.ts","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":49,"severity":"medium","scanner":"semgrep","title":"generic.secrets.security.detected-bcrypt-hash.detected-bcrypt-hash","file":"security-app-factory/crater/backend/src/services/auth.service.ts","category":"static-analysis","detail":"bcrypt hash detected","recommendation":"Review the matched rule and remediate the code path."},{"index":50,"severity":"medium","scanner":"semgrep","title":"dockerfile.security.missing-user.missing-user","file":"security-app-factory/crater/client/Dockerfile","category":"static-analysis","detail":"By not specifying a USER, a program in the container may run as 'root'. This is a security hazard. If an attacker can control a process running as root, they may have control over the container. Ensure that the last USER in a Dockerfile is a USER other than 'root'.","recommendation":"Review the matched rule and remediate the code path."},{"index":51,"severity":"medium","scanner":"semgrep","title":"generic.nginx.security.possible-h2c-smuggling.possible-nginx-h2c-smuggling","file":"security-app-factory/crater/client/nginx.conf","category":"static-analysis","detail":"Conditions for Nginx H2C smuggling identified. H2C smuggling allows upgrading HTTP/1.1 connections to lesser-known HTTP/2 over cleartext (h2c) connections which can allow a bypass of reverse proxy access controls, and lead to long-lived, unrestricted HTTP traffic directly to back-end servers. To mitigate: WebSocket support required: Allow only the value websocket for HTTP/1.1 upgrade headers (e.g., Upgrade: websocket). WebSocket support not required: Do not forward Upgrade headers.","recommendation":"Review the matched rule and remediate the code path."},{"index":52,"severity":"medium","scanner":"semgrep","title":"python.lang.security.audit.dynamic-urllib-use-detected.dynamic-urllib-use-detected","file":"security-app-factory/crater/tools/ingest_rmf_documents.py","category":"static-analysis","detail":"Detected a dynamic value being used with urllib. urllib supports 'file://' schemes, so a dynamic value controlled by a malicious actor may allow them to read arbitrary files. Audit uses of urllib calls to ensure user data cannot control the URLs, or consider using the 'requests' library instead.","recommendation":"Review the matched rule and remediate the code path."},{"index":53,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.audit.express-check-csurf-middleware-usage.express-check-csurf-middleware-usage","file":"security-app-factory/data-fabric/server.js","category":"static-analysis","detail":"A CSRF middleware was not detected in your express application. Ensure you are either using one such as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your routes with a token or cookies.","recommendation":"Review the matched rule and remediate the code path."},{"index":54,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/data-fabric/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":55,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/data-fabric/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":56,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.unknown-value-with-script-tag.unknown-value-with-script-tag","file":"security-app-factory/data-fabric/server.js","category":"static-analysis","detail":"Cannot determine what 'token' is and it is used with a '\u003cscript>' tag. This could be susceptible to cross-site scripting (XSS). Ensure 'token' is not externally controlled, or sanitize this data.","recommendation":"Review the matched rule and remediate the code path."},{"index":57,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.audit.express-check-csurf-middleware-usage.express-check-csurf-middleware-usage","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"A CSRF middleware was not detected in your express application. Ensure you are either using one such as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your routes with a token or cookies.","recommendation":"Review the matched rule and remediate the code path."},{"index":58,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":59,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":60,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":61,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":62,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":63,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":64,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":65,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":66,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":67,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":68,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":69,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":70,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":71,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":72,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":73,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":74,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":75,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":76,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":77,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.detect-child-process.detect-child-process","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected calls to child_process from a function argument `command`. This could lead to a command injection if the input is user controllable. Try to avoid calls to child_process, and if it is needed ensure user input is correctly sanitized or sandboxed. ","recommendation":"Review the matched rule and remediate the code path."},{"index":78,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":79,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":80,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":81,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":82,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":83,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":84,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":85,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":86,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Possible writing outside of the destination, make sure that the target path is nested in the intended destination","recommendation":"Review the matched rule and remediate the code path."},{"index":87,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":88,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Possible writing outside of the destination, make sure that the target path is nested in the intended destination","recommendation":"Review the matched rule and remediate the code path."},{"index":89,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":90,"severity":"medium","scanner":"semgrep","title":"javascript.express.security.audit.express-path-join-resolve-traversal.express-path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Possible writing outside of the destination, make sure that the target path is nested in the intended destination","recommendation":"Review the matched rule and remediate the code path."},{"index":91,"severity":"medium","scanner":"semgrep","title":"javascript.lang.security.audit.path-traversal.path-join-resolve-traversal.path-join-resolve-traversal","file":"security-app-factory/gatekeeper/server.js","category":"static-analysis","detail":"Detected possible user input going into a `path.join` or `path.resolve` function. This could possibly lead to a path traversal vulnerability,  where the attacker can access arbitrary files stored in the file system. Instead, be sure to sanitize or validate user input first.","recommendation":"Review the matched rule and remediate the code path."},{"index":92,"severity":"medium","scanner":"bandit","title":"blacklist","file":"security-app-factory/crater/tools/ingest_rmf_documents.py","category":"python-static-analysis","detail":"Audit url open for permitted schemes. Allowing use of file:/ or custom schemes is often unexpected.","recommendation":"Review the affected Python code path and apply the recommended secure coding control."},{"index":93,"severity":"medium","scanner":"npm-audit","title":"qs has known vulnerability 1119502","file":"package-lock.json","category":"dependency-vulnerability","detail":"qs has a remotely triggerable DoS: qs.stringify crashes with TypeError on null/undefined entries in comma-format arrays when encodeValuesOnly is set","recommendation":"Upgrade the affected package or regenerate the lockfile against a fixed version."},{"index":94,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/crater/backend/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":95,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/crater/backend/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":96,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/crater/backend/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":97,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/crater/backend/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":98,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/crater/client/Dockerfile.dev","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":99,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/crater/server/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":100,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/crater/server/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":101,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/crater/server/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":102,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/crater/server/Dockerfile.dev","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":103,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/crater/server/Dockerfile.dev","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":104,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/crater/server/Dockerfile.dev","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":105,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/data-fabric/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":106,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/data-fabric/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":107,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/data-fabric/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":108,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/data-fabric/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":109,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/data-fabric/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":110,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":111,"severity":"medium","scanner":"hadolint","title":"DL3016","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in npm. Instead of `npm install \u003cpackage>` use `npm install \u003cpackage>@\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":112,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":113,"severity":"medium","scanner":"hadolint","title":"DL3013","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in pip. Instead of `pip install \u003cpackage>` use `pip install \u003cpackage>==\u003cversion>` or `pip install --requirement \u003crequirements file>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":114,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":115,"severity":"medium","scanner":"hadolint","title":"DL3028","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in gem install. Instead of `gem install \u003cgem>` use `gem install \u003cgem>:\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":116,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":117,"severity":"medium","scanner":"hadolint","title":"DL4006","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Set the SHELL option -o pipefail before RUN with a pipe in it. If you are using /bin/sh in an alpine image or if your shell is symlinked to busybox then consider explicitly setting your SHELL to /bin/ash, or disable this check","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":118,"severity":"medium","scanner":"hadolint","title":"DL4006","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Set the SHELL option -o pipefail before RUN with a pipe in it. If you are using /bin/sh in an alpine image or if your shell is symlinked to busybox then consider explicitly setting your SHELL to /bin/ash, or disable this check","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":119,"severity":"medium","scanner":"hadolint","title":"DL4006","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Set the SHELL option -o pipefail before RUN with a pipe in it. If you are using /bin/sh in an alpine image or if your shell is symlinked to busybox then consider explicitly setting your SHELL to /bin/ash, or disable this check","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":120,"severity":"medium","scanner":"hadolint","title":"DL4006","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Set the SHELL option -o pipefail before RUN with a pipe in it. If you are using /bin/sh in an alpine image or if your shell is symlinked to busybox then consider explicitly setting your SHELL to /bin/ash, or disable this check","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":121,"severity":"medium","scanner":"hadolint","title":"DL4006","file":"security-app-factory/gatekeeper/Dockerfile","category":"dockerfile-lint","detail":"Set the SHELL option -o pipefail before RUN with a pipe in it. If you are using /bin/sh in an alpine image or if your shell is symlinked to busybox then consider explicitly setting your SHELL to /bin/ash, or disable this check","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":122,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/hub/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":123,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/hub/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":124,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/lava/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":125,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/lava/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":126,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/nexus/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":127,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/nexus/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":128,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/nexus/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":129,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/nexus/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":130,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/nexus/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":131,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/scorva-v1/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":132,"severity":"medium","scanner":"hadolint","title":"DL3059","file":"security-app-factory/scorva-v1/Dockerfile","category":"dockerfile-lint","detail":"Multiple consecutive `RUN` instructions. Consider consolidation.","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":133,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/security-dashboard/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":134,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/security-dashboard/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":135,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/security-dashboard/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":136,"severity":"medium","scanner":"hadolint","title":"DL3003","file":"security-app-factory/security-dashboard/Dockerfile","category":"dockerfile-lint","detail":"Use WORKDIR to switch to a directory","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":137,"severity":"medium","scanner":"hadolint","title":"DL3008","file":"security-app-factory/security-dashboard/Dockerfile","category":"dockerfile-lint","detail":"Pin versions in apt get install. Instead of `apt-get install \u003cpackage>` use `apt-get install \u003cpackage>=\u003cversion>`","recommendation":"Review the Dockerfile instruction and align it to secure container build guidance."},{"index":138,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":139,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":140,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":141,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":142,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":143,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":144,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":145,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":146,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":147,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":148,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":149,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":150,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":151,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":152,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":153,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":154,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":155,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":156,"severity":"medium","scanner":"shellcheck","title":"SC1017","file":"security-app-factory/start-all.sh","category":"shell-lint","detail":"Literal carriage return. Run script through tr -d '\\r' .","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":157,"severity":"medium","scanner":"shellcheck","title":"SC1091","file":"security-app-factory/setup-db.sh","category":"shell-lint","detail":"Not following: .env was not specified as input (see shellcheck -x).","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":158,"severity":"medium","scanner":"shellcheck","title":"SC1091","file":"security-app-factory/refresh-local-env.sh","category":"shell-lint","detail":"Not following: .env was not specified as input (see shellcheck -x).","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":159,"severity":"medium","scanner":"shellcheck","title":"SC1091","file":"security-app-factory/local-apps.sh","category":"shell-lint","detail":"Not following: .env was not specified as input (see shellcheck -x).","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":160,"severity":"medium","scanner":"shellcheck","title":"SC2028","file":"security-app-factory/crater/start.sh","category":"shell-lint","detail":"echo may not expand escape sequences. Use printf.","recommendation":"Review the shell script and apply the Shellcheck recommendation."},{"index":161,"severity":"medium","scanner":"shellcheck","title":"SC2028","file":"security-app-factory/crater/start.sh","category":"shell-lint","detail":"echo may not expand escape sequences. Use printf.","recommendation":"Review the shell script and apply the Shellcheck recommendation."}],"scanners":["ai-intake","bandit","grype","hadolint","heuristic-code-scan","npm-audit","osv.dev","secret-scan","semgrep","shellcheck"]};
+      const grid = document.getElementById('findingsGrid');
+      const searchInput = document.getElementById('findingSearch');
+      const severityFilter = document.getElementById('severityFilter');
+      const scannerFilter = document.getElementById('scannerFilter');
+      const sortSelect = document.getElementById('sortFindings');
+      const pageSizeSelect = document.getElementById('pageSize');
+      const findingsCount = document.getElementById('findingsCount');
+      const pageMeta = document.getElementById('pageMeta');
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      const severityRank = { critical: 5, high: 4, medium: 3, low: 2, info: 1 };
+      const state = { page: 1 };
+
+      function esc(value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function matches(finding) {
+        const search = (searchInput.value || '').trim().toLowerCase();
+        const severity = severityFilter.value;
+        const scanner = scannerFilter.value;
+        const haystack = [
+          finding.title || '',
+          finding.file || '',
+          finding.category || '',
+          finding.detail || '',
+          finding.recommendation || '',
+        ].join(' ').toLowerCase();
+
+        if (severity !== 'all' && finding.severity !== severity) return false;
+        if (scanner !== 'all' && finding.scanner !== scanner) return false;
+        if (search && !haystack.includes(search)) return false;
+        return true;
+      }
+
+      function sortFindings(findings) {
+        const mode = sortSelect.value;
+        findings.sort((a, b) => {
+          if (mode === 'severity-desc') {
+            return (severityRank[b.severity] || 0) - (severityRank[a.severity] || 0);
+          }
+          if (mode === 'severity-asc') {
+            return (severityRank[a.severity] || 0) - (severityRank[b.severity] || 0);
+          }
+          if (mode === 'title-desc') {
+            return (b.title || '').localeCompare(a.title || '');
+          }
+          if (mode === 'scanner-asc') {
+            return (a.scanner || '').localeCompare(b.scanner || '') || (a.title || '').localeCompare(b.title || '');
+          }
+          return (a.title || '').localeCompare(b.title || '');
+        });
+      }
+
+      function renderFinding(finding) {
+        return [
+          '<details class="finding-row">',
+          '  <summary>',
+          '    <span class="badge badge-' + esc(finding.severity) + '">' + esc(finding.severity) + '</span>',
+          '    <span class="scanner-badge">' + esc(finding.scanner) + '</span>',
+          '    <span class="finding-title">' + esc(finding.title) + '</span>',
+          '    <span class="finding-file">' + esc(finding.file) + '</span>',
+          '    <span class="finding-category">' + esc(finding.category) + '</span>',
+          '  </summary>',
+          '  <div class="finding-body">',
+          '    <div class="finding-body-grid">',
+          '      <div class="finding-block">',
+          '        <strong>Detail</strong>',
+          '        <p>' + esc(finding.detail) + '</p>',
+          '      </div>',
+          '      <div class="finding-block">',
+          '        <strong>Recommendation</strong>',
+          '        <p>' + esc(finding.recommendation) + '</p>',
+          '      </div>',
+          '    </div>',
+          '  </div>',
+          '</details>',
+        ].join('');
+      }
+
+      function render() {
+        const filtered = reportData.findings.filter(matches);
+        sortFindings(filtered);
+
+        const pageSize = Number(pageSizeSelect.value || 25);
+        const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+        if (state.page > totalPages) state.page = totalPages;
+        if (state.page < 1) state.page = 1;
+
+        const start = (state.page - 1) * pageSize;
+        const end = start + pageSize;
+        const pageItems = filtered.slice(start, end);
+
+        if (!pageItems.length) {
+          grid.innerHTML = '<div class="empty-state">No findings match the current filters.</div>';
+        } else {
+          grid.innerHTML = pageItems.map(renderFinding).join('');
+        }
+
+        findingsCount.textContent = filtered.length + ' finding' + (filtered.length === 1 ? '' : 's') + ' visible';
+        pageMeta.textContent = 'Page ' + state.page + ' of ' + totalPages;
+        prevPage.disabled = state.page <= 1;
+        nextPage.disabled = state.page >= totalPages;
+      }
+
+      [searchInput, severityFilter, scannerFilter, sortSelect, pageSizeSelect].forEach(control => {
+        control.addEventListener('input', function () {
+          state.page = 1;
+          render();
+        });
+        control.addEventListener('change', function () {
+          state.page = 1;
+          render();
+        });
+      });
+
+      prevPage.addEventListener('click', function () {
+        state.page -= 1;
+        render();
+      });
+
+      nextPage.addEventListener('click', function () {
+        state.page += 1;
+        render();
+      });
+
+      render();
+    }());
+  </script>
+</body>
+</html>

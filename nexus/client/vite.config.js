@@ -22,27 +22,12 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Vendor chunks for better caching
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-framer': ['framer-motion'],
-          'vendor-recharts': ['recharts'],
-          // Page chunks for code splitting
-          'page-dashboard': ['./src/pages/ProgramManagementPage.jsx'],
-          'page-security': ['./src/pages/ProgramSecurityPage.jsx'],
-          'page-cyber': ['./src/pages/ProgramCyberPage.jsx'],
-          'page-admin': ['./src/pages/AdminPage.jsx'],
-          // Component chunks
-          'components-charts': [
-            './src/components/LineChart.jsx',
-            './src/components/BarChart.jsx',
-            './src/components/PieChart.jsx',
-            './src/components/DonutChart.jsx',
-          ],
-          'components-viz': [
-            './src/components/TimelineGantt.jsx',
-            './src/components/Calendar.jsx',
-          ],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('/react/') || id.includes('/react-dom/')) return 'vendor-react';
+          if (id.includes('/framer-motion/')) return 'vendor-framer';
+          if (id.includes('/recharts/')) return 'vendor-recharts';
+          return 'vendor';
         },
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',

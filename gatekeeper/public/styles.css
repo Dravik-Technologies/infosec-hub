@@ -827,102 +827,138 @@ button:disabled {
   overflow-y: auto;
 }
 
-.finding-card {
+.findings-list {
+  align-content: start;
+}
+
+.finding-row {
   border: 1px solid var(--line);
   border-radius: 0.9rem;
   background: var(--panel-strong);
   overflow: hidden;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
-.finding-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px rgba(89, 225, 211, 0.12);
+.finding-row[hidden] {
+  display: none;
 }
 
-.finding-header {
-  display: flex;
-  gap: 0.8rem;
-  padding: 0.8rem 0.9rem;
-  border-bottom: 1px solid var(--line);
-}
-
-.finding-severity {
-  width: 0.35rem;
-  border-radius: 999px;
-  flex-shrink: 0;
-}
-
-.finding-content {
-  flex: 1;
+.finding-row-summary {
   display: grid;
-  gap: 0.3rem;
-  min-width: 0;
+  grid-template-columns: 110px minmax(260px, 2fr) 140px 140px minmax(220px, 1.5fr);
+  gap: 0.7rem;
+  align-items: center;
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  appearance: none;
 }
 
-.finding-title {
+.finding-row-summary:focus-visible {
+  outline: 2px solid rgba(110, 231, 216, 0.55);
+  outline-offset: -2px;
+}
+
+.finding-row-title {
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--text);
+  min-width: 0;
 }
 
-.finding-meta {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  font-size: 0.75rem;
-}
-
-.finding-file {
+.finding-row-meta {
+  font-size: 0.72rem;
   color: var(--muted);
-  font-family: var(--font-mono);
   text-transform: uppercase;
   letter-spacing: 0.08em;
+  font-family: var(--font-mono);
+}
+
+.finding-row-file {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-family: var(--font-mono);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 300px;
 }
 
-.finding-scanner {
-  border: 1px solid var(--line);
+.finding-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  padding: 0.2rem 0.65rem;
   border-radius: 999px;
-  padding: 0.15rem 0.35rem;
-  background: rgba(89, 225, 211, 0.08);
-  color: var(--accent);
+  border: 1px solid var(--line);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
   font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.finding-category {
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.finding-pill-critical {
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.12);
 }
 
-.finding-body {
-  padding: 0.7rem 0.9rem;
-  font-size: 0.85rem;
-  color: var(--muted);
-  line-height: 1.5;
+.finding-pill-high {
+  color: #fdba74;
+  border-color: rgba(249, 115, 22, 0.4);
+  background: rgba(249, 115, 22, 0.12);
 }
 
-.finding-body p {
-  margin: 0 0 0.5rem 0;
+.finding-pill-medium {
+  color: #fde047;
+  border-color: rgba(250, 204, 21, 0.35);
+  background: rgba(250, 204, 21, 0.1);
 }
 
-.finding-rec {
+.finding-pill-low,
+.finding-pill-info {
+  color: #7dd3fc;
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.1);
+}
+
+.finding-row-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.9rem;
+  padding: 0 1rem 1rem;
   border-top: 1px solid var(--line);
-  padding-top: 0.5rem;
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text);
+  background: rgba(10, 16, 28, 0.42);
 }
 
-.finding-rec strong {
+.finding-row-body[hidden] {
+  display: none;
+}
+
+.finding-row-block {
+  padding-top: 0.85rem;
+}
+
+.finding-row-block strong {
+  display: block;
+  margin-bottom: 0.45rem;
   color: var(--accent);
+  font-size: 0.74rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-family: var(--font-mono);
+}
+
+.finding-row-block p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 .report-footer {
@@ -946,6 +982,14 @@ button:disabled {
 
   .findings-container {
     max-height: none;
+  }
+
+  .finding-row-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .finding-row-body {
+    grid-template-columns: 1fr;
   }
 }
 

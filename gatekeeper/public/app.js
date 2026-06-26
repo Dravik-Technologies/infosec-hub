@@ -1,12 +1,14 @@
 const state = {
-  mode: 'folder',
+  mode: 'archive',
   currentJobId: null,
   pollTimer: null,
+  uploadConfig: {
+    warnDirectFileCount: 2000,
+    maxDirectFileCount: 5000,
+    maxArchiveSizeBytes: 4 * 1024 * 1024 * 1024,
+    recommendedMode: 'archive',
+  },
 };
-
-const WARN_DIRECT_FILE_COUNT = 2000;
-const MAX_DIRECT_FILE_COUNT = 5000;
-const MAX_ARCHIVE_SIZE_BYTES = 1024 * 1024 * 1024;
 
 const uploadForm = document.getElementById('upload-form');
 const folderInput = document.getElementById('folderInput');
@@ -47,11 +49,86 @@ function formatDate(value) {
   return new Date(value).toLocaleString();
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function createNode(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null) node.textContent = text;
+  return node;
+}
+
+function findingRowMarkup(finding, severity, severityNames) {
+  const title = escapeHtml(finding.title || 'Finding');
+  const scanner = escapeHtml(finding.scanner || 'Unknown');
+  const category = escapeHtml(finding.category || 'General');
+  const file = escapeHtml(finding.file || 'No file path');
+  const detail = escapeHtml(finding.detail || 'No details available.');
+  const recommendation = escapeHtml(finding.recommendation || 'No recommendation provided.');
+
+  return `
+    <article class="finding-row" data-severity="${escapeHtml(severity)}" data-scanner="${escapeHtml(finding.scanner || '')}">
+      <button type="button" class="finding-row-summary finding-row-toggle" aria-expanded="false">
+        <span class="finding-pill finding-pill-${escapeHtml(severity)}">${escapeHtml(severityNames[severity] || severity)}</span>
+        <span class="finding-row-title">${title}</span>
+        <span class="finding-row-meta">${scanner}</span>
+        <span class="finding-row-meta">${category}</span>
+        <span class="finding-row-file">${file}</span>
+      </button>
+      <div class="finding-row-body" hidden>
+        <div class="finding-row-block">
+          <strong>Detail</strong>
+          <p>${detail}</p>
+        </div>
+        <div class="finding-row-block">
+          <strong>Recommendation</strong>
+          <p>${recommendation}</p>
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function getWarnDirectFileCount() {
+  return Number(state.uploadConfig.warnDirectFileCount || 2000);
+}
+
+function getMaxDirectFileCount() {
+  return Number(state.uploadConfig.maxDirectFileCount || 5000);
+}
+
+function getMaxArchiveSizeBytes() {
+  return Number(state.uploadConfig.maxArchiveSizeBytes || (4 * 1024 * 1024 * 1024));
+}
+
 function setMode(mode) {
   state.mode = mode;
   folderPicker.classList.toggle('is-active', mode === 'folder');
   archivePicker.classList.toggle('is-active', mode === 'archive');
   uploadError.hidden = true;
+}
+
+async function loadConfig() {
+  try {
+    const response = await fetch('/api/config');
+    const body = await parseApiResponse(response);
+    if (!response.ok || !body?.upload) return;
+    state.uploadConfig = {
+      warnDirectFileCount: Number(body.upload.warnDirectFileCount || state.uploadConfig.warnDirectFileCount),
+      maxDirectFileCount: Number(body.upload.maxDirectFileCount || state.uploadConfig.maxDirectFileCount),
+      maxArchiveSizeBytes: Number(body.upload.maxFileSizeBytes || state.uploadConfig.maxArchiveSizeBytes),
+      recommendedMode: body.upload.recommendedMode || 'archive',
+    };
+  } catch (_error) {
+    // Keep local defaults when config bootstrap is unavailable.
+  }
 }
 
 function setError(message) {
@@ -187,110 +264,143 @@ function renderReport(job) {
   }
   donutGradient += 'rgba(148,163,184,0.15) 0 100%)';
 
-  let filtersHtml = '<div class="report-filters">';
-  filtersHtml += '<div class="filter-group"><div class="filter-title">Severity</div>';
+  reportSummary.innerHTML = '';
+
+  const reportHeader = createNode('div', 'report-header');
+  const reportTitle = createNode('div', 'report-title');
+  reportTitle.appendChild(createNode('div', 'eyebrow', 'Scan Results'));
+  reportTitle.appendChild(createNode('h2', '', 'Security Report'));
+  reportHeader.appendChild(reportTitle);
+
+  const severitySummary = createNode('div', 'severity-summary');
+  const severityDonut = createNode('div', 'severity-donut');
+  severityDonut.style.background = donutGradient;
+  const donutInner = createNode('div', 'donut-inner');
+  donutInner.appendChild(createNode('strong', '', String(totalFindings)));
+  donutInner.appendChild(createNode('span', '', 'Findings'));
+  severityDonut.appendChild(donutInner);
+  severitySummary.appendChild(severityDonut);
+
+  const severityLegend = createNode('div', 'severity-legend');
   for (const severity of severities) {
-    const count = counts[severity] || 0;
-    filtersHtml += `<label class="filter-checkbox" data-severity="${severity}"><input type="checkbox" checked><span style="color:${severityColors[severity]}">${severityNames[severity]}</span><span class="filter-count">${count}</span></label>`;
+    const row = createNode('div', 'legend-row');
+    const dot = createNode('span', 'legend-dot');
+    dot.style.background = severityColors[severity];
+    row.appendChild(dot);
+    row.appendChild(document.createTextNode(`${severityNames[severity]} `));
+    row.appendChild(createNode('strong', '', String(counts[severity] || 0)));
+    severityLegend.appendChild(row);
   }
-  filtersHtml += '</div>';
+  severitySummary.appendChild(severityLegend);
+  reportHeader.appendChild(severitySummary);
+
+  const reportBody = createNode('div', 'report-body');
+  const reportFilters = createNode('div', 'report-filters');
+
+  const severityFilterGroup = createNode('div', 'filter-group');
+  severityFilterGroup.appendChild(createNode('div', 'filter-title', 'Severity'));
+  for (const severity of severities) {
+    const label = createNode('label', 'filter-checkbox');
+    label.dataset.severity = severity;
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = true;
+    const labelText = createNode('span', '', severityNames[severity]);
+    labelText.style.color = severityColors[severity];
+    const countNode = createNode('span', 'filter-count', String(counts[severity] || 0));
+    label.appendChild(checkbox);
+    label.appendChild(labelText);
+    label.appendChild(countNode);
+    severityFilterGroup.appendChild(label);
+  }
+  reportFilters.appendChild(severityFilterGroup);
+
   if (scannerList.length > 1) {
-    filtersHtml += '<div class="filter-group"><div class="filter-title">Scanner</div>';
+    const scannerFilterGroup = createNode('div', 'filter-group');
+    scannerFilterGroup.appendChild(createNode('div', 'filter-title', 'Scanner'));
     for (const scanner of scannerList) {
-      filtersHtml += `<label class="filter-checkbox" data-scanner="${scanner}"><input type="checkbox" checked><span>${scanner}</span></label>`;
+      const label = createNode('label', 'filter-checkbox');
+      label.dataset.scanner = scanner;
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = true;
+      label.appendChild(checkbox);
+      label.appendChild(createNode('span', '', scanner));
+      scannerFilterGroup.appendChild(label);
     }
-    filtersHtml += '</div>';
+    reportFilters.appendChild(scannerFilterGroup);
   }
-  filtersHtml += '</div>';
+  reportBody.appendChild(reportFilters);
 
-  let findingsHtml = '<div class="findings-container">';
-  for (const severity of severities) {
-    for (const finding of grouped[severity]) {
-      const scannerBadge = finding.scanner ? `<span class="finding-scanner">${finding.scanner}</span>` : '';
-      findingsHtml += `
-        <div class="finding-card" data-severity="${severity}" data-scanner="${finding.scanner || ''}">
-          <div class="finding-header">
-            <div class="finding-severity" style="background:${severityColors[severity]}"></div>
-            <div class="finding-content">
-              <div class="finding-title">${finding.title || 'Finding'}</div>
-              <div class="finding-meta">
-                ${finding.file ? `<span class="finding-file">${finding.file}</span>` : ''}
-                ${scannerBadge}
-                ${finding.category ? `<span class="finding-category">${finding.category}</span>` : ''}
-              </div>
-            </div>
-          </div>
-          <div class="finding-body">
-            <p>${finding.detail || 'No details available.'}</p>
-            ${finding.recommendation ? `<div class="finding-rec"><strong>Recommendation:</strong> ${finding.recommendation}</div>` : ''}
-          </div>
-        </div>
-      `;
-    }
+  const reportMain = createNode('div', 'report-main');
+  const findingsToolbar = createNode('div', 'findings-toolbar');
+  const findingsCount = createNode('span', 'findings-count', `${totalFindings} findings`);
+  findingsCount.id = 'findingsCount';
+  findingsToolbar.appendChild(findingsCount);
+  reportMain.appendChild(findingsToolbar);
+
+  const findingsContainer = createNode('div', 'findings-container findings-list');
+  findingsContainer.innerHTML = severities
+    .flatMap((severity) => grouped[severity].map((finding) => findingRowMarkup(finding, severity, severityNames)))
+    .join('');
+  reportMain.appendChild(findingsContainer);
+  reportBody.appendChild(reportMain);
+
+  const reportFooter = createNode('div', 'report-footer');
+  const downloads = createNode('div', 'downloads');
+  const htmlLink = createNode('a', 'primary', 'Open HTML report');
+  htmlLink.href = job.downloads.html;
+  htmlLink.target = '_blank';
+  htmlLink.rel = 'noreferrer';
+  const jsonLink = createNode('a', 'secondary', 'Download JSON');
+  jsonLink.href = job.downloads.json;
+  jsonLink.target = '_blank';
+  jsonLink.rel = 'noreferrer';
+  downloads.appendChild(htmlLink);
+  downloads.appendChild(jsonLink);
+  reportFooter.appendChild(downloads);
+
+  reportSummary.appendChild(reportHeader);
+  reportSummary.appendChild(reportBody);
+  reportSummary.appendChild(reportFooter);
+
+  const severityCheckboxes = reportSummary.querySelectorAll('[data-severity] input');
+  const scannerCheckboxes = reportSummary.querySelectorAll('[data-scanner] input');
+  const cards = reportSummary.querySelectorAll('.finding-row');
+  const toggles = reportSummary.querySelectorAll('.finding-row-toggle');
+
+  for (const toggle of toggles) {
+    toggle.addEventListener('click', () => {
+      const row = toggle.closest('.finding-row');
+      const body = row?.querySelector('.finding-row-body');
+      if (!row || !body) return;
+      const open = row.classList.toggle('is-open');
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      body.hidden = !open;
+    });
   }
-  findingsHtml += '</div>';
 
-  reportSummary.innerHTML = `
-    <div class="report-header">
-      <div class="report-title">
-        <div class="eyebrow">Scan Results</div>
-        <h2>Security Report</h2>
-      </div>
-      <div class="severity-summary">
-        <div class="severity-donut" style="${donutGradient}">
-          <div class="donut-inner">
-            <strong>${totalFindings}</strong>
-            <span>Findings</span>
-          </div>
-        </div>
-        <div class="severity-legend">
-          ${severities.map(s => `<div class="legend-row"><span class="legend-dot" style="background:${severityColors[s]}"></span>${severityNames[s]} <strong>${counts[s] || 0}</strong></div>`).join('')}
-        </div>
-      </div>
-    </div>
-    <div class="report-body">
-      ${filtersHtml}
-      <div class="report-main">
-        <div class="findings-toolbar">
-          <span id="findingsCount" class="findings-count">${totalFindings} findings</span>
-        </div>
-        ${findingsHtml}
-      </div>
-    </div>
-    <div class="report-footer">
-      <div class="downloads">
-        <a class="primary" href="${job.downloads.html}" target="_blank" rel="noreferrer">Open HTML report</a>
-        <a class="secondary" href="${job.downloads.json}" target="_blank" rel="noreferrer">Download JSON</a>
-      </div>
-    </div>
-  `;
+  const updateVisibility = () => {
+    const activeSeverities = new Set(Array.from(severityCheckboxes).filter(c => c.checked).map(c => c.parentElement.getAttribute('data-severity')));
+    const activeScanners = new Set(Array.from(scannerCheckboxes).filter(c => c.checked).map(c => c.parentElement.getAttribute('data-scanner')));
+    let visibleCount = 0;
 
-  // Add filter event listeners
-  setTimeout(() => {
-    const severityCheckboxes = reportSummary.querySelectorAll('[data-severity] input');
-    const scannerCheckboxes = reportSummary.querySelectorAll('[data-scanner] input');
-    const cards = reportSummary.querySelectorAll('.finding-card');
-
-    const updateVisibility = () => {
-      const activeSeverities = new Set(Array.from(severityCheckboxes).filter(c => c.checked).map(c => c.parentElement.getAttribute('data-severity')));
-      const activeScanners = new Set(Array.from(scannerCheckboxes).filter(c => c.checked).map(c => c.parentElement.getAttribute('data-scanner')));
-      let visibleCount = 0;
-
-      for (const card of cards) {
-        const severity = card.getAttribute('data-severity');
-        const scanner = card.getAttribute('data-scanner');
-        const isVisible = activeSeverities.has(severity) && (activeScanners.size === 0 || activeScanners.has(scanner));
-        card.hidden = !isVisible;
-        if (isVisible) visibleCount++;
-      }
-
-      document.getElementById('findingsCount').textContent = `${visibleCount} findings`;
-    };
-
-    for (const checkbox of [...severityCheckboxes, ...scannerCheckboxes]) {
-      checkbox.addEventListener('change', updateVisibility);
+    for (const card of cards) {
+      const severity = card.getAttribute('data-severity');
+      const scanner = card.getAttribute('data-scanner');
+      const isVisible = activeSeverities.has(severity) && (activeScanners.size === 0 || activeScanners.has(scanner));
+      card.hidden = !isVisible;
+      if (isVisible) visibleCount += 1;
     }
-  }, 0);
+
+    findingsCount.textContent = `${visibleCount} findings`;
+  };
+
+  for (const checkbox of [...severityCheckboxes, ...scannerCheckboxes]) {
+    checkbox.addEventListener('change', updateVisibility);
+  }
+
+  updateVisibility();
 }
 
 function renderJob(job) {
@@ -363,8 +473,8 @@ function buildFolderFormData() {
   if (!files.length) {
     throw new Error('Select a source folder before starting the scan.');
   }
-  if (files.length > MAX_DIRECT_FILE_COUNT) {
-    throw new Error(`This folder has ${formatCount(files.length)} files. Direct browser upload is capped at ${formatCount(MAX_DIRECT_FILE_COUNT)} files for performance. Compress it as a .zip or .tar.gz and use Archive mode instead.`);
+  if (files.length > getMaxDirectFileCount()) {
+    throw new Error(`This folder has ${formatCount(files.length)} files. Direct browser upload is capped at ${formatCount(getMaxDirectFileCount())} files for performance. Compress it as a .zip or .tar.gz and use Archive mode instead.`);
   }
 
   const formData = new FormData();
@@ -383,8 +493,8 @@ function buildArchiveFormData() {
   if (!file) {
     throw new Error('Select an archive before starting the scan.');
   }
-  if (file.size > MAX_ARCHIVE_SIZE_BYTES) {
-    throw new Error(`This archive is ${formatBytes(file.size)}. Gatekeeper currently accepts archives up to ${formatBytes(MAX_ARCHIVE_SIZE_BYTES)}.`);
+  if (file.size > getMaxArchiveSizeBytes()) {
+    throw new Error(`This archive is ${formatBytes(file.size)}. Gatekeeper currently accepts archives up to ${formatBytes(getMaxArchiveSizeBytes())}.`);
   }
 
   const formData = new FormData();
@@ -433,12 +543,12 @@ folderInput.addEventListener('change', () => {
   const root = files[0].webkitRelativePath.split('/')[0];
   folderSummary.textContent = `${root} • ${formatCount(files.length)} files queued for upload`;
 
-  if (files.length > MAX_DIRECT_FILE_COUNT) {
+  if (files.length > getMaxDirectFileCount()) {
     setWarning(`Large project detected: ${formatCount(files.length)} files. Use Archive mode with a .zip or .tar.gz for a much faster and more reliable intake.`);
     return;
   }
 
-  if (files.length > WARN_DIRECT_FILE_COUNT) {
+  if (files.length > getWarnDirectFileCount()) {
     setWarning(`Large project detected: ${formatCount(files.length)} files. Direct folder upload may feel slow in the browser. Archive mode is recommended for better performance.`);
     return;
   }
@@ -453,12 +563,20 @@ archiveInput.addEventListener('change', () => {
     setError(null);
     return;
   }
-  if (file.size > MAX_ARCHIVE_SIZE_BYTES) {
-    setWarning(`Archive is ${formatBytes(file.size)}. The current intake limit is ${formatBytes(MAX_ARCHIVE_SIZE_BYTES)}.`);
+  if (file.size > getMaxArchiveSizeBytes()) {
+    setWarning(`Archive is ${formatBytes(file.size)}. The current intake limit is ${formatBytes(getMaxArchiveSizeBytes())}.`);
     return;
   }
   setError(null);
 });
 
 uploadForm.addEventListener('submit', submitUpload);
-setMode('folder');
+
+async function bootstrap() {
+  await loadConfig();
+  setMode(state.uploadConfig.recommendedMode || 'archive');
+  const preferredModeInput = document.querySelector(`input[name="mode"][value="${state.mode}"]`);
+  if (preferredModeInput) preferredModeInput.checked = true;
+}
+
+bootstrap();

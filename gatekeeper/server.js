@@ -14,9 +14,40 @@ const ROOT = __dirname;
 const RUNTIME_DIR = path.join(ROOT, 'runtime');
 const TEMP_DIR = path.join(RUNTIME_DIR, 'tmp');
 const JOBS_DIR = path.join(RUNTIME_DIR, 'jobs');
-const MAX_FILE_SIZE_MB = Number(process.env.MAX_UPLOAD_SIZE_MB || 1024);
+const MAX_FILE_SIZE_MB = Number(process.env.MAX_UPLOAD_SIZE_MB || 4096);
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+const WARN_DIRECT_FILE_COUNT = Number(process.env.WARN_DIRECT_FILE_COUNT || 2000);
+const MAX_DIRECT_FILE_COUNT = Number(process.env.MAX_DIRECT_FILE_COUNT || 5000);
 const POLLABLE_STATUSES = new Set(['queued', 'running']);
+const DEFAULT_SCAN_EXCLUDED_SEGMENTS = [
+  'scan-reports',
+  'node_modules',
+  '.git',
+  'dist',
+  'build',
+  'coverage',
+  '.next',
+  'runtime',
+  'vendor',
+  '.venv',
+  'venv',
+  '__pycache__',
+  '.pytest_cache',
+  '.cache',
+  '.scannerwork',
+  '.terraform',
+  'target',
+  'out',
+];
+const SCAN_EXCLUDED_SEGMENTS = new Set(
+  [
+    ...DEFAULT_SCAN_EXCLUDED_SEGMENTS,
+    ...String(process.env.SCAN_EXCLUDE_DIRS || '')
+      .split(',')
+      .map(item => item.trim())
+      .filter(Boolean),
+  ].map(item => item.replace(/^\/+|\/+$/g, '')),
+);
 
 const appState = {
   jobs: new Map(),
@@ -120,6 +151,49 @@ function normalizeArray(value) {
   if (Array.isArray(value)) return value;
   if (value == null) return [];
   return [value];
+}
+
+function normalizeRelativePath(value) {
+  return String(value || '')
+    .replace(/\\/g, '/')
+    .replace(/^\.\//, '')
+    .replace(/^\/+/, '')
+    .replace(/\/+/g, '/')
+    .replace(/\/$/, '');
+}
+
+function pathSegments(value) {
+  return normalizeRelativePath(value)
+    .split('/')
+    .map(segment => segment.trim())
+    .filter(Boolean);
+}
+
+function isExcludedRelativePath(value) {
+  const segments = pathSegments(value);
+  if (!segments.length) return false;
+  return segments.some(segment => SCAN_EXCLUDED_SEGMENTS.has(segment));
+}
+
+function normalizeFindingFile(file, sourceDir) {
+  if (!file) return '';
+  const raw = String(file).trim();
+  if (!raw) return '';
+
+  if (sourceDir && path.isAbsolute(raw)) {
+    const relative = path.relative(sourceDir, raw).replace(/\\/g, '/');
+    if (!relative.startsWith('..')) return normalizeRelativePath(relative);
+  }
+
+  return normalizeRelativePath(raw);
+}
+
+function buildRepeatedArgs(flag, values) {
+  const args = [];
+  for (const value of values || []) {
+    args.push(flag, value);
+  }
+  return args;
 }
 
 function json(res, status, body) {
@@ -230,6 +304,7 @@ async function removeTempFiles(files) {
 
 async function walkFiles(rootDir) {
   const files = [];
+  const excludedDirectories = [];
 
   async function visit(currentDir) {
     const entries = await fsp.readdir(currentDir, { withFileTypes: true });
@@ -237,15 +312,20 @@ async function walkFiles(rootDir) {
       const absolutePath = path.join(currentDir, entry.name);
       const relativePath = path.relative(rootDir, absolutePath).replace(/\\/g, '/');
       if (entry.isDirectory()) {
+        if (isExcludedRelativePath(relativePath)) {
+          excludedDirectories.push(normalizeRelativePath(relativePath));
+          continue;
+        }
         await visit(absolutePath);
       } else if (entry.isFile()) {
-        files.push({ absolutePath, relativePath, ext: path.extname(entry.name).toLowerCase(), name: entry.name });
+        if (isExcludedRelativePath(relativePath)) continue;
+        files.push({ absolutePath, relativePath: normalizeRelativePath(relativePath), ext: path.extname(entry.name).toLowerCase(), name: entry.name });
       }
     }
   }
 
   await visit(rootDir);
-  return files;
+  return { files, excludedDirectories: Array.from(new Set(excludedDirectories)).sort() };
 }
 
 async function fileExists(target) {
@@ -258,7 +338,15 @@ async function fileExists(target) {
 }
 
 function addFinding(report, finding) {
-  report.findings.push(finding);
+  const normalizedFile = normalizeFindingFile(finding.file, report.sourceDir);
+  if (normalizedFile && isExcludedRelativePath(normalizedFile)) {
+    report.filteredFindings = (report.filteredFindings || 0) + 1;
+    return;
+  }
+  report.findings.push({
+    ...finding,
+    file: normalizedFile || finding.file || '',
+  });
 }
 
 function addToolNote(report, note) {
@@ -678,6 +766,7 @@ async function runOptionalTools(report, sourceDir) {
   const shellFiles = [];
   const goFiles = [];
   const checkovEligibleFiles = [];
+  const excludedDirectories = report.summaryContext.excludedDirectories || [];
 
   for (const ecosystem of report.summaryContext.ecosystems || []) {
     if (ecosystem.id === 'node') {
@@ -750,7 +839,7 @@ async function runOptionalTools(report, sourceDir) {
     },
     {
       name: 'trivy',
-      args: ['fs', '--format', 'json', '--scanners', 'vuln,secret,misconfig', '.'],
+      args: ['fs', '--format', 'json', '--scanners', 'vuln,secret,misconfig', ...buildRepeatedArgs('--skip-dirs', excludedDirectories), '.'],
       allowNonZero: true,
       shouldRun: () => true,
       parse(result) {
@@ -829,7 +918,7 @@ async function runOptionalTools(report, sourceDir) {
     },
     {
       name: 'semgrep',
-      args: ['scan', '--config', 'auto', '--json', '.'],
+      args: ['scan', '--config', 'auto', '--json', ...buildRepeatedArgs('--exclude', excludedDirectories), '.'],
       allowNonZero: true,
       shouldRun: () => true,
       parse(result) {
@@ -851,7 +940,7 @@ async function runOptionalTools(report, sourceDir) {
     },
     {
       name: 'bandit',
-      args: ['-r', '.', '-f', 'json'],
+      argsFactory: () => ['-r', '.', '-f', 'json', ...(excludedDirectories.length ? ['-x', excludedDirectories.join(',')] : [])],
       allowNonZero: true,
       shouldRun: () => pyFiles.length > 0,
       parse(result) {
@@ -1032,7 +1121,7 @@ async function runOptionalTools(report, sourceDir) {
     },
     {
       name: 'checkov',
-      args: ['-d', '.', '-o', 'json'],
+      args: ['-d', '.', '-o', 'json', ...buildRepeatedArgs('--skip-path', excludedDirectories)],
       allowNonZero: true,
       shouldRun: () => checkovEligibleFiles.length > 0,
       parse(result) {
@@ -1254,6 +1343,9 @@ function buildReportHtml(job) {
   const totalFindings = Object.values(counts).reduce((sum, value) => sum + (Number(value) || 0), 0);
   const summary = job.summary || {};
   const ai = summary.ai || {};
+  const excludedDirectories = summary.excludedDirectories || [];
+  const exclusionPolicy = summary.exclusionPolicy || Array.from(SCAN_EXCLUDED_SEGMENTS).sort();
+  const filteredFindings = Number(job.report.filteredFindings || 0);
   const findingsPayload = (job.report.findings || []).map((item, index) => ({
     index,
     severity: item.severity || 'info',
@@ -1903,6 +1995,7 @@ function buildReportHtml(job) {
           <span><strong>Completed:</strong> ${escapeHtml(job.updatedAt)}</span>
           <span><strong>Files scanned:</strong> ${escapeHtml(summary.fileCount || 0)}</span>
           <span><strong>Dependencies:</strong> ${escapeHtml((summary.dependencies || []).length)}</span>
+          <span><strong>Excluded dirs:</strong> ${escapeHtml(excludedDirectories.length)}</span>
         </div>
         <div class="quick-stats">
           <div class="stat-tile"><span>Ecosystems</span><strong>${escapeHtml((summary.ecosystems || []).length)}</strong></div>
@@ -1910,6 +2003,7 @@ function buildReportHtml(job) {
           <div class="stat-tile"><span>AI Signals</span><strong>${escapeHtml(ai.detected ? 'Detected' : 'None')}</strong></div>
           <div class="stat-tile"><span>Total Findings</span><strong>${escapeHtml(totalFindings)}</strong></div>
         </div>
+        <div class="hint-text">Default exclusions applied: ${escapeHtml(exclusionPolicy.join(', ') || 'none')} ${filteredFindings ? `• ${escapeHtml(filteredFindings)} findings suppressed from excluded paths` : ''}</div>
       </div>
       <div class="risk-summary">
         <div class="risk-donut">
@@ -2223,12 +2317,13 @@ async function processJob(jobId, sourceDir, jobDir) {
     updateJob(job, { status: 'running', error: null });
     updateStep(job, 'verify', { status: 'running', message: 'Checking uploaded contents.' });
 
-    const files = await walkFiles(sourceDir);
+    report.sourceDir = sourceDir;
+    const { files, excludedDirectories } = await walkFiles(sourceDir);
     if (!files.length) {
       throw new Error('No files were found in the uploaded submission.');
     }
 
-    updateStep(job, 'verify', { status: 'completed', message: `Verified ${files.length} files.` });
+    updateStep(job, 'verify', { status: 'completed', message: `Verified ${files.length} files${excludedDirectories.length ? ` (excluded ${excludedDirectories.length} generated directories)` : ''}.` });
     updateStep(job, 'detect', { status: 'running', message: 'Looking for language and build manifests.' });
 
     const { ecosystems, rootFiles } = await detectEcosystems(files, sourceDir);
@@ -2246,7 +2341,7 @@ async function processJob(jobId, sourceDir, jobDir) {
 
     updateStep(job, 'vulns', { status: 'running', message: 'Scanning dependency inventory for known vulnerabilities.' });
     await scanDependenciesWithOsv(report, dependencies);
-    report.summaryContext = { ecosystems, files };
+    report.summaryContext = { ecosystems, files, excludedDirectories };
     await runOptionalTools(report, sourceDir);
     delete report.summaryContext;
     updateStep(job, 'vulns', { status: 'completed', message: 'Dependency vulnerability scan complete.' });
@@ -2258,12 +2353,15 @@ async function processJob(jobId, sourceDir, jobDir) {
     updateStep(job, 'report', { status: 'running', message: 'Rendering HTML and JSON report artifacts.' });
     const summary = {
       fileCount: files.length,
+      excludedDirectories,
+      exclusionPolicy: Array.from(SCAN_EXCLUDED_SEGMENTS).sort(),
       ecosystems,
       rootFiles,
       dependencies,
       ai,
       directoryCount: new Set(files.map(file => path.dirname(file.relativePath))).size,
     };
+    delete report.sourceDir;
     report.counts = summarizeFindings(report.findings);
 
     const reportJson = {
@@ -2312,6 +2410,19 @@ app.use(express.static(path.join(ROOT, 'public')));
 
 app.get('/api/health', (_req, res) => {
   json(res, 200, { ok: true, service: 'gatekeeper', time: nowIso() });
+});
+
+app.get('/api/config', (_req, res) => {
+  json(res, 200, {
+    ok: true,
+    upload: {
+      maxFileSizeBytes: MAX_FILE_SIZE,
+      maxFileSizeMb: MAX_FILE_SIZE_MB,
+      warnDirectFileCount: WARN_DIRECT_FILE_COUNT,
+      maxDirectFileCount: MAX_DIRECT_FILE_COUNT,
+      recommendedMode: 'archive',
+    },
+  });
 });
 
 app.get('/api/jobs', (_req, res) => {

@@ -91,7 +91,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "${CRATER_UI_PORT:-3003}:80"
+      - "${CRATER_UI_PORT:-3003}:8080"
     depends_on:
       - crater-api
 
@@ -192,6 +192,9 @@ services:
     environment:
       PORT: 8095
       NODE_ENV: production
+      MAX_UPLOAD_SIZE_MB: 4096
+      WARN_DIRECT_FILE_COUNT: 2000
+      MAX_DIRECT_FILE_COUNT: 5000
 
 volumes:
   postgres_data:
