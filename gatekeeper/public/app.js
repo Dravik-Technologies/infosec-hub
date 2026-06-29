@@ -401,6 +401,41 @@ function renderReport(job) {
   }
 
   updateVisibility();
+
+  // Add binary artifacts section if present
+  if (job.report.binaries && job.report.binaries.length > 0) {
+    const binariesSection = document.createElement('div');
+    binariesSection.className = 'binaries-section';
+
+    const header = document.createElement('div');
+    header.className = 'binaries-header';
+    const title = document.createElement('h3');
+    title.textContent = 'Binary Artifacts';
+    const count = document.createElement('span');
+    count.className = 'binary-count';
+    count.textContent = `${job.report.binaries.length} detected`;
+    header.appendChild(title);
+    header.appendChild(count);
+    binariesSection.appendChild(header);
+
+    const list = document.createElement('div');
+    list.className = 'binaries-list';
+    for (const binary of job.report.binaries) {
+      const artifact = document.createElement('div');
+      artifact.className = 'binary-artifact';
+      artifact.innerHTML = `
+        <div class="binary-file">${binary.file}</div>
+        <div class="binary-meta">
+          <span class="binary-ext">${binary.extension}</span>
+          <span class="binary-size">${(binary.size / 1024 / 1024).toFixed(2)} MB</span>
+          <span class="binary-hash" title="${binary.hash || 'N/A'}">${binary.hash ? binary.hash.substring(0, 16) + '...' : 'N/A'}</span>
+        </div>
+      `;
+      list.appendChild(artifact);
+    }
+    binariesSection.appendChild(list);
+    reportSummary.appendChild(binariesSection);
+  }
 }
 
 function renderJob(job) {

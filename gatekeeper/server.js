@@ -70,6 +70,23 @@ const ECOSYSTEM_RULES = [
   { id: 'rust', label: 'Rust', manifests: ['Cargo.toml', 'Cargo.lock'] },
 ];
 
+const BINARY_EXTENSIONS = new Set([
+  '.exe', '.dll', '.sys', '.msi', '.cab',
+  '.so', '.a', '.o',
+  '.dylib', '.framework',
+  '.jar', '.whl', '.egg',
+  '.bin', '.out',
+]);
+
+const SIGNED_BINARY_RISK = [
+  { ext: '.exe', title: 'Executable binary detected', risk: 'high', detail: 'Verify code signature and publisher' },
+  { ext: '.dll', title: 'Dynamic library detected', risk: 'high', detail: 'Check load dependencies and signature' },
+  { ext: '.so', title: 'Shared object detected', risk: 'high', detail: 'Verify compilation flags and symbols' },
+  { ext: '.dylib', title: 'macOS library detected', risk: 'high', detail: 'Validate notarization and entitlements' },
+  { ext: '.jar', title: 'Java archive detected', risk: 'medium', detail: 'Scan contained classes and verify signatures' },
+  { ext: '.whl', title: 'Python wheel detected', risk: 'medium', detail: 'Inspect contained .so files and extensions' },
+];
+
 const TEXT_EXTENSIONS = new Set([
   '.c', '.cc', '.cfg', '.conf', '.cpp', '.cs', '.css', '.env', '.erb', '.fs', '.go', '.gradle',
   '.groovy', '.h', '.hpp', '.html', '.ini', '.java', '.js', '.json', '.jsx', '.kts', '.md',
@@ -351,6 +368,68 @@ function addFinding(report, finding) {
 
 function addToolNote(report, note) {
   report.toolNotes.push(note);
+}
+
+function calculateFileHash(filePath) {
+  try {
+    const data = fs.readFileSync(filePath);
+    return crypto.createHash('sha256').update(data).digest('hex');
+  } catch {
+    return null;
+  }
+}
+
+async function analyzeBinaries(sourceDir, files, report) {
+  const binaries = [];
+  const binaryFindings = [];
+
+  for (const file of files) {
+    if (!BINARY_EXTENSIONS.has(file.ext)) continue;
+
+    const fullPath = path.join(sourceDir, file.relativePath);
+    const stats = fs.statSync(fullPath);
+    const hash = calculateFileHash(fullPath);
+
+    const binaryInfo = {
+      file: file.relativePath,
+      extension: file.ext,
+      size: stats.size,
+      hash,
+      modified: stats.mtime.toISOString(),
+    };
+
+    binaries.push(binaryInfo);
+
+    const riskProfile = SIGNED_BINARY_RISK.find(r => r.ext === file.ext);
+    if (riskProfile) {
+      binaryFindings.push({
+        scanner: 'binary-scan',
+        category: 'binary-artifact',
+        severity: riskProfile.risk === 'high' ? 'high' : 'medium',
+        title: riskProfile.title,
+        file: file.relativePath,
+        detail: `Binary artifact found. ${riskProfile.detail} SHA256: ${hash}`,
+        recommendation: 'Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results.',
+        hash,
+        fileSize: stats.size,
+      });
+    }
+  }
+
+  if (binaries.length > 0) {
+    report.binaries = binaries;
+    for (const finding of binaryFindings) {
+      addFinding(report, finding);
+    }
+  }
+
+  if (binaryFindings.length > 0) {
+    addToolNote(report, {
+      tool: 'binary-scan',
+      status: 'completed',
+      detail: `Detected ${binaries.length} binary artifacts. Review hashes for supply chain verification.`,
+    });
+  }
 }
 
 async function detectEcosystems(files, sourceDir) {
@@ -1400,6 +1479,16 @@ function buildReportHtml(job) {
     </tr>
   `).join('');
 
+  const binaries = job.report.binaries || [];
+  const binaryRows = binaries.map(item => `
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">${escapeHtml(item.file)}</code></td>
+      <td>${escapeHtml(item.extension)}</td>
+      <td>${(item.size / 1024 / 1024).toFixed(2)} MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">${escapeHtml((item.hash || 'N/A').substring(0, 16))}...</code></td>
+    </tr>
+  `).join('');
+
   const percentage = value => {
     if (!totalFindings) return 0;
     return ((Number(value) || 0) / totalFindings) * 100;
@@ -2088,6 +2177,29 @@ function buildReportHtml(job) {
     <details class="panel section">
       <summary>
         <div class="section-title">
+          <h2>Binary Artifacts & Supply Chain</h2>
+          <span class="section-badge">${escapeHtml(binaries.length)} artifacts</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        ${binaries.length > 0 ? `
+          <div class="hint-text" style="margin-bottom:0.85rem">
+            Compiled binaries detected. Verify signatures, hashes, and build reproducibility. Use <code>sha256sum</code> or similar tools to validate artifacts.
+          </div>
+          <div class="table-shell">
+            <table>
+              <thead><tr><th>File</th><th>Type</th><th>Size</th><th>SHA256 (Truncated)</th></tr></thead>
+              <tbody>${binaryRows || '<tr><td colspan="4">No binaries recorded.</td></tr>'}</tbody>
+            </table>
+          </div>
+        ` : '<div class="empty-state">No compiled binary artifacts detected in this submission.</div>'}
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
           <h2>AI / LLM Intake Summary</h2>
           <span class="section-badge">${escapeHtml(ai.detected ? 'signals detected' : 'no ai signals')}</span>
         </div>
@@ -2349,6 +2461,10 @@ async function processJob(jobId, sourceDir, jobDir) {
     updateStep(job, 'quality', { status: 'running', message: 'Looking for stale files and dead-code indicators.' });
     scanStaleFiles(report, files);
     updateStep(job, 'quality', { status: 'completed', message: 'Code hygiene scan complete.' });
+
+    updateStep(job, 'quality', { status: 'running', message: 'Analyzing binary artifacts for supply chain verification.' });
+    await analyzeBinaries(sourceDir, files, report);
+    updateStep(job, 'quality', { status: 'completed', message: 'Binary artifact analysis complete.' });
 
     updateStep(job, 'report', { status: 'running', message: 'Rendering HTML and JSON report artifacts.' });
     const summary = {
