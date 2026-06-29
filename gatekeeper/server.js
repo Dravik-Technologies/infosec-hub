@@ -381,11 +381,21 @@ function calculateFileHash(filePath) {
 }
 
 async function analyzeBinaries(sourceDir, files, report) {
+  console.log('[BINARY-SCAN] Starting with', files.length, 'total files');
+  const binaryExtCounts = {};
+  for (const file of files) {
+    if (BINARY_EXTENSIONS.has(file.ext)) {
+      binaryExtCounts[file.ext] = (binaryExtCounts[file.ext] || 0) + 1;
+    }
+  }
+  console.log('[BINARY-SCAN] Found binary types:', binaryExtCounts);
+
   const binaries = [];
   const binaryFindings = [];
 
   for (const file of files) {
     if (!BINARY_EXTENSIONS.has(file.ext)) continue;
+    console.log('[BINARY-SCAN] Processing binary:', file.relativePath);
 
     const fullPath = path.join(sourceDir, file.relativePath);
     const stats = fs.statSync(fullPath);
@@ -2437,6 +2447,13 @@ async function processJob(jobId, sourceDir, jobDir) {
     }
 
     updateStep(job, 'verify', { status: 'completed', message: `Verified ${files.length} files${excludedDirectories.length ? ` (excluded ${excludedDirectories.length} generated directories)` : ''}.` });
+
+    // Log file breakdown
+    const extCount = {};
+    for (const file of files) {
+      extCount[file.ext || 'none'] = (extCount[file.ext || 'none'] || 0) + 1;
+    }
+    console.log('[VERIFY] File breakdown:', extCount);
     updateStep(job, 'detect', { status: 'running', message: 'Looking for language and build manifests.' });
 
     const { ecosystems, rootFiles } = await detectEcosystems(files, sourceDir);
@@ -2591,7 +2608,10 @@ app.post('/api/jobs/upload', upload.any(), async (req, res) => {
 
     await removeTempFiles(files);
     json(res, 202, { ok: true, jobId: job.id });
-    queueMicrotask(() => processJob(job.id, sourceDir, jobDir));
+    processJob(job.id, sourceDir, jobDir).catch(error => {
+      console.error('[GATEKEEPER] Job processing failed:', error);
+      updateJob(job, { status: 'failed', error: error.message });
+    });
   } catch (error) {
     await removeTempFiles(files);
     json(res, 400, { error: error.message });
