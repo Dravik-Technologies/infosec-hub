@@ -242,6 +242,7 @@ function createJobRecord(name) {
     { key: 'secrets', label: 'Scanning for secrets and risky patterns', status: 'pending', message: '' },
     { key: 'vulns', label: 'Scanning dependencies for vulnerabilities', status: 'pending', message: '' },
     { key: 'quality', label: 'Scanning for stale and dead-code indicators', status: 'pending', message: '' },
+    { key: 'binaries', label: 'Analyzing binary artifacts for supply chain', status: 'pending', message: '' },
     { key: 'report', label: 'Generating downloadable reports', status: 'pending', message: '' },
   ];
   const job = {
@@ -2462,9 +2463,9 @@ async function processJob(jobId, sourceDir, jobDir) {
     scanStaleFiles(report, files);
     updateStep(job, 'quality', { status: 'completed', message: 'Code hygiene scan complete.' });
 
-    updateStep(job, 'quality', { status: 'running', message: 'Analyzing binary artifacts for supply chain verification.' });
+    updateStep(job, 'binaries', { status: 'running', message: 'Analyzing binary artifacts for supply chain verification.' });
     await analyzeBinaries(sourceDir, files, report);
-    updateStep(job, 'quality', { status: 'completed', message: 'Binary artifact analysis complete.' });
+    updateStep(job, 'binaries', { status: 'completed', message: 'Binary artifact analysis complete.' });
 
     updateStep(job, 'report', { status: 'running', message: 'Rendering HTML and JSON report artifacts.' });
     const summary = {
