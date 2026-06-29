@@ -1,0 +1,5 @@
+
+> gatekeeper-devsecops-pipeline@1.0.0 start
+> node server.js
+
+Gatekeeper running at http://localhost:8095

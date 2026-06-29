@@ -14,6 +14,7 @@ const ROOT = __dirname;
 const RUNTIME_DIR = path.join(ROOT, 'runtime');
 const TEMP_DIR = path.join(RUNTIME_DIR, 'tmp');
 const JOBS_DIR = path.join(RUNTIME_DIR, 'jobs');
+const LOG_FILE = path.join(RUNTIME_DIR, 'gatekeeper.log');
 const MAX_FILE_SIZE_MB = Number(process.env.MAX_UPLOAD_SIZE_MB || 4096);
 const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
 const WARN_DIRECT_FILE_COUNT = Number(process.env.WARN_DIRECT_FILE_COUNT || 2000);
@@ -58,6 +59,37 @@ const upload = multer({
   limits: { fileSize: MAX_FILE_SIZE, files: 10000 },
 });
 
+const originalConsole = {
+  log: console.log.bind(console),
+  warn: console.warn.bind(console),
+  error: console.error.bind(console),
+};
+
+function formatLogArg(value) {
+  if (value instanceof Error) return value.stack || value.message;
+  if (typeof value === 'string') return value;
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function installFileLogging() {
+  const stream = fs.createWriteStream(LOG_FILE, { flags: 'a' });
+
+  for (const level of ['log', 'warn', 'error']) {
+    console[level] = (...args) => {
+      originalConsole[level](...args);
+      stream.write(`${nowIso()} [${level.toUpperCase()}] ${args.map(formatLogArg).join(' ')}\n`);
+    };
+  }
+
+  stream.on('error', error => {
+    originalConsole.error('[GATEKEEPER] File logging failed:', error);
+  });
+}
+
 const ECOSYSTEM_RULES = [
   { id: 'node', label: 'Node.js', manifests: ['package.json', 'package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'], osv: 'npm' },
   { id: 'python', label: 'Python', manifests: ['requirements.txt', 'pyproject.toml', 'Pipfile', 'poetry.lock'], osv: 'PyPI' },
@@ -85,6 +117,60 @@ const SIGNED_BINARY_RISK = [
   { ext: '.dylib', title: 'macOS library detected', risk: 'high', detail: 'Validate notarization and entitlements' },
   { ext: '.jar', title: 'Java archive detected', risk: 'medium', detail: 'Scan contained classes and verify signatures' },
   { ext: '.whl', title: 'Python wheel detected', risk: 'medium', detail: 'Inspect contained .so files and extensions' },
+];
+
+const PE_EXTENSIONS = new Set(['.exe', '.dll', '.sys']);
+
+const PE_MACHINES = {
+  0x014c: 'x86',
+  0x0200: 'Intel Itanium',
+  0x8664: 'x64',
+  0xaa64: 'ARM64',
+};
+
+const PE_SUBSYSTEMS = {
+  1: 'Native',
+  2: 'Windows GUI',
+  3: 'Windows CUI',
+  7: 'POSIX CUI',
+  9: 'Windows CE GUI',
+  10: 'EFI application',
+  11: 'EFI boot service driver',
+  12: 'EFI runtime driver',
+  13: 'EFI ROM',
+  14: 'Xbox',
+  16: 'Windows boot application',
+};
+
+const PE_IMPORT_RISK_PATTERNS = [
+  {
+    category: 'network-capability',
+    severity: 'medium',
+    title: 'Network-capable binary imports detected',
+    regex: /^(WinHttp|WinInet|Internet|Http|WSA|socket|connect|send|recv|getaddrinfo|DnsQuery)/i,
+    recommendation: 'Confirm whether the binary should perform network activity. Run in a sandbox and block egress on classified networks unless explicitly approved.',
+  },
+  {
+    category: 'process-injection-capability',
+    severity: 'high',
+    title: 'Process injection style imports detected',
+    regex: /^(VirtualAllocEx|WriteProcessMemory|CreateRemoteThread|QueueUserAPC|OpenProcess|NtWriteVirtualMemory|SetWindowsHookEx)/i,
+    recommendation: 'Perform deeper malware triage with capa, YARA, sandbox telemetry, and reverse engineering before approving the binary.',
+  },
+  {
+    category: 'persistence-or-registry-capability',
+    severity: 'medium',
+    title: 'Registry or service control imports detected',
+    regex: /^(RegCreate|RegSet|RegOpen|CreateService|OpenSCManager|StartService|ChangeServiceConfig)/i,
+    recommendation: 'Confirm the binary has a legitimate need to alter registry keys or services and validate behavior in an isolated VM.',
+  },
+  {
+    category: 'crypto-capability',
+    severity: 'info',
+    title: 'Cryptographic API imports detected',
+    regex: /^(Crypt|BCrypt|NCrypt)/i,
+    recommendation: 'Review whether cryptographic use is expected. Crypto imports alone are common and not malicious by themselves.',
+  },
 ];
 
 const TEXT_EXTENSIONS = new Set([
@@ -355,6 +441,14 @@ async function fileExists(target) {
   }
 }
 
+async function assertReportFileWritten(target) {
+  const stat = await fsp.stat(target);
+  if (!stat.isFile() || stat.size <= 0) {
+    throw new Error(`Report artifact was not written correctly: ${target}`);
+  }
+  return stat;
+}
+
 function addFinding(report, finding) {
   const normalizedFile = normalizeFindingFile(finding.file, report.sourceDir);
   if (normalizedFile && isExcludedRelativePath(normalizedFile)) {
@@ -378,6 +472,178 @@ function calculateFileHash(filePath) {
   } catch {
     return null;
   }
+}
+
+function calculateEntropy(buffer) {
+  if (!buffer || !buffer.length) return 0;
+  const counts = new Array(256).fill(0);
+  for (const byte of buffer) counts[byte] += 1;
+
+  let entropy = 0;
+  for (const count of counts) {
+    if (!count) continue;
+    const probability = count / buffer.length;
+    entropy -= probability * Math.log2(probability);
+  }
+  return Number(entropy.toFixed(2));
+}
+
+function readAsciiZ(buffer, offset, limit = 256) {
+  if (offset < 0 || offset >= buffer.length) return '';
+  let end = offset;
+  const maxEnd = Math.min(buffer.length, offset + limit);
+  while (end < maxEnd && buffer[end] !== 0) end += 1;
+  return buffer.toString('ascii', offset, end).replace(/[^\x20-\x7e]/g, '').trim();
+}
+
+function rvaToOffset(rva, sections) {
+  for (const section of sections) {
+    const start = section.virtualAddress;
+    const end = start + Math.max(section.virtualSize, section.rawSize);
+    if (rva >= start && rva < end) {
+      return section.rawPointer + (rva - start);
+    }
+  }
+  return null;
+}
+
+function parsePeFile(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  if (buffer.length < 0x100 || buffer.toString('ascii', 0, 2) !== 'MZ') {
+    return { valid: false, reason: 'Missing MZ header' };
+  }
+
+  const peOffset = buffer.readUInt32LE(0x3c);
+  if (peOffset <= 0 || peOffset + 24 >= buffer.length || buffer.toString('ascii', peOffset, peOffset + 4) !== 'PE\u0000\u0000') {
+    return { valid: false, reason: 'Missing PE signature' };
+  }
+
+  const coffOffset = peOffset + 4;
+  const machineValue = buffer.readUInt16LE(coffOffset);
+  const sectionCount = buffer.readUInt16LE(coffOffset + 2);
+  const timestampSeconds = buffer.readUInt32LE(coffOffset + 4);
+  const optionalHeaderSize = buffer.readUInt16LE(coffOffset + 16);
+  const characteristics = buffer.readUInt16LE(coffOffset + 18);
+  const optionalOffset = coffOffset + 20;
+  const magic = buffer.readUInt16LE(optionalOffset);
+  const isPe32Plus = magic === 0x20b;
+  const isPe32 = magic === 0x10b;
+  if (!isPe32 && !isPe32Plus) {
+    return { valid: false, reason: 'Unknown PE optional header format' };
+  }
+
+  const subsystemOffset = optionalOffset + 68;
+  const subsystemValue = subsystemOffset + 2 <= buffer.length ? buffer.readUInt16LE(subsystemOffset) : 0;
+  const dllCharacteristicsOffset = optionalOffset + 70;
+  const dllCharacteristics = dllCharacteristicsOffset + 2 <= buffer.length ? buffer.readUInt16LE(dllCharacteristicsOffset) : 0;
+  const dataDirectoryOffset = optionalOffset + (isPe32Plus ? 112 : 96);
+  const importTableRva = dataDirectoryOffset + 8 + 4 <= buffer.length ? buffer.readUInt32LE(dataDirectoryOffset + 8) : 0;
+  const importTableSize = dataDirectoryOffset + 12 + 4 <= buffer.length ? buffer.readUInt32LE(dataDirectoryOffset + 12) : 0;
+
+  const sections = [];
+  const sectionOffset = optionalOffset + optionalHeaderSize;
+  for (let index = 0; index < sectionCount; index += 1) {
+    const offset = sectionOffset + (index * 40);
+    if (offset + 40 > buffer.length) break;
+    const name = readAsciiZ(buffer, offset, 8);
+    const virtualSize = buffer.readUInt32LE(offset + 8);
+    const virtualAddress = buffer.readUInt32LE(offset + 12);
+    const rawSize = buffer.readUInt32LE(offset + 16);
+    const rawPointer = buffer.readUInt32LE(offset + 20);
+    const characteristicsValue = buffer.readUInt32LE(offset + 36);
+    const rawEnd = Math.min(buffer.length, rawPointer + rawSize);
+    const raw = rawPointer < buffer.length && rawEnd > rawPointer ? buffer.subarray(rawPointer, rawEnd) : Buffer.alloc(0);
+
+    sections.push({
+      name,
+      virtualSize,
+      virtualAddress,
+      rawSize,
+      rawPointer,
+      entropy: calculateEntropy(raw),
+      executable: Boolean(characteristicsValue & 0x20000000),
+      writable: Boolean(characteristicsValue & 0x80000000),
+    });
+  }
+
+  const imports = [];
+  const importOffset = importTableRva ? rvaToOffset(importTableRva, sections) : null;
+  if (importOffset != null && importTableSize > 0) {
+    for (let descriptorOffset = importOffset; descriptorOffset + 20 <= buffer.length; descriptorOffset += 20) {
+      const originalFirstThunk = buffer.readUInt32LE(descriptorOffset);
+      const nameRva = buffer.readUInt32LE(descriptorOffset + 12);
+      const firstThunk = buffer.readUInt32LE(descriptorOffset + 16);
+      if (!originalFirstThunk && !nameRva && !firstThunk) break;
+
+      const dllNameOffset = rvaToOffset(nameRva, sections);
+      const dll = dllNameOffset == null ? '' : readAsciiZ(buffer, dllNameOffset, 256);
+      const thunkRva = originalFirstThunk || firstThunk;
+      const thunkOffset = rvaToOffset(thunkRva, sections);
+      const functions = [];
+
+      if (thunkOffset != null) {
+        const thunkSize = isPe32Plus ? 8 : 4;
+        for (let offset = thunkOffset; offset + thunkSize <= buffer.length && functions.length < 200; offset += thunkSize) {
+          const rawThunkValue = isPe32Plus ? buffer.readBigUInt64LE(offset) : BigInt(buffer.readUInt32LE(offset));
+          if (rawThunkValue === 0n) break;
+          const ordinalMask = isPe32Plus ? 0x8000000000000000n : 0x80000000n;
+          if ((rawThunkValue & ordinalMask) !== 0n) {
+            functions.push(`ordinal_${Number(rawThunkValue & 0xffffn)}`);
+            continue;
+          }
+          const thunkValue = Number(rawThunkValue);
+          if (!Number.isSafeInteger(thunkValue)) continue;
+          const importByNameOffset = rvaToOffset(thunkValue, sections);
+          if (importByNameOffset == null || importByNameOffset + 2 >= buffer.length) continue;
+          const functionName = readAsciiZ(buffer, importByNameOffset + 2, 256);
+          if (functionName) functions.push(functionName);
+        }
+      }
+
+      imports.push({ dll, functions });
+      if (imports.length >= 200) break;
+    }
+  }
+
+  return {
+    valid: true,
+    format: isPe32Plus ? 'PE32+' : 'PE32',
+    machine: PE_MACHINES[machineValue] || `unknown-0x${machineValue.toString(16)}`,
+    subsystem: PE_SUBSYSTEMS[subsystemValue] || `unknown-${subsystemValue}`,
+    timestamp: timestampSeconds ? new Date(timestampSeconds * 1000).toISOString() : null,
+    isDll: Boolean(characteristics & 0x2000),
+    largeAddressAware: Boolean(characteristics & 0x20),
+    nxCompat: Boolean(dllCharacteristics & 0x0100),
+    dynamicBase: Boolean(dllCharacteristics & 0x0040),
+    highEntropyVa: Boolean(dllCharacteristics & 0x0020),
+    sectionCount,
+    sections,
+    imports,
+  };
+}
+
+function summarizePeImportRisks(pe) {
+  const matches = new Map();
+  for (const entry of pe.imports || []) {
+    for (const functionName of entry.functions || []) {
+      for (const rule of PE_IMPORT_RISK_PATTERNS) {
+        if (!rule.regex.test(functionName)) continue;
+        const existing = matches.get(rule.category) || { rule, functions: new Set(), dlls: new Set() };
+        existing.functions.add(functionName);
+        if (entry.dll) existing.dlls.add(entry.dll);
+        matches.set(rule.category, existing);
+      }
+    }
+  }
+
+  return Array.from(matches.values()).map(match => ({
+    category: match.rule.category,
+    severity: match.rule.severity,
+    title: match.rule.title,
+    recommendation: match.rule.recommendation,
+    functions: Array.from(match.functions).sort().slice(0, 12),
+    dlls: Array.from(match.dlls).sort().slice(0, 12),
+  }));
 }
 
 async function analyzeBinaries(sourceDir, files, report) {
@@ -409,6 +675,109 @@ async function analyzeBinaries(sourceDir, files, report) {
       modified: stats.mtime.toISOString(),
     };
 
+    if (PE_EXTENSIONS.has(file.ext)) {
+      try {
+        const pe = parsePeFile(fullPath);
+        binaryInfo.pe = pe.valid
+          ? {
+              format: pe.format,
+              machine: pe.machine,
+              subsystem: pe.subsystem,
+              timestamp: pe.timestamp,
+              isDll: pe.isDll,
+              nxCompat: pe.nxCompat,
+              dynamicBase: pe.dynamicBase,
+              highEntropyVa: pe.highEntropyVa,
+              sectionCount: pe.sectionCount,
+              sections: pe.sections.map(section => ({
+                name: section.name,
+                entropy: section.entropy,
+                executable: section.executable,
+                writable: section.writable,
+              })),
+              imports: pe.imports.map(entry => ({
+                dll: entry.dll,
+                functionCount: entry.functions.length,
+                functions: entry.functions.slice(0, 40),
+              })),
+            }
+          : pe;
+
+        if (!pe.valid) {
+          binaryFindings.push({
+            scanner: 'pe-inspect',
+            category: 'pe-format',
+            severity: 'high',
+            title: 'Windows binary has invalid PE headers',
+            file: file.relativePath,
+            detail: `The file has a Windows binary extension but PE parsing failed: ${pe.reason}.`,
+            recommendation: 'Do not approve this artifact until it has been triaged with malware-analysis tooling.',
+            hash,
+            fileSize: stats.size,
+          });
+        } else {
+          const highEntropySections = pe.sections
+            .filter(section => section.rawSize >= 4096 && section.entropy >= 7.2)
+            .slice(0, 6);
+          if (highEntropySections.length) {
+            binaryFindings.push({
+              scanner: 'pe-inspect',
+              category: 'packed-or-encrypted-content',
+              severity: 'medium',
+              title: 'High-entropy PE sections detected',
+              file: file.relativePath,
+              detail: `High-entropy sections can indicate packed, compressed, or encrypted content: ${highEntropySections.map(section => `${section.name} (${section.entropy})`).join(', ')}.`,
+              recommendation: 'Confirm this is expected for the compiler/runtime. Use capa, YARA, sandbox telemetry, and reverse engineering if the binary is not from a trusted build.',
+              hash,
+              fileSize: stats.size,
+            });
+          }
+
+          const importRisks = summarizePeImportRisks(pe);
+          for (const risk of importRisks) {
+            binaryFindings.push({
+              scanner: 'pe-inspect',
+              category: risk.category,
+              severity: risk.severity,
+              title: risk.title,
+              file: file.relativePath,
+              detail: `Imported DLLs: ${risk.dlls.join(', ') || 'unknown'}. Imported functions: ${risk.functions.join(', ') || 'unknown'}.`,
+              recommendation: risk.recommendation,
+              hash,
+              fileSize: stats.size,
+            });
+          }
+
+          if (!pe.nxCompat || !pe.dynamicBase) {
+            binaryFindings.push({
+              scanner: 'pe-inspect',
+              category: 'binary-hardening',
+              severity: 'low',
+              title: 'PE hardening flags are incomplete',
+              file: file.relativePath,
+              detail: `NX compatible: ${pe.nxCompat ? 'yes' : 'no'}, ASLR/dynamic base: ${pe.dynamicBase ? 'yes' : 'no'}.`,
+              recommendation: 'Prefer binaries built with modern exploit mitigations. Confirm build flags if this artifact will enter a controlled network.',
+              hash,
+              fileSize: stats.size,
+            });
+          }
+        }
+      } catch (error) {
+        binaryInfo.pe = { valid: false, reason: error.message };
+        binaryFindings.push({
+          scanner: 'pe-inspect',
+          category: 'pe-format',
+          severity: 'medium',
+          title: 'Windows binary could not be inspected',
+          file: file.relativePath,
+          detail: `PE inspection failed: ${error.message}`,
+          recommendation: 'Inspect the file with dedicated malware-analysis tooling before approval.',
+          hash,
+          fileSize: stats.size,
+        });
+      }
+    }
+
     binaries.push(binaryInfo);
 
     const riskProfile = SIGNED_BINARY_RISK.find(r => r.ext === file.ext);
@@ -439,6 +808,15 @@ async function analyzeBinaries(sourceDir, files, report) {
       tool: 'binary-scan',
       status: 'completed',
       detail: `Detected ${binaries.length} binary artifacts. Review hashes for supply chain verification.`,
+    });
+  }
+
+  const peCount = binaries.filter(item => item.pe).length;
+  if (peCount > 0) {
+    addToolNote(report, {
+      tool: 'pe-inspect',
+      status: 'completed',
+      detail: `Inspected ${peCount} Windows PE artifacts for headers, architecture, hardening flags, entropy, and import-table risk indicators. Authenticode signature verification still requires Sigcheck, PowerShell Get-AuthenticodeSignature, or equivalent tooling.`,
     });
   }
 }
@@ -1948,6 +2326,7 @@ function buildReportHtml(job) {
       border-radius: 0.95rem;
       background: var(--panel-strong);
       transition: border-color 120ms ease, box-shadow 120ms ease;
+      min-width: 0;
     }
     .finding-row:hover {
       border-color: var(--accent);
@@ -1957,16 +2336,22 @@ function buildReportHtml(job) {
       list-style: none;
       cursor: pointer;
       display: grid;
-      grid-template-columns: auto auto 1.1fr minmax(180px, 0.8fr) auto;
+      grid-template-columns: auto auto minmax(12rem, 1.1fr) minmax(10rem, 0.8fr) auto;
       gap: 0.8rem;
       align-items: center;
       padding: 0.9rem 1rem;
+      min-width: 0;
+      line-height: 1.25;
     }
     .finding-row summary::-webkit-details-marker { display: none; }
     .finding-title {
       font-size: 0.95rem;
       font-weight: 700;
       font-family: var(--font-display);
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
     .finding-file {
       color: var(--muted);
@@ -2427,8 +2812,13 @@ function buildReportHtml(job) {
 }
 
 async function processJob(jobId, sourceDir, jobDir) {
+  console.log('[PROCESS-JOB] Starting for jobId:', jobId);
   const job = appState.jobs.get(jobId);
-  if (!job) return;
+  if (!job) {
+    console.log('[PROCESS-JOB] ERROR: Job not found in appState');
+    return;
+  }
+  console.log('[PROCESS-JOB] Job found, sourceDir:', sourceDir, 'jobDir:', jobDir);
 
   const report = {
     findings: [],
@@ -2510,8 +2900,18 @@ async function processJob(jobId, sourceDir, jobDir) {
 
     const jsonPath = path.join(jobDir, 'report.json');
     const htmlPath = path.join(jobDir, 'report.html');
+    console.log('[REPORT-WRITE] Ensuring jobDir exists:', jobDir);
+    await ensureDir(jobDir);
+    console.log('[REPORT-WRITE] Writing JSON to:', jsonPath);
     await fsp.writeFile(jsonPath, JSON.stringify(reportJson, null, 2), 'utf8');
+    console.log('[REPORT-WRITE] Writing HTML to:', htmlPath);
     await fsp.writeFile(htmlPath, buildReportHtml({ ...job, summary, report }), 'utf8');
+    const jsonStat = await assertReportFileWritten(jsonPath);
+    const htmlStat = await assertReportFileWritten(htmlPath);
+    console.log('[REPORT-WRITE] Files written successfully', {
+      jsonBytes: jsonStat.size,
+      htmlBytes: htmlStat.size,
+    });
 
     updateStep(job, 'report', { status: 'completed', message: 'Reports generated successfully.' });
     updateJob(job, {
@@ -2523,8 +2923,15 @@ async function processJob(jobId, sourceDir, jobDir) {
         json: `/api/jobs/${job.id}/download/json`,
         html: `/api/jobs/${job.id}/download/html`,
       },
+      artifacts: {
+        jsonPath,
+        htmlPath,
+        jsonBytes: jsonStat.size,
+        htmlBytes: htmlStat.size,
+      },
     });
   } catch (error) {
+    console.error('[PROCESS-JOB] ERROR:', error.message, error.stack);
     const activeStep = [...job.steps].reverse().find(item => item.status === 'running');
     if (activeStep) {
       updateStep(job, activeStep.key, { status: 'failed', message: error.message });
@@ -2537,6 +2944,8 @@ async function bootstrap() {
   await ensureDir(RUNTIME_DIR);
   await ensureDir(TEMP_DIR);
   await ensureDir(JOBS_DIR);
+  installFileLogging();
+  console.log(`[GATEKEEPER] Logging to ${LOG_FILE}`);
 }
 
 app.use(express.json({ limit: '5mb' }));
@@ -2582,6 +2991,13 @@ app.get('/api/jobs/:id/download/:format', async (req, res) => {
   if (!filename) return json(res, 400, { error: 'Unsupported download format' });
 
   const target = path.join(JOBS_DIR, job.id, filename);
+  if (!(await fileExists(target))) {
+    console.error('[GATEKEEPER] Completed job is missing report artifact:', target);
+    return json(res, 410, {
+      error: 'Report artifact is missing on disk. Re-run the scan.',
+      path: target,
+    });
+  }
   res.download(target, `${safeSlug(job.name)}-${filename}`);
 });
 

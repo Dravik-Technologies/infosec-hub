@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gatekeeper Scan Report — llama-b9840-bin-win-cuda-12-4-x64-zip</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: dark;
+      --font-ui: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+      --font-display: 'Chakra Petch', Inter, ui-sans-serif, system-ui, sans-serif;
+      --font-mono: 'Share Tech Mono', 'JetBrains Mono', ui-monospace, monospace;
+      --bg: #040914;
+      --panel: rgba(9, 17, 30, 0.9);
+      --panel-strong: rgba(10, 20, 36, 0.98);
+      --line: rgba(125, 211, 252, 0.14);
+      --line-strong: rgba(110, 231, 216, 0.28);
+      --text: #edf6ff;
+      --muted: #7f93b5;
+      --accent: #6ee7d8;
+      --accent-strong: #7dd3fc;
+      --critical: #ef4444;
+      --high: #f97316;
+      --medium: #facc15;
+      --low: #38bdf8;
+      --info: #94a3b8;
+      --shadow: 0 24px 80px rgba(2, 6, 23, 0.4);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-ui);
+      background:
+        linear-gradient(rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(110, 231, 216, 0.03) 1px, transparent 1px),
+        radial-gradient(circle at top right, rgba(110, 231, 216, 0.16), transparent 20rem),
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 17rem),
+        radial-gradient(circle at bottom center, rgba(245, 158, 11, 0.06), transparent 24rem),
+        linear-gradient(180deg, rgba(8, 14, 24, 0.985), rgba(4, 9, 20, 1)),
+        var(--bg);
+      background-size: 28px 28px, 28px 28px, auto, auto, auto, auto;
+      color: var(--text);
+      padding: 1.5rem;
+      letter-spacing: 0.015em;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 12%, transparent 88%, rgba(255, 255, 255, 0.02)),
+        repeating-linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.018) 0,
+          rgba(255, 255, 255, 0.018) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+      opacity: 0.35;
+    }
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(110, 231, 216, 0.08), transparent 18rem),
+        radial-gradient(circle at 82% 20%, rgba(96, 165, 250, 0.08), transparent 16rem),
+        radial-gradient(circle at 50% 100%, rgba(245, 158, 11, 0.05), transparent 20rem);
+      mix-blend-mode: screen;
+      opacity: 0.65;
+    }
+    h1, h2, h3, h4 { margin: 0; }
+    .shell { max-width: 1280px; margin: 0 auto; display: grid; gap: 1.5rem; position: relative; z-index: 1; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      padding: 1.5rem;
+    }
+    .panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      background:
+        linear-gradient(135deg, rgba(125, 211, 252, 0.09), transparent 26%),
+        linear-gradient(315deg, rgba(89, 225, 211, 0.07), transparent 22%);
+    }
+    .panel::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1.2rem;
+      align-items: start;
+      position: relative;
+      z-index: 2;
+    }
+    .hero-title {
+      display: grid;
+      gap: 0.8rem;
+    }
+    .eyebrow {
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.26em;
+      font-size: 0.7rem;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .title-row h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 0.92;
+      font-family: var(--font-display);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-shadow: 0 0 24px rgba(89, 225, 211, 0.08);
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem 0.9rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+    .ghost-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 9rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.7rem 0.95rem;
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(18, 33, 54, 0.72);
+      font-weight: 600;
+    }
+    .risk-summary {
+      display: grid;
+      grid-template-columns: 160px 1fr;
+      gap: 1.2rem;
+      align-items: center;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: var(--panel-strong);
+      padding: 1.2rem;
+      position: relative;
+      z-index: 2;
+    }
+    .risk-donut {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: var(--critical) 0% 0%, var(--high) 0% 100%, var(--medium) 100% 100%, var(--low) 100% 100%, var(--info) 100% 100%;
+      display: grid;
+      place-items: center;
+      position: relative;
+      margin: 0 auto;
+      border: 1px solid var(--line-strong);
+    }
+    .risk-donut::after {
+      content: '';
+      position: absolute;
+      inset: 24px;
+      border-radius: 50%;
+      background: var(--panel-strong);
+      border: 1px solid var(--line);
+    }
+    .donut-center {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      gap: 0.2rem;
+    }
+    .donut-center strong {
+      font-size: 1.6rem;
+      line-height: 1;
+      font-family: var(--font-display);
+    }
+    .donut-center span {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+    .risk-summary-body {
+      display: grid;
+      gap: 0.9rem;
+    }
+    .stack-bar {
+      display: flex;
+      overflow: hidden;
+      height: 0.85rem;
+      border-radius: 999px;
+      background: rgba(12, 24, 40, 0.75);
+      border: 1px solid var(--line);
+    }
+    .stack-segment { min-width: 0; }
+    .stack-critical { background: var(--critical); }
+    .stack-high { background: var(--high); }
+    .stack-medium { background: var(--medium); }
+    .stack-low { background: var(--low); }
+    .stack-info { background: var(--info); }
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.6rem 1.2rem;
+    }
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .legend-row strong {
+      color: var(--text);
+      font-family: var(--font-display);
+    }
+    .legend-key {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+    }
+    .legend-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .legend-critical { background: var(--critical); }
+    .legend-high { background: var(--high); }
+    .legend-medium { background: var(--medium); }
+    .legend-low { background: var(--low); }
+    .legend-info { background: var(--info); }
+    .quick-stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+    .stat-tile {
+      border: 1px solid var(--line);
+      border-radius: 0.95rem;
+      padding: 0.85rem 0.95rem;
+      background: var(--panel-strong);
+    }
+    .stat-tile span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 0.35rem;
+      font-family: var(--font-mono);
+    }
+    .stat-tile strong {
+      font-size: 1.35rem;
+      font-family: var(--font-display);
+    }
+    .section {
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .section summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem;
+      transition: background 120ms ease;
+    }
+    .section summary:hover {
+      background: rgba(89, 225, 211, 0.04);
+    }
+    .section summary::-webkit-details-marker { display: none; }
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+    }
+    .section-title h2 {
+      font-size: 1.1rem;
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .section-badge {
+      color: var(--muted);
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .chevron {
+      color: var(--muted);
+      transition: transform 180ms ease;
+      font-size: 1.2rem;
+    }
+    details[open] .chevron {
+      transform: rotate(90deg);
+    }
+    .section-body {
+      margin-top: 0.9rem;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 0.7rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { color: var(--muted); font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.14em; }
+    .badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 0.25rem 0.6rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; font-family: var(--font-mono); }
+    .badge-critical { background: rgba(239, 68, 68, 0.18); color: #fecaca; border: 1px solid rgba(239, 68, 68, 0.26); }
+    .badge-high { background: rgba(249, 115, 22, 0.18); color: #fed7aa; border: 1px solid rgba(249, 115, 22, 0.26); }
+    .badge-medium { background: rgba(250, 204, 21, 0.18); color: #fef08a; border: 1px solid rgba(250, 204, 21, 0.26); }
+    .badge-low { background: rgba(56, 189, 248, 0.18); color: #bae6fd; border: 1px solid rgba(56, 189, 248, 0.26); }
+    .badge-info { background: rgba(148, 163, 184, 0.18); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.26); }
+    .scanner-badge {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.2rem 0.55rem;
+      color: var(--accent);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      background: rgba(89, 225, 211, 0.08);
+      font-family: var(--font-mono);
+    }
+    ul { margin: 0; padding-left: 1.1rem; }
+    li + li { margin-top: 0.45rem; }
+    li span { color: var(--muted); display: block; margin-top: 0.2rem; }
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1.6fr repeat(4, minmax(0, 0.75fr));
+      gap: 0.65rem;
+      margin: 0.95rem 0;
+    }
+    .toolbar input,
+    .toolbar select {
+      width: 100%;
+      border: 1px solid rgba(129, 148, 178, 0.2);
+      border-radius: 0.9rem;
+      background: rgba(5, 12, 22, 0.92);
+      color: var(--text);
+      padding: 0.85rem 0.95rem;
+      font: inherit;
+      font-family: var(--font-ui);
+    }
+    .toolbar input:focus,
+    .toolbar select:focus {
+      outline: none;
+      border-color: rgba(89, 225, 211, 0.45);
+      box-shadow: 0 0 0 3px rgba(89, 225, 211, 0.08);
+    }
+    .toolbar-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .findings-grid {
+      display: grid;
+      gap: 0.65rem;
+    }
+    .findings-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+    .finding-row {
+      border: 1px solid var(--line);
+      border-radius: 0.95rem;
+      background: var(--panel-strong);
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+    .finding-row:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(89, 225, 211, 0.12);
+    }
+    .finding-row summary {
+      list-style: none;
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: auto auto 1.1fr minmax(180px, 0.8fr) auto;
+      gap: 0.8rem;
+      align-items: center;
+      padding: 0.9rem 1rem;
+    }
+    .finding-row summary::-webkit-details-marker { display: none; }
+    .finding-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+    }
+    .finding-file {
+      color: var(--muted);
+      font-size: 0.82rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .finding-category {
+      color: var(--muted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+    .finding-body {
+      padding: 0 0.9rem 0.9rem;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 0.8rem;
+    }
+    .finding-body-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+    .finding-block {
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      background: rgba(10, 18, 31, 0.55);
+      padding: 0.8rem;
+    }
+    .finding-block strong {
+      display: block;
+      margin-bottom: 0.4rem;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .finding-block p {
+      margin: 0;
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+    .finding-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+    }
+    .finding-card h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+    .page-controls {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+    }
+    .pager-button {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(18, 33, 54, 0.7);
+      color: var(--text);
+      padding: 0.55rem 0.85rem;
+      cursor: pointer;
+      font: inherit;
+    }
+    .pager-button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+    .empty-state {
+      border: 1px dashed var(--line);
+      border-radius: 0.95rem;
+      background: rgba(20, 34, 56, 0.45);
+      padding: 1rem;
+      color: var(--muted);
+      text-align: center;
+    }
+    .hint-text {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+    .table-shell {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 0.95rem;
+    }
+    @media (max-width: 980px) {
+      body { padding: 1rem; }
+      .hero { grid-template-columns: 1fr; }
+      .risk-summary { grid-template-columns: 1fr; }
+      .quick-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .legend-grid { grid-template-columns: 1fr; }
+      .toolbar { grid-template-columns: 1fr; }
+      .finding-row summary { grid-template-columns: 1fr; }
+      .finding-body-grid { grid-template-columns: 1fr; }
+    }
+    @media print {
+      body { background: #fff; color: #111827; padding: 0; }
+      .panel { box-shadow: none; border-color: #d1d5db; background: #fff; }
+      .badge { border: 1px solid #d1d5db; color: #111827 !important; background: transparent !important; }
+      .toolbar { display: none; }
+      .page-controls { display: none; }
+      .section { break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="panel hero">
+      <div class="hero-title">
+        <div class="eyebrow">Gatekeeper DevSecOps Report</div>
+        <div class="title-row">
+          <h1>llama-b9840-bin-win-cuda-12-4-x64-zip</h1>
+          <div class="hero-actions">
+            <a class="ghost-link" href="#" onclick="window.print(); return false;">Print report</a>
+          </div>
+        </div>
+        <div class="meta">
+          <span><strong>Job ID:</strong> dee3aa16-a912-4f91-901f-745991881f18</span>
+          <span><strong>Completed:</strong> 2026-06-29T15:30:02.035Z</span>
+          <span><strong>Files scanned:</strong> 52</span>
+          <span><strong>Dependencies:</strong> 0</span>
+          <span><strong>Excluded dirs:</strong> 0</span>
+        </div>
+        <div class="quick-stats">
+          <div class="stat-tile"><span>Ecosystems</span><strong>0</strong></div>
+          <div class="stat-tile"><span>Scanners</span><strong>1</strong></div>
+          <div class="stat-tile"><span>AI Signals</span><strong>None</strong></div>
+          <div class="stat-tile"><span>Total Findings</span><strong>52</strong></div>
+        </div>
+        <div class="hint-text">Default exclusions applied: .cache, .git, .next, .pytest_cache, .scannerwork, .terraform, .venv, __pycache__, build, coverage, dist, node_modules, out, runtime, scan-reports, target, vendor, venv </div>
+      </div>
+      <div class="risk-summary">
+        <div class="risk-donut">
+          <div class="donut-center">
+            <strong>52</strong>
+            <span>findings</span>
+          </div>
+        </div>
+        <div class="risk-summary-body">
+          <div>
+            <div class="eyebrow">Risk Summary</div>
+            <div class="stack-bar">
+    <div class="stack-segment stack-critical" style="width:0%"></div>
+  
+    <div class="stack-segment stack-high" style="width:100%"></div>
+  
+    <div class="stack-segment stack-medium" style="width:0%"></div>
+  
+    <div class="stack-segment stack-low" style="width:0%"></div>
+  
+    <div class="stack-segment stack-info" style="width:0%"></div>
+  </div>
+          </div>
+          <div class="legend-grid">
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-critical"></span>critical</span>
+      <strong>0</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-high"></span>high</span>
+      <strong>52</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-medium"></span>medium</span>
+      <strong>0</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-low"></span>low</span>
+      <strong>0</strong>
+    </div>
+  
+    <div class="legend-row">
+      <span class="legend-key"><span class="legend-dot legend-info"></span>info</span>
+      <strong>0</strong>
+    </div>
+  </div>
+        </div>
+      </div>
+    </section>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Findings Console</h2>
+          <span class="section-badge">52 total findings</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="toolbar">
+          <input id="findingSearch" type="search" placeholder="Search findings, files, categories..." />
+          <select id="severityFilter">
+            <option value="all">All severities</option>
+            <option value="critical">Critical</option>
+            <option value="high">High</option>
+            <option value="medium">Medium</option>
+            <option value="low">Low</option>
+            <option value="info">Info</option>
+          </select>
+          <select id="scannerFilter">
+            <option value="all">All scanners</option>
+            <option value="binary-scan">binary-scan</option>
+          </select>
+          <select id="sortFindings">
+            <option value="severity-desc">Severity</option>
+            <option value="severity-asc">Severity asc</option>
+            <option value="title-asc">Title A-Z</option>
+            <option value="title-desc">Title Z-A</option>
+            <option value="scanner-asc">Scanner</option>
+          </select>
+          <select id="pageSize">
+            <option value="10">10 / page</option>
+            <option value="25" selected>25 / page</option>
+            <option value="50">50 / page</option>
+            <option value="100">100 / page</option>
+          </select>
+        </div>
+        <div class="toolbar-bar">
+          <span id="findingsCount">0 findings visible</span>
+          <span class="hint-text">Compact mode: findings stay collapsed until you open one.</span>
+        </div>
+        <div id="findingsGrid" class="findings-grid"></div>
+        <div class="page-controls">
+          <button id="prevPage" class="pager-button" type="button">Previous</button>
+          <span id="pageMeta" class="hint-text">Page 1 of 1</span>
+          <button id="nextPage" class="pager-button" type="button">Next</button>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Detected Ecosystems</h2>
+          <span class="section-badge">0 discovered</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <ul><li>No build ecosystem manifests were detected.</li></ul>
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Binary Artifacts & Supply Chain</h2>
+          <span class="section-badge">52 artifacts</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        
+          <div class="hint-text" style="margin-bottom:0.85rem">
+            Compiled binaries detected. Verify signatures, hashes, and build reproducibility. Use <code>sha256sum</code> or similar tools to validate artifacts.
+          </div>
+          <div class="table-shell">
+            <table>
+              <thead><tr><th>File</th><th>Type</th><th>Size</th><th>SHA256 (Truncated)</th></tr></thead>
+              <tbody>
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-base.dll</code></td>
+      <td>.dll</td>
+      <td>0.73 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">b4c8f3476d530893...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-alderlake.dll</code></td>
+      <td>.dll</td>
+      <td>1.11 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">33c7aa7fc5ab4278...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-cannonlake.dll</code></td>
+      <td>.dll</td>
+      <td>1.31 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">bc2a7d5d3cef7483...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-cascadelake.dll</code></td>
+      <td>.dll</td>
+      <td>1.30 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">816a17d5c235ffab...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-cooperlake.dll</code></td>
+      <td>.dll</td>
+      <td>1.30 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">6f8711a98f616dd8...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-haswell.dll</code></td>
+      <td>.dll</td>
+      <td>1.11 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">167d9a9df6254670...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-icelake.dll</code></td>
+      <td>.dll</td>
+      <td>1.30 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">b759f8dc03a2825e...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-ivybridge.dll</code></td>
+      <td>.dll</td>
+      <td>1.00 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">51010c4f9215a525...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-piledriver.dll</code></td>
+      <td>.dll</td>
+      <td>1.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">d3fa8332f6d040d1...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-sandybridge.dll</code></td>
+      <td>.dll</td>
+      <td>0.99 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">e518b5b963c0819d...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-sapphirerapids.dll</code></td>
+      <td>.dll</td>
+      <td>1.56 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">e7d68ed1cc78760f...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-skylakex.dll</code></td>
+      <td>.dll</td>
+      <td>1.30 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">75f77ce3dc1797b5...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-sse42.dll</code></td>
+      <td>.dll</td>
+      <td>0.82 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">9e033ce5cba8d226...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-x64.dll</code></td>
+      <td>.dll</td>
+      <td>0.81 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">ee3bb568ff4cc959...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cpu-zen4.dll</code></td>
+      <td>.dll</td>
+      <td>1.31 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">bcd79b598779ef74...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-cuda.dll</code></td>
+      <td>.dll</td>
+      <td>539.46 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">874c28faf014fabe...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-rpc-server.exe</code></td>
+      <td>.exe</td>
+      <td>0.10 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">bb6a249e1e0701b7...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml-rpc.dll</code></td>
+      <td>.dll</td>
+      <td>0.13 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">b872d5e55bc82d56...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">ggml.dll</code></td>
+      <td>.dll</td>
+      <td>0.08 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">c958354ecd56d9a0...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">libomp140.x86_64.dll</code></td>
+      <td>.dll</td>
+      <td>0.63 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">4a20c1e5c115c297...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-batched-bench-impl.dll</code></td>
+      <td>.dll</td>
+      <td>0.06 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">e0dc2ee2e49a702c...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-batched-bench.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">212b88009fe576d2...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-bench-impl.dll</code></td>
+      <td>.dll</td>
+      <td>0.37 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">34f0053da034236f...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-bench.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">64bd83d0bff2d5e1...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-cli-impl.dll</code></td>
+      <td>.dll</td>
+      <td>2.52 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">cb928e2c69d6f8f3...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-cli.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">4f0b62d2ba0adb8a...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-common.dll</code></td>
+      <td>.dll</td>
+      <td>7.55 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">a217d43f10586b1b...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-completion-impl.dll</code></td>
+      <td>.dll</td>
+      <td>0.13 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">a63933ee0f01acd5...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-completion.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">8f4d07a3a5f502b2...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-fit-params-impl.dll</code></td>
+      <td>.dll</td>
+      <td>0.04 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">e3c8ecb487405e6e...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-fit-params.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">5ec144cdf6fc2546...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-gemma3-cli.exe</code></td>
+      <td>.exe</td>
+      <td>0.03 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">362b606e7762240f...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-gguf-split.exe</code></td>
+      <td>.exe</td>
+      <td>0.06 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">46aa3083c2801fe6...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-imatrix.exe</code></td>
+      <td>.exe</td>
+      <td>0.23 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">18c6a210d3829f56...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-llava-cli.exe</code></td>
+      <td>.exe</td>
+      <td>0.03 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">362b606e7762240f...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-minicpmv-cli.exe</code></td>
+      <td>.exe</td>
+      <td>0.03 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">362b606e7762240f...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-mtmd-cli.exe</code></td>
+      <td>.exe</td>
+      <td>0.08 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">ee1a662b2789564e...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-mtmd-debug.exe</code></td>
+      <td>.exe</td>
+      <td>0.05 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">23f9ddf1673e43d1...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-perplexity-impl.dll</code></td>
+      <td>.dll</td>
+      <td>0.18 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">93991bde49e99186...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-perplexity.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">4867f9fd8014a12d...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-quantize-impl.dll</code></td>
+      <td>.dll</td>
+      <td>0.13 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">106608599e0a4e8d...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-quantize.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">e9da31c96927ec9c...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-qwen2vl-cli.exe</code></td>
+      <td>.exe</td>
+      <td>0.03 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">362b606e7762240f...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-results.exe</code></td>
+      <td>.exe</td>
+      <td>0.04 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">237c36f82b60ede2...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-server-impl.dll</code></td>
+      <td>.dll</td>
+      <td>9.07 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">9792fbc2d3bfc982...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-server.exe</code></td>
+      <td>.exe</td>
+      <td>0.01 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">0c1ed8228796fee7...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-template-analysis.exe</code></td>
+      <td>.exe</td>
+      <td>0.26 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">4a6b466fd07c089e...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-tokenize.exe</code></td>
+      <td>.exe</td>
+      <td>0.04 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">8421d9e881d0dc59...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama-tts.exe</code></td>
+      <td>.exe</td>
+      <td>0.31 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">3f314161ef837a3b...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama.dll</code></td>
+      <td>.dll</td>
+      <td>2.53 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">b408880ff89ccae9...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">llama.exe</code></td>
+      <td>.exe</td>
+      <td>0.08 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">f164153d3ca41cb2...</code></td>
+    </tr>
+  
+    <tr>
+      <td><code style="font-size: 0.82rem; color: var(--muted);">mtmd.dll</code></td>
+      <td>.dll</td>
+      <td>1.19 MB</td>
+      <td><code style="font-size: 0.75rem; word-break: break-all; color: var(--muted);">822e36a4255b5686...</code></td>
+    </tr>
+  </tbody>
+            </table>
+          </div>
+        
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>AI / LLM Intake Summary</h2>
+          <span class="section-badge">no ai signals</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="empty-state">No obvious AI/LLM model artifacts, manifests, or framework dependencies were detected.</div>
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Tool Execution Notes</h2>
+          <span class="section-badge">18 notes</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="table-shell">
+          <table>
+            <thead><tr><th>Tool</th><th>Status</th><th>Detail</th></tr></thead>
+            <tbody>
+    <tr>
+      <td>ai-intake</td>
+      <td>skipped</td>
+      <td>No obvious AI/LLM model artifacts, manifests, or framework dependencies were detected.</td>
+    </tr>
+  
+    <tr>
+      <td>osv.dev</td>
+      <td>skipped</td>
+      <td>No exact-version dependencies were available for vulnerability lookup.</td>
+    </tr>
+  
+    <tr>
+      <td>trufflehog</td>
+      <td>unavailable</td>
+      <td>trufflehog is not installed in the runtime image.</td>
+    </tr>
+  
+    <tr>
+      <td>trivy</td>
+      <td>unavailable</td>
+      <td>trivy is not installed in the runtime image.</td>
+    </tr>
+  
+    <tr>
+      <td>grype</td>
+      <td>unavailable</td>
+      <td>grype is not installed in the runtime image.</td>
+    </tr>
+  
+    <tr>
+      <td>semgrep</td>
+      <td>unavailable</td>
+      <td>semgrep is not installed in the runtime image.</td>
+    </tr>
+  
+    <tr>
+      <td>bandit</td>
+      <td>skipped</td>
+      <td>bandit was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>pip-audit</td>
+      <td>skipped</td>
+      <td>pip-audit was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>osv-scanner</td>
+      <td>unavailable</td>
+      <td>osv-scanner is not installed in the runtime image.</td>
+    </tr>
+  
+    <tr>
+      <td>retire</td>
+      <td>skipped</td>
+      <td>retire was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>npm</td>
+      <td>skipped</td>
+      <td>npm was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>bundle-audit</td>
+      <td>skipped</td>
+      <td>bundle-audit was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>checkov</td>
+      <td>skipped</td>
+      <td>checkov was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>hadolint</td>
+      <td>skipped</td>
+      <td>hadolint was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>shellcheck</td>
+      <td>skipped</td>
+      <td>shellcheck was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>gosec</td>
+      <td>skipped</td>
+      <td>gosec was skipped because the matching ecosystem was not detected.</td>
+    </tr>
+  
+    <tr>
+      <td>syft</td>
+      <td>unavailable</td>
+      <td>syft is not installed in the runtime image.</td>
+    </tr>
+  
+    <tr>
+      <td>binary-scan</td>
+      <td>completed</td>
+      <td>Detected 52 binary artifacts. Review hashes for supply chain verification.</td>
+    </tr>
+  </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel section">
+      <summary>
+        <div class="section-title">
+          <h2>Dependency Inventory</h2>
+          <span class="section-badge">0 discovered</span>
+        </div>
+        <span class="chevron">▶</span>
+      </summary>
+      <div class="section-body">
+        <div class="hint-text" style="margin-bottom:0.75rem">Showing the first 0 dependencies in the HTML report. Use the JSON export for the full inventory.</div>
+        <div class="table-shell">
+          <table>
+            <thead><tr><th>Name</th><th>Version</th><th>Ecosystem</th><th>Source</th></tr></thead>
+            <tbody><tr><td colspan="4">No parseable dependency manifests were found.</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </div>
+  <script>
+    (function () {
+      const reportData = {"findings":[{"index":0,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-base.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: b4c8f3476d53089301b5d3fdb52af79f62cf301b1a1f52d5a22156b733c1a915","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":1,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-alderlake.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 33c7aa7fc5ab427873901a9b504d75a7d8d96d37bdaa2d56d7e566bf35fd2b8f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":2,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-cannonlake.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: bc2a7d5d3cef748301dcac70aa76e0d3cc5bee54499a55e0fb385d01f322e0e4","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":3,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-cascadelake.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 816a17d5c235ffab448c3760ddb26d8d9e8fe10d515ceead37575b5ff9b62773","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":4,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-cooperlake.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 6f8711a98f616dd8a92fd2464a53c3601d3178179b2f53c5ed4c0aff7013c826","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":5,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-haswell.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 167d9a9df62546705a056ffafed62afa880fcf37103d81ab5734002dc619b117","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":6,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-icelake.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: b759f8dc03a2825e9f55b2f825d932c2ccfe8eff2a88bb2e6042c6b07b153748","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":7,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-ivybridge.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 51010c4f9215a525b42e65f9e8e067740f62b8f6e1cc68f7d629ea4cd6ae7ff3","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":8,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-piledriver.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: d3fa8332f6d040d120e43b4a303e1a90204a75b015dcf0a565d698e89bc83fb3","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":9,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-sandybridge.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: e518b5b963c0819d66f55beae17f92bb168cb6220518d175613545f7b7623d6a","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":10,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-sapphirerapids.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: e7d68ed1cc78760f386a70784cf15c1fad413f27a666ba5b52babef0e071c9c3","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":11,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-skylakex.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 75f77ce3dc1797b573cf7223b7bbfad76e81aa9731827ef8f4ce7a5b479d507f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":12,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-sse42.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 9e033ce5cba8d2263e647b801da78f2409975ff96ebeb7bcc2e3e20c29eaf106","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":13,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-x64.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: ee3bb568ff4cc959531343878283404701bdc3008f85ceaf1a82852643508512","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":14,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cpu-zen4.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: bcd79b598779ef74fc3b001ae54e98e94f8839437914ca084c8b6855f923c7d4","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":15,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-cuda.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 874c28faf014fabe7ea06cb12d46bd420addf9f8133b27ab1c364fd145e619ee","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":16,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"ggml-rpc-server.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: bb6a249e1e0701b7acb9ff19975e239a66163699da6972847808afb38771de55","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":17,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml-rpc.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: b872d5e55bc82d56513ab7ee084beb9451e20c41b916934158da8a2b9b4edfd3","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":18,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"ggml.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: c958354ecd56d9a0ffd54477332d1dba5fca462c0bbf5c7083c7d1f5ccf08071","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":19,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"libomp140.x86_64.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 4a20c1e5c115c29771a12324513eb109badac72180f79481527ad79d996ffb33","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":20,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-batched-bench-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: e0dc2ee2e49a702cb9394580fff437af712f98def12986ef73cee7bc7f888174","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":21,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-batched-bench.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 212b88009fe576d274b1fa25c03d7b4f3a367bd30506d70cd0d702191f0635f2","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":22,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-bench-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 34f0053da034236ffaa4e136f3493bfa4cfc0471d2dcf7b7308b4a2c018b109c","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":23,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-bench.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 64bd83d0bff2d5e13a65eea739968db01c917511c1a8dff8cdf2903abc13422b","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":24,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-cli-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: cb928e2c69d6f8f3783c696728708e204213f410b369368127ddff9dd24a91d9","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":25,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-cli.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 4f0b62d2ba0adb8aa45f9e7668c64a345ebd9e3f0e5a197be956229d20bbecc4","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":26,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-common.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: a217d43f10586b1b3c292c0cd1321344fd75b271d823d5f377c1e9c1a2737578","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":27,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-completion-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: a63933ee0f01acd501d57c6f161ad112ff94a3e002e9470186d8e1592a5b7179","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":28,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-completion.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 8f4d07a3a5f502b2f3cee064d334c938a22720f0743927e4d7b511bdf2f5f95a","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":29,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-fit-params-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: e3c8ecb487405e6ecf145243eeb1d48d113a2c07c2e25df7906452938bf39cea","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":30,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-fit-params.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 5ec144cdf6fc254676e86617cee4bfce58a6f785f35b5e1c19d13dcc05102763","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":31,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-gemma3-cli.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 362b606e7762240f04bb032700f4deab54cc3007c0bd5f76824790d47573085f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":32,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-gguf-split.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 46aa3083c2801fe6147e3e0f81230f32d5b122a10cb95b5b69290c50eeadfd3f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":33,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-imatrix.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 18c6a210d3829f56d1819a91da891d9b191f6836d4b23c18edf69f411b7ffacb","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":34,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-llava-cli.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 362b606e7762240f04bb032700f4deab54cc3007c0bd5f76824790d47573085f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":35,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-minicpmv-cli.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 362b606e7762240f04bb032700f4deab54cc3007c0bd5f76824790d47573085f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":36,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-mtmd-cli.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: ee1a662b2789564e4d3160ac9fa26e1f23a7adb54982f306add63998b0693a67","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":37,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-mtmd-debug.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 23f9ddf1673e43d18e0616a690e42b0ad221a15d79cc27d0434d562d3b9184e9","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":38,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-perplexity-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 93991bde49e99186ae480e6be6d7f6b484947062c2e70a62fcc0621893cf946e","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":39,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-perplexity.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 4867f9fd8014a12d460ff6aa49da675cff512e4fb6cea1253a11bf68fb013de4","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":40,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-quantize-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 106608599e0a4e8d7855faf9c5c0d749dc143071793abcca9b727df091df8c9a","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":41,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-quantize.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: e9da31c96927ec9c0ee701d8b3afa66bdd83b21f6256a6c47dacd830b382e102","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":42,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-qwen2vl-cli.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 362b606e7762240f04bb032700f4deab54cc3007c0bd5f76824790d47573085f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":43,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-results.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 237c36f82b60ede29eaa495b1044080e04a493b9144f89a492b063ea6cd4b56b","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":44,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama-server-impl.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 9792fbc2d3bfc9821c92e5fc311578ce4c6e6d85f06e9ae26b902a79551e94b8","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":45,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-server.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 0c1ed8228796fee79bfeebcc07a9a948f7f61722fea310465b98f41f5ed9dee6","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":46,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-template-analysis.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 4a6b466fd07c089ed29b54000ccc4d88578316377e85ada9d0475e4691f641fc","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":47,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-tokenize.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 8421d9e881d0dc59a286c9eab6a0476c99a1006f9157b870563bea8344594b21","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":48,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama-tts.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: 3f314161ef837a3b485de16a07e7b9e16fdf17b003ad2ee203779324b8dbf65f","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":49,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"llama.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: b408880ff89ccae90b9ac031218baf9ec174131c7aa1f44e65deccc3f504ffbc","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":50,"severity":"high","scanner":"binary-scan","title":"Executable binary detected","file":"llama.exe","category":"binary-artifact","detail":"Binary artifact found. Verify code signature and publisher SHA256: f164153d3ca41cb2370f91852f7c89981a3df52dafb25f88ad490c3278b09c87","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."},{"index":51,"severity":"high","scanner":"binary-scan","title":"Dynamic library detected","file":"mtmd.dll","category":"binary-artifact","detail":"Binary artifact found. Check load dependencies and signature SHA256: 822e36a4255b56862e7713f774e08ea2b5cde18d70b7fcb5acab1384dfcf99b2","recommendation":"Verify binary provenance, code signatures, and build reproducibility. Consider documenting build process and security scanning results."}],"scanners":["binary-scan"]};
+      const grid = document.getElementById('findingsGrid');
+      const searchInput = document.getElementById('findingSearch');
+      const severityFilter = document.getElementById('severityFilter');
+      const scannerFilter = document.getElementById('scannerFilter');
+      const sortSelect = document.getElementById('sortFindings');
+      const pageSizeSelect = document.getElementById('pageSize');
+      const findingsCount = document.getElementById('findingsCount');
+      const pageMeta = document.getElementById('pageMeta');
+      const prevPage = document.getElementById('prevPage');
+      const nextPage = document.getElementById('nextPage');
+      const severityRank = { critical: 5, high: 4, medium: 3, low: 2, info: 1 };
+      const state = { page: 1 };
+
+      function esc(value) {
+        return String(value == null ? '' : value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function matches(finding) {
+        const search = (searchInput.value || '').trim().toLowerCase();
+        const severity = severityFilter.value;
+        const scanner = scannerFilter.value;
+        const haystack = [
+          finding.title || '',
+          finding.file || '',
+          finding.category || '',
+          finding.detail || '',
+          finding.recommendation || '',
+        ].join(' ').toLowerCase();
+
+        if (severity !== 'all' && finding.severity !== severity) return false;
+        if (scanner !== 'all' && finding.scanner !== scanner) return false;
+        if (search && !haystack.includes(search)) return false;
+        return true;
+      }
+
+      function sortFindings(findings) {
+        const mode = sortSelect.value;
+        findings.sort((a, b) => {
+          if (mode === 'severity-desc') {
+            return (severityRank[b.severity] || 0) - (severityRank[a.severity] || 0);
+          }
+          if (mode === 'severity-asc') {
+            return (severityRank[a.severity] || 0) - (severityRank[b.severity] || 0);
+          }
+          if (mode === 'title-desc') {
+            return (b.title || '').localeCompare(a.title || '');
+          }
+          if (mode === 'scanner-asc') {
+            return (a.scanner || '').localeCompare(b.scanner || '') || (a.title || '').localeCompare(b.title || '');
+          }
+          return (a.title || '').localeCompare(b.title || '');
+        });
+      }
+
+      function renderFinding(finding) {
+        return [
+          '<details class="finding-row">',
+          '  <summary>',
+          '    <span class="badge badge-' + esc(finding.severity) + '">' + esc(finding.severity) + '</span>',
+          '    <span class="scanner-badge">' + esc(finding.scanner) + '</span>',
+          '    <span class="finding-title">' + esc(finding.title) + '</span>',
+          '    <span class="finding-file">' + esc(finding.file) + '</span>',
+          '    <span class="finding-category">' + esc(finding.category) + '</span>',
+          '  </summary>',
+          '  <div class="finding-body">',
+          '    <div class="finding-body-grid">',
+          '      <div class="finding-block">',
+          '        <strong>Detail</strong>',
+          '        <p>' + esc(finding.detail) + '</p>',
+          '      </div>',
+          '      <div class="finding-block">',
+          '        <strong>Recommendation</strong>',
+          '        <p>' + esc(finding.recommendation) + '</p>',
+          '      </div>',
+          '    </div>',
+          '  </div>',
+          '</details>',
+        ].join('');
+      }
+
+      function render() {
+        const filtered = reportData.findings.filter(matches);
+        sortFindings(filtered);
+
+        const pageSize = Number(pageSizeSelect.value || 25);
+        const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+        if (state.page > totalPages) state.page = totalPages;
+        if (state.page < 1) state.page = 1;
+
+        const start = (state.page - 1) * pageSize;
+        const end = start + pageSize;
+        const pageItems = filtered.slice(start, end);
+
+        if (!pageItems.length) {
+          grid.innerHTML = '<div class="empty-state">No findings match the current filters.</div>';
+        } else {
+          grid.innerHTML = pageItems.map(renderFinding).join('');
+        }
+
+        findingsCount.textContent = filtered.length + ' finding' + (filtered.length === 1 ? '' : 's') + ' visible';
+        pageMeta.textContent = 'Page ' + state.page + ' of ' + totalPages;
+        prevPage.disabled = state.page <= 1;
+        nextPage.disabled = state.page >= totalPages;
+      }
+
+      [searchInput, severityFilter, scannerFilter, sortSelect, pageSizeSelect].forEach(control => {
+        control.addEventListener('input', function () {
+          state.page = 1;
+          render();
+        });
+        control.addEventListener('change', function () {
+          state.page = 1;
+          render();
+        });
+      });
+
+      prevPage.addEventListener('click', function () {
+        state.page -= 1;
+        render();
+      });
+
+      nextPage.addEventListener('click', function () {
+        state.page += 1;
+        render();
+      });
+
+      render();
+    }());
+  </script>
+</body>
+</html>
